@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<body>
+<center><h3><b>SCRSDE</b></h3>
+Version %s <br>
+
+Copyright (C) 2020
+</center>
+<hr>
+
+Single-cell RNA sequencing (scRNA-seq) has transformed cell biology, enabling studies of heterogeneity and transcriptome dynamics of complex tissues at single-cell resolution. The Single Cell RNA-Seq Data Explorer (SCRSDE) provides interactive analysis of different scRNA-seq data to explore the transcriptional diversity of the cell types. To identify biological differences between two subpopulations or groups of cells the differential expression analysis is found to be very useful. To identify significant differentially expressed genes (DEGs)between distinct cell types all datasets were analyzed using  Seurat [ref] R package.
+<br><br>
+The SCRSDE provides :
+<ul>
+<li>Analysis of clusters of different cell types in a dataset.</li>
+<li>Visualization of expression level of gene of interest in cell clusters.</li>
+<li>UMAP, tSNE, 2D, 3D plots</li>
+<li>Listing of marker genes in each cluster.</li>
+<li>Comparative analysis of cell clusters between different datasets.</li>
+</ul>
+<br>
+<h3>Data Summary</h3><br>
+<table width="500">
+	<col style="width:300">
+	<col style="width:100">
+	<col style="width:100">
+  <tr>
+    <th>Dataset</th><th>Cells|Nuclei</th><th>Clusters found</th>
+  </tr>
+  <tr>
+    <td>Human Middle Temporal Gyrus (MTG)</td><td>15,928 nuclei</td><td>64</td>
+  </tr>
+  <tr>
+  <td>Human Primary Visual Cortex (V1)</td>
+  <td>8,998 nuclei</td>
+  <td>38</td>
+</tr>
+<tr>
+  <td>Human Anterior Cingulate Cortex (ACC)</td>
+  <td>7,283 nuclei</td>
+  <td>39</td>
+</tr>
+<tr>
+  <td>Mouse Primary Visual Cortex (VISp)</td>
+  <td>15,413 cells</td>
+  <td>70</td>
+</tr>
+<tr>
+  <td>Mouse Anterior Lateral Motor Area(ALM)</td>
+  <td>10,068 cells</td>
+  <td>53</td>
+</tr>
+<tr>
+  <td>Mouse Anterior Cingulate Area (ACA)</td>
+  <td>5,028 cells</td>
+  <td>28</td>
+</tr>
+<tr>
+  <td>Mouse Primary Motor Area (MOp)</td>
+  <td>4,916 cells</td>
+  <td>29</td>
+</tr>
+<tr>
+  <td>Mouse Primary Motor Area (MOp)</td>
+  <td>6,847 nuclei</td>
+  <td>30</td>
+</tr>
+</table>
+<br>
+<h3>Pipeline</h3><br>
+In the preprocessing step single nuclei data were summed up  for exon and intron
+counts. The genes coming from sex chromosomes and Human and mouse MitoCarta2.0 were excluded from the analysis.  Further, genes were filtered if expressed in less than 16 cells (~0.1 percent of the data), filtered cells with less than 200 detected genes, and cells with outlier level of unique gene counts, UMI content was filtered based on analyzing VlnPlot and GenePlot). The highly variable genes were collected for downstream analysis. The Step-by-Step representation of the analysis pipeline is given in the flowchart.<br><br>
+<img src="flowchart.jpg" style="width:500px;height:400px;">
+<br><br>
+                
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+<br><br>
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+<br><br>
+For a complete copy of the GNU General Public License Version 3 see the source code repository
+or visit <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">https://www.gnu.org/licenses/gpl-3.0.html</a>.
+
+<br><br>
+You can obtain the source code for this application at: *
+<!--<a href="http://github.com/neuhausi/single-cell-viewer" target="_blank">http://github.com/neuhausi/single-cell-viewer</a>-->
+
+</body>
+</html>
