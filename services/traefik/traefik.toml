@@ -1,0 +1,21 @@
+[entryPoints]
+  [entryPoints.web.http]
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint]
+        to = "websecure"
+        scheme = "https"
+
+  [entryPoints.websecure]
+    address = ":5000"
+
+[accessLog]
+
+[providers]
+  [providers.docker]
+    exposedByDefault = false
+
+[certificatesResolvers.letsencrypt.acme]
+  email = "jsaied99@gmail.com"
+  storage= "acme.json"
+  [certificatesResolvers.letsencrypt.acme.httpChallenge]
+    entryPoint = "web"

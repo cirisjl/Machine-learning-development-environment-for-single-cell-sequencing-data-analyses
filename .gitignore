@@ -1,0 +1,14 @@
+config.yaml
+**/.vscode/**
+**/.DS_Store/**
+**/.git/**
+__pycache__
+env/
+auth/RS512.*
+*.ipynb
+tokens*.json
+commands.sh
+.DS_Store
+.env
+tmp/
+auth/
