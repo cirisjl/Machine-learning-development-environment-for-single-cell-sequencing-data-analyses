@@ -11,4 +11,4 @@ commands.sh
 .DS_Store
 .env
 tmp/
-auth/
+RS512.*
