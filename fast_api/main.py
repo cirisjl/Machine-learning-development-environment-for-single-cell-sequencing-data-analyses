@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-import db.db_funcs as db
+# import db.db_funcs as db
 
 
 from routers_imports import routers
@@ -54,15 +54,14 @@ app = FastAPI(
 )
 
 
-@app.on_event("startup")
-async def startup():
-    db.async_engine = db.get_async_engine()
+# @app.on_event("startup")
+# async def startup():
+#     db.async_engine = db.get_async_engine()
 
 
-
-@app.on_event("shutdown")
-async def shutdown_engine():
-    await db.async_engine.dispose()
+# @app.on_event("shutdown")
+# async def shutdown_engine():
+#     await db.async_engine.dispose()
 
 
 app.add_middleware(
