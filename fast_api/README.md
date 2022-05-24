@@ -60,6 +60,12 @@ gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bin
 docker-compose up --build
 ```
 
+## just run docker
+```bash
+docker build -t dev-fast-api -f Dockerfile.dev .
+docker run -p 5000:5000 dev-fast-api
+```
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
