@@ -6,6 +6,8 @@ load_dotenv()
 
 if os.getenv("place") == "local":
     path = "/home/jsaied/api/"
+elif os.getenv("place") == "docker":
+    path = "/code/"
 else:
     path = "/home/jas8dz/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
 
