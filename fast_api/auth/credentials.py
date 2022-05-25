@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 if os.getenv("place") == "local":
-    path = "/home/jsaied/api/"
+    path = "/Users/jsaied/GitHub/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
 elif os.getenv("place") == "docker":
     path = "/code/"
 else:
@@ -33,3 +33,4 @@ BEARER_TOKEN = os.getenv("token", "")
 SERVER_TOKEN = os.getenv("server_token", "")
 
 MODE = mode
+PATH = path

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import helper.jwt as jwt
 import helper.downloader_funcs as downloader
 from pydantic import AnyUrl
+from auth.credentials import PATH
 
 router = APIRouter(
     prefix="/download",
@@ -26,8 +27,9 @@ async def post_download(
 ):
 
     try:
-        path = "/Users/jsaied/Library/Mobile Documents/com~apple~CloudDocs/University/GS/obj/fast-api/tmp"
-        download_path = await downloader.async_download(url=url, folder=path, log=True)
+        tmp = PATH + "tmp/"
+        # path = "/Users/jsaied/GitHub/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/tmp"
+        download_path = await downloader.async_download(url=url, folder=tmp, log=True)
         # download_path = await downloader.download_url(url=url,folder=path, log=True)
         return {"message": "Downloaded successfully", "path": download_path}
     except Exception as e:
