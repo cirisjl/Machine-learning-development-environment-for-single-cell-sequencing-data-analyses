@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # import db.db_funcs as db
 
-
 from routers_imports import routers
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth.exceptions import AuthJWTException
@@ -27,6 +26,12 @@ import jwt
 
 from fastapi_jwt_auth import AuthJWT
 
+#Db connection and related imports
+from sqlalchemy.orm import Session
+
+from db import crud, models, schemas, database
+from db.database import SessionLocal, engine
+
 security = HTTPBasic()
 
 
@@ -43,6 +48,7 @@ def login_validation(credentials: HTTPBasicCredentials = Depends(security)):
         )
     return credentials.username
 
+models.Base.metadata.create_all(bind=engine)  #Creating db session engine
 
 app = FastAPI(
     title="FastAPI",
@@ -52,6 +58,14 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+
+# Dependency for db connection
+def get_db():
+    dbc = SessionLocal()
+    try:
+        yield dbc
+    finally:
+        dbc.close()
 
 
 # @app.on_event("startup")
@@ -135,6 +149,22 @@ async def get_documentation(username: str = Depends(login_validation)):
 async def openapi(username: str = Depends(login_validation)):
     return get_openapi(title="FastAPI", version="0.1.0", routes=app.routes)
 
+
+#Demo APIs
+@app.get("/getspatialdatasets")
+async def getSpatialDatasets(db: Session = Depends(get_db)):
+    all_datasets=crud.get_spatial_datasets(db)
+    return all_datasets
+
+@app.get("/getspatialdatasets_by_id/{id}")
+async def getSpatialDatasets(id: str, db: Session = Depends(get_db)):
+    dataset=crud.get_spatial_dataset_by_id(db,id)
+    return dataset
+
+@app.get("/getdatasetfactors")
+async def getDatasetFactors(db: Session = Depends(get_db)):
+    all_datasetfactors=crud.get_dataset_factors(db)
+    return all_datasetfactors
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5006, debug=True)
