@@ -5,8 +5,11 @@ library(SeuratDisk)
 setwd('C:/Users/flyku/Documents/GitHub/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/benchmark')
 set.seed(42)
 
-# Read data
+# Read qs data
 combined <- qs::qread('./test.qsave')
+
+# Save qs data
+qs::qsave(combined, './test.qsave')
 
 # Set default assay
 Idents(combined) <- combined$seurat_clusters
@@ -20,3 +23,4 @@ Convert(paste0("test_raw.h5Seurat"), dest = "h5ad", overwrite = T)
 Convert("test.h5ad", dest = "h5seurat", overwrite = TRUE)
 test_object <- LoadH5Seurat("test.h5seurat")
 test_object
+
