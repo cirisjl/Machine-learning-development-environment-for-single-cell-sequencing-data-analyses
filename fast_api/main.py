@@ -166,5 +166,15 @@ async def getDatasetFactors(db: Session = Depends(get_db)):
     all_datasetfactors=crud.get_dataset_factors(db)
     return all_datasetfactors
 
+@app.get("/getclusteringpublications")
+async def getClusteringPublications(db: Session = Depends(get_db)):
+    all_clustering_publications=crud.get_clustering_publications(db)
+    return all_clustering_publications
+
+@app.get("/getclusteringdatasetfactor")
+async def getClusteringDatasetFactor(db: Session = Depends(get_db)):
+    all_clustering_dataset_factor=crud.get_clustering_dataset_factor(db)
+    return all_clustering_dataset_factor
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5006, debug=True)
