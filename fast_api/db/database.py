@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-user="root"
-password="Akhil721"
-host="localhost"
+user="KBCommons"
+password="KsdbsaKNm55d3QtvtX44nSzS_"
+host="mysql_kbcommons"
 port=3306
-database="aiready"
+database="ai_singlecell"
 
 SQLALCHEMY_DATABASE_URL = "mysql+pymysql://{}:{}@{}:{}/{}".format(user,password,host,port,database)
 

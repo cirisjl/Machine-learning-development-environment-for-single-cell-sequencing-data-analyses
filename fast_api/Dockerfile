@@ -5,10 +5,10 @@ FROM python:3.9
 WORKDIR /code
 
 # 
-COPY ./requirements.txt /code/requirements.txt
+COPY ./requirements_new.txt /code/requirements_new.txt
 
 # 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements_new.txt
 
 # Set environment variables
 ENV place=docker
