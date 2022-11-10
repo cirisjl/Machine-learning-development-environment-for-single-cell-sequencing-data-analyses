@@ -2,28 +2,38 @@ version: "3"
 
 services:
       
-  api:
+  api_sai:
+    container_name: ai-singlecell-backend-sai
     build: 
       context: ./
-    command: gunicorn main:app --bind 0.0.0.0:5000  -k uvicorn.workers.UvicornWorker
-    expose:
-      - 5000
+    command: gunicorn main:app --bind 0.0.0.0:5001  -k uvicorn.workers.UvicornWorker
+    ports:
+      - 5001:5001
+    # expose:
+    #   - 5000
     labels:
       - traefik.enable=true
       - traefik.http.routers.app-http.rule=Host(`digbio-devel.missouri.edu`)
       - traefik.http.routers.app-http.tls=true
       - traefik.http.routers.app-http.tls.certresolver=letsencrypt
+    networks:
+      - default
+      - kbc-net
 
-  traefik:
+  traefik_sai:
+    container_name: ai-singlecell-backendtraefik-sai
     image: traefik:v2.3
     ports:
-      - 5000:5000
+      - 5009:5009
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - $PWD/services/traefik/traefik.toml:/etc/traefik/traefik.toml
       - traefik-public-certificates:/certificates
 
+networks:
+  kbc-net:
+    external: true
 
 volumes:
   cache:
