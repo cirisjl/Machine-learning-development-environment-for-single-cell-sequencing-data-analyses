@@ -114,11 +114,13 @@ async def async_download(url, folder, log=True):
         print('Downloading', url)
 
     makedirs(folder)
+    # print(makedirs)
     
     try:
         async with aiohttp.ClientSession() as session:
+            # print(session)
             async with session.get(url) as response:
-
+                # print(response)
                 chunk_size = 1024*1024
 
                 downloaded_size = 0
