@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from auth.credentials import db_credentials
 
-user="KBCommons"
-password="KsdbsaKNm55d3QtvtX44nSzS_"
-host="mysql_kbcommons"
-port=3306
-database="ai_singlecell"
+user=db_credentials["user"]
+database=db_credentials["db"]
+port=db_credentials["port"]
+password=db_credentials["password"]
+host=db_credentials["host"]
 
 SQLALCHEMY_DATABASE_URL = "mysql+pymysql://{}:{}@{}:{}/{}".format(user,password,host,port,database)
 
