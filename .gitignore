@@ -10,5 +10,7 @@ tokens*.json
 commands.sh
 .DS_Store
 .env
+fastapi-env/
+.fastapi-env
 tmp/
 RS512.*

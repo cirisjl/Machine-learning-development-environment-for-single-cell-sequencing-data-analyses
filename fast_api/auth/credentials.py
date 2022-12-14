@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 if os.getenv("place") == "local":
-    path = "/Users/jsaied/GitHub/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
+    path = "D:/Master's/ML_backend_AISingleCell/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
 elif os.getenv("place") == "docker":
     path = "/code/"
 else:
-    path = "/home/jas8dz/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
+    path = "D:/Master's/ML_backend_AISingleCell/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
 
 
 with open(path + "config.yaml") as file:
