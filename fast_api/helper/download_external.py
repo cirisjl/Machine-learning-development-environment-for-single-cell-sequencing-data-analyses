@@ -8,7 +8,7 @@ import errno
 
 def download_file_from_google_drive(destination):
     #URL = "https://docs.google.com/uc?export=download"
-    URL="https://ftp.cdc.gov/pub/health_statistics/nchs/Publications/ICD10CM/2017/icd10cm_codes_2017.txt"
+    URL="https://singlecellcourse.cog.sanger.ac.uk/data/update/soupX_pbmc10k_filt/matrix.mtx"
 
     session = requests.Session()
 
@@ -93,7 +93,7 @@ async def async_download(url, folder, log=True):
 if __name__ == "__main__":
     # file_id = '1TCy9OoCRkNWzo22fGbycG-j9z7gphfGE'
     path = "D:/Master's/ML_backend_AISingleCell/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/fast_api/"
-    destination = path + "tmp/hmi.txt"
+    destination = path + "tmp/matrix.mtx"
     destination2=path+"tmp/"
     download_file_from_google_drive(destination)
     # await async_download(url='https://drive.google.com/file/d/1TCy9OoCRkNWzo22fGbycG-j9z7gphfGE/view?usp=sharing',folder=destination2,log=True)
