@@ -14,3 +14,4 @@ fastapi-env/
 .fastapi-env
 tmp/
 RS512.*
+fast_api/helper/download_external.py
