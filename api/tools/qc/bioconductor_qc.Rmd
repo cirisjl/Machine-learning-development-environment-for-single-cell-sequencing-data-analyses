@@ -1,0 +1,202 @@
+---
+title: "Quality Control using Bioconductor for `r params$dataset`"
+author: "Lei Jiang"
+date: "`r Sys.Date()`"
+params:
+  dataset: NA
+  input: NULL # Input file path to scRNA data.
+  output: NULL # Output file path of the SingleCellExperiment object.
+  species: "human" # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+  output_format: SingleCellExperiment
+  show_code: FALSE
+  show_warning: FALSE
+  show_message: FALSE
+output: html_document
+---
+```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
+```
+## Load data
+Load or create a SingleCellExperiment object from a expression matrix where each row corresponds to a gene (or transcript) and each column corresponds to a single cell.
+```{r load data, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+library(AnnotationDbi)
+
+source("../formating/formating.R")
+
+if(is.null(params$input)) stop("Inupt_path can not be NULL.")
+if(is.null(params$output)) stop("Output_path can not be NULL.")
+# Set altExp to contain ERCC, removing ERCC features from the main object
+sce <- load_sce(params$inupt)
+if(is.null(sce)) stop("The file format is not supported.")
+altExp(sce, "ERCC") <- sce[grep("^ERCC-", rownames(sce)), ]
+sce <- sce[grep("^ERCC-", rownames(sce), invert=T), ]
+print("SingleCellExperiment object is loaded successfully.")
+sce
+```
+## Annotation
+Map ENSEMBL IDs to gene symbols
+```{r Annotation, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+if(params$species == "mouse") {
+  library(EnsDb.Mmusculus.v79) 
+  ENSDB <- "EnsDb.Mmusculus.v79"
+  library(org.Mm.eg.db)  #library(org.Hs.eg.db) if human
+  EGDB <- "org.Mm.eg.db"
+} else if(params$species == "human") {
+  library(EnsDb.Hsapiens.v86)
+  ENSDB <- "EnsDb.Hsapiens.v86"
+  library(org.Hs.eg.db)
+  EGDB <- "org.Hs.eg.db"
+} else {
+  stop('You must set SPECIES to either "mouse" or "human" at the start of this code block!')
+}
+
+gene_names <- mapIds(get(EGDB), keys=rownames(sce), keytype="ENSEMBL", columns="SYMBOL", column="SYMBOL")
+
+rowData(sce)$SYMBOL <- gene_names
+table(is.na(gene_names))
+
+print("Remove all genes for which no symbols were found.")
+sce <- sce[! is.na(rowData(sce)$SYMBOL),] # Remove all genes for which no symbols were found
+
+print("Check if we can find mitochondrial proteins in the newly annotated symbols.")
+grep("^MT-", rowData(sce)$SYMBOL, value=T) # Check if we can find mitochondrial proteins in the newly annotated symbols
+grep("^RP[LS]", rowData(sce)$SYMBOL, value=T)
+grep("ATP8", rowData(sce)$SYMBOL, value=T) # Quick search for mitochondrial protein ATP8, which is also called MT-ATP8
+
+ensdb_genes <- genes(get(ENSDB))
+MT_names <- ensdb_genes[seqnames(ensdb_genes) == "MT"]$gene_id
+is_mito <- rownames(sce) %in% MT_names
+table(is_mito)
+```
+## Basic QC
+```{r Basic QC, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+sce_cell <- perCellQCMetrics(sce,subsets=list(Mito=is_mito))
+sce_feature <- perFeatureQCMetrics(sce)
+
+head(sce_cell)
+head(sce_feature)
+
+sce <- addPerCellQC(sce, subsets=list(Mito=is_mito))
+sce <- addPerFeatureQC(sce)
+
+hist(
+    sce$total,
+    breaks = 100
+)
+abline(v = 25000, col = "red")
+
+hist(
+  sce_cell$detected,
+  breaks = 100
+)
+abline(v = 7000, col = "red")
+```
+
+## Identifying filtering cutoff
+Adaptive threshold for filtering cutoff
+```{r Identifying filtering cutoff, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+reasons <- quickPerCellQC(sce_cell, sub.fields=c("subsets_Mito_percent", "altexps_ERCC_percent"))
+colSums(as.matrix(reasons))
+sce$discard <- reasons$discard
+
+plotColData(sce, x="sum", y="subsets_Mito_percent", colour_by="discard")
+
+plotColData(sce, x="sum", y="detected", colour_by="discard")
+
+plotColData(sce, x="altexps_ERCC_percent", y="subsets_Mito_percent",colour_by="discard")
+
+
+library(scales)
+plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = "individual") + 
+  facet_wrap(~individual) + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+
+plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = "replicate") + 
+  facet_wrap(~replicate)  + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+```
+
+## Highly expressed genes
+The most expressed genes in the whole dataset.
+```{r Highly expressed genes, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+plotHighestExprs(sce, exprs_values = "counts", 
+                 feature_names_to_plot = "SYMBOL", colour_cells_by="detected")
+
+keep_feature <- nexprs(sce, byrow=TRUE, detection_limit = 1) >= 2
+rowData(sce)$discard <- ! keep_feature
+table(rowData(sce)$discard)
+
+assay(sce, "logcounts_raw") <- log2(counts(sce) + 1) # log counts
+sce.qc <- sce[! rowData(sce)$discard,! colData(sce)$discard]
+```
+## Data visualization before QC
+### PCA
+```{r Data visualization before QC - PCA, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sce <- runPCA(sce, exprs_values = "counts")
+# dim(reducedDim(sce, "PCA"))
+plotPCA(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+
+sce <- runPCA(sce, exprs_values = "logcounts_raw")
+# dim(reducedDim(sce, "PCA"))
+plotPCA(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+```
+
+### tSNE
+```{r Data visualization before QC - tSNE, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+set.seed(123456)
+sce <- runTSNE(sce, exprs_values = "logcounts_raw", perplexity = 130)
+plotTSNE(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+```
+
+## Data visualization after QC
+### PCA
+```{r Data visualization after QC - PCA, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sce.qc <- runPCA(sce.qc, exprs_values = "logcounts_raw")
+dim(reducedDim(sce.qc, "PCA"))
+plotPCA(sce.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
+```
+
+### tSNE
+```{r Data visualization after QC - tSNE, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+set.seed(123456)
+sce.qc <- runTSNE(sce.qc, exprs_values = "logcounts_raw", perplexity = 130)
+plotTSNE(sce.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
+```
+
+## Identifying Confounding Factors
+### Correlations with PCs
+```{r Correlations with PCs, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sce.qc <- runPCA(sce.qc, exprs_values = "logcounts_raw")
+dim(reducedDim(sce.qc, "PCA"))
+
+plotPCA(sce.qc, colour_by = "batch", size_by = "sum", shape_by = "individual")
+```
+
+### Detected genes
+```{r Detected genes, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+logcounts(sce.qc) <- assay(sce.qc, "logcounts_raw")
+getExplanatoryPCs(sce.qc,variables = "sum")
+
+plotExplanatoryPCs(sce.qc,variables = "sum") 
+logcounts(sce.qc) <- NULL
+```
+
+## Explanatory Variables
+```{r Explanatory Variables, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+plotExplanatoryVariables(sce.qc,exprs_values = "logcounts_raw",
+                         variables = c("detected","sum","batch",
+                                       "individual","altexps_ERCC_percent","subsets_Mito_percent"))
+```
+
+## Save SingleCellExperiment object
+```{r Save SingleCellExperiment object, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sce <- NULL
+# Drop the Alternative Experiment methods
+sce.qc <- removeAltExps(sce.qc)
+
+# Name the Main Experiment "RNA"
+mainExpName(sce.qc) <- "RNA"
+
+saveRDS(sce.qc, file = params$output)
+print("SingleCellExperiment object is saved successfully.")
+sce.qc <- NULL
+```
+
