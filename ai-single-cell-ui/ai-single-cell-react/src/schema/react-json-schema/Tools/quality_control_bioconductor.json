@@ -1,0 +1,48 @@
+{
+    "type": "object",
+    "properties": {
+      "methodUsedForNormalization": {
+        "type": "object",
+        "title": "Method Used for BioConductor",
+        "required": [
+            "method",
+            "howTONormalizeLayers"
+          ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "enum": ["Normalize counts per cell, using 'pp.normalize_total'", "Normalization and filtering as of Zheng et al. (2017), using 'pp.recipe_zheng17'", "Normalization and filtering as of Weinreb et al (2017), using 'pp.recipe_weinreb17'", "Normalization and filtering as of Seurat et al (2015), using 'pp.recipe_seurat'"]
+          },
+          "targetSum": {
+            "type": "integer",
+            "title": "Target sum - Optional",
+            "description": "If not provided, after normalization, each observation (cell) has a total count equal to the median of the total counts (cells) before normalization. (target_sum)"
+          },
+          "excludeParam": {
+            "type" : "string",
+            "title": "Exclude (very) highly expressed genes for the computation of the normalization factor (size factor) for each cell",
+            "enum": ["Yes", "No"],
+            "description": "A gene is considered highly expressed, if it has more than max_fraction of the total counts in at least one cell. The not-excluded genes will sum up to target_sum (exclude_highly_expressed)"
+        },
+        "nameOfTheField": {
+            "type" : "string",
+            "title": "Name of the field in 'adata.obs' where the normalization factor is stored - Optional",
+            "description": "(key_added)"
+        },
+        "layersToNormalize": {
+            "type" : "string",
+            "title": "List of layers to normalize - Optional",
+            "description": "'All' will normalize all layers. The list should be comma-separated. (layers)"
+        },
+        "howTONormalizeLayers": {
+            "type" : "string",
+            "title": "How to normalize layers?",
+            "enum": ["None: after normalization, for each layer in layers each cell has a total count equal to the median of the total counts (cells) before normalization of the layer", "After: for each layer in layers each cell has a total count equal to target_sum", "X: for each layer in layers each cell has a total count equal to the median of total counts for observations (cells) of adata.X before normalization."],
+            "description": "(layer_norm)"
+        }
+        }
+      }
+    }
+  }
+  

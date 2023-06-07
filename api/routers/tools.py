@@ -6,12 +6,11 @@ from starlette.responses import JSONResponse
 from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task
 from config.celery_utils import get_task_info
 from schemas.schemas import Dataset
-
 router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description": "Not found"}})
 
 
 @router.post("/qc")
-async def create_qc_task(ds: Dataset):
+def create_qc_task_api(ds: Dataset):
     """
     Create a task for quality control
     """
@@ -20,7 +19,7 @@ async def create_qc_task(ds: Dataset):
 
 
 @router.post("/normalize")
-async def create_normalization_task(ds: Dataset):
+async def create_normalization_task_api(ds: Dataset):
     """
     Create a task for normalization
     """
@@ -29,7 +28,7 @@ async def create_normalization_task(ds: Dataset):
 
 
 @router.post("/impute")
-async def create_imputation_task(ds: Dataset):
+async def create_imputation_task_api(ds: Dataset):
     """
     Create a task for imputation
     """

@@ -11,8 +11,10 @@ import csv
 
 
 def load_anndata(path):
+
     path = os.path.abspath(path)
     adata = None
+    print(path)
 
     if os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
             os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv")):
@@ -120,13 +122,13 @@ def output_path_check(dataset, output, method = '', format = "AnnData"):
     if method != '': method = '_' + method
 
     if os.path.isdir(output) and format == "AnnData":
-        output = s.path.join(output, dataset + method + ".h5ad")
+        output = os.path.join(output, dataset + method + ".h5ad")
         print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
     elif os.path.isdir(output) and format == "SingleCellExperiment":
-        output = s.path.join(output, dataset + method + ".rds")
+        output = os.path.join(output, dataset + method + ".rds")
         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
     elif os.path.isdir(output) and format == "Seurat":
-        output = s.path.join(output, dataset + method + ".h5Seurat")
+        output = os.path.join(output, dataset + method + ".h5Seurat")
         print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
     elif os.path.isfile(output) and format == "AnnData" and os.path.splitext(output)[-1] != ".h5ad":
         output.replace(os.path.splitext(output)[-1], method + ".h5ad")
@@ -140,8 +142,9 @@ def output_path_check(dataset, output, method = '', format = "AnnData"):
 
 def get_report_path(dataset, output, method):
     output = os.path.abspath(output)
+    print(output)
     if os.path.isdir(output):
-        report_path = s.path.join(output, dataset + "_" + method + "_report.html")
+        report_path = os.path.join(output, dataset + "_" + method + "_report.html")
         print("The output path is a directory, adding report file " + dataset + "_" + method + "_report.html to report path.")
     elif os.path.isfile(output):
         report_path = output.replace(os.path.splitext(output)[-1], "_" + method + "_report.html")
