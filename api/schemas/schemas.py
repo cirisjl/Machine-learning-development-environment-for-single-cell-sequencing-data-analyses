@@ -18,3 +18,4 @@ class Dataset(BaseModel):
     ncores: Optional[int] = 12
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
+    

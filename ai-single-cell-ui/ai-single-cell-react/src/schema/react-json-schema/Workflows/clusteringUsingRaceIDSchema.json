@@ -1,0 +1,122 @@
+{
+    "type": "object",
+    "properties": {
+      "clustering": {
+        "type": "object",
+        "title": "Clustering",
+        "required": [
+            "distanceMetric",
+            "clusteringMethod"
+          ],
+        "properties": {
+          "distanceMetric": {
+            "type": "string",
+            "title": "Distance Metric",
+            "enum": ["Pearson", "Spearman", "Log Pearson", "Euclidean"]
+          },
+          "clusteringMethod": {
+            "type": "string",
+            "title": "Clustering Method",
+            "enum": ["K-means", "K-medoids","H-Clust"]
+          },
+          "default": {
+            "type" : "string",
+            "title": "Use Defaults?",
+            "enum": ["Yes", "No"]
+        }
+        }
+      },
+      "outliers": {
+        "type": "object",
+        "title": "Outliers",
+        "required": [
+            "minTranscripts",
+            "minGenes"
+          ],
+        "properties": {
+          "minTranscripts": {
+            "type": "integer",
+            "title": "Minimum Transcripts",
+            "description": "minimal transcript count of a gene in a clusters to be tested for being an outlier gene"
+          },
+          "minGenes": {
+            "type": "integer",
+            "title": "Minimum Genes",
+            "description": "Minimum number of outlier genes required for being an outlier cell"
+          },
+          "plotFinalClusters": {
+            "type": "boolean",
+            "title": "Plot Final Clusters?",
+            "default": false,
+            "format": "switch",
+            "description": "Reclassification of cell types using out-of-bag analysis is performed based on the final clusters after outlier identification. If FALSE, then the cluster partition prior to outlier identification is used for reclassification."
+          },
+          "default": {
+            "type" : "string",
+            "title": "Use Defaults?",
+            "enum": ["Yes", "No"]
+        }
+        }
+      },
+      "tSNEAndFR": {
+        "type": "object",
+        "title": "tSNE and FR",
+        "required": [
+            "perplexity",
+            "KNN"
+          ],
+        "properties": {
+          "perplexity": {
+            "type": "integer",
+            "title": "Minimum Transcripts",
+            "description": "perplexity of the t-SNE map"
+          },
+          "KNN": {
+            "type": "integer",
+            "title": "KNN",
+            "description": "Number of nearest neighbours used for the inference of the Fruchterman-Rheingold layout"
+          },
+          "default": {
+            "type" : "string",
+            "title": "Use Defaults?",
+            "enum": ["Yes", "No"]
+        }
+        }
+      },
+      "extraParameters": {
+        "type": "object",
+        "title": "Extra Parameters",
+        "required": [
+            "tableLimit",
+            "plotLimit",
+            "foldChange",
+            "pvalueCutoff"
+          ],
+        "properties": {
+          "tableLimit": {
+            "type": "integer",
+            "title": "Table Limit",
+            "description": "Top N genes to print per cluster"
+          },
+          "plotLimit": {
+            "type": "integer",
+            "title": "Plot Limit",
+            "description": "Top N genes to plot. Must be less than or equal to the Table limit"
+          },
+          "foldChange": {
+            "type" : "integer",
+            "title": "Fold change"
+        },
+        "pvalueCutoff": {
+          "type" : "integer",
+          "title": "P-value Cutoff",
+          "description": "P-value cutoff for the inference of differential gene expression",
+          "minimum": 0,
+          "maximum": 1,
+          "multipleOf": 0.01
+      }
+        }
+      }
+    }
+  }
+  

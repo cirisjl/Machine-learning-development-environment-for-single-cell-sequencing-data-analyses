@@ -18,7 +18,6 @@ def qc(dataset, input, output, methods, path_of_scrublet_calls='./scrublet_calls
     
     if "SCANPY" in methods or "DROPKICK" in methods:
         adata = load_anndata(input)
-
         if adata is None:
             print("File format is not supported.")
             return None
