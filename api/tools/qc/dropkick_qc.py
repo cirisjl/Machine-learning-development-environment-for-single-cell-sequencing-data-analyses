@@ -35,8 +35,7 @@ def dropkick_qc(adata):
     sc.tl.leiden(adata_filtered)
     sc.tl.umap(adata_filtered, random_state=1)
 
-    sc.pl.umap(adata, color=['dropkick_label'])
-
+    # plot results
     sc.pl.umap(
         adata_filtered,
         color=[
