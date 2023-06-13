@@ -23,6 +23,13 @@ def create_app() -> FastAPI:
 app = create_app()
 celery = app.celery_app
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def add_process_time_header(request, call_next):

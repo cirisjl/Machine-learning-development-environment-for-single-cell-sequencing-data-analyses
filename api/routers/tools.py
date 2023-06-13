@@ -14,7 +14,7 @@ def create_qc_task_api(ds: Dataset):
     """
     Create a task for quality control
     """
-    task = create_qc_task.apply_async(args=[ds.dataset, ds.input, ds.output, ds.methods], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
+    task = create_qc_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 

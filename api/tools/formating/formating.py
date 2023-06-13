@@ -12,7 +12,7 @@ import csv
 
 def load_anndata(path):
 
-    path = os.path.abspath(path)
+    # path = os.path.abspath(path)
     adata = None
     print(path)
 
@@ -117,25 +117,25 @@ def detect_delimiter(file_path):
         return dialect.delimiter
 
 
-def output_path_check(dataset, output, method = '', format = "AnnData"):
+def output_path_check(dataset, output, method = '', file_format = "AnnData"):
     output = os.path.abspath(output)
     if method != '': method = '_' + method
 
-    if os.path.isdir(output) and format == "AnnData":
+    if not os.path.exists(output):
+        os.makedirs(output)
+
+    if os.path.isdir(output) and file_format == "AnnData":
         output = os.path.join(output, dataset + method + ".h5ad")
         print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
-    elif os.path.isdir(output) and format == "SingleCellExperiment":
+    elif os.path.isdir(output) and file_format == "SingleCellExperiment":
         output = os.path.join(output, dataset + method + ".rds")
         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
-    elif os.path.isdir(output) and format == "Seurat":
+    elif os.path.isdir(output) and file_format == "Seurat":
         output = os.path.join(output, dataset + method + ".h5Seurat")
         print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
-    elif os.path.isfile(output) and format == "AnnData" and os.path.splitext(output)[-1] != ".h5ad":
+    elif os.path.isfile(output) and file_format == "AnnData" and os.path.splitext(output)[-1] != ".h5ad":
         output.replace(os.path.splitext(output)[-1], method + ".h5ad")
         print("The suffix is incorrect, changing it to '.h5ad'.")
-
-    if not os.path.exists(os.path.dirname(output)):
-        os.makedirs(os.path.dirname(output))
     
     return output
 
