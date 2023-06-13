@@ -10,7 +10,7 @@ router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description
 
 
 @router.post("/qc")
-def create_qc_task_api(ds: Dataset):
+async def create_qc_task_async(ds: Dataset):
     """
     Create a task for quality control
     """
@@ -19,7 +19,7 @@ def create_qc_task_api(ds: Dataset):
 
 
 @router.post("/normalize")
-async def create_normalization_task_api(ds: Dataset):
+async def create_normalization_task_async(ds: Dataset):
     """
     Create a task for normalization
     """
@@ -28,7 +28,7 @@ async def create_normalization_task_api(ds: Dataset):
 
 
 @router.post("/impute")
-async def create_imputation_task_api(ds: Dataset):
+async def create_imputation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
