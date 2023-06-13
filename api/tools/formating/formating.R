@@ -119,13 +119,23 @@ load_sce <- function(path){
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             annotation <- read.delim(file.path(path,"annotation.txt"), sep = delim, stringsAsFactors = T)
             sce <- SingleCellExperiment(assays = list(counts = as.matrix(molecules)), colData = annotation)
+        } else{
+            seurat_object <- load_seurat(path)
+            if(!is.null(seurat_object)){
+                sce <- as.SingleCellExperiment(seurat_object)
+                rm(seurat_object) # Erase expression_matrix from memory to save RAM
+            }
         }
     } else{
         suffix <- get_suffix(path)
         if(suffix == "rds"){
-            expression_matrix <- readRDS(path)
-            sce <- Convert(from = expression_matrix, to = "sce", overwrite = TRUE, verbose = FALSE)
-            rm(expression_matrix) # Erase expression_matrix from memory to save RAM
+            sce <- readRDS(path)
+        } else{
+            seurat_object <- load_seurat(path)
+            if(!is.null(seurat_object)){
+                sce <- as.SingleCellExperiment(seurat_object)
+                rm(seurat_object) # Erase expression_matrix from memory to save RAM
+            }
         }
     }
     sce

@@ -9,12 +9,12 @@ sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def scanpy_qc(adata):
+def scanpy_qc(adata, min_genes=200, min_cells=3):
     adata.var_names_make_unique() 
 
     #Preprocessing
-    sc.pp.filter_cells(adata, min_genes=200)
-    sc.pp.filter_genes(adata, min_cells=3)
+    sc.pp.filter_cells(adata, min_genes)
+    sc.pp.filter_genes(adata, min_cells)
     adata.var['mt']=adata.var_names.str.startswith('MT-')  # Annotate the group of mitochondrial genes as 'mt'
     sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
     adata=adata[adata.obs.n_genes_by_counts < 2500, :]
