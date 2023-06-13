@@ -20,7 +20,7 @@ def load_anndata(path):
             os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv")):
         adata = sc.read_10x_mtx(path,
                              var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
-                             cache=False)  # write a cache file for faster subsequent reading
+                             cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(path)):
         suffix = os.path.splitext(path)[-1]
         if suffix == ".h5ad":
@@ -116,37 +116,59 @@ def detect_delimiter(file_path):
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
 
+# def output_path_check(dataset, output, method = '', format = "AnnData"):
+#     output = os.path.abspath(output)
+#     if method != '': method = '_' + method
+    
+#     if not os.path.exists(os.path.dirname(output)):
+#         os.makedirs(os.path.dirname(output))
 
-def output_path_check(dataset, output, method = '', file_format = "AnnData"):
+#     if os.path.isdir(output) and format == "AnnData":
+#         output = os.path.join(output, dataset + method + ".h5ad")
+#         print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
+#     elif os.path.isdir(output) and format == "SingleCellExperiment":
+#         output = os.path.join(output, dataset + method + ".rds")
+#         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
+#     elif os.path.isdir(output) and format == "Seurat":
+#         output = os.path.join(output, dataset + method + ".h5Seurat")
+#         print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
+#     elif os.path.isfile(output) and format == "AnnData" and os.path.splitext(output)[-1] != ".h5ad":
+#         output.replace(os.path.splitext(output)[-1], method + ".h5ad")
+#         print("The suffix is incorrect, changing it to '.h5ad'.")
+    
+#     return output
+
+
+def get_output_path(dataset, output, method = '', format = "AnnData"):
     output = os.path.abspath(output)
     if method != '': method = '_' + method
-
+    
     if not os.path.exists(output):
         os.makedirs(output)
 
-    if os.path.isdir(output) and file_format == "AnnData":
-        output = os.path.join(output, dataset + method + ".h5ad")
+    if format == "AnnData":
+        output_path = os.path.join(output, dataset + method + ".h5ad")
+        print(output_path)
         print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
-    elif os.path.isdir(output) and file_format == "SingleCellExperiment":
-        output = os.path.join(output, dataset + method + ".rds")
+    elif format == "SingleCellExperiment":
+        output_path = os.path.join(output, dataset + method + ".rds")
+        print(output_path)
         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
-    elif os.path.isdir(output) and file_format == "Seurat":
-        output = os.path.join(output, dataset + method + ".h5Seurat")
+    elif format == "Seurat":
+        output_path = os.path.join(output, dataset + method + ".h5Seurat")
+        print(output_path)
         print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
-    elif os.path.isfile(output) and file_format == "AnnData" and os.path.splitext(output)[-1] != ".h5ad":
-        output.replace(os.path.splitext(output)[-1], method + ".h5ad")
-        print("The suffix is incorrect, changing it to '.h5ad'.")
     
-    return output
+    return output_path
 
 
 def get_report_path(dataset, output, method):
     output = os.path.abspath(output)
-    print(output)
+    report_path = None
     if os.path.isdir(output):
         report_path = os.path.join(output, dataset + "_" + method + "_report.html")
         print("The output path is a directory, adding report file " + dataset + "_" + method + "_report.html to report path.")
-    elif os.path.isfile(output):
+    else:
         report_path = output.replace(os.path.splitext(output)[-1], "_" + method + "_report.html")
 
     if not os.path.exists(os.path.dirname(report_path)):

@@ -4,9 +4,13 @@ author: "Lei Jiang"
 date: "`r Sys.Date()`"
 params:
   dataset: NA
-  input: NULL # Input file path to scRNA data.
+  input_path: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the SingleCellExperiment object.
   species: "human" # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+  idtype: "SYMBOL" # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+  colour_by: NULL # Color by for plots
+  shape_by_1: NULL # Shape by 1 for plots
+  shape_by_2: NULL # Shape by 2 for plots
   output_format: SingleCellExperiment
   show_code: FALSE
   show_warning: FALSE
@@ -23,10 +27,10 @@ library(AnnotationDbi)
 
 source("../formating/formating.R")
 
-if(is.null(params$input)) stop("Inupt_path can not be NULL.")
+if(is.null(params$input_path)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
-sce <- load_sce(params$inupt)
+sce <- load_sce(params$input_path)
 if(is.null(sce)) stop("The file format is not supported.")
 altExp(sce, "ERCC") <- sce[grep("^ERCC-", rownames(sce)), ]
 sce <- sce[grep("^ERCC-", rownames(sce), invert=T), ]
@@ -50,14 +54,18 @@ if(params$species == "mouse") {
   stop('You must set SPECIES to either "mouse" or "human" at the start of this code block!')
 }
 
-gene_names <- mapIds(get(EGDB), keys=rownames(sce), keytype="ENSEMBL", columns="SYMBOL", column="SYMBOL")
+if(params$idtype=="ENSEMBL"){
+  gene_names <- mapIds(get(EGDB), keys=rownames(sce), keytype="ENSEMBL", columns="SYMBOL", column="SYMBOL")
 
-rowData(sce)$SYMBOL <- gene_names
-table(is.na(gene_names))
+  rowData(sce)$SYMBOL <- gene_names
+  table(is.na(gene_names))
+}
+
+if ((params$idtype=='SYMBOL') && is.null(rowData(sce)$SYMBOL)) {
+  rowData(sce)$SYMBOL <- rownames(sce)}
 
 print("Remove all genes for which no symbols were found.")
 sce <- sce[! is.na(rowData(sce)$SYMBOL),] # Remove all genes for which no symbols were found
-
 print("Check if we can find mitochondrial proteins in the newly annotated symbols.")
 grep("^MT-", rowData(sce)$SYMBOL, value=T) # Check if we can find mitochondrial proteins in the newly annotated symbols
 grep("^RP[LS]", rowData(sce)$SYMBOL, value=T)
@@ -107,11 +115,15 @@ plotColData(sce, x="altexps_ERCC_percent", y="subsets_Mito_percent",colour_by="d
 
 
 library(scales)
-plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = "individual") + 
-  facet_wrap(~individual) + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+if(!is.null(params$shape_by_1) && params$shape_by_1 %in% names(rowData(sce))){
+  plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = params$shape_by_1) + 
+    facet_wrap(~individual) + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+}
 
-plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = "replicate") + 
-  facet_wrap(~replicate)  + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+if(!is.null(params$shape_by_2) && params$shape_by_2 %in% names(rowData(sce))){
+  plotColData(sce, x="sum", y="detected", colour_by="discard", other_fields = params$shape_by_2) + 
+    facet_wrap(~replicate)  + scale_x_continuous(labels = unit_format(unit = "k", scale = 1e-3))
+}
 ```
 
 ## Highly expressed genes
@@ -130,20 +142,34 @@ sce.qc <- sce[! rowData(sce)$discard,! colData(sce)$discard]
 ## Data visualization before QC
 ### PCA
 ```{r Data visualization before QC - PCA, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
-sce <- runPCA(sce, exprs_values = "counts")
-# dim(reducedDim(sce, "PCA"))
-plotPCA(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  sce <- runPCA(sce, exprs_values = "counts")
+  # dim(reducedDim(sce, "PCA"))
+  plotPCA(sce, colour_by = params$colour_by, size_by = "detected", shape_by = params$shape_by_1)
 
-sce <- runPCA(sce, exprs_values = "logcounts_raw")
-# dim(reducedDim(sce, "PCA"))
-plotPCA(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+  sce <- runPCA(sce, exprs_values = "logcounts_raw")
+  # dim(reducedDim(sce, "PCA"))
+  plotPCA(sce, colour_by = params$colour_by, size_by = "detected", shape_by = params$shape_by_1)
+} else {
+  sce <- runPCA(sce, exprs_values = "counts")
+  # dim(reducedDim(sce, "PCA"))
+  plotPCA(sce, size_by = "detected")
+
+  sce <- runPCA(sce, exprs_values = "logcounts_raw")
+  # dim(reducedDim(sce, "PCA"))
+  plotPCA(sce, size_by = "detected")
+}
 ```
 
 ### tSNE
 ```{r Data visualization before QC - tSNE, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
 set.seed(123456)
 sce <- runTSNE(sce, exprs_values = "logcounts_raw", perplexity = 130)
-plotTSNE(sce, colour_by = "batch", size_by = "detected", shape_by = "individual")
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  plotTSNE(sce, colour_by = params$colour_by, size_by = "detected", shape_by = params$shape_by_1)
+} else{
+  plotTSNE(sce, size_by = "detected")
+}
 ```
 
 ## Data visualization after QC
@@ -151,14 +177,23 @@ plotTSNE(sce, colour_by = "batch", size_by = "detected", shape_by = "individual"
 ```{r Data visualization after QC - PCA, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
 sce.qc <- runPCA(sce.qc, exprs_values = "logcounts_raw")
 dim(reducedDim(sce.qc, "PCA"))
-plotPCA(sce.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  plotPCA(sce.qc, colour_by = params$colour_by, size_by = "detected", shape_by = params$shape_by_1)
+} else{
+  plotPCA(sce.qc, size_by = "detected")
+}
+
 ```
 
 ### tSNE
 ```{r Data visualization after QC - tSNE, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
 set.seed(123456)
 sce.qc <- runTSNE(sce.qc, exprs_values = "logcounts_raw", perplexity = 130)
-plotTSNE(sce.qc, colour_by = "batch", size_by = "detected", shape_by = "individual")
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  plotTSNE(sce.qc, colour_by = params$colour_by, size_by = "detected", shape_by = params$shape_by_1)
+} else{
+  plotTSNE(sce.qc, size_by = "detected")
+}
 ```
 
 ## Identifying Confounding Factors
@@ -167,7 +202,11 @@ plotTSNE(sce.qc, colour_by = "batch", size_by = "detected", shape_by = "individu
 sce.qc <- runPCA(sce.qc, exprs_values = "logcounts_raw")
 dim(reducedDim(sce.qc, "PCA"))
 
-plotPCA(sce.qc, colour_by = "batch", size_by = "sum", shape_by = "individual")
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  plotPCA(sce.qc, colour_by = params$colour_by, size_by = "sum", shape_by = params$shape_by_1)
+} else{
+  plotPCA(sce.qc, size_by = "sum")
+}
 ```
 
 ### Detected genes
@@ -181,9 +220,14 @@ logcounts(sce.qc) <- NULL
 
 ## Explanatory Variables
 ```{r Explanatory Variables, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
-plotExplanatoryVariables(sce.qc,exprs_values = "logcounts_raw",
-                         variables = c("detected","sum","batch",
-                                       "individual","altexps_ERCC_percent","subsets_Mito_percent"))
+if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by_1 %in% names(rowData(sce))) && params$colour_by %in% names(rowData(sce))){
+  plotExplanatoryVariables(sce.qc,exprs_values = "logcounts_raw",
+                          variables = c("detected","sum",params$colour_by,
+                                        params$shape_by_1,"altexps_ERCC_percent","subsets_Mito_percent"))
+} else {
+  plotExplanatoryVariables(sce.qc,exprs_values = "logcounts_raw",
+                          variables = c("detected","sum","altexps_ERCC_percent","subsets_Mito_percent"))
+}
 ```
 
 ## Save SingleCellExperiment object

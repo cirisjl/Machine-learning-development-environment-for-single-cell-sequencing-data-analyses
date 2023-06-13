@@ -84,7 +84,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_celery_api
-    command: python3 main.py # run -h 0.0.0.0
+    command: python3 main.py
     restart: always
     ports:
       - 5000:5000
