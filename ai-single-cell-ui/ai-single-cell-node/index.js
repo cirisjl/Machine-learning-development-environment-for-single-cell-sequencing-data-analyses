@@ -502,10 +502,8 @@ app.get('/download', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
 
-    if (!forResultFile)
-        filePath = `${storageDir}/${username}/${fileUrl}`;
-    else
-        filePath = `${intermediateStorage}/${fileUrl}`;
+    filePath = `${storageDir}/${username}/${fileUrl}`;
+  
 
     console.log('file: ' + filePath);
     const fileStat = await fs.promises.stat(filePath);
@@ -659,13 +657,11 @@ app.get('/getDirContents', async (req, res) => {
 
         subdir = req.query.subdir;
 
-        if (usingFor === 'resultFiles')
-            var directoryPath = path.join(intermediateStorage + "/" + dirPath + "/");
-        else {
-            var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
-            if (subdir != undefined)
-                directoryPath = path.join(storageDir + uid + "/", subdir);
-        }
+        var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
+        
+        if (subdir != undefined)
+            directoryPath = path.join(storageDir + uid + "/", subdir);
+
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
         const fileList = [];
@@ -844,7 +840,8 @@ app.get('/preview/datasets', (req, res) => {
                             reference,
                             summary,
                             files: [],
-                            direc
+                            direc,
+                            dataset_id
                         };
                     }
                     datasets[dataset_id].files.push({
@@ -880,7 +877,7 @@ app.get('/api/tools/leftnav', function (req, res) {
 });
 
 app.post('/createTask', (req, res) => {
-    const { authToken, workflow, taskId } = req.body;
+    const {taskId, datasetId, method, authToken, outputPath} = req.body;
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
@@ -908,14 +905,12 @@ app.post('/createTask', (req, res) => {
 
                 const date = new Date();
                 const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-                connection.query('INSERT INTO task (user_id, dataset_id, task_id, workflow, created_datetime) VALUES (?, ?, ?, ?, ?)', [userId, 31, taskId, workflow, timestamp], function (err, taskResult) {
+                connection.query('INSERT INTO task (task_id, user_id, tool, dataset_id, results_path, created_datetime) VALUES (?, ?, ?, ?, ?, ?)', [taskId, userId, method, datasetId, outputPath, timestamp], function (err, taskResult) {
                     if (err) {
                         connection.rollback(function () {
                             throw err;
                         });
                     } else {
-                        const taskId = taskResult.insertId;
-
                         // Commit transaction
                         connection.commit(function (err) {
                             if (err) {
@@ -998,7 +993,7 @@ app.get('/getTasks', (req, res) => {
                     return;
                 }
 
-                connection.query('SELECT task_id, workflow, dataset_id, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
+                connection.query('SELECT task_id, results_path, tool, dataset_id, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
                     if (err) {
                         connection.rollback(function () {
                             throw err;

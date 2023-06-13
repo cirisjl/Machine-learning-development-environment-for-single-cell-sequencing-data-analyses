@@ -2,6 +2,8 @@ from celery import current_app as current_celery_app
 from celery.result import AsyncResult
 
 from .celery_config import settings
+from constants.declarations import USER_STORAGE
+import os
 
 
 def create_celery():
@@ -29,3 +31,20 @@ def get_task_info(task_id):
         "task_result": task_result.result
     }
     return result
+
+def get_input_path(input, userID):
+    """
+    return the absolute input path for a given input
+    """
+    if input is not None and userID is not None:
+        input_path = USER_STORAGE + userID + input
+        return input_path
+
+
+def get_output_path(output, userID):
+    """
+    return the absolute input path for a given input
+    """
+    if output is not None and userID is not None:
+        output_path = USER_STORAGE + userID + output
+        return output_path

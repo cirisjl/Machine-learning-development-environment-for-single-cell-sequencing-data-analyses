@@ -5,7 +5,7 @@ import { faEye, faDownload } from '@fortawesome/free-solid-svg-icons';
 import FilePreviewModal from './filePreviewModal';
 import { useNavigate } from 'react-router-dom';
 
-export default function IntermediateFiles({ taskId }) {
+export default function IntermediateFiles({ taskId, results_path }) {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function IntermediateFiles({ taskId }) {
 
   useEffect(() => {
     async function fetchFiles() {
-      const response = await fetch(`${SERVER_URL}/getDirContents?dirPath=${taskId}&authToken=${jwtToken}&usingFor=resultFiles`);
+      const response = await fetch(`${SERVER_URL}/getDirContents?dirPath=${results_path}&authToken=${jwtToken}&usingFor=resultFiles`);
       const data = await response.json();
       setFiles(data.Files);
     }
@@ -37,7 +37,7 @@ export default function IntermediateFiles({ taskId }) {
     const apiUrl = `${SERVER_URL}/download`;
 
     const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-    fetch(`${apiUrl}?fileUrl=/${taskId}/${fileUrl}&authToken=${jwtToken}&forResultFile=Yes`)
+    fetch(`${apiUrl}?fileUrl=${results_path}/${fileUrl}&authToken=${jwtToken}&forResultFile=Yes`)
       .then(response => {
         return response.blob();
       })

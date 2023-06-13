@@ -14,7 +14,7 @@ const MyTasksSideNav = () => {
     let jwtToken = getCookie('jwtToken');
     const navigate = useNavigate();
     const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
-    const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:80/taskStatus`;
+    const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5000/taskStatus`;
 
     useEffect(() => {
         if (jwtToken && expanded) {
@@ -50,16 +50,16 @@ const MyTasksSideNav = () => {
                         const data = JSON.parse(event.data);
                         Object.keys(data).forEach(taskId => {
                             const status = data[taskId];
-                            if (status === 'complete') {
+                            if (status === 'Success') {
                                 finishedTasks.push(taskId);
                             }
-                            else if (status === 'fail') {
+                            else if (status === 'Failed') {
                                 failedTasks.push(taskId);
                             }
                         });
                         if (finishedTasks.length + failedTasks.length > 0) {
-                            await updateTaskStatus(failedTasks, 'fail');
-                            await updateTaskStatus(finishedTasks, 'complete');
+                            await updateTaskStatus(failedTasks, 'Failed');
+                            await updateTaskStatus(finishedTasks, 'Success');
                             // Close the WebSocket connection
                             socket.close(1000, 'See you again!');
                             setChangesFound(!changesFound);
@@ -124,9 +124,9 @@ const MyTasksSideNav = () => {
                                 }}
                                     onMouseEnter={(e) => { e.target.style.backgroundColor = '#f2f2f2' }} // Change background color on hover
                                     onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent' }} // Revert back to initial background color on mouse leave 
-                                    onClick={() => navigate('/resultfiles', { state: { taskId: task.task_id } })} key={index}>{task.status === 'complete' ? (
+                                    onClick={() => navigate('/resultfiles', { state: { taskId: task.taskId, results_path: task.results_path} })} key={index}>{task.status === 'Success' ? (
                                         <CheckCircleIcon style={{ color: 'green' }} />
-                                    ) : task.status === 'fail' ? (
+                                    ) : task.status === 'Failed' ? (
                                         <CancelIcon style={{ color: 'red' }} />
                                     ) : (
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />

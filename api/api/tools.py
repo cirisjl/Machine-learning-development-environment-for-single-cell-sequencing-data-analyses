@@ -7,13 +7,17 @@ from tools.qc.dropkick_qc import dropkick_qc
 # sys.path.append('..')
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
+from config.celery_utils import get_input_path, get_output_path
 
-
-def qc(dataset, input, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
+def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
     if methods is None:
         print("No imputation method is selected.")
         return None   
     
+    #Get the absolute path for the given input
+    input = get_input_path(input, userID)
+    #Get the absolute path for the given output
+    output = get_output_path(output, userID)
     methods = [x.upper() for x in methods if isinstance(x,str)]
     
     if "SCANPY" in methods or "DROPKICK" in methods:

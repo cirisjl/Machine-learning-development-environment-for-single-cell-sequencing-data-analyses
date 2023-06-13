@@ -92,6 +92,7 @@ services:
       - Predictions:/data/results
       - Uploads:/data/upload
       - Errors:/data/errors
+      - user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     env_file:
@@ -121,7 +122,9 @@ services:
     volumes:
       - Predictions:/data/results
       - Uploads:/data/upload
-      - Errors:/data/errors
+      - Errors:/data/error
+      - user_storage:/usr/src/app/storage/
+
     networks:
       - oscb-network
     depends_on:
@@ -151,6 +154,7 @@ services:
       - Predictions:/data/results
       - Uploads:/data/upload
       - Errors:/data/errors
+      - user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -180,6 +184,7 @@ services:
       - Predictions:/data/results
       - Uploads:/data/upload
       - Errors:/data/errors
+      - user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:

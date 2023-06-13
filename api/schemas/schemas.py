@@ -7,6 +7,7 @@ class Dataset(BaseModel):
     dataset: str
     input: str
     output: str
+    userID: str
     output_format: str
     methods: List[str] = None
     default_assay: Optional[str] = 'RNA'
