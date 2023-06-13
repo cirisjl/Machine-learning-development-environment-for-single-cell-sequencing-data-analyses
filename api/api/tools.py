@@ -7,7 +7,7 @@ from tools.qc.dropkick_qc import dropkick_qc
 # sys.path.append('..')
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
-from config.celery_utils import get_input_path, get_output_path
+from config.celery_utils import get_input_path, get_output
 
 def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
     if methods is None:
@@ -17,7 +17,7 @@ def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrubl
     #Get the absolute path for the given input
     input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output_path(output, userID)
+    output = get_output(output, userID)
     methods = [x.upper() for x in methods if isinstance(x,str)]
     
     if "SCANPY" in methods or "DROPKICK" in methods:
@@ -30,7 +30,7 @@ def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrubl
         if "SCANPY" in methods:
             try:
                 adata = scanpy_qc(adata)
-                output = output_path_check(dataset, output, method='scanpy')
+                output = get_output_path(dataset, output, method='scanpy')
                  # Save AnnData object
                 adata.write_h5ad(output, compression='gzip')
                 print("AnnData object for Scanpy QC is saved successfully")
@@ -42,7 +42,7 @@ def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrubl
         if "DROPKICK" in methods:
             try:
                 adata = dropkick_qc(adata)
-                output = output_path_check(dataset, output, method='dropkick')
+                output = get_output_path(dataset, output, method='dropkick')
                  # Save AnnData object
                 adata.write_h5ad(output, compression='gzip')
                 print("AnnData object for Dropkick QC is saved successfully")
@@ -53,7 +53,7 @@ def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrubl
     # Bioconductor QC
     if "BIOCONDUCTOR" in methods:
         try:
-            output = output_path_check(dataset, output, method='Bioconductor', format='SingleCellExperiment')
+            output = get_output_path(dataset, output, method='Bioconductor', format='SingleCellExperiment')
             report_path = get_report_path(dataset, output, "Bioconductor")
             bioconductor_path = os.path.abspath("bioconductor_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + bioconductor_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', output_format='SingleCellExperiment'), output_file='" + report_path + "')\""], shell = True)
@@ -65,7 +65,7 @@ def qc(dataset, input, userID, output, methods, path_of_scrublet_calls='./scrubl
     # Seurat QC
     if "SEURAT" in methods:
         try:
-            output = output_path_check(dataset, output, method='Seurat')
+            output = get_output_path(dataset, output, method='Seurat')
             report_path = get_report_path(dataset, output, "Seurat")
             seurat_path = os.path.abspath("seurat_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + seurat_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', output_format='SingleCellExperiment', path_of_scrublet_calls='" + path_of_scrublet_calls + "'), output_file='" + report_path + "')\""], shell = True)
@@ -82,7 +82,7 @@ def normalize(dataset, input, output, methods, default_assay='RNA', output_forma
     if methods is None:
         print("No normalization method is selected.")
         return None
-    output = output_path_check(dataset, output)
+    output = get_output_path(dataset, output)
     methods = list_py_to_r(methods)
 
     try:
@@ -101,7 +101,7 @@ def impute(dataset, input, output, methods, layer=None, genes=None, ncores=12, s
     if methods is None:
         print("No imputation method is selected.")
         return None
-    output = output_path_check(dataset, output)
+    output = get_output_path(dataset, output)
     methods = [x.upper() for x in methods if isinstance(x,str)]
     adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
          

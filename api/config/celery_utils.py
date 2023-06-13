@@ -41,7 +41,7 @@ def get_input_path(input, userID):
         return input_path
 
 
-def get_output_path(output, userID):
+def get_output(output, userID):
     """
     return the absolute input path for a given input
     """
