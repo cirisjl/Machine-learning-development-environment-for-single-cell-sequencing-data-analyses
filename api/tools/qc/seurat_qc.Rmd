@@ -6,7 +6,8 @@ params:
   dataset: NA
   input: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the Seurat object.
-  path_of_scrublet_calls: ./scrublet_calls.tsv
+  path_of_scrublet_calls: NA
+  default_assay: RNA
   output_format: Seurat
   show_code: FALSE
   show_warning: FALSE
@@ -31,7 +32,7 @@ if(is.null(params$input)) stop("Inupt_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
 srat <- tryCatch(
-    load_seurat(params$input),
+    load_seurat(params$input, project=params$dataset),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -39,7 +40,7 @@ srat <- tryCatch(
   )
 if(is.null(srat)) stop("The file format is not supported.")
 if(!params$default_assay %in% names(x = srat)) stop(paste(params$default_assay, "does not exist."))
-DefaultAssay(object = srat) <- params$default_assay
+DefaultAssay(object = srat) <- ifelse((is.null(params$default_assay)|||| is.na(params$default_assay)), "RNA", params$default_assay)
 print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
 srat
 
@@ -75,6 +76,7 @@ FeatureScatter(srat, feature1 = "nFeature_RNA", feature2 = "Doublet_score")
 ```
 ### Identifying filtering cutoff
 ```{r Identifying filtering cutoff, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+
 srat[['QC']] <- ifelse(srat@meta.data$Is_doublet == 'True','Doublet','Pass')
 srat[['QC']] <- ifelse(srat@meta.data$nFeature_RNA < 500 & srat@meta.data$QC == 'Pass','Low_nFeature',srat@meta.data$QC)
 srat[['QC']] <- ifelse(srat@meta.data$nFeature_RNA < 500 & srat@meta.data$QC != 'Pass' & srat@meta.data$QC != 'Low_nFeature',paste('Low_nFeature',srat@meta.data$QC,sep = ','),srat@meta.data$QC)
