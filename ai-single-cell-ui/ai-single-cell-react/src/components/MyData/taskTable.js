@@ -94,16 +94,16 @@ const TaskTable = () => {
                     const data = JSON.parse(event.data);
                     Object.keys(data).forEach(taskId => {
                         const status = data[taskId];
-                        if (status === 'complete') {
+                        if (status === 'Success') {
                             finishedTasks.push(taskId);
                         }
-                        else if (status === 'fail') {
+                        else if (status === 'Failed') {
                             failedTasks.push(taskId);
                         }
                     });
                     if (finishedTasks.length + failedTasks.length > 0) {
-                        await updateTaskStatus(failedTasks, 'fail');
-                        await updateTaskStatus(finishedTasks, 'complete');
+                        await updateTaskStatus(failedTasks, 'Failed');
+                        await updateTaskStatus(finishedTasks, 'Success');
                         // Close the WebSocket connection
                         socket.close(1000, 'See you again!');
                         setChangesFound(!changesFound);
@@ -145,7 +145,7 @@ const TaskTable = () => {
                     <TableHeader>
                         <TableRow>
                             <TableHeaderCell>Task ID</TableHeaderCell>
-                            <TableHeaderCell>Workflow</TableHeaderCell>
+                            <TableHeaderCell>Tool</TableHeaderCell>
                             <TableHeaderCell>Created</TableHeaderCell>
                             <TableHeaderCell>Finished</TableHeaderCell>
                             <TableHeaderCell>Dataset ID</TableHeaderCell>
@@ -161,7 +161,7 @@ const TaskTable = () => {
                                         {task.task_id}
                                     </Typography>
                                 </TableCell>
-                                <TableCell>{task.workflow}</TableCell>
+                                <TableCell>{task.tool}</TableCell>
                                 <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</TableCell>
                                 <TableCell>
                                     {task.finish_datetime ? (
@@ -172,16 +172,19 @@ const TaskTable = () => {
                                 </TableCell>
                                 <TableCell>{task.dataset_id}</TableCell>
                                 <TableCell style={{ textAlign: 'center' }}>
-                                    {task.status === 'complete' ? (
+                                    {task.status === 'Success' ? (
                                         <CheckCircleIcon style={{ color: 'green' }} />
-                                    ) : task.status === 'fail' ? (
+                                    ) : task.status === 'Failed' ? (
                                         <CancelIcon style={{ color: 'red' }} />
                                     ) : (
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                     )}
                                 </TableCell>
                                 {task.status ? (
-                                    <TableCell><a onClick={() => navigate('/resultfiles', { state: { taskId: task.task_id } })}>View</a></TableCell>
+                                <TableCell>                                    
+                                    <a href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                    style={{ textDecoration: 'none', color: 'inherit' }}> View</a></TableCell>
+                                     
                                 ) : (
                                     <TableCell></TableCell>
                                 )}

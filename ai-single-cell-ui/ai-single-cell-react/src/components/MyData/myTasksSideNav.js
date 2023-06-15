@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { faArrowUpRightFromSquare, faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare, faAngleRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getCookie } from '../../utils/utilFunctions';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
@@ -115,7 +115,21 @@ const MyTasksSideNav = () => {
                 </div>
                 {expanded && (
                     <div className="content">
-                        <div style={{ maxHeight: '360px', overflow: 'auto' }}><ul>
+                        <div style={{ maxHeight: '360px', overflow: 'auto' }}>
+
+                        {tasks.length === 0 ? (
+                            <div>
+                                <div>
+                                    <div role="alert" aria-live="polite" aria-atomic="true" class="alert m-2 alert-info">
+                                        <h4 class="mb-1">
+                                            <FontAwesomeIcon icon={faInfoCircle} />
+                                            <span>Your task list is empty.</span>
+                                        </h4> 
+                            </div>
+                            </div>
+                            </div>
+                        ) : (
+                            <ul>
                             {tasks.map((task, index) => (
                                 <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
@@ -124,7 +138,12 @@ const MyTasksSideNav = () => {
                                 }}
                                     onMouseEnter={(e) => { e.target.style.backgroundColor = '#f2f2f2' }} // Change background color on hover
                                     onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent' }} // Revert back to initial background color on mouse leave 
-                                    onClick={() => navigate('/resultfiles', { state: { taskId: task.taskId, results_path: task.results_path} })} key={index}>{task.status === 'Success' ? (
+                                    key={index}>
+                                      <a
+                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                    > 
+                                        {task.status === 'Success' ? (
                                         <CheckCircleIcon style={{ color: 'green' }} />
                                     ) : task.status === 'Failed' ? (
                                         <CancelIcon style={{ color: 'red' }} />
@@ -132,9 +151,12 @@ const MyTasksSideNav = () => {
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                     )}
                                     &nbsp;{task.task_id}
+                                    </a>
                                 </li>
                             ))}
-                        </ul></div>
+                        </ul>
+                        )}
+                        </div>
                     </div>
                 )}
             </div>

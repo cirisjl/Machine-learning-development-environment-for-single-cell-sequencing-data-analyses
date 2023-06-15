@@ -37,7 +37,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (1,'Formatting'),(2,'Quality Control'),(3,'Normalization'),(4,'Imputation'),(5,'Batch Correction'),(6,'Models'),(7,'Reduction'),(8,'Evaluation');
+INSERT INTO `categories` VALUES (1,'Quality Control'),(2,'Imputation'),(3,'Normalization');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -56,7 +56,7 @@ CREATE TABLE `dataset` (
   `summary` varchar(200) DEFAULT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`dataset_id`),
-  UNIQUE KEY `title_UNIQUE` (`title`),
+  UNIQUE KEY `title_UNIQUE` (`title`,  `user_id`),
   KEY `user_id_fk_idx` (`user_id`),
   CONSTRAINT `user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -891,7 +891,7 @@ CREATE TABLE `filters` (
 
 LOCK TABLES `filters` WRITE;
 /*!40000 ALTER TABLE `filters` DISABLE KEYS */;
-INSERT INTO `filters` VALUES (1,1,'File Conversion'),(2,2,'Bioconductor'),(3,2,'Scanpy'),(4,2,'Seurat'),(5,3,'LogCPM'),(6,3,'Scanpy'),(7,3,'sctransform'),(8,3,'DEseq2'),(9,3,'scran'),(10,3,'TMM'),(11,3,'TPM'),(12,3,'RPKM'),(13,4,'MAGIC'),(14,4,'SAVER'),(15,4,'scGNN'),(16,5,'Harmony'),(17,5,'LIGER'),(18,5,'Seurat'),(19,6,'scGNN'),(20,6,'DEEPMAPS'),(21,6,'RESEPT'),(22,6,'Seurat'),(23,6,'scvi'),(24,7,'PCA'),(25,7,'UMAP'),(26,7,'t-SNE'),(27,7,'VAE'),(28,8,'Clustering'),(29,8,'Cell-cell communication'),(30,2,'Dropkick');
+INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,2,'scGNN'),(8,3,'LogCPM'),(9,3,'LogCP10K'),(10,3,'sctransform'),(11,3,'DEseq2'),(12,3,'scran'),(13,3,'TMM'),(14,3,'RLE'),(15,3,'UQ'),(16,3,'UPPERQUARTILE'),(17,3,'TPM'),(18,3,'FPKM'),(19,3,'PEARSON_RESIDUALS');
 /*!40000 ALTER TABLE `filters` ENABLE KEYS */;
 UNLOCK TABLES;
 

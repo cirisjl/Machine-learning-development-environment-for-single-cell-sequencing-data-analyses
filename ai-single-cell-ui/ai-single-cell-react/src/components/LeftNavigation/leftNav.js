@@ -17,7 +17,7 @@ function LeftNav(props) {
         const updatedCategories = data.map((category, index) => {
           return {
             ...category,
-            expanded: index < 2 // Set the first 4 categories to be expanded by default
+            expanded: index < 3 // Set the first 4 categories to be expanded by default
           };
         });
         setCategories(updatedCategories);
