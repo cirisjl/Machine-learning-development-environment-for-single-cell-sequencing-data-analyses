@@ -7,13 +7,22 @@ from tools.qc.dropkick_qc import dropkick_qc
 from tools.qc.scrublet_calls import predict_scrublet
 # sys.path.append('..')
 from tools.formating.formating import *
+from config.celery_utils import get_input_path, get_output
 
-def run_qc(dataset, input, methods, idtype='SYMBOL', colour_by='NULL', shape_by_1='NULL', shape_by_2='NULL', default_assay='RNA', show_error=True):
+
+def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='NULL', shape_by_1='NULL', shape_by_2='NULL', default_assay='RNA', show_error=True):
     if methods is None:
         print("No quality control method is selected.")
         return None   
     
+
+     #Get the absolute path for the given input
+    input = get_input_path(input, userID)
+    #Get the absolute path for the given output
+    output = get_output(output, userID)
     methods = [x.upper() for x in methods if isinstance(x,str)]
+
+
     
     if "SCANPY" in methods or "DROPKICK" in methods:
         adata = load_anndata(input)
@@ -26,7 +35,7 @@ def run_qc(dataset, input, methods, idtype='SYMBOL', colour_by='NULL', shape_by_
         if "SCANPY" in methods:
             try:
                 adata = scanpy_qc(adata)
-                output_path = get_output_path(dataset, input, method='scanpy')
+                output_path = get_output_path(dataset, output, method='scanpy')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
                 print("AnnData object for Scanpy QC is saved successfully")
