@@ -86,11 +86,6 @@ function RightRail() {
         </div>
         <div className="results-window">
         <MyTasksSideNav/>
-        <div><div><div role="alert" aria-live="polite" aria-atomic="true" class="alert m-2 alert-info"><h4 class="mb-1"><FontAwesomeIcon icon={faInfoCircle} /><span>This history is empty.</span></h4> <p><a href="#">You can load your own data</a> <span>or</span> <a href="#">get data from an external source</a>.
-            </p>
-        </div>
-        </div>
-        </div>
 
         </div>
         </div>

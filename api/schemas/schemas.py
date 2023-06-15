@@ -12,7 +12,7 @@ class Dataset(BaseModel):
     methods: List[str] = None
     default_assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    # path_of_scrublet_calls: Optional[str] = './scrublet_calls.tsv'
+    path_of_scrublet_calls: Optional[str] = './scrublet_calls.tsv'
     species: Optional[str] = None
     idtype: Optional[str] = None 
     genes: Optional[List[str]] = None

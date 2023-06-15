@@ -1,48 +1,89 @@
 {
-    "type": "object",
-    "properties": {
-      "methodUsedForNormalization": {
-        "type": "object",
-        "title": "Method Used for BioConductor",
-        "required": [
-            "method",
-            "howTONormalizeLayers"
-          ],
-        "properties": {
-          "method": {
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type":"object",
+      "title": "Parameters for Quality Control",  
+      "required": [
+        "methods",
+      "output_format"   
+       ],
+      "properties": {
+        "methods": {
+          "type": "array",
+          "title": "Method",
+          "items": {
             "type": "string",
-            "title": "Method",
-            "enum": ["Normalize counts per cell, using 'pp.normalize_total'", "Normalization and filtering as of Zheng et al. (2017), using 'pp.recipe_zheng17'", "Normalization and filtering as of Weinreb et al (2017), using 'pp.recipe_weinreb17'", "Normalization and filtering as of Seurat et al (2015), using 'pp.recipe_seurat'"]
+            "enum": ["Bioconductor"]
           },
-          "targetSum": {
-            "type": "integer",
-            "title": "Target sum - Optional",
-            "description": "If not provided, after normalization, each observation (cell) has a total count equal to the median of the total counts (cells) before normalization. (target_sum)"
-          },
-          "excludeParam": {
-            "type" : "string",
-            "title": "Exclude (very) highly expressed genes for the computation of the normalization factor (size factor) for each cell",
-            "enum": ["Yes", "No"],
-            "description": "A gene is considered highly expressed, if it has more than max_fraction of the total counts in at least one cell. The not-excluded genes will sum up to target_sum (exclude_highly_expressed)"
+          "default": ["Bioconductor"],
+          "uniqueItems": true
         },
-        "nameOfTheField": {
-            "type" : "string",
-            "title": "Name of the field in 'adata.obs' where the normalization factor is stored - Optional",
-            "description": "(key_added)"
+        "output_format": { 
+          "type": "string",
+          "title": "Output Format",
+          "description": "Some more details about the parameter",
+          "enum": [".h5ad", ".rds", ".h5Seurat"]
+         },
+        "default_assay": { 
+          "type": "string",
+           "default": "RNA",
+           "title": "Default Assay",
+           "description": "Some more details about the parameter"
+           },
+        "layer": { 
+          "type": "string" ,
+          "title": "Layer",
+          "description": "Some more details about the parameter"
         },
-        "layersToNormalize": {
-            "type" : "string",
-            "title": "List of layers to normalize - Optional",
-            "description": "'All' will normalize all layers. The list should be comma-separated. (layers)"
+        "path_of_scrublet_calls": { 
+          "type": "string", 
+          "default": "./scrublet_calls.tsv",
+          "title": "Path of Scrublet Calls",
+          "description": "Some more details about the parameter" 
         },
-        "howTONormalizeLayers": {
-            "type" : "string",
-            "title": "How to normalize layers?",
-            "enum": ["None: after normalization, for each layer in layers each cell has a total count equal to the median of the total counts (cells) before normalization of the layer", "After: for each layer in layers each cell has a total count equal to target_sum", "X: for each layer in layers each cell has a total count equal to the median of total counts for observations (cells) of adata.X before normalization."],
-            "description": "(layer_norm)"
-        }
+        "species": { 
+          "type": "string",
+          "title": "Species Type",
+          "enum": ["human", "mouse"]
+         },
+        "idtype": {
+           "type": "string",
+           "title": "ID Type",
+           "description": "Some more details about the parameter"
+         },
+        "genes": { 
+          "type": "array",
+          "title": "Genes List",
+          "description": "Some more details about the parameter",
+           "items": { 
+              "type": "string"
+            }
+        },
+        "ncores": { 
+          "type": "integer",
+          "title": "Cores",
+          "description": "Some more details about the parameter",
+          "default": 12,
+          "minimum": 1,
+          "maximum": 12,
+          "multipleOf": 1
+        },
+        "show_umap": {
+          "type": "boolean",
+          "title": "Do you want to analyse umap after processing ?",
+          "default": true,
+          "format": "switch",
+          "description": "Some description about the umap"
+        },
+        "show_error": {
+          "type": "boolean",
+          "title": "Do you want to see the errors of the task execution ?",
+          "default": true,
+          "format": "switch",
+          "description": "Some description about the boolean flag"
         }
       }
     }
   }
-  
+}
