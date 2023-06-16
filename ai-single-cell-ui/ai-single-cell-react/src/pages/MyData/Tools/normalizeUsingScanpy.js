@@ -8,18 +8,11 @@ import React, { useState } from 'react';
 export default function NormalizeUsingScanpy() {
 
     const [selectedFilter, setSelectedFilter] = useState(null);
+    const [category, setCategory] = useState(null);
   
-    const handleFilterSelection = (filterName) => {
-      setSelectedFilter(filterName);
-  
-    //   // Dynamically import the schema file based on the filter name
-    //   import(`./schemas/${filterName}.json`)
-    //     .then((module) => {
-    //       setFilterSchema(module.default);
-    //     })
-    //     .catch((error) => {
-    //       console.error('Error loading filter schema:', error);
-    //     });
+    const handleFilterSelection = (category, filter) => {
+      setSelectedFilter(category+ "_" + filter);
+      setCategory(category);
     };
   
     return(
@@ -30,7 +23,7 @@ export default function NormalizeUsingScanpy() {
       {/* Render the selected filter details in the middle of the page */}
       {selectedFilter && (
         <div className="filter-details-tools main-content">
-          <ToolsDetailsComponent filter={selectedFilter} />
+          <ToolsDetailsComponent filter={selectedFilter} category={category}/>
         </div>
       )}
        {!selectedFilter && (
