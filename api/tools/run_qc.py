@@ -47,7 +47,7 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
         if "DROPKICK" in methods:
             try:
                 adata = dropkick_qc(adata)
-                output_path = get_output_path(dataset, input, method='dropkick')
+                output_path = get_output_path(dataset, output, method='dropkick')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
                 print("AnnData object for Dropkick QC is saved successfully")
@@ -58,7 +58,7 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
     # Bioconductor QC
     if "BIOCONDUCTOR" in methods:
         try:
-            output_path = get_output_path(dataset, input, method='Bioconductor', format='SingleCellExperiment')
+            output_path = get_output_path(dataset, output, method='Bioconductor', format='SingleCellExperiment')
             report_path = get_report_path(dataset, output_path, "Bioconductor")
             bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + bioconductor_path + "', params=list(dataset='" + str(dataset) + "', input_path='" + input + "', idtype='" + idtype + "', colour_by='" + colour_by + "', shape_by_1='" + shape_by_1 + "', shape_by_2='" + shape_by_2 + "', output='" + output_path + "', output_format='SingleCellExperiment'), output_file='" + report_path + "')\""], shell = True)
@@ -71,7 +71,7 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
     if "SEURAT" in methods:
         try:
             path_of_scrublet_calls = predict_scrublet(input)
-            output_path = get_output_path(dataset, input, method='Seurat', format='Seurat')
+            output_path = get_output_path(dataset, output, method='Seurat', format='Seurat')
             report_path = get_report_path(dataset, output_path, "Seurat")
             seurat_path = os.path.abspath("seurat_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + seurat_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', default_assay='" + default_assay + "', output='" + output_path + "', output_format='Seurat', path_of_scrublet_calls='" + path_of_scrublet_calls + "'), output_file='" + report_path + "')\""], shell = True)
