@@ -56,7 +56,7 @@ function LeftNav(props) {
             }`}
           >
             {category.filters.map(filter => (
-              <li key={filter} className='filter-level-li' onClick={() => handleFilterSelection(category.category_name.toLowerCase().replace(/\s/g, '_') + "_" + filter.toLowerCase())}>{filter}</li>
+              <li key={filter} className='filter-level-li' onClick={() => handleFilterSelection(category.category_name.toLowerCase().replace(/\s/g, '_'), filter.toLowerCase())}>{filter}</li>
             ))}
           </ul>
             )}

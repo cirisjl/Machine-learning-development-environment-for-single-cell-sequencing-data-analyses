@@ -13,12 +13,21 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
+    const filterCategory = props.category;
+
+    const filterCategoryMap = {
+      quality_control: '/tools/qc',
+      normalization: '/tools/normalize',
+      imputation: '/tools/impute',
+      // Add more filter categories and their corresponding URL paths as needed
+    };
 
     console.log(filterName);
 
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
     const [filterSchema, setFilterSchema] = useState(null);
+    const [UIfilterSchema, setUIFilterSchema] = useState(null);
     const [selectedDataset, setSelectedDataset] = useState([]);
     const [formErrors, setFormErrors] = useState("");
 
@@ -35,66 +44,6 @@ export default function ToolsDetailsComponent(props) {
         return output;
     };
 
-    const uiSchema = {
-      "parameters": {
-        "classNames": "category",
-          "output_format": {
-            "classNames": "sub-category",
-            "ui:widget": "select",
-            "ui:placeholder": "Select file format"
-          },
-          "methods": {
-            "classNames": "sub-category",
-            // "ui:widget": "select",
-            "ui:placeholder": "Select a method",
-            'ui:widget': () => (
-              <div className='common-row-wrap'>
-                <select>
-                  <option>Scanpy</option>
-                </select>
-          </div>
-            ),
-          },
-          "default_assay": {
-            "classNames": "sub-category",
-            'ui:widget': () => (
-              <div className='common-row-wrap'>
-                <span data-v-22825496="" class="ui-form-title-message warning"> * Optional </span>
-                <input type='text' />
-          </div>
-            ),
-          },
-          "layer": {
-            "classNames": "sub-category"
-          },
-          "path_of_scrublet_calls": {
-            "classNames": "sub-category"
-          },
-          "species": {
-            "classNames": "sub-category",
-            "ui:placeholder": "Select species type"
-          },
-          "idtype": {
-            "classNames": "sub-category"
-          },
-          "genes": {
-            "classNames": "sub-category",
-          },
-          "ncores": {
-            "classNames": "sub-category",
-            "ui:widget": "range",
-          },
-          "show_umap": {
-            "classNames": "sub-category",
-            "ui:widget": "toggle"
-          },
-          "show_error": {
-            "classNames": "sub-category",
-            "ui:widget": "toggle"
-          }
-      }
-    };
-    
       const widgets = {
         toggle: (props) => (
           <Toggle
@@ -135,7 +84,8 @@ export default function ToolsDetailsComponent(props) {
           .then((authData) => {
             if (authData.isAuth) {
               formData.userID = authData.username;
-              fetch(CELERY_BACKEND_API + '/tools/qc', {
+              const RELATIVE_PATH = filterCategoryMap[filterCategory];
+              fetch(CELERY_BACKEND_API + RELATIVE_PATH, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -248,7 +198,17 @@ export default function ToolsDetailsComponent(props) {
       console.error('Error loading filter schema:', error);
       setFilterSchema(null);
     });
-  }, [filterName, filterSchema]);
+
+    import(`./../../../schema/UI-schema/Tools/${filterName}.js`)
+    .then((module) => {
+      setUIFilterSchema(module.uiSchema);
+      console.log(UIfilterSchema);
+    })
+    .catch((error) => {
+      console.error('Error loading UI filter schema:', error);
+      setUIFilterSchema(null);
+    });
+  }, [filterName, filterSchema, UIfilterSchema]);
 
   return (
     <div className='tools-container common-class-tools-and-workflows'>
@@ -270,7 +230,7 @@ export default function ToolsDetailsComponent(props) {
             formData={formData}
             widgets={widgets}
             onChange={({ formData }) => setFormData(formData)}
-            uiSchema={uiSchema}
+            uiSchema={UIfilterSchema}
             onSubmit={onSubmit}
         />
           ) : (
