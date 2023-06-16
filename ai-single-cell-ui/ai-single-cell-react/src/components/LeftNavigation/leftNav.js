@@ -5,7 +5,7 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 function LeftNav(props) {
   const [categories, setCategories] = useState([]);
 
-  const TOOLS_FILTERS = "http://localhost:3001";
+  const TOOLS_FILTERS = `http://${process.env.REACT_APP_HOST_URL}:3001`;
 
   const handleFilterSelection = props.handleFilterSelection
 
