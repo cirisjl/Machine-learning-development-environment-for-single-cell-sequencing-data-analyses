@@ -13,7 +13,7 @@ export const uiSchema = {
           'ui:widget': () => (
             <div className='common-row-wrap'>
               <select>
-                <option>Scanpy</option>
+                <option value="Scanpy">Scanpy</option>
               </select>
         </div>
           ),
