@@ -60,7 +60,17 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
         try:
             output_path = get_output_path(dataset, output, method='Bioconductor', format='SingleCellExperiment')
             report_path = get_report_path(dataset, output_path, "Bioconductor")
-            bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
+
+            # Get the absolute path of the current file
+            current_file = os.path.abspath(__file__)
+
+            # Construct the relative path to the desired file
+            relative_path = os.path.join(os.path.dirname(current_file), 'qc', 'bioconductor_qc.Rmd')
+
+            # Get the absolute path of the desired file
+            bioconductor_path = os.path.abspath(relative_path)
+            
+            # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + bioconductor_path + "', params=list(dataset='" + str(dataset) + "', input_path='" + input + "', idtype='" + idtype + "', colour_by='" + colour_by + "', shape_by_1='" + shape_by_1 + "', shape_by_2='" + shape_by_2 + "', output='" + output_path + "', output_format='SingleCellExperiment'), output_file='" + report_path + "')\""], shell = True)
             print(s)
         except Exception as e:
