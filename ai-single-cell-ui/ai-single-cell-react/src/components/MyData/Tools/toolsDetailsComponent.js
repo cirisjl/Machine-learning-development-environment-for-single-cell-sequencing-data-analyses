@@ -191,7 +191,10 @@ export default function ToolsDetailsComponent(props) {
   useEffect(() => {
     import(`./../../../schema/react-json-schema/Tools/${filterName}.json`)
     .then((module) => {
-      setFilterSchema(module.default);
+      setFilterSchema(JSON.parse(JSON.stringify(module.default)));
+      // setFilterSchema({...module.default});
+
+      console.log("react json schema")
       console.log(filterSchema);
     })
     .catch((error) => {
@@ -201,14 +204,16 @@ export default function ToolsDetailsComponent(props) {
 
     import(`./../../../schema/UI-schema/Tools/${filterName}.js`)
     .then((module) => {
-      setUIFilterSchema(module.uiSchema);
+      setUIFilterSchema(JSON.parse(JSON.stringify(module.uiSchema)));
+      // setUIFilterSchema({...module.uiSchema});
+      console.log("react json UI schema")
       console.log(UIfilterSchema);
     })
     .catch((error) => {
       console.error('Error loading UI filter schema:', error);
       setUIFilterSchema(null);
     });
-  }, [filterName, filterSchema, UIfilterSchema]);
+  },[filterName]);
 
   return (
     <div className='tools-container common-class-tools-and-workflows'>
@@ -224,7 +229,7 @@ export default function ToolsDetailsComponent(props) {
         <InputDataComponent handleDatasetChange={handleDatasetChange} formErrors={formErrors}/>
       </div>
             
-        {filterSchema ? (
+        {filterSchema && UIfilterSchema ? (
             <Form
             schema={filterSchema}
             formData={formData}
