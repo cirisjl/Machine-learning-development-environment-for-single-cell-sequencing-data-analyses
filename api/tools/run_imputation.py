@@ -3,12 +3,19 @@ import subprocess
 import sys
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
+from config.celery_utils import get_input_path, get_output
     
 
-def run_imputation(dataset, input, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+def run_imputation(dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     if methods is None:
         print("No imputation method is selected.")
         return None
+    
+    #Get the absolute path for the given input
+    input = get_input_path(input, userID)
+    #Get the absolute path for the given output
+    output = get_output(output, userID)
+
     methods = [x.upper() for x in methods if isinstance(x,str)]
     adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
          

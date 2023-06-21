@@ -13,13 +13,13 @@ def create_qc_task(self, dataset, input, userID, output, methods, path_of_scrubl
 
 @shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_normalization_task')
-def create_normalization_task(self, dataset, input, output, methods, default_assay='RNA', output_format='AnnData', species=None, idtype='ENSEMBL', show_error = True):
-    results = run_normalization(dataset, input, output, methods, default_assay='RNA', output_format='AnnData', species=None, idtype='ENSEMBL', show_error = True)
+def create_normalization_task(self, dataset, input, userID, output, methods, default_assay='RNA', output_format='AnnData', species=None, idtype='ENSEMBL',show_umap = True, show_error = True):
+    results = run_normalization(dataset, input, userID, output, methods, default_assay='RNA', output_format='AnnData', species=None, idtype='ENSEMBL', show_error = True)
     return results
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_imputation_task')
-def create_imputation_task(self, dataset, input, output, methods, layer=None, genes=None, ncores=12, show_error=True):
-    results = run_imputation(dataset, input, output, methods, layer=None, genes=None, ncores=12, show_error=True)
+def create_imputation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+    results = run_imputation(dataset, input, userID,  output, methods, layer=None, genes=None, ncores=12, show_error=True)
     return results
