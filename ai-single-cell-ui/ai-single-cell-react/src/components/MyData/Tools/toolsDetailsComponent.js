@@ -243,20 +243,25 @@ export default function ToolsDetailsComponent(props) {
           )}
 
           {loading && (
-            <div id="loadingIcon">
-              {/* Replace with your loading icon */}
-              <FontAwesomeIcon icon={faSpinner} spin />
-              <p>Loading...</p>
+            <div className='message-box loadingIcon' style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <FontAwesomeIcon icon={faSpinner} spin />
+                <p>Loading...</p>       
+              </div>
             </div>
           )}
-          {successMessage && (
-            <div id="tooltip" className="success">
-              {successMessage}
+          {successMessage && (  
+            <div className='message-box success' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p>{successMessage}</p>       
+              </div>
             </div>
           )}
           {errorMessage && (
-            <div id="tooltip" className="error">
-              {errorMessage}
+            <div className='message-box error' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p>{errorMessage}</p>       
+              </div>
             </div>
           )}
     </div>
