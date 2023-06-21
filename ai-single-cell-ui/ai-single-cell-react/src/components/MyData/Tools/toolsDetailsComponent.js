@@ -217,6 +217,28 @@ export default function ToolsDetailsComponent(props) {
 
   return (
     <div className='tools-container common-class-tools-and-workflows'>
+          {loading && (
+            <div className='message-box loadingIcon' style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <FontAwesomeIcon icon={faSpinner} spin />
+                <p>Loading...</p>       
+              </div>
+            </div>
+          )}
+          {successMessage && (  
+            <div className='message-box success' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p>{successMessage}</p>       
+              </div>
+            </div>
+          )}
+          {errorMessage && (
+            <div className='message-box error' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p>{errorMessage}</p>       
+              </div>
+            </div>
+          )}
       <div className="separator heading">
         <div className="stripe"></div> 
           <h2 className="h-sm font-weight-bold">
@@ -240,29 +262,6 @@ export default function ToolsDetailsComponent(props) {
         />
           ) : (
             <div>No Schema for this tool.</div>
-          )}
-
-          {loading && (
-            <div className='message-box loadingIcon' style={{ backgroundColor: '#bdf0c0' }}>
-              <div style={{ textAlign: 'center' }}>
-                <FontAwesomeIcon icon={faSpinner} spin />
-                <p>Loading...</p>       
-              </div>
-            </div>
-          )}
-          {successMessage && (  
-            <div className='message-box success' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
-              <div style={{ textAlign: 'center' }}>
-                <p>{successMessage}</p>       
-              </div>
-            </div>
-          )}
-          {errorMessage && (
-            <div className='message-box error' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
-              <div style={{ textAlign: 'center' }}>
-                <p>{errorMessage}</p>       
-              </div>
-            </div>
           )}
     </div>
   )
