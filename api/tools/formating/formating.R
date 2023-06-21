@@ -18,7 +18,7 @@ get_suffix <- function(path) {
 # Read csv/xlsx/h5ad/hdf5/h5/loom/mtx/txt/tab/data/gz file to create AnnData object
 load_anndata <- function(path) {
     adata <- NULL
-    suffix <- get_suffix(path)
+    suffix <- tolower(get_suffix(path))
     if(suffix == "csv"){
         adata <- read_csv(path)
     } else if(suffix == "xlsx"){
@@ -72,7 +72,7 @@ load_expression_matrix <- function(path){
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             expression_matrix <- as.matrix(molecules)} 
     } else{       
-        suffix <- get_suffix(path)
+        suffix <- tolower(get_suffix(path))
         if(suffix == "h5"){
             expression_matrix  <- Read10X_h5(path, use.names = T)
             if('Gene Expression' %in% names(expression_matrix)) expression_matrix <- expression_matrix$`Gene Expression`
@@ -127,7 +127,7 @@ load_sce <- function(path){
             }
         }
     } else{
-        suffix <- get_suffix(path)
+        suffix <- tolower(get_suffix(path))
         if(suffix == "rds"){
             sce <- readRDS(path)
         } else{
