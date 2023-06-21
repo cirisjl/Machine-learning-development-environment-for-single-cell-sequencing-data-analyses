@@ -28,7 +28,7 @@ library(RColorBrewer)
 
 source("../formating/formating.R")
 
-if(is.null(params$input)) stop("Inupt_path can not be NULL.")
+if(is.null(params$input)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
 srat <- tryCatch(
