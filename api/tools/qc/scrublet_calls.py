@@ -18,8 +18,17 @@ def predict_scrublet(path):
     scrub.plot_embedding('UMAP', order_points=True)
     
     adata.obs['predicted_doublets'].value_counts()
+
+     # Get the absolute path of the current file
+    current_file = os.path.abspath(__file__)
+
+    # Construct the relative path to the desired file
+    relative_path = os.path.join(os.path.dirname(current_file) , "scrublet_calls.tsv")
+
+    # Get the absolute path of the desired file
+    scrublet_path = os.path.abspath(relative_path)
     
-    scrublet_path = os.path.join(os.path.dirname(path), "scrublet_calls.tsv")
+    # scrublet_path = os.path.join(os.path.dirname(path), "scrublet_calls.tsv")
     
     pd.DataFrame(adata.obs.iloc[:, -2:]).to_csv(scrublet_path,sep = '\t',header = False)
     

@@ -83,7 +83,16 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
             path_of_scrublet_calls = predict_scrublet(input)
             output_path = get_output_path(dataset, output, method='Seurat', format='Seurat')
             report_path = get_report_path(dataset, output_path, "Seurat")
-            seurat_path = os.path.abspath("seurat_qc.Rmd")
+            
+            # Get the absolute path of the current file
+            current_file = os.path.abspath(__file__)
+
+            # Construct the relative path to the desired file
+            relative_path = os.path.join(os.path.dirname(current_file), 'qc', 'seurat_qc.Rmd')
+
+            # Get the absolute path of the desired file
+            seurat_path = os.path.abspath(relative_path)
+            # seurat_path = os.path.abspath("seurat_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + seurat_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', default_assay='" + default_assay + "', output='" + output_path + "', output_format='Seurat', path_of_scrublet_calls='" + path_of_scrublet_calls + "'), output_file='" + report_path + "')\""], shell = True)
             print(s)
         except Exception as e:
