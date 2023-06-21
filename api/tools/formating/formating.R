@@ -86,7 +86,7 @@ load_expression_matrix <- function(path){
 
 load_seurat <- function(path, project = NULL){
     seurat_object <- NULL
-    suffix <- get_suffix(path)
+    suffix <- tolower(get_suffix(path))
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
         seurat_object <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
