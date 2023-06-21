@@ -34,7 +34,7 @@ def run_normalization(dataset, input, userID, output, methods, default_assay='RN
         rmd_path = os.path.abspath(relative_path)
 
         # rmd_path = os.path.abspath("normalization/normalization.Rmd")
-        s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', species=" + str(species) + "', idtype=" + str(idtype) + "', show_umap=" + str(show_umap) + ", show_error=" + str(show_error) + "), output_file='" + report_path + "')\""], shell = True)
+        s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', species=" + str(species) + "', idtype=" + str(idtype) + "', show_umap=" + str(show_umap) + ", show_error=" + str(show_error) + "'), output_file='" + report_path + "')\""], shell = True)
         print(s)
     except Exception as e:
         print("Normalization is failed")
