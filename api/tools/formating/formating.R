@@ -87,7 +87,10 @@ load_expression_matrix <- function(path){
 load_seurat <- function(path, project = NULL){
     seurat_object <- NULL
     suffix <- tolower(get_suffix(path))
+    print("Inside load_seurat 1")
+
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
+        print("Inside load_seurat")
         seurat_object <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
         Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
@@ -114,12 +117,14 @@ load_seurat <- function(path, project = NULL){
 load_sce <- function(path){
     sce <- NULL
     if(file_test("-d", path)){
+        print("Inside load_seurat 3")
         if(file.exists(file.path(path,"molecules.txt")) && file.exists(file.path(path,"annotation.txt"))){
             delim <- detect_delim(path)
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             annotation <- read.delim(file.path(path,"annotation.txt"), sep = delim, stringsAsFactors = T)
             sce <- SingleCellExperiment(assays = list(counts = as.matrix(molecules)), colData = annotation)
         } else{
+            print("Inside load_seurat 4")
             seurat_object <- load_seurat(path)
             if(!is.null(seurat_object)){
                 sce <- as.SingleCellExperiment(seurat_object)
@@ -127,10 +132,13 @@ load_sce <- function(path){
             }
         }
     } else{
+        print("Inside load_seurat 5")
         suffix <- tolower(get_suffix(path))
         if(suffix == "rds"){
             sce <- readRDS(path)
+            print("Inside load_seurat 6")
         } else{
+            print("Inside load_seurat 7")
             seurat_object <- load_seurat(path)
             if(!is.null(seurat_object)){
                 sce <- as.SingleCellExperiment(seurat_object)
