@@ -23,7 +23,7 @@ async def create_normalization_task_async(ds: Dataset):
     """
     Create a task for normalization
     """
-    task = create_normalization_task.apply_async(args=[ds.dataset, ds.input, ds.output, ds.methods], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'species':ds.species, 'idtype':ds.idtype, 'show_umap': ds.show_umap, 'show_error': ds.show_error})
+    task = create_normalization_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'species':ds.species, 'idtype':ds.idtype, 'show_umap': ds.show_umap, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 
@@ -32,7 +32,7 @@ async def create_imputation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    task = create_imputation_task.apply_async(args=[ds.dataset, ds.input, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
+    task = create_imputation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 
