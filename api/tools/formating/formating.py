@@ -24,9 +24,7 @@ def load_anndata(path):
     elif(os.path.exists(path)):
         suffix = os.path.splitext(path)[-1]
         if suffix == ".h5ad":
-            print("Inside .h5ad suffix")
             adata = sc.read_h5ad(path)
-            print("Inside .h5ad suffix2")
         elif suffix == ".csv" or suffix == ".tsv":
             print("Inside the loadAnndata CSV")
             print(detect_delimiter(path))
@@ -66,13 +64,12 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer, show_error, methods):
+def load_anndata_to_csv(input, output, layer, show_error):
     adata = None
     adata_path = None
     counts = None
 
-    if os.path.exists(output) and "MAGIC" not in methods:
-        print("inside if of magic")
+    if os.path.exists(output):
         try:
             adata = load_anndata(output)
             adata_path = output
@@ -81,7 +78,6 @@ def load_anndata_to_csv(input, output, layer, show_error, methods):
             if show_error: print(e)
             return None, None, None
     else:
-        print("inside else of magic")
         try:
             adata = load_anndata(input)
             adata_path = input

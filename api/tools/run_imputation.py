@@ -51,7 +51,7 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
             print("'scGNN_imputed' layer already exists.") 
     
     if "SAVER" in methods:
-        adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error, methods)
+        adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
 
         if 'SAVER_imputed' not in adata.layers.keys(): 
             try:
