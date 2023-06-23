@@ -24,7 +24,9 @@ def load_anndata(path):
     elif(os.path.exists(path)):
         suffix = os.path.splitext(path)[-1]
         if suffix == ".h5ad":
+            print("Inside .h5ad suffix")
             adata = sc.read_h5ad(path)
+            print("Inside .h5ad suffix2")
         elif suffix == ".csv" or suffix == ".tsv":
             print("Inside the loadAnndata CSV")
             print(detect_delimiter(path))
