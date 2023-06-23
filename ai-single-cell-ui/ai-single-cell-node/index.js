@@ -17,7 +17,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-158894.biomizzou-pg0.clemson.cloudlab.us:3000'],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000'],
     credentials: true
 }));
 app.use(bodyParser.json());

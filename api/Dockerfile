@@ -95,7 +95,7 @@ RUN Rscript -e 'devtools::install_github(c( \
     "immunogenomics/harmony", "tallulandrews/M3Drop", "hemberg-lab/scRNA.seq.funcs", \
     "Vivianstats/scImpute", "theislab/kBET", "kieranrcampbell/ouija", "hemberg-lab/scfind", \
     "cole-trapnell-lab/monocle3", "mojaveazure/seurat-disk", "satijalab/seurat-wrappers", \
-    "satijalab/seurat-data"))'
+    "satijalab/seurat-data", "stuart-lab/signac"))'
 
 # Install python packages
 RUN pip install --upgrade --no-cache \

@@ -178,6 +178,22 @@ export default function ToolsDetailsComponent(props) {
           }
       };
 
+      useEffect(() => {
+        const timeoutId = setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000);
+        // Return a cleanup function to cancel the timeout when the component unmounts
+        return () => clearTimeout(timeoutId);
+      }, [successMessage]);
+
+      useEffect(() => {
+        const timeoutId = setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
+        // Return a cleanup function to cancel the timeout when the component unmounts
+        return () => clearTimeout(timeoutId);
+      }, [errorMessage]);
+
       const handleDatasetChange = event => {
         let value = event.target.value;
         if(value !== "") {
@@ -189,7 +205,7 @@ export default function ToolsDetailsComponent(props) {
 
 
   useEffect(() => {
-    import(`./../../../schema/react-json-schema/Tools/${filterName}.json`)
+    import(`./../../../schema/react-json-schema/Tools/${filterCategory}/${filterName}.json`)
     .then((module) => {
       setFilterSchema(JSON.parse(JSON.stringify(module.default)));
       // setFilterSchema({...module.default});
@@ -202,7 +218,7 @@ export default function ToolsDetailsComponent(props) {
       setFilterSchema(null);
     });
 
-    import(`./../../../schema/UI-schema/Tools/${filterName}.js`)
+    import(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     .then((module) => {
       setUIFilterSchema(JSON.parse(JSON.stringify(module.uiSchema)));
       // setUIFilterSchema({...module.uiSchema});
@@ -213,7 +229,7 @@ export default function ToolsDetailsComponent(props) {
       console.error('Error loading UI filter schema:', error);
       setUIFilterSchema(null);
     });
-  },[filterName]);
+  },[filterName,filterCategory]);
 
   return (
     <div className='tools-container common-class-tools-and-workflows'>
