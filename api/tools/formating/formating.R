@@ -94,7 +94,7 @@ load_seurat <- function(path, project = NULL){
         seurat_object <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
         Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
-        seurat_object <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5Seurat"))
+        seurat_object <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
     } else if(suffix == "rds"){
         sce <- readRDS(path)
         seurat_object <- as.Seurat(sce, slot = "counts", data = NULL)
