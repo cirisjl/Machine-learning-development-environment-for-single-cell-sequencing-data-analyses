@@ -70,6 +70,7 @@ def load_anndata_to_csv(input, output, layer, show_error, methods):
     counts = None
 
     if os.path.exists(output) and "MAGIC" not in methods:
+        print("inside if of magic")
         try:
             adata = load_anndata(output)
             adata_path = output
@@ -78,6 +79,7 @@ def load_anndata_to_csv(input, output, layer, show_error, methods):
             if show_error: print(e)
             return None, None, None
     else:
+        print("inside else of magic")
         try:
             adata = load_anndata(input)
             adata_path = input
