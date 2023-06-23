@@ -9,7 +9,7 @@ def run_integration(datasets, inputs, methods, default_assay='RNA', genes=None, 
         return None
     output = get_output_path(datasets, input, method='integration')
     methods = [x.upper() for x in methods if isinstance(x,str)]
-    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error, methods)
+    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
 
     methods = list_py_to_r(methods)
 

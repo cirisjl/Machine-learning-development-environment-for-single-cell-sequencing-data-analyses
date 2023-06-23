@@ -62,11 +62,8 @@ methods = toupper(params$methods)
 ## logCP10K
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
 ```{r logCP10K, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-print("Hello from logcp10k outside")
 if("LOGCP10K" %in% methods){
-  print("Hello from logcp10k inside1")
   if(!"logCP10K" %in% names(x = srat)){
-      print("Hello from logcp10k inside")
     srat[['logCP10K']] <- CreateAssayObject(counts = expression_matrix)
     srat <- NormalizeData(srat, assay = 'logCP10K')
 
@@ -377,7 +374,7 @@ expression_matrix <- NULL
 
 ## Formating & Scanpy Pearson residuals normalization
 ```{r Formating & Scanpy, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if("PEARSON_RESIDUALS" %in% methods){
+if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
     adata.path <- Convert(params$output, dest = "h5ad", overwrite = TRUE, verbose = TRUE)
 
     if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
