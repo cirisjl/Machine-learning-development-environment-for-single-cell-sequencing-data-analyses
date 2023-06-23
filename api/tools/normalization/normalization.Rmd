@@ -66,7 +66,7 @@ print("Hello from logcp10k outside")
 if("LOGCP10K" %in% methods){
   print("Hello from logcp10k inside1")
   if(!"logCP10K" %in% names(x = srat)){
-      print("Hello from logcp10k inside2")
+      print("Hello from logcp10k inside")
     srat[['logCP10K']] <- CreateAssayObject(counts = expression_matrix)
     srat <- NormalizeData(srat, assay = 'logCP10K')
 
