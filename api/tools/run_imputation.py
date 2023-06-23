@@ -17,7 +17,7 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
     output = get_output(output, userID)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
-    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
+    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error, methods)
          
     if adata is None:
         print("File format is not supported.")
