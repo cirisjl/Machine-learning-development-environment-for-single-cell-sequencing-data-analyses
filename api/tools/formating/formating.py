@@ -64,12 +64,12 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer, show_error):
+def load_anndata_to_csv(input, output, layer, show_error, methods):
     adata = None
     adata_path = None
     counts = None
 
-    if os.path.exists(output):
+    if os.path.exists(output) and "MAGIC" not in methods:
         try:
             adata = load_anndata(output)
             adata_path = output
