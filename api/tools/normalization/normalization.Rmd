@@ -66,11 +66,11 @@ print("Checkiingngnd")
 print("LOGCP10K" %in% methods)
 print(methods)
 print(params$methods)
-# Using class()
-print(class(methods))
 
-# Using typeof()
+print(class(methods))
 print(typeof(methods))
+
+
 if("LOGCP10K" %in% methods){
   if(!"logCP10K" %in% names(x = srat)){
     srat[['logCP10K']] <- CreateAssayObject(counts = expression_matrix)
