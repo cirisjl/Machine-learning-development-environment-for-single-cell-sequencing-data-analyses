@@ -155,9 +155,9 @@ def get_output_path(dataset, output, method = '', format = "AnnData"):
         print(output_path)
         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
     elif format == "Seurat":
-        output_path = os.path.join(output, dataset + method + ".h5Seurat")
+        output_path = os.path.join(output, dataset + method + ".h5seurat")
         print(output_path)
-        print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
+        print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
     
     return output_path
 

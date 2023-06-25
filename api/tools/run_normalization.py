@@ -18,7 +18,7 @@ def run_normalization(dataset, input, userID, output, methods, species, default_
     output = get_output(output, userID)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
-    output = get_output_path(dataset, output, method='normalization')
+    output = get_output_path(dataset, output, method='normalization', format='Seurat')
     # methods = list_py_to_r(methods)
     methods = methods_list(methods)
 
