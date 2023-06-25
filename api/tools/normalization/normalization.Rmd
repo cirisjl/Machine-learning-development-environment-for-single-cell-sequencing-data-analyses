@@ -388,7 +388,7 @@ expression_matrix <- NULL
 
 ## Formating & Scanpy Pearson residuals normalization
 ```{r Formating & Scanpy, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if("PEARSON_RESIDUALS" %in% methods){
+if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
     adata.path <- Convert(params$output, dest = "h5ad", overwrite = TRUE, verbose = TRUE)
 
     if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
