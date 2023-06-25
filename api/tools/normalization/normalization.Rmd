@@ -57,12 +57,16 @@ print(paste("Seurat object is loaded and default assay is set to", params$defaul
 
 expression_matrix <- srat[[params$default_assay]]@counts
 
-methods <- eval(parse(text = params$methods))
+# methods <- eval(parse(text = params$methods))
+
+methods <- strsplit(params$methods, ",")[[1]]
+
 
 ```
 ## logCP10K
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
 ```{r logCP10K, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+
 print("Checkiingngnd")
 print("LOGCP10K" %in% methods)
 print(methods)

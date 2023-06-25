@@ -19,7 +19,8 @@ def run_normalization(dataset, input, userID, output, methods, default_assay='RN
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(dataset, output, method='normalization')
-    methods = list_py_to_r(methods)
+    # methods = list_py_to_r(methods)
+    methods = methods_list(methods)
 
     try:
         report_path = get_report_path(dataset, output, "normalization")
