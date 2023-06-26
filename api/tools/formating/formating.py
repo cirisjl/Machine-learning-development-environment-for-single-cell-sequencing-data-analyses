@@ -62,7 +62,7 @@ def anndata_to_csv(adata, output_path, layer = None):
         else:
             counts = adata.layers[layer]
 
-    pd.DataFrame(data=counts, index=adata.obs_names, columns=adata.raw.var_names).to_csv(output_path)
+    pd.DataFrame(data=counts, index=adata.obs_names, columns=adata.var_names).to_csv(output_path)
     return output_path
 
 
