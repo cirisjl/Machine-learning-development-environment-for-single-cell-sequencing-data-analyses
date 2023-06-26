@@ -51,6 +51,8 @@ def load_anndata(path):
 
 def anndata_to_csv(adata, output_path, layer = None):
     counts = None
+    print("to CSV")
+    print(adata)
 
     if layer is None:
         counts = adata.raw.X.toarray()
@@ -79,7 +81,10 @@ def load_anndata_to_csv(input, output, layer, show_error):
             return None, None, None
     else:
         try:
+            print("Inside else , read from input path")
+            print(input)
             adata = load_anndata(input)
+            print(adata)
             adata_path = input
         except Exception as e:
             print("File format is not supported.")
@@ -88,6 +93,8 @@ def load_anndata_to_csv(input, output, layer, show_error):
 
     if layer is None:
         counts = adata.X
+        print("Layer is none")
+        print(counts)
     elif layer in adata.layers.keys():
         counts = adata.layers[layer]       
     else:
