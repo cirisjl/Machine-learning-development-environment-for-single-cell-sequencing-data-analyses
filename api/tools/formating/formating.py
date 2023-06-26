@@ -55,7 +55,6 @@ def anndata_to_csv(adata, output_path, layer = None):
     print(adata)
 
     if layer is None:
-        print(adata.keys())
         counts = adata.X.toarray()
     else:
         if type(adata.layers[layer]) != "numpy.ndarray":
