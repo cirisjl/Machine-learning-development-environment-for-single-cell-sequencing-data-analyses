@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const TextWithEllipsis = ({ text, maxLength }) => {
 
-  const displayText = text.length > maxLength ? text : text.slice(0, maxLength);
+  const displayText = text.length > maxLength ? text.slice(0, maxLength) : text;
 
   return (
     <div className="text-container">
