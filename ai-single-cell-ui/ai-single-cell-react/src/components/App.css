@@ -482,6 +482,11 @@ a {
 /*
 Styles for Right Rail
 */
+
+.display-flex .text-container {
+  padding-left: 3px;
+  padding-top: 2px;
+}
 .display-flex {
   display: flex;
 }
