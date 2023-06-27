@@ -22,6 +22,13 @@ export default function ToolsDetailsComponent(props) {
       // Add more filter categories and their corresponding URL paths as needed
     };
 
+    const filterStaticCategoryMap = {
+      quality_control: 'Quality Control',
+      normalization: 'Normalization',
+      imputation: 'Imputation',
+      // Add more filter categories and their corresponding Names as needed
+    };
+
     console.log(filterName);
 
     let jwtToken = getCookie('jwtToken');
@@ -111,12 +118,14 @@ export default function ToolsDetailsComponent(props) {
 
                 // After a successfull task creation, store the intermediate task information in the database
                 const taskId = response.task_id;
+                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + formData.dataset + " Using " + filterName;
                 const datasetId = parsedSelectedDataset.dataset_id;
                 const method = formData.methods[0];
                 const output = formData.output;
                       // Make API call to store the task information
 
                       const requestBody = {
+                        taskTitle: taskTitle,
                         taskId: taskId,
                         datasetId: datasetId,
                         method: method,
@@ -194,6 +203,15 @@ export default function ToolsDetailsComponent(props) {
         return () => clearTimeout(timeoutId);
       }, [errorMessage]);
 
+      useEffect(() => {
+        const timeoutId = setTimeout(() => {
+          setFormErrors('');
+        }, 3000);
+        // Return a cleanup function to cancel the timeout when the component unmounts
+        return () => clearTimeout(timeoutId);
+      }, [formErrors]);
+
+
       const handleDatasetChange = event => {
         let value = event.target.value;
         if(value !== "") {
@@ -233,6 +251,14 @@ export default function ToolsDetailsComponent(props) {
 
   return (
     <div className='tools-container common-class-tools-and-workflows'>
+         {formErrors && (
+            <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p>{formErrors}</p>    
+              </div>
+            </div>
+          )}
+         
           {loading && (
             <div className='message-box loadingIcon' style={{ backgroundColor: '#bdf0c0' }}>
               <div style={{ textAlign: 'center' }}>

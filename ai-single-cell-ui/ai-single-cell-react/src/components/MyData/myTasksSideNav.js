@@ -6,6 +6,12 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import { useNavigate } from 'react-router-dom';
+import {
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
+  } from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const MyTasksSideNav = () => {
     const [expanded, setExpanded] = useState(false);
@@ -16,12 +22,21 @@ const MyTasksSideNav = () => {
     const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
     const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5000/taskStatus`;
 
+    const timestampScheme = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    };
+
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
                 const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
                 const data = await response.json();
-                data.sort((a, b) => a.created_datetime - b.created_datetime);
+                data.sort((a, b) => b.created_datetime - a.created_datetime);
                 setTasks(data);
 
                 // Create a list to store incomplete tasks
@@ -131,15 +146,30 @@ const MyTasksSideNav = () => {
                         ) : (
                             <ul>
                             {tasks.map((task, index) => (
-                                <li style={{
+                                <div key={tasks.task_id}>
+                                    <Accordion key={tasks.task_id}>
+                                      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
+                                        <div className="panel-summary">
+                                            <div className='task-summary'>
+                                                {task.status === 'Success' ? (
+                                                    <CheckCircleIcon style={{ color: 'green' }} />
+                                                ) : task.status === 'Failed' ? (
+                                                    <CancelIcon style={{ color: 'red' }} />
+                                                ) : (
+                                                    <HourglassEmptyIcon style={{ color: 'gray' }} />
+                                                )}
+                                                <p>{task.task_title}</p>
+                                                <span>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
+                                            </div>
+                                        {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
                                     transition: 'background-color 0.3s', // Add transition effect
                                     cursor: 'pointer' // Show pointer cursor on hover
                                 }}
                                     onMouseEnter={(e) => { e.target.style.backgroundColor = '#f2f2f2' }} // Change background color on hover
                                     onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent' }} // Revert back to initial background color on mouse leave 
-                                    key={index}>
-                                      <a
+                                    key={index}> */}
+                                      {/* <a
                                         href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                     > 
@@ -151,9 +181,22 @@ const MyTasksSideNav = () => {
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                     )}
                                     &nbsp;{task.task_id}
-                                    </a>
-                                </li>
-                            ))}
+                                    </a> */}
+                                {/* </li> */}
+                                        </div>
+                                      </AccordionSummary>
+                                      <AccordionDetails>
+                                      <a
+                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                     > 
+                                        &nbsp;{task.task_id}
+                                      </a>
+                                      </AccordionDetails>
+                                    </Accordion>
+                                </div>
+                            ))
+                            }
                         </ul>
                         )}
                         </div>
