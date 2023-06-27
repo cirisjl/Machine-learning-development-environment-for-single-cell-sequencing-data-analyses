@@ -190,7 +190,7 @@ const MyTasksSideNav = () => {
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}&task_title=${task.task_title}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
                                         <span className='font-size'><b>Task Id</b> - {task.task_id}</span>
