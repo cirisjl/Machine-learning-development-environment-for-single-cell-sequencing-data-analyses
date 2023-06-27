@@ -487,6 +487,11 @@ Styles for Right Rail
   padding-left: 3px;
   padding-top: 2px;
 }
+
+.display-flex .font-size {
+  font-size: 12px;
+}
+
 .display-flex {
   display: flex;
 }
@@ -495,6 +500,7 @@ margin: 0px;}
 
 .time-stamp-display {
   float: right;
+  font-size: 12px;
 }
 
 .right-rail-search-svg {

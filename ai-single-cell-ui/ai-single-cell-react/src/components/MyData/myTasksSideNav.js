@@ -193,7 +193,7 @@ const MyTasksSideNav = () => {
                                         href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
-                                        <span>Task Id - {task.task_id}</span>
+                                        <span className='font-size'><b>Task Id</b> - {task.task_id}</span>
                                       </a>
                                       </AccordionDetails>
                                     </Accordion>
