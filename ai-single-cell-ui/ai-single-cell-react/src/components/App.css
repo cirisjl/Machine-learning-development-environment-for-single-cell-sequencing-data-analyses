@@ -485,6 +485,8 @@ Styles for Right Rail
 .display-flex {
   display: flex;
 }
+.display-flex p{
+margin: 0px;}
 
 .time-stamp-display {
   float: right;
