@@ -984,6 +984,7 @@ CREATE TABLE `users` (
 
 DROP TABLE IF EXISTS `task`;
 CREATE TABLE `task` (
+  `task_title` varchar(500) NOT NULL,
   `task_id` varchar(100) NOT NULL,
   `user_id` int NOT NULL,
   `tool` varchar(255) DEFAULT NULL,

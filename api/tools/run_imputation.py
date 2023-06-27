@@ -17,9 +17,7 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
     output = get_output(output, userID)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
-    adata = load_anndata(input)
-
-    counts = adata.X
+    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
 
     if adata is None:
         print("File format is not supported.")
@@ -51,8 +49,6 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
             print("'scGNN_imputed' layer already exists.") 
     
     if "SAVER" in methods:
-        adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
-
         if 'SAVER_imputed' not in adata.layers.keys(): 
             try:
                 output = get_output_path(dataset, output, method='SAVER_imputation')

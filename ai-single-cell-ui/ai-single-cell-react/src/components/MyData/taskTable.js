@@ -144,6 +144,7 @@ const TaskTable = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHeaderCell>Task Title</TableHeaderCell>
                             <TableHeaderCell>Task ID</TableHeaderCell>
                             <TableHeaderCell>Tool</TableHeaderCell>
                             <TableHeaderCell>Created</TableHeaderCell>
@@ -156,6 +157,7 @@ const TaskTable = () => {
                     <tbody>
                         {tasks.map((task) => (
                             <TableRow key={task.task_id}>
+                                <TableCell>{task.task_title}</TableCell>
                                 <TableCell>
                                     <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
                                         {task.task_id}
