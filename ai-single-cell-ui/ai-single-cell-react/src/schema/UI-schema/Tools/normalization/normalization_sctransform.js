@@ -14,7 +14,8 @@ export const uiSchema = {
           'ui:widget': () => (
             <div className='common-row-wrap'>
               <select>
-                <option value="sctransform">sctransform</option>
+                <option value="SCT">SCT</option>
+                <option value="SCT_V2">SCT_V2</option>
               </select>
         </div>
           ),

@@ -51,16 +51,18 @@ def load_anndata(path):
 
 def anndata_to_csv(adata, output_path, layer = None):
     counts = None
+    print("to CSV")
+    print(adata)
 
     if layer is None:
-        counts = adata.raw.X.toarray()
+        counts = adata.X.toarray()
     else:
         if type(adata.layers[layer]) != "numpy.ndarray":
             counts = adata.layers[layer].toarray()
         else:
             counts = adata.layers[layer]
 
-    pd.DataFrame(data=counts, index=adata.obs_names, columns=adata.raw.var_names).to_csv(output_path)
+    pd.DataFrame(data=counts, index=adata.obs_names, columns=adata.var_names).to_csv(output_path)
     return output_path
 
 
@@ -79,7 +81,10 @@ def load_anndata_to_csv(input, output, layer, show_error):
             return None, None, None
     else:
         try:
+            print("Inside else , read from input path")
+            print(input)
             adata = load_anndata(input)
+            print(adata)
             adata_path = input
         except Exception as e:
             print("File format is not supported.")
@@ -88,6 +93,8 @@ def load_anndata_to_csv(input, output, layer, show_error):
 
     if layer is None:
         counts = adata.X
+        print("Layer is none")
+        print(counts)
     elif layer in adata.layers.keys():
         counts = adata.layers[layer]       
     else:
@@ -155,9 +162,9 @@ def get_output_path(dataset, output, method = '', format = "AnnData"):
         print(output_path)
         print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
     elif format == "Seurat":
-        output_path = os.path.join(output, dataset + method + ".h5Seurat")
+        output_path = os.path.join(output, dataset + method + ".h5seurat")
         print(output_path)
-        print("The output path is a directory, adding output file " + dataset + method + ".h5Seurat to the path.")
+        print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
     
     return output_path
 
@@ -180,3 +187,7 @@ def get_report_path(dataset, output, method):
 def list_py_to_r(list):
     list = [x.upper() for x in list if isinstance(x,str)]
     return 'c(' + ','.join(list) + ')'
+
+def methods_list(list):
+    list = [x.upper() for x in list if isinstance(x,str)]
+    return ','.join(list)
