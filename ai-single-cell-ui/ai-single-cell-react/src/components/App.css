@@ -482,6 +482,13 @@ a {
 /*
 Styles for Right Rail
 */
+.display-flex {
+  display: flex;
+}
+
+.time-stamp-display {
+  float: right;
+}
 
 .right-rail-search-svg {
   padding: 5px;
