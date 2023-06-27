@@ -160,7 +160,7 @@ const MyTasksSideNav = () => {
                                                     ) : (
                                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                                     )}
-                                                    <p><TextWithEllipsis text={task.task_title} maxLength={25} /></p>
+                                                    <p><TextWithEllipsis text={task.task_title} maxLength={23} /></p>
                                                 </div>
                                                 <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
                                             </div>
