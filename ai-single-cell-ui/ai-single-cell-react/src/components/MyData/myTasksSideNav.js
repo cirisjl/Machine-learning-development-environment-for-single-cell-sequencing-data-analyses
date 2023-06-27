@@ -152,15 +152,17 @@ const MyTasksSideNav = () => {
                                       <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
                                         <div className="panel-summary">
                                             <div className='task-summary'>
-                                                {task.status === 'Success' ? (
-                                                    <CheckCircleIcon style={{ color: 'green' }} />
-                                                ) : task.status === 'Failed' ? (
-                                                    <CancelIcon style={{ color: 'red' }} />
-                                                ) : (
-                                                    <HourglassEmptyIcon style={{ color: 'gray' }} />
-                                                )}
-                                                <p><TextWithEllipsis text={task.task_title} maxLength={50} /></p>
-                                                <span>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
+                                                <div className='display-flex'>
+                                                    {task.status === 'Success' ? (
+                                                        <CheckCircleIcon style={{ color: 'green' }} />
+                                                    ) : task.status === 'Failed' ? (
+                                                        <CancelIcon style={{ color: 'red' }} />
+                                                    ) : (
+                                                        <HourglassEmptyIcon style={{ color: 'gray' }} />
+                                                    )}
+                                                    <p><TextWithEllipsis text={task.task_title} maxLength={25} /></p>
+                                                </div>
+                                                <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
