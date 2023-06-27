@@ -6,6 +6,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import { useNavigate } from 'react-router-dom';
+import TextWithEllipsis from '../RightNavigation/textWithEllipsis';
 import {
     Accordion,
     AccordionSummary,
@@ -158,7 +159,7 @@ const MyTasksSideNav = () => {
                                                 ) : (
                                                     <HourglassEmptyIcon style={{ color: 'gray' }} />
                                                 )}
-                                                <p>{task.task_title}</p>
+                                                <p><TextWithEllipsis text={task.task_title} maxLength={50} /></p>
                                                 <span>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
                                             </div>
                                         {/* <li style={{
@@ -190,7 +191,7 @@ const MyTasksSideNav = () => {
                                         href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
-                                        &nbsp;{task.task_id}
+                                        <span>Task Id - {task.task_id}</span>
                                       </a>
                                       </AccordionDetails>
                                     </Accordion>
