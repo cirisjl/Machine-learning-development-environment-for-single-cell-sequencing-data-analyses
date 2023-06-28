@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import warnings
+warnings.filterwarnings('ignore')
 import sklearn
 import scipy
 # sys.path.append('..')
