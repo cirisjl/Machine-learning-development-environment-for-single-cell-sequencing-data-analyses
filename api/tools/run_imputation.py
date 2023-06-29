@@ -19,13 +19,13 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
     methods = [x.upper() for x in methods if isinstance(x,str)]
     
     if "MAGIC" in methods:
+        adata = load_anndata(input)
+        if adata is None:
+            print("File format is not supported.")
+            return None 
+        
         if 'MAGIC_imputed' not in adata.layers.keys(): 
             try:
-                adata = load_anndata(input)
-                if adata is None:
-                    print("File format is not supported.")
-                    return None 
-                
                 counts = adata.X
                 data_magic = magic_impute(counts, genes)
                 adata.layers['MAGIC_imputed'] = data_magic
