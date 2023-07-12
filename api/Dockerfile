@@ -126,7 +126,7 @@ RUN pip install --upgrade --no-cache 'scanpy[leiden]' \
     anndata muon dropkick scvi-tools
 
 # Install snakemake
-RUN pip3 install git+https://github.com/snakemake/snakemake
+# RUN pip3 install git+https://github.com/snakemake/snakemake
 
 # Install pandoc for R markdown
 RUN PANDOC_PKG=pandoc-3.1.1-1-amd64.deb && \
