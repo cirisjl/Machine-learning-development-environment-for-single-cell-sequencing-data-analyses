@@ -6,7 +6,7 @@ from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
     
 
-def run_imputation(dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+def run_imputation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     if methods is None:
         print("No imputation method is selected.")
         return None
@@ -14,18 +14,19 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
     #Get the absolute path for the given input
     input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output(output, userID)
+    output = get_output(output, userID, task_id)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
-    adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
-
-    if adata is None:
-        print("File format is not supported.")
-        return None 
     
     if "MAGIC" in methods:
+        adata = load_anndata(input)
+        if adata is None:
+            print("File format is not supported.")
+            return None 
+        
         if 'MAGIC_imputed' not in adata.layers.keys(): 
             try:
+                counts = adata.X
                 data_magic = magic_impute(counts, genes)
                 adata.layers['MAGIC_imputed'] = data_magic
                 output = get_output_path(dataset, output, method='MAGIC_imputation')
@@ -49,6 +50,10 @@ def run_imputation(dataset, input, userID, output, methods, layer=None, genes=No
             print("'scGNN_imputed' layer already exists.") 
     
     if "SAVER" in methods:
+        adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
+        if adata is None:
+            print("File format is not supported.")
+            return None 
         if 'SAVER_imputed' not in adata.layers.keys(): 
             try:
                 output = get_output_path(dataset, output, method='SAVER_imputation')

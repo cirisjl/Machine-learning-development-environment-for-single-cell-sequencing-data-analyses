@@ -8,13 +8,16 @@ export default function ResultFiles() {
     const location = useLocation();
     const [taskId, setTaskId] = useState('');
     const [resultsPath, setResultsPath] = useState('');
+    const [taskTitle, setTaskTitle] = useState('');
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const taskId = searchParams.get('taskId');
         const resultsPath = searchParams.get('results_path');
+        const taskTitle = searchParams.get('task_title');
         setTaskId(taskId);
         setResultsPath(resultsPath);    
+        setTaskTitle(taskTitle);
 
       }, [location.search]);
 
@@ -25,7 +28,7 @@ export default function ResultFiles() {
                 {/* <LeftNav /> */}
             </div>
             <div className="main-content">
-                <IntermediateFiles taskId={taskId} results_path={resultsPath}/>
+                <IntermediateFiles taskId={taskId} results_path={resultsPath} task_title={taskTitle}/>
             </div>
             <div className="right-rail">
                 <RightRail />
