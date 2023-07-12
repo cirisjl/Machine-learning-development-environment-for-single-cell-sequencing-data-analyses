@@ -10,7 +10,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 
 
-def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='NULL', shape_by_1='NULL', shape_by_2='NULL', default_assay='RNA', show_error=True):
+def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='NULL', shape_by_1='NULL', shape_by_2='NULL', default_assay='RNA', show_error=True):
     if methods is None:
         print("No quality control method is selected.")
         return None   
@@ -19,7 +19,7 @@ def run_qc(dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='N
      #Get the absolute path for the given input
     input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output(output, userID)
+    output = get_output(output, userID,task_id)
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
 

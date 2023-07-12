@@ -6,7 +6,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 
 
-def run_normalization(dataset, input, userID, output, methods, species, default_assay='RNA', output_format='AnnData',idtype='ENSEMBL', show_umap = True, show_error = True):
+def run_normalization(task_id, dataset, input, userID, output, methods, species, default_assay='RNA', output_format='AnnData',idtype='ENSEMBL', show_umap = True, show_error = True):
     
     if methods is None:
         print("No normalization method is selected.")
@@ -15,7 +15,7 @@ def run_normalization(dataset, input, userID, output, methods, species, default_
     #Get the absolute path for the given input
     input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output(output, userID)
+    output = get_output(output, userID, task_id)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(dataset, output, method='normalization', format='Seurat')

@@ -483,6 +483,26 @@ a {
 Styles for Right Rail
 */
 
+.display-flex .text-container {
+  padding-left: 3px;
+  padding-top: 2px;
+}
+
+.results-window .font-size {
+  font-size: 12px;
+}
+
+.display-flex {
+  display: flex;
+}
+.display-flex p{
+margin: 0px;}
+
+.time-stamp-display {
+  float: right;
+  font-size: 12px;
+}
+
 .right-rail-search-svg {
   padding: 5px;
   

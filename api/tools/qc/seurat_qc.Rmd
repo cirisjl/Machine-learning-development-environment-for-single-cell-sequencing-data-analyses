@@ -40,7 +40,7 @@ srat <- tryCatch(
   )
 if(is.null(srat)) stop("The file format is not supported.")
 if(!params$default_assay %in% names(x = srat)) stop(paste(params$default_assay, "does not exist."))
-DefaultAssay(object = srat) <- ifelse((is.null(params$default_assay)|||| is.na(params$default_assay)), "RNA", params$default_assay)
+DefaultAssay(object = srat) <- ifelse((is.null(params$default_assay)|| is.na(params$default_assay)), "RNA", params$default_assay)
 print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
 srat
 

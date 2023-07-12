@@ -6,6 +6,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import { useNavigate } from 'react-router-dom';
+import TextWithEllipsis from '../RightNavigation/textWithEllipsis';
 import {
     Accordion,
     AccordionSummary,
@@ -151,15 +152,17 @@ const MyTasksSideNav = () => {
                                       <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
                                         <div className="panel-summary">
                                             <div className='task-summary'>
-                                                {task.status === 'Success' ? (
-                                                    <CheckCircleIcon style={{ color: 'green' }} />
-                                                ) : task.status === 'Failed' ? (
-                                                    <CancelIcon style={{ color: 'red' }} />
-                                                ) : (
-                                                    <HourglassEmptyIcon style={{ color: 'gray' }} />
-                                                )}
-                                                <p>{task.task_title}</p>
-                                                <span>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
+                                                <div className='display-flex'>
+                                                    {task.status === 'Success' ? (
+                                                        <CheckCircleIcon style={{ color: 'green' }} />
+                                                    ) : task.status === 'Failed' ? (
+                                                        <CancelIcon style={{ color: 'red' }} />
+                                                    ) : (
+                                                        <HourglassEmptyIcon style={{ color: 'gray' }} />
+                                                    )}
+                                                    <p><TextWithEllipsis text={task.task_title} maxLength={23} /></p>
+                                                </div>
+                                                <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
@@ -187,10 +190,10 @@ const MyTasksSideNav = () => {
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}&task_title=${task.task_title}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
-                                        &nbsp;{task.task_id}
+                                        <span className='font-size'><b>Task Id</b> - {task.task_id}</span>
                                       </a>
                                       </AccordionDetails>
                                     </Accordion>
