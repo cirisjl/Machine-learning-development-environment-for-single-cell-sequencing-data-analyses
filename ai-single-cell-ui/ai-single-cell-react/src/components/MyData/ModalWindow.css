@@ -240,3 +240,31 @@ button[type="submit"] {
 .preview-message {
   margin-left: 10px;
 }
+
+Marking files as viewed can help keep track of your progress, but will not affect your submitted reviewViewed
+Comment on this file
+@@ -239,4 +239,24 @@ button[type="submit"] {
+
+.preview-message {
+  margin-left: 10px;
+}
+
+.info-icon {
+  position: relative;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background-color: lightgrey;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  float: right;
+}
+
+.info-icon:hover {
+  background-color: darkgrey;
+}
