@@ -1,11 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowAltCircleUp, faCheck, faDownload, faFile, faFolder, faFolderOpen, faPencil, faPlus, faRefresh, faTrash, faTurnUp, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ModalWindow.css';
-import { red } from "@mui/material/colors";
 import { getCookie } from '../../utils/utilFunctions';
-import UppyUploader from "./uppy";
 import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
@@ -15,21 +14,15 @@ import RightRail from "../RightNavigation/rightRail";
 import { useLocation } from 'react-router-dom';
 import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
+import FileManagerModal from "./fileManagerModal";
 
 export default function UploadData() {
     const [isFileManagerOpen, setIsFileManagerOpen] = useState(false);
-    const [isUppyModalOpen, setIsUppyModalOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
-    const [fileNames, setFileNames] = useState([]);
-    const [dirNames, setDirNames] = useState([]);
     const [pwd, setPwd] = useState('/');
-    const [selectedItemId, setSelectedItemId] = useState(null);
     const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
     let jwtToken = getCookie('jwtToken');
-    const [isNewDirOn, setIsNewDirOn] = useState(false);
     const [formData, setFormData] = useState({});
-    const [usedStorage, setUsedStorage] = useState(0);
-    const [totalStorage, setTotalStorage] = useState(1);
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [enabledCheckboxes, setEnabledCheckboxes] = useState([]);
     const [tempFileList, setTempFileList] = useState([]);
@@ -42,7 +35,18 @@ export default function UploadData() {
     const [currentFileList, setCurrentFileList] = useState(formInfo?.files?.map(file => file.file_loc) || []);
     const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
     const [fileToPreview, setFileToPreview] = useState(null);
-
+    const [fileNames, setFileNames] = useState([]);
+    const [dirNames, setDirNames] = useState([]);
+    const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    let [selectedAliases, setSelectedAliases] = useState([]);
+    const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'count_matrix.mtx', 'features.tsv.gz', 'count_matrix.mtx.gz'];
+    const acceptedMultiFileSets = [
+        ['molecules.txt', 'annotation.txt'],
+        ['barcodes.tsv', 'genes.tsv', 'matrix.mtx'],
+        ['barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz'],
+        ['barcodes.tsv', 'features.tsv', 'count_matrix.mtx'],
+        ['barcodes.tsv.gz', 'features.tsv.gz', 'count_matrix.mtx.gz']
+    ];
     const handleMouseOver = () => {
         setHoveredErrPopup(true);
     };
@@ -54,11 +58,6 @@ export default function UploadData() {
     const handleCrossButtonClick = () => {
         setErrorMessage('');
     }
-
-    const handleFileClick = async (fileName) => {
-        setFileToPreview(`${pwd}/${fileName}`);
-        setPreviewBoxOpen(true);
-    };
 
     useEffect(() => {
         const hookForUpdate = async () => {
@@ -82,18 +81,12 @@ export default function UploadData() {
         return () => clearTimeout(timeoutId);
     }, [errorMessage]);
 
-    const handleRenameIcon = (id) => {
-        fileNames.map((item, index) => {
-            if (`f${index}` === id) {
-                setSelectedItemId(id);
-            }
-        });
-        dirNames.map((item, index) => {
-            if (`d${index}` === id) {
-                setSelectedItemId(id);
-            }
-        });
-    }
+    useEffect(() => {
+        setSelectedAliases(selectedFiles.map(file => {
+            const parts = file.split('/');
+            return parts[parts.length - 1];
+        }));
+    }, [selectedFiles]);
 
     const SubmitButton = ({ disabled, onClick }) => {
         const handleClick = () => {
@@ -113,43 +106,6 @@ export default function UploadData() {
         );
     };
 
-    useEffect(() => {
-        if (jwtToken) {
-            getStorageDetails();
-            fetchDirContents();
-        }
-        else
-            navigate('/routing');
-    }, [isUppyModalOpen]);
-
-    async function pushOrPopName(name) {
-        name = name.replace("//", "/");
-        const index = tempFileList.indexOf(name);
-        if (index === -1) {
-            tempFileList.push(name);
-        } else {
-            tempFileList.splice(index, 1);
-        }
-        console.log('filesSelected: ' + tempFileList);
-    }
-
-
-    const handleUpdateText = (id, newText) => {
-        fileNames.map((file, index) => {
-            if (`f${index}` === id) {
-                renameFileOrDir(file.name, newText);
-            }
-            fetchDirContents();
-        });
-        dirNames.map((dir, index) => {
-            if (`d${index}` === id) {
-                renameFileOrDir(dir.name, newText);
-            }
-            fetchDirContents();
-        });
-
-        setSelectedItemId(null);
-    };
     // toggle modal window visibility
     const toggleModal = async () => {
         await setIsFileManagerOpen(!isFileManagerOpen);
@@ -161,31 +117,46 @@ export default function UploadData() {
         }
     }
 
-    const renameFileOrDir = async (oldFileOrDir, newFileOrDir) => {
-        const renameApiUrl = `${SERVER_URL}/renameFile`;
-        let errorHandled = false;
-        fetch(`${renameApiUrl}?oldName=${pwd}/${oldFileOrDir}&newName=${pwd}/${newFileOrDir}&authToken=${jwtToken}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-            .then(response => {
-                if (response.status === 403) {
-                    throw new Error('Please log in first');
-                }
-                return response.json();
-            })
-            .catch(error => {
-                if (!errorHandled && error.message === 'Please log in first') {
-                    navigate('/routing');
-                    return;
-                } else {
-                    console.error(error);
-                }
-            });
-        fetchDirContents();
-    }
+    function getAliasOptions(fileName) {
+        if (fileName.endsWith('.txt')) {
+            return ['molecules', 'annotation'];
+        } else if (fileName.endsWith('.tsv')) {
+            return ['genes', 'cells', 'features'];
+        } else if (fileName.endsWith('.tsv.gz')) {
+            return ['genes', 'cells', 'features'];
+        } else if (fileName.endsWith('.mtx')) {
+            return ['matrix', 'count matrix'];
+        } else if (fileName.endsWith('.mtx.gz')) {
+            return ['matrix', 'count matrix'];
+        }
+        else {
+            return [];
+        }
+    };
+
+    function getStandardFileName(fileName, fileType) {
+        const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features", "count matrix"];
+        if (!acceptedFileTypes.includes(fileType)) {
+            return fileName;
+        }
+        const txt = { "molecules": "molecules.txt", "annotation": "annotation.txt" }
+        const tsv = { "cells": "barcodes.tsv", "genes": "genes.tsv", "features": "features.tsv" }
+        const tsv_gz = { "cells": "barcodes.tsv.gz", "genes": "genes.tsv.gz", "features": "features.tsv.gz" }
+        const mtx = {"matrix": "matrix.mtx", "count matrix": "count_matrix.mtx"}
+        const mtx_gz = {"matrix": "matrix.mtx.gz", "count matrix": "count_matrix.mtx.gz"}
+
+        if (fileName.endsWith('.txt')) {
+            return txt[fileType];
+        } else if (fileName.endsWith('.tsv')) {
+            return tsv[fileType];
+        } else if (fileName.endsWith('.tsv.gz')) {
+            return tsv_gz[fileType];
+        } else if (fileName.endsWith('.mtx')) {
+            return mtx[fileType];
+        } else if (fileName.endsWith('.mtx.gz')) {
+            return mtx_gz[fileType];
+        }
+    };
 
 
     const fetchDirContents = async (subdir) => {
@@ -217,7 +188,7 @@ export default function UploadData() {
         else
             newDir = pwd
 
-        fetch(`${SERVER_URL}/getDirContents?dirPath=${newDir}&authToken=${jwtToken}&usingFor=userstorage`)
+        fetch(`${SERVER_URL}/getDirContents?dirPath=${newDir}&authToken=${jwtToken}`)
             .then(response => {
                 if (response.status === 403) {
                     throw new Error('Please log in first');
@@ -240,152 +211,6 @@ export default function UploadData() {
 
     }
 
-    function log() {
-        console.log('sak: ' + selectedFiles)
-    }
-
-    async function deleteFiles() {
-        const deleteApiUrl = `${SERVER_URL}/deleteFiles?authToken=${jwtToken}`
-        await fetch(`${deleteApiUrl}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ fileList: tempFileList })
-        })
-            .then(response => {
-                if (response.status === 403) {
-                    throw new Error('Access denied. Please log in.');
-                }
-                if (response.status === 401) {
-                    throw new Error('File(s) being used by datasets.');
-                }
-                return response;
-            })
-            .then(response => response.json())
-            .then(response => {
-                if (response.errorCount > 0) {
-                    setErrorMessage(`Failed to delete ${response.errorCount} file(s).`);
-                }
-            })
-            .catch(error => {
-                if (error.message === 'Access denied. Please log in.') {
-                    navigate('/routing');
-                }
-                else if (error.message === 'File(s) being used by datasets.') {
-                    setErrorMessage('Delete failed. File(s) being used by datasets.');
-                } else {
-                    console.log('Error deleting file: ', error);
-                }
-            });
-        setTempFileList([]);
-        fetchDirContents();
-    }
-
-    const getStorageDetails = async () => {
-
-        jwtToken = getCookie('jwtToken');
-
-        fetch(`${SERVER_URL}/getStorageDetails?authToken=${jwtToken}`)
-            .then(response => {
-                if (response.status === 403) {
-                    throw new Error('Please log in first');
-                }
-                return response.json();
-            })
-            .catch(error => {
-                if (error.message === 'Please log in first') {
-                    navigate('/routing');
-                } else {
-                    console.error(error);
-                }
-
-            })
-            .then(data => {
-                setUsedStorage(data.used);
-                setTotalStorage(data.allowed);
-            });
-
-    }
-
-    function createNewFolder(folderName) {
-        fetch(`${SERVER_URL}/createNewFolder?pwd=${pwd}&folderName=${folderName}&authToken=${jwtToken}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-            .then(response => {
-                if (response.status === 403) {
-                    throw new Error('Please log in first');
-                }
-                setIsNewDirOn(false);
-                fetchDirContents();
-                return response.json();
-            })
-            .catch(error => {
-                navigate('/routing');
-                console.error(error);
-                return;
-            });
-    }
-
-
-    function downloadFiles() {
-
-        const apiUrl = `${SERVER_URL}/download`;
-
-        // If fileUrl is not empty, call the API with fileUrl as query parameter
-        if (tempFileList.length == 1) {
-            const fileUrl = tempFileList[0]
-            const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-            fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}`)
-                .then(response => {
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = filename;
-                    // Add the link to the DOM and trigger the download
-                    document.body.appendChild(link);
-                    link.click();
-                    // Remove the link from the DOM
-                    // document.body.removeChild(link);
-                })
-                .catch(error => {
-                    console.error('Error downloading file:', error);
-                });
-        }
-
-        else if (tempFileList.length > 1) {
-            fetch(`${apiUrl}?authToken=${jwtToken}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fileList: tempFileList })
-            })
-                .then(response => {
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = "files.zip";
-                    document.body.appendChild(link);
-                    link.click();
-                })
-                .catch(error => {
-                    console.error('Error downloading file:', error);
-                });
-        }
-
-
-    }
-
     const handleSubmit = (event) => {
         if (selectedFiles === undefined || selectedFiles.length === 0) {
             setErrorMessage('Select at least one file.');
@@ -394,6 +219,50 @@ export default function UploadData() {
         else if (jwtToken === undefined || jwtToken.length === 0) {
             setErrorMessage('Please log in first.');
             return;
+        }
+
+        if (selectedFiles.length > 1) {
+            let isFileSelectionValid = false;
+            acceptedMultiFileSets.forEach(function (multiFileSet) {
+                for (let i = 0; i < multiFileSet.length; i++) {
+                    if (!selectedAliases.includes(multiFileSet[i])) {
+                        break;
+                    }
+                    else if (i == multiFileSet.length - 1)
+                        isFileSelectionValid = true;
+                }
+            });
+            console.log('Selected Aliases: ' + selectedAliases);
+            if (!isFileSelectionValid) {
+                setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
+                return;
+            }
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const lastSlashIndex = file.lastIndexOf('/');
+                const fileName = file.substring(lastSlashIndex + 1, file.length);
+                if (!acceptedMultiFileNames.includes(fileName)) {
+                    if (lastSlashIndex !== -1) {
+                        const prefix = file.substring(0, lastSlashIndex + 1);
+                        selectedFiles[i] = prefix + selectedAliases[i];
+                    } else {
+                        selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
+                    }
+                    fetch(`${SERVER_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                }
+            }
+        }
+        else {
+            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad"];
+            if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
+                setErrorMessage("The selected file is not of an accepted standard format.");
+                return;
+            }
         }
 
         formData['authToken'] = jwtToken;
@@ -461,7 +330,7 @@ export default function UploadData() {
             </div>
             <div className="main-content">
                 {(errorMessage !== '') && (
-                    <div className='message-box' style={{ backgroundColor: 'lightpink' }}>
+                    <div className='message-box' style={{ backgroundColor: 'lightpink', zIndex: 9999 }}>
                         <div style={{ textAlign: 'center' }}>
                             <p>{errorMessage}</p>
                             <div style={{ position: "absolute", right: "12px", top: "20px", cursor: "pointer" }}>
@@ -471,142 +340,76 @@ export default function UploadData() {
                     </div>)}
                 <div>
                     <h2 style={{ textAlign: "left" }}><span>{(mode === 'update' ? 'Update Dataset' : "Create Dataset")}</span></h2>
-                    {previewBoxOpen && <FilePreviewModal selectedFile={fileToPreview} setPreviewBoxOpen={setPreviewBoxOpen} jwtToken={jwtToken} forResultFile={false} />}
-                    {isFileManagerOpen && (
-                        <div className="modal">
+                    {isInfoModalOpen && <div className="modal" style={{ zIndex: 9999, width: "30%", height: "40%" }}>
+                        <div className='clear-icon'>
+                            <img src={hoveredErrPopup ? close_icon_hover : close_icon} alt="close-icon" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={() => setIsInfoModalOpen(false)} />
+                        </div>
+                        <div className="modal-content">
                             <div>
-                                <button type="button" className="fileManagerButton" onClick={() => setIsNewDirOn(true)} >
-                                    <FontAwesomeIcon icon={faPlus} /> New Folder
-                                </button> &nbsp;&nbsp;
-                                <button type="button" className="fileManagerButton" onClick={() => downloadFiles(selectedFiles)} >
-                                    <FontAwesomeIcon icon={faDownload} /> Download
-                                </button>&nbsp;&nbsp;
-                                <button type="button" className="fileManagerButton" onClick={() => { deleteFiles(selectedFiles); }} >
-                                    <FontAwesomeIcon icon={faTrash} color={red} /> Delete
-                                </button>&nbsp;&nbsp;
-                                <button type="button" className="fileManagerButton" onClick={() => { fetchDirContents() }} >
-                                    <FontAwesomeIcon icon={faRefresh} color={red} /> Refresh
-                                </button></div>
-                            <div className="modal-content" style={{ overflowX: "hidden", overflowY: "hidden" }}>
-                                <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
-                                    <div style={{ paddingLeft: '15%', width: "45%" }}>Name</div>
-                                    <div style={{ width: "25%" }}>Type</div>
-                                    <div style={{ width: "25%", paddingLeft: "5%" }}>Time Created</div>
-                                </div>
-                                <div className="modal-content-scroll">
-                                    <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
-                                        <div style={{ paddingLeft: '16%', width: "40%" }} onClick={() => fetchDirContents('..')}><FontAwesomeIcon icon={faTurnUp} /></div>
-                                    </div>
-                                    {dirNames.map((dir, index) => (
-                                        <div className="modal-item" key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                                            <FontAwesomeIcon icon={faFolder} onClick={log} /> &nbsp;&nbsp;
-                                            <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`d${index}`); }} /> &nbsp;&nbsp;
-                                            <input type='checkbox' id={`dirCheckbox${index + 1}`} className="selectFiles" align='center' onChange={async () => { setEnabledCheckboxes([...enabledCheckboxes, `dirCheckbox${index + 1}`]); await pushOrPopName(pwd + '/' + dir.name) }}></input>
-                                            {selectedItemId === `d${index}` ? (
-                                                <input type="text" defaultValue={dir.name} onKeyDown={(event) => {
-                                                    if (event.key === 'Enter') {
-                                                        handleUpdateText(`d${index}`, event.target.value);
-                                                    }
-                                                }} onBlur={(event) => {
-                                                    handleUpdateText(`d${index}`, event.target.value);
-                                                }}
-                                                    autoFocus
-                                                />
-                                            ) : (
-                                                <div style={{ paddingLeft: '6%', width: "40%", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    <a style={{ color: "black", textDecoration: "none" }} title={dir.name} onClick={() => { fetchDirContents(dir.name); }}>
-                                                        {dir.name}
-                                                    </a>
-                                                </div>
-                                            )}
-                                            <div style={{ paddingLeft: '4%', width: "25%" }}>Folder</div>
-                                            <div style={{ paddingLeft: '5%', width: "25%" }}>{dir.created}</div>
-                                        </div>
-                                    ))}
-                                    <div>
-                                        {fileNames.map((file, index) => (
-                                            <div className="modal-item" key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                                                <FontAwesomeIcon icon={faFile} /> &nbsp;&nbsp;&nbsp;
-                                                <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`f${index}`); }} /> &nbsp;&nbsp;
-                                                <input type='checkbox' id={`fileCheckbox${index + 1}`} className="selectFiles" onChange={async () => { setEnabledCheckboxes([...enabledCheckboxes, `fileCheckbox${index + 1}`]); await pushOrPopName(pwd + '/' + file.name); }}></input>
-                                                {selectedItemId === `f${index}` ? (
-                                                    <input type="text" defaultValue={file.name} onKeyDown={(event) => {
-                                                        if (event.key === 'Enter') {
-                                                            handleUpdateText(`f${index}`, event.target.value);
-                                                        }
-                                                    }} onBlur={(event) => {
-                                                        handleUpdateText(`f${index}`, event.target.value);
-                                                    }}
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <div style={{ paddingLeft: '6%', width: "40%", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} id={`fid${index + 1}`}>
-                                                        <span title={file.name} onClick={() => {
-                                                            handleFileClick(file.name);
-                                                        }}>
-                                                            {file.name}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                <div style={{ paddingLeft: '4%', width: "25%" }}>{file.type + "File"}</div>
-                                                <div style={{ paddingLeft: '5%', width: "25%" }}>{file.created}</div>
-                                            </div>
-                                        ))}
-                                        {isNewDirOn && (
-                                            <div className="modal-item">
-                                                <input
-                                                    type="text"
-                                                    defaultValue="New Folder"
-                                                    onKeyDown={(event) => {
-                                                        if (event.key === 'Enter') {
-                                                            createNewFolder(event.target.value);
-                                                        } else if (event.key === 'Escape') {
-                                                            setIsNewDirOn(false);
-                                                        }
-                                                    }}
-                                                    onBlur={(event) => {
-                                                        if (isNewDirOn) createNewFolder(event.target.value);
-                                                    }}
-                                                    autoFocus
-                                                    onFocus={(event) => {
-                                                        event.target.select();
-                                                    }}
-                                                />  &nbsp;&nbsp;
-                                                <FontAwesomeIcon
-                                                    icon={faXmark}
-                                                    style={{ fontWeight: "bold", cursor: "pointer" }}
-                                                    onMouseDown={(event) => {
-                                                        event.preventDefault();
-                                                        setIsNewDirOn(false);
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-                                        <div style={{ height: "20px" }}></div>
-                                    </div>
-                                </div>
+                                <p>
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad
+                                </p>
+                                <p>
+                                    Standard File Structure for Multi-file Datasets:
+                                </p>
+                                <ul>
+                                    <li>Molecules(txt)&nbsp;+&nbsp;Annotation(txt)</li>
+                                    <li>Cells(tsv)&nbsp;+&nbsp;Genes(tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                                    <li>Cells(tsv.gz)&nbsp;+&nbsp;Genes(tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
+                                    <li>Cells(tsv)&nbsp;+&nbsp;Features(tsv)&nbsp;+&nbsp;Count Matrix(mtx)</li>
+                                    <li>Cells(tsv.gz)&nbsp;+&nbsp;Features(tsv.gz)&nbsp;+&nbsp;Count Matrix(mtx.gz)</li>
+                                </ul>
                             </div>
-                            <div style={{ paddingTop: "7px" }}><button className="fileManagerButton" onClick={() => { setPwd('/'); setSelectedFiles(tempFileList); toggleModal(); }} ><FontAwesomeIcon icon={faCheck} style={{ fontWeight: "bold" }} /> Select Files</button>&nbsp;&nbsp;
-                                <button className="fileManagerButton" onClick={() => { setIsUppyModalOpen(!isUppyModalOpen) }} > <FontAwesomeIcon icon={faArrowAltCircleUp} /> Upload Here </button>&nbsp;&nbsp;
-                                {isUppyModalOpen && (
-                                    <UppyUploader isUppyModalOpen={isUppyModalOpen} setIsUppyModalOpen={setIsUppyModalOpen} pwd={pwd} authToken={jwtToken} freeSpace={totalStorage - usedStorage} />
-                                )}
-                                <button className="fileManagerButton" onClick={async () => {
-                                    await setTempFileList([]); setSelectedFiles([]); toggleModal(); setPwd('/')
-                                }} > <FontAwesomeIcon icon={faXmark} style={{ fontWeight: "bold" }} /> Close</button></div>
-                        </div>)
-                    }
+                        </div>
+                    </div>}
+                    {previewBoxOpen && <FilePreviewModal selectedFile={fileToPreview} setPreviewBoxOpen={setPreviewBoxOpen} jwtToken={jwtToken} forResultFile={false} />}
+                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} />}
                     <div>        <div>
                         <div id="upload-data-div">
-                            <b>Choose your files *</b> <br />
-                            <div id='files-selected'>
-                                {selectedFiles.map((item, index) => (
-                                    <div key={index} onClick={() => console.log(item)}>
-                                        {item}
-                                    </div>
-                                ))}
+                            <div className="info-icon" onClick={() => { setIsInfoModalOpen(true); }}>
+                                <FontAwesomeIcon icon={faInfoCircle} size="1.2x" />
                             </div>
+                            <b>Choose your files *</b> <br />
+                            <div id="files-selected">
+                                {selectedFiles.length > 1 ? (
+                                    <>
+                                        {selectedFiles.map((item, index) => {
+                                            const itemName = item.substring(item.lastIndexOf('/') + 1);
+                                            const showDropdown = !acceptedMultiFileNames.includes(itemName);
+
+                                            return (
+                                                <div key={index} onClick={() => console.log(item)}>
+                                                    {item}&nbsp;&nbsp;
+                                                    {showDropdown && (
+                                                        <select
+                                                            onChange={(e) => {
+                                                                const updatedAliases = [...selectedAliases];
+                                                                updatedAliases[index] = getStandardFileName(item, e.target.value);
+                                                                setSelectedAliases(updatedAliases);
+                                                            }}
+                                                        >
+                                                            <option selected>Set a standard file type</option>
+                                                            {getAliasOptions(itemName).map((alias, aliasIndex) => (
+                                                                <option key={aliasIndex}>{alias}</option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+
+
+                                        <div style={{ color: 'red' }}>
+                                            Notice: Files will be renamed to standard names of their corresponding type.
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div>
+                                        {selectedFiles[0]}
+                                    </div>
+                                )}
+                            </div>
+
                             <button type="button" onClick={toggleModal} style={{ fontSize: "1em", padding: "10px", borderRadius: "5px" }}>
                                 <FontAwesomeIcon icon={faFolderOpen} />
                             </button>

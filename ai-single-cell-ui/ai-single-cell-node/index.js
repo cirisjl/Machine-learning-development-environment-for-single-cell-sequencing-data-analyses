@@ -415,25 +415,28 @@ app.post('/renameFile', async (req, res) => {
     if (uname == 'Unauthorized')
         return res.status(403).jsonp('Unauthorized');
 
-    pool.query(`UPDATE aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id SET f.file_loc = CONCAT('${newName}', SUBSTRING(f.file_loc, LENGTH('${oldName}') + 1)) WHERE u.username = '${uname}' AND f.file_loc LIKE '${oldName}%';`, [newName, oldName, uname, oldName + '%'], (err, results) => {
-
-        console.log(results);
+    pool.query(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc LIKE '${oldName}%';`, (err, results) => {
         if (err) {
             console.error(err);
-            res.json({ status: 500, message: 'Internal Server Error' });
-            return;
+            return res.status(500).json({ status: 500, message: 'Internal Server Error' });
         }
-    })
 
-    fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
-        if (err) {
-            console.error(err);
+        if (results.length > 0) {
+            return res.status(409).json({ status: 409, message: 'Directory already exists' });
         } else {
-            console.log('File renamed successfully!');
+            fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ status: 500, message: 'Internal Server Error' });
+                } else {
+                    console.log('File renamed successfully!');
+                    return res.status(200).jsonp('Ok');
+                }
+            });
         }
     });
-    return res.status(200).jsonp('Ok');
 });
+
 
 app.post('/download', async (req, res) => {
     const { fileList } = req.body;
