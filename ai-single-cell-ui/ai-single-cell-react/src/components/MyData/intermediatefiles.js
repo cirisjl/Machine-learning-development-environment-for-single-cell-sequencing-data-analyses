@@ -38,7 +38,10 @@ export default function IntermediateFiles({ taskId, results_path, task_title }) 
     const apiUrl = `${SERVER_URL}/download`;
 
     const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-    fetch(`${apiUrl}?fileUrl=${results_path}/${fileUrl}&authToken=${jwtToken}&forResultFile=Yes`)
+
+    const dirPath = results_path + "/" + taskId
+
+    fetch(`${apiUrl}?fileUrl=${dirPath}/${fileUrl}&authToken=${jwtToken}&forResultFile=Yes`)
       .then(response => {
         return response.blob();
       })
