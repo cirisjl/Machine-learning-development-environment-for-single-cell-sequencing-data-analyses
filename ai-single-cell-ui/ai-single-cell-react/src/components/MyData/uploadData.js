@@ -258,7 +258,7 @@ export default function UploadData() {
             }
         }
         else {
-            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad"];
+            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz"];
             if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
                 setErrorMessage("The selected file is not of an accepted standard format.");
                 return;
@@ -347,7 +347,7 @@ export default function UploadData() {
                         <div className="modal-content">
                             <div>
                                 <p>
-                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5
                                 </p>
                                 <p>
                                     Standard File Structure for Multi-file Datasets:
