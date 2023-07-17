@@ -505,7 +505,7 @@ app.get('/download', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
 
-    filePath = `${storageDir}/${username}/${fileUrl}`;
+    filePath = `${storageDir}${username}${fileUrl}`;
   
 
     console.log('file: ' + filePath);
