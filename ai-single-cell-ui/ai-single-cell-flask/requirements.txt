@@ -7,3 +7,4 @@ flask-htmlmin
 pandas
 scanpy
 detect-delimiter
+requests
