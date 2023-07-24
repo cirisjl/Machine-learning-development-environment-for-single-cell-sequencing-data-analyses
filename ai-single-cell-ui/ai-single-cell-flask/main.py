@@ -124,10 +124,11 @@ def load_annData(file_path, replace_invalid=False):
 
 def get_dataset_options(authToken):
     params = {'authToken': authToken}
-    
+    print("Params for API Call")
+    print(params)
     # Make the API call and fetch the dataset options from your API
     response = requests.get(DATASETS_API, params=params)
-    
+
     if response.status_code == 200:
         dataset_options = response.json()
         print(dataset_options)
@@ -136,98 +137,112 @@ def get_dataset_options(authToken):
     #     # Handle the case when the API call fails
     #     return []
 
-app.layout = html.Div(
-    className="main-container",
-    children=[
-        html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
-        dcc.Dropdown(
-            id="dataset-dropdown",
-            options=[{"label": dataset, "value": dataset} for dataset in datasets],
-            placeholder="Select a dataset",
-            style={"width": "400px", "margin-bottom": "20px"}
-        ),
-        html.Div(
-            [
-                html.P("Would you like to replace invalid values with NaN?"),
-                dcc.RadioItems(
-                    id="replace-nan-radio",
-                    options=[
-                        {"label": "Yes", "value": "yes"},
-                        {"label": "No", "value": "no"},
-                    ],
-                    value="yes",
-                ),
-                html.Button(
-                    "Continue",
-                    id="continue-button",
-                    n_clicks=0,
-                    style={"margin-top": "10px"}
-                ),
 
-            ],
-            id="element-to-hide",
-            style={'display': 'none'}  # Hide the container div initially
-        ),
-        dcc.Loading(id="loading", type="circle", children=[
-            html.Div(id="file-info"),
-            html.Div(id="dataset-content"),
-            html.Div(id="updated-dataset-container"),
-            html.Div(id="rowsncolumns-container"),
-        ]),
+def is_valid_query_param(query_param):
+    # Check if the query parameter is not empty and meets specific criteria
+    if query_param is None or not query_param.strip():
+        return False
 
-        html.Div(
-            className="input-container",
-            children=[
-                html.Button(
-                    "Edit Dataset",
-                    id="edit-button",
-                    className="edit-button"
-                ),
-                html.Div(id="edit-status", className="edit-status"),
-            ],
-            id="edit-button-container",
-            style={"display": "none"},
-        ),
-        # html.Div(
-        #     className="input-container",
-        #     children=[
-        #         html.Button(
-        #             "Update Dataset",
-        #             id="update-button",
-        #             className="update-button"
-        #         ),
-        #         html.Div(id="update-status", className="update-status"),
-        #         # html.A(
-        #         #     "Download Dataset",
-        #         #     id="download-link",
-        #         #     href="",
-        #         #     download="updated_dataset.h5ad",
-        #         #     target="_blank"
-        #         # )
-        #     ],
-        #     id="update-button-container",
-        #     style={"display": "none"},
-        # ),
-        dcc.Store(id='adata-storage'),
-        dcc.Store(id='updated-adata-storage'),
-    ]
-)
+    # Add any additional validation logic here if needed
+    # For example, check if the query_param is a valid integer, or follows a certain pattern
+
+    return True
+
+
+def get_dash_layout(authToken):
+    return html.Div(
+        className="main-container",
+        children=[
+            html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
+            dcc.Input(id='authToken-container', type='hidden', value=authToken),
+            dcc.Dropdown(
+                id="dataset-dropdown",
+                options=[{"label": dataset, "value": dataset} for dataset in datasets],
+                placeholder="Select a dataset",
+                style={"width": "400px", "margin-bottom": "20px"}
+            ),
+            html.Div(
+                [
+                    html.P("Would you like to replace invalid values with NaN?"),
+                    dcc.RadioItems(
+                        id="replace-nan-radio",
+                        options=[
+                            {"label": "Yes", "value": "yes"},
+                            {"label": "No", "value": "no"},
+                        ],
+                        value="yes",
+                    ),
+                    html.Button(
+                        "Continue",
+                        id="continue-button",
+                        n_clicks=0,
+                        style={"margin-top": "10px"}
+                    ),
+
+                ],
+                id="element-to-hide",
+                style={'display': 'none'}  # Hide the container div initially
+            ),
+            dcc.Loading(id="loading", type="circle", children=[
+                html.Div(id="file-info"),
+                html.Div(id="dataset-content"),
+                html.Div(id="updated-dataset-container"),
+                html.Div(id="rowsncolumns-container"),
+            ]),
+
+            html.Div(
+                className="input-container",
+                children=[
+                    html.Button(
+                        "Edit Dataset",
+                        id="edit-button",
+                        className="edit-button"
+                    ),
+                    html.Div(id="edit-status", className="edit-status"),
+                ],
+                id="edit-button-container",
+                style={"display": "none"},
+            ),
+            # html.Div(
+            #     className="input-container",
+            #     children=[
+            #         html.Button(
+            #             "Update Dataset",
+            #             id="update-button",
+            #             className="update-button"
+            #         ),
+            #         html.Div(id="update-status", className="update-status"),
+            #         # html.A(
+            #         #     "Download Dataset",
+            #         #     id="download-link",
+            #         #     href="",
+            #         #     download="updated_dataset.h5ad",
+            #         #     target="_blank"
+            #         # )
+            #     ],
+            #     id="update-button-container",
+            #     style={"display": "none"},
+            # ),
+            dcc.Store(id='adata-storage'),
+            dcc.Store(id='updated-adata-storage'),
+        ]
+    )
 
 
 @app.callback(
     Output('dataset-dropdown', 'options'),
-    Input('url', 'pathname'),
+    Input('authToken-container', 'value'),
 )
-def update_dataset_dropdown(pathname):
-    if pathname == '/dashboard':
-        # If accessing the dashboard page, fetch the dataset options
-        parsed_url = urllib.parse.urlparse(pathname)
-        parsed_query = urllib.parse.parse_qs(parsed_url.query)
-        authToken = parsed_query['authToken'][0]
+def update_dataset_dropdown(authToken):
+    if authToken is not None:
+        print("Inside the path")
+        print("AuthToken:::")
+        print(authToken)
         dataset_options = get_dataset_options(authToken)
         return dataset_options
     else:
         # For other pages, no need to update the dropdown
+        print("Outside the path")
         return dash.no_update
 
 
@@ -311,26 +326,26 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Get the names of all assays
                     assay_names <- names(seurat_obj@assays)
                     print(assay_names)
-                    
+
                     # Get the dimensions of the Seurat object
                     seurat_dims <- dim(seurat_obj)
-                    
+
                     # Get the number of genes
                     num_genes <- seurat_dims[1]
-                    
+
                     # Get the number of cells
                     num_cells <- seurat_dims[2]
-                    
+
                     # # Access a specific assay by name (e.g., 'RNA')
                     # specific_assay <- seurat_obj[["RNA"]]
                     # print(specific_assay)
-                    
+
                     # Get the list of dimensional reductions
                     dimensional_reductions <- names(seurat_obj@reductions)
-                    
+
                     # Print the names of the dimensional reductions
                     print(dimensional_reductions)
-                    
+
                     # # Access the raw counts matrix
                     # raw_counts <- seurat_obj@assays$RNA@counts
                     # print(raw_counts)
@@ -987,7 +1002,7 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
                   print(DefaultAssay(object = seurat_obj))  
                 # Get the names of all assays
                 assay_names <- names(seurat_obj@assays)
-              
+
                 SaveH5Seurat(seurat_obj, filename = output , overwrite = TRUE, verbose = FALSE)
            ''')
             assay_names = ro.globalenv["assay_names"]
@@ -1011,7 +1026,7 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
             assay_names = ro.globalenv["assay_names"]
             update_dropdown = [{'label': assay, 'value': assay} for assay in assay_names]
 
-            return f"Default assay set to: {selected_assay_name}", selected_assay_name,update_dropdown, selected_assay_name
+            return f"Default assay set to: {selected_assay_name}", selected_assay_name, update_dropdown, selected_assay_name
 
 
 @app.callback(
@@ -1031,12 +1046,12 @@ def update_active_assay(selected_assay, available_assays_options):
         return html.Div([
             html.P(f"Do you want to change the assay name '{selected_assay}' to 'RNA'?"),
             dcc.Checklist(id="confirm-checklist",
-                  options=[
-                      {'label': 'Yes', 'value': 'yes'},
-                      {'label': 'No', 'value': 'no'}
-                  ],
-                  value=[]
-            )
+                          options=[
+                              {'label': 'Yes', 'value': 'yes'},
+                              {'label': 'No', 'value': 'no'}
+                          ],
+                          value=[]
+                          )
         ])
     else:
         # Set the selected assay as default (without confirmation)
@@ -1051,8 +1066,15 @@ def base():
 
 @flask_app.route('/dashboard')
 def dashboard():
-    return app.index()
 
+    authToken = request.args.get('authToken')  # Get the query parameter from the request
+
+    if authToken is None or not is_valid_query_param(authToken):
+        # Handle the case when the query parameter is missing or invalid
+        return "Authentication Failed. Please login to continue"
+
+    app.layout = get_dash_layout(authToken)  # Set the Dash app layout with the query parameter
+    return app.index()
 
 
 @flask_app.route('/preview/dataset', methods=['POST'])
@@ -1072,7 +1094,7 @@ def previewDatasets():
     filenames = [os.path.basename(file['file_loc']) for file in files]
     file_paths = [file['file_loc'] for file in files]
 
-     # create user directory to read the file contents
+    # create user directory to read the file contents
     user_directory = USER_STORAGE_PATH + "/" + username
 
     # Check the existence of the files
@@ -1082,7 +1104,7 @@ def previewDatasets():
             response = jsonify(error=error_message)
             response.status_code = 404  # Not Found status code
             return response
-        
+
     # All files exist, proceed with reading the contents
     molecules_filename = "molecules.txt"
     annotations_filename = "annotation.txt"
@@ -1100,7 +1122,7 @@ def previewDatasets():
         response = jsonify(error=error_message)
         response.status_code = 400  # Bad Request status code
         return response
-        
+
     if annotations_filename in filenames:
         annotations_path = file_paths[filenames.index(annotations_filename)]
         absolute_annotation_path = user_directory + annotations_path
@@ -1111,7 +1133,7 @@ def previewDatasets():
         response = jsonify(error=error_message)
         response.status_code = 400  # Bad Request status code
         return response
-    
+
     # Load the CSV file into an R dataframe
     ro.r('''
         library(scater)
@@ -1127,7 +1149,7 @@ def previewDatasets():
         f'annotation <- read.delim(annotation_file_path, sep = "\t", stringsAsFactors = T)')
     r_molecules_df = ro.globalenv['molecules']
     r_annotations_df = ro.globalenv['annotation']
-    
+
     pandas_molecules_df = ro.conversion.rpy2py(r_molecules_df)
     pandas_annotation_df = ro.conversion.rpy2py(r_annotations_df)
 
@@ -1167,8 +1189,12 @@ def previewDatasets():
     r_columns = ro.globalenv['temp4']
     r_is_mitro = ro.globalenv['temp5']
 
-
-    return render_template('previewDatasets.html', pandas_annotation_df=pandas_annotation_df, pandas_molecules_df=pandas_molecules_df, r_table_geneNames=r_table_geneNames,r_grep_not_mt=r_grep_not_mt,r_grep_not_rpls=r_grep_not_rpls, r_grep_atp8=r_grep_atp8, r_columns=r_columns, r_is_mitro=r_is_mitro, absolute_annotation_path=absolute_annotation_path, absolute_molecules_path=absolute_molecules_path)
+    return render_template('previewDatasets.html', pandas_annotation_df=pandas_annotation_df,
+                           pandas_molecules_df=pandas_molecules_df, r_table_geneNames=r_table_geneNames,
+                           r_grep_not_mt=r_grep_not_mt, r_grep_not_rpls=r_grep_not_rpls, r_grep_atp8=r_grep_atp8,
+                           r_columns=r_columns, r_is_mitro=r_is_mitro,
+                           absolute_annotation_path=absolute_annotation_path,
+                           absolute_molecules_path=absolute_molecules_path)
 
 
 if __name__ == "__main__":
