@@ -1,5 +1,4 @@
 from rpy2.robjects.packages import importr
-import urllib3
 import urllib.parse
 from constants import USER_STORAGE_PATH, DATASETS_API
 import rpy2.robjects as ro
