@@ -752,8 +752,8 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
             return error_message, "", ""
 
         file_path = datasetMap[dataset]
-        fileparts = file_path.split(".")
-        suffix = fileparts[1]
+        file_name = file_path.split("/")
+        fileparts = file_name[len(file_name)-1].split(".")
         filename = fileparts[0] + "_corrected.h5ad"
 
         # Generate a new file name for the filtered dataset
@@ -988,12 +988,17 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
     if n_clicks is None:
         raise PreventUpdate
 
+
+        file_path = datasetMap[dataset]
+        file_name = file_path.split("/")
+        fileparts = file_name[len(file_name)-1].split(".")
     # Assuming 'seurat_obj' is your Seurat object
     # Update the Seurat object to use the selected assay as the default assay
     file_path = datasetMap[dataset]
-    fileParts = file_path.split(".")
-    suffix = fileParts[1]
-    fileName = fileParts[0]
+    file_name = file_path.split("/")
+    fileparts = file_name[len(file_name)-1].split(".")
+    suffix = fileparts[1]
+    fileName = fileparts[0]
     output = fileName + "_corrected"
     ro.globalenv["output"] = output
     ro.globalenv["file_path"] = file_path
