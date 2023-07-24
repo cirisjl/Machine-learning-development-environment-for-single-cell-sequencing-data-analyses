@@ -17,7 +17,7 @@ import csv
 import traceback
 from dash.exceptions import PreventUpdate
 import requests
-
+import logging
 
 pandas2ri.activate()
 import os
@@ -29,6 +29,8 @@ flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
 
+# Set the log level to capture INFO, WARNING, and ERROR messages
+flask_app.logger.setLevel(logging.INFO)
 
 # Get the dataset names and file paths from the directory
 datasets = ["Heart Neuronal Dataset", "CSV Dataset", "Text Dataset", "Tung Dataset", "Seurat Dataset"]
@@ -124,7 +126,7 @@ def load_annData(file_path, replace_invalid=False):
 
 def get_dataset_options(authToken):
     params = {'authToken': authToken}
-    print("Params for API Call")
+    flask_app.logger.info("Params for API Call")
     print(params)
     # Make the API call and fetch the dataset options from your API
     response = requests.get(DATASETS_API, params=params)
