@@ -132,8 +132,8 @@ def get_dataset_options(authToken, username):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
     # Initialize the variables
-    datasets = []
-    datasetMap = {}
+    datasets.clear()
+    datasetMap.clear()
     # print(params)
     flask_app.logger.info('API Params: %s', params)
 
