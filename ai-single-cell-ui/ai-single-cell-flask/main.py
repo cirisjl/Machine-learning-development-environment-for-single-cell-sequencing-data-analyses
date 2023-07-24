@@ -1,5 +1,7 @@
 from rpy2.robjects.packages import importr
-from constants import USER_STORAGE_PATH
+import urllib3
+import urllib.parse
+from constants import USER_STORAGE_PATH, DATASETS_API
 import rpy2.robjects as ro
 from flask import Flask, request, make_response, jsonify, render_template
 import dash
@@ -15,6 +17,8 @@ import numpy as np
 import csv
 import traceback
 from dash.exceptions import PreventUpdate
+import requests
+
 
 pandas2ri.activate()
 import os
@@ -119,6 +123,20 @@ def load_annData(file_path, replace_invalid=False):
     return adata
 
 
+def get_dataset_options(authToken):
+    params = {'authToken': authToken}
+    
+    # Make the API call and fetch the dataset options from your API
+    response = requests.get(DATASETS_API, params=params)
+    
+    if response.status_code == 200:
+        dataset_options = response.json()
+        print(dataset_options)
+        return [{'label': option, 'value': option} for option in datasets]
+    # else:
+    #     # Handle the case when the API call fails
+    #     return []
+
 app.layout = html.Div(
     className="main-container",
     children=[
@@ -195,6 +213,23 @@ app.layout = html.Div(
         dcc.Store(id='updated-adata-storage'),
     ]
 )
+
+
+@app.callback(
+    Output('dataset-dropdown', 'options'),
+    Input('url', 'pathname'),
+)
+def update_dataset_dropdown(pathname):
+    if pathname == '/dashboard':
+        # If accessing the dashboard page, fetch the dataset options
+        parsed_url = urllib.parse.urlparse(pathname)
+        parsed_query = urllib.parse.parse_qs(parsed_url.query)
+        authToken = parsed_query['authToken'][0]
+        dataset_options = get_dataset_options(authToken)
+        return dataset_options
+    else:
+        # For other pages, no need to update the dropdown
+        return dash.no_update
 
 
 @app.callback(
