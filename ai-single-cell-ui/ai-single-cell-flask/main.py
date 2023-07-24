@@ -131,6 +131,9 @@ def load_annData(file_path, replace_invalid=False):
 def get_dataset_options(authToken, username):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
+    # Initialize the variables
+    datasets = []
+    datasetMap = {}
     # print(params)
     flask_app.logger.info('API Params: %s', params)
 
