@@ -32,13 +32,17 @@ CORS(flask_app)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 flask_app.logger.setLevel(logging.INFO)
 
-# Get the dataset names and file paths from the directory
-datasets = ["Heart Neuronal Dataset", "CSV Dataset", "Text Dataset", "Tung Dataset", "Seurat Dataset"]
+# # Get the dataset names and file paths from the directory
+# datasets = ["Heart Neuronal Dataset", "CSV Dataset", "Text Dataset", "Tung Dataset", "Seurat Dataset"]
 
-datasetMap = {"Heart Neuronal Dataset": "hca_heart_neuronal_raw.h5ad",
-              "CSV Dataset": "GSE60749_RnaSeq_single_cell_NPC_TPM.csv", "Text Dataset": "updated_text_dataset.txt",
-              "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
+# datasetMap = {"Heart Neuronal Dataset": "hca_heart_neuronal_raw.h5ad",
+#               "CSV Dataset": "GSE60749_RnaSeq_single_cell_NPC_TPM.csv", "Text Dataset": "updated_text_dataset.txt",
+#               "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
 
+
+# Initialize the variables
+datasets = []
+datasetMap = {}
 
 def create_dataframe(adata):
     # Access the data matrix
@@ -135,8 +139,21 @@ def get_dataset_options(authToken):
     flask_app.logger.info('API Response Content: %s', response.text)
 
     if response.status_code == 200:
-        dataset_options = response.json()
-        print(dataset_options)
+        # Loop through the datasets in the JSON response
+        for dataset_id, dataset_info in response.json().items():
+            title = dataset_info['title']
+            datasets.append(title)
+
+            # Check if there are multiple files for the dataset
+            if len(dataset_info['files']) > 1:
+                # Get the parent directory of the first file (assuming all files are in the same parent directory)
+                path = os.path.dirname(dataset_info['files'][0]['file_loc'])
+            else:
+                # Use the file location as the path
+                path = dataset_info['files'][0]['file_loc']
+
+            datasetMap[title] = path
+
         return [{'label': option, 'value': option} for option in datasets]
     # else:
     #     # Handle the case when the API call fails
