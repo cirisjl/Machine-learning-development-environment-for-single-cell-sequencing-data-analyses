@@ -128,7 +128,7 @@ def load_annData(file_path, replace_invalid=False):
     return adata
 
 
-def get_dataset_options(authToken):
+def get_dataset_options(authToken, username):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
     # print(params)
@@ -152,7 +152,11 @@ def get_dataset_options(authToken):
                 # Use the file location as the path
                 path = dataset_info['files'][0]['file_loc']
 
-            datasetMap[title] = path
+            user_directory = USER_STORAGE_PATH + "/" + username
+            datasetMap[title] = user_directory + path
+        flask_app.logger.info('API Datasets: %s', datasets)
+        flask_app.logger.info('API DatasetsMap: %s', datasetMap)
+
 
         return [{'label': option, 'value': option} for option in datasets]
     # else:
@@ -1090,12 +1094,13 @@ def base():
 def dashboard():
 
     authToken = request.args.get('authToken')  # Get the query parameter from the request
+    username = request.args.get('username')  # Get the query parameter from the request
 
     if authToken is None or not is_valid_query_param(authToken):
         # Handle the case when the query parameter is missing or invalid
         return "Authentication Failed. Please login to continue"
 
-    app.layout = get_dash_layout(authToken)  # Set the Dash app layout with the query parameter
+    app.layout = get_dash_layout(authToken, username)  # Set the Dash app layout with the query parameter
     return app.index()
 
 
