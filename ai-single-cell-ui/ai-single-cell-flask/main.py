@@ -127,9 +127,12 @@ def load_annData(file_path, replace_invalid=False):
 def get_dataset_options(authToken):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
-    print(params)
+    # print(params)
+    flask_app.logger.info('API Params: %s', params)
+
     # Make the API call and fetch the dataset options from your API
     response = requests.get(DATASETS_API, params=params)
+    flask_app.logger.info('API Response Content: %s', response.text)
 
     if response.status_code == 200:
         dataset_options = response.json()
