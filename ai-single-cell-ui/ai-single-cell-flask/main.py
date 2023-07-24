@@ -175,12 +175,13 @@ def is_valid_query_param(query_param):
     return True
 
 
-def get_dash_layout(authToken):
+def get_dash_layout(authToken, username):
     return html.Div(
         className="main-container",
         children=[
             html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', type='hidden', value=authToken),
+            dcc.Input(id='username-container', type='hidden', value=username),
             dcc.Dropdown(
                 id="dataset-dropdown",
                 options=[{"label": dataset, "value": dataset} for dataset in datasets],
@@ -258,13 +259,14 @@ def get_dash_layout(authToken):
 @app.callback(
     Output('dataset-dropdown', 'options'),
     Input('authToken-container', 'value'),
+    Input('username-container', 'value'), 
 )
-def update_dataset_dropdown(authToken):
+def update_dataset_dropdown(authToken, username):
     if authToken is not None:
         print("Inside the path")
         print("AuthToken:::")
         print(authToken)
-        dataset_options = get_dataset_options(authToken)
+        dataset_options = get_dataset_options(authToken, username)
         return dataset_options
     else:
         # For other pages, no need to update the dropdown
