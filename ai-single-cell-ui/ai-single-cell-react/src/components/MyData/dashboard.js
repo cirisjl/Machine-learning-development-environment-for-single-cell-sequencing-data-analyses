@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import DashHtmlComponents from 'dash-html-components';
 import { FLASK_BACKEND_API} from '../../constants/declarations';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
