@@ -38,6 +38,7 @@
     "react-cookie": "^4.1.1",
     "react-dom": "^18.2.0",
     "react-filepond": "^7.1.2",
+    "react-iframe": "^1.8.5",
     "react-jsonschema-form": "^1.8.1",
     "react-markdown": "^8.0.5",
     "react-router-dom": "^6.8.1",
