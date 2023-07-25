@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { FLASK_BACKEND_API} from '../../constants/declarations';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,18 +18,14 @@ export default function FlaskDashboard  () {
       if (authData.isAuth) {
         const userID = authData.username;
 
-        const queryParams = {
+        // Construct the query parameters
+        const queryParams = new URLSearchParams({
             authToken: jwtToken,
             username: userID,
-        };
+        });
+        const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
 
-    fetch(FLASK_BACKEND_API + "/dashboard", {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(queryParams),
-      }) 
+    fetch(FLASK_BACKEND_API) 
       .then(response => response.text())
       .then(html => setDashApp(html))
       .catch(error => console.error('Error fetching Dash app:', error));  
