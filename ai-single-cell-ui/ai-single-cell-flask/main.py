@@ -110,7 +110,7 @@ def get_dash_layout(authToken, username):
     )
 
 
-app.layout = get_dash_layout()
+app.layout = get_dash_layout(authToken=None, username=None)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 flask_app.logger.setLevel(logging.INFO)
 
