@@ -26,6 +26,7 @@ export default function FlaskDashboard  () {
         const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
 
     fetch(FLASK_BACKEND_API) 
+    .then(response => console.log(response))
       .then(response => response.text())
       .then(html => setDashApp(html))
       .then(html => console.log(html))
