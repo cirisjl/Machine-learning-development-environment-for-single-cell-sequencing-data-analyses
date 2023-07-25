@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
+import Iframe from 'react-iframe';
 
 
 export default function FlaskDashboard  () {
   const [dashApp, setDashApp] = useState(null);
-  const navigate = useNavigate();
+  const [flaskURL, setFlaskURL] = useState(null);
 
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -23,14 +25,14 @@ export default function FlaskDashboard  () {
             authToken: jwtToken,
             username: userID,
         });
-        const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
-
-    fetch(FLASK_BACKEND_API) 
-    .then(response => console.log(response))
-      .then(response => response.text())
-      .then(html => setDashApp(html))
-      .then(html => console.log(html))
-      .catch(error => console.error('Error fetching Dash app:', error));  
+    const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
+        setFlaskURL(FLASK_BACKEND_API)
+    // fetch(FLASK_BACKEND_API) 
+    // .then(response => console.log(response))
+    //   .then(response => response.text())
+    //   .then(html => setDashApp(html))
+    //   .then(html => console.log(html))
+    //   .catch(error => console.error('Error fetching Dash app:', error));  
 
       } else {
         console.warn("Unauthorized - please login first to continue");
@@ -45,9 +47,18 @@ export default function FlaskDashboard  () {
 
   return (
     <div>
-      {dashApp && (
+      {/* {dashApp && (
         <div dangerouslySetInnerHTML={{ __html: dashApp }} />
-      )}
+      )} */}
+{flaskURL && (
+    <Iframe url= {flaskURL} // Replace this with the Flask app URL
+        width="100%"
+        height="600px"
+        id="dashFrame"
+        display="initial"
+        position="relative"
+    />
+    )}
     </div>
   );
 };
