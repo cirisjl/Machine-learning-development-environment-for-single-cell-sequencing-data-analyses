@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import DashHtmlComponents from 'dash-html-components';
 import { FLASK_BACKEND_API} from '../../constants/declarations';
-import { getCookie} from '../../utils/utilFunctions';
+import { getCookie, isUserAuth} from '../../utils/utilFunctions';
+import { useNavigate } from 'react-router-dom';
 
 
-export const FlaskDashboard = () => {
+export default function FlaskDashboard  () {
   const [dashApp, setDashApp] = useState(null);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
 
@@ -15,7 +18,7 @@ export const FlaskDashboard = () => {
     isUserAuth(jwtToken)
     .then((authData) => {
       if (authData.isAuth) {
-        userID = authData.username;
+        const userID = authData.username;
 
         const queryParams = {
             authToken: jwtToken,
@@ -40,9 +43,6 @@ export const FlaskDashboard = () => {
     })
     .catch((error) => {
       console.error(error);
-      setLoading(false);
-      setSuccessMessage('');
-      setErrorMessage('An error occurred while rendering the dashboard');
     } 
     );
 }, []);
