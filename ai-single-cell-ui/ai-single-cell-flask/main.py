@@ -18,13 +18,14 @@ import traceback
 from dash.exceptions import PreventUpdate
 import requests
 import logging
+import json
 
 pandas2ri.activate()
 import os
 
 # Initialize the Flask application
 flask_app = Flask(__name__)
-app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True)
+app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True)
 flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
