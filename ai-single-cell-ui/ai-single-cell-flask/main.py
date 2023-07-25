@@ -29,6 +29,88 @@ flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
 
+def get_dash_layout(authToken, username):
+    return html.Div(
+        className="main-container",
+        children=[
+            html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
+            dcc.Input(id='authToken-container', type='hidden', value=authToken),
+            dcc.Input(id='username-container', type='hidden', value=username),
+            dcc.Dropdown(
+                id="dataset-dropdown",
+                options=[{"label": dataset, "value": dataset} for dataset in datasets],
+                placeholder="Select a dataset",
+                style={"width": "400px", "margin-bottom": "20px"}
+            ),
+            html.Div(
+                [
+                    html.P("Would you like to replace invalid values with NaN?"),
+                    dcc.RadioItems(
+                        id="replace-nan-radio",
+                        options=[
+                            {"label": "Yes", "value": "yes"},
+                            {"label": "No", "value": "no"},
+                        ],
+                        value="yes",
+                    ),
+                    html.Button(
+                        "Continue",
+                        id="continue-button",
+                        n_clicks=0,
+                        style={"margin-top": "10px"}
+                    ),
+
+                ],
+                id="element-to-hide",
+                style={'display': 'none'}  # Hide the container div initially
+            ),
+            dcc.Loading(id="loading", type="circle", children=[
+                html.Div(id="file-info"),
+                html.Div(id="dataset-content"),
+                html.Div(id="updated-dataset-container"),
+                html.Div(id="rowsncolumns-container"),
+            ]),
+
+            html.Div(
+                className="input-container",
+                children=[
+                    html.Button(
+                        "Edit Dataset",
+                        id="edit-button",
+                        className="edit-button"
+                    ),
+                    html.Div(id="edit-status", className="edit-status"),
+                ],
+                id="edit-button-container",
+                style={"display": "none"},
+            ),
+            # html.Div(
+            #     className="input-container",
+            #     children=[
+            #         html.Button(
+            #             "Update Dataset",
+            #             id="update-button",
+            #             className="update-button"
+            #         ),
+            #         html.Div(id="update-status", className="update-status"),
+            #         # html.A(
+            #         #     "Download Dataset",
+            #         #     id="download-link",
+            #         #     href="",
+            #         #     download="updated_dataset.h5ad",
+            #         #     target="_blank"
+            #         # )
+            #     ],
+            #     id="update-button-container",
+            #     style={"display": "none"},
+            # ),
+            dcc.Store(id='adata-storage'),
+            dcc.Store(id='updated-adata-storage'),
+        ]
+    )
+
+
+app.layout = get_dash_layout()
 # Set the log level to capture INFO, WARNING, and ERROR messages
 flask_app.logger.setLevel(logging.INFO)
 
@@ -178,85 +260,6 @@ def is_valid_query_param(query_param):
     return True
 
 
-def get_dash_layout(authToken, username):
-    return html.Div(
-        className="main-container",
-        children=[
-            html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
-            dcc.Input(id='authToken-container', type='hidden', value=authToken),
-            dcc.Input(id='username-container', type='hidden', value=username),
-            dcc.Dropdown(
-                id="dataset-dropdown",
-                options=[{"label": dataset, "value": dataset} for dataset in datasets],
-                placeholder="Select a dataset",
-                style={"width": "400px", "margin-bottom": "20px"}
-            ),
-            html.Div(
-                [
-                    html.P("Would you like to replace invalid values with NaN?"),
-                    dcc.RadioItems(
-                        id="replace-nan-radio",
-                        options=[
-                            {"label": "Yes", "value": "yes"},
-                            {"label": "No", "value": "no"},
-                        ],
-                        value="yes",
-                    ),
-                    html.Button(
-                        "Continue",
-                        id="continue-button",
-                        n_clicks=0,
-                        style={"margin-top": "10px"}
-                    ),
-
-                ],
-                id="element-to-hide",
-                style={'display': 'none'}  # Hide the container div initially
-            ),
-            dcc.Loading(id="loading", type="circle", children=[
-                html.Div(id="file-info"),
-                html.Div(id="dataset-content"),
-                html.Div(id="updated-dataset-container"),
-                html.Div(id="rowsncolumns-container"),
-            ]),
-
-            html.Div(
-                className="input-container",
-                children=[
-                    html.Button(
-                        "Edit Dataset",
-                        id="edit-button",
-                        className="edit-button"
-                    ),
-                    html.Div(id="edit-status", className="edit-status"),
-                ],
-                id="edit-button-container",
-                style={"display": "none"},
-            ),
-            # html.Div(
-            #     className="input-container",
-            #     children=[
-            #         html.Button(
-            #             "Update Dataset",
-            #             id="update-button",
-            #             className="update-button"
-            #         ),
-            #         html.Div(id="update-status", className="update-status"),
-            #         # html.A(
-            #         #     "Download Dataset",
-            #         #     id="download-link",
-            #         #     href="",
-            #         #     download="updated_dataset.h5ad",
-            #         #     target="_blank"
-            #         # )
-            #     ],
-            #     id="update-button-container",
-            #     style={"display": "none"},
-            # ),
-            dcc.Store(id='adata-storage'),
-            dcc.Store(id='updated-adata-storage'),
-        ]
-    )
 
 
 @app.callback(
