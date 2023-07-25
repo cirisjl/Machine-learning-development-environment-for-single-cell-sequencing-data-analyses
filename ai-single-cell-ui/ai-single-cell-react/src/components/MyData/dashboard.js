@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
+import DashRenderer from 'dash-renderer';
 
 
 export default function FlaskDashboard  () {
-  const [dashApp, setDashApp] = useState(null);
-  const navigate = useNavigate();
+    const [dashLayout, setDashLayout] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -26,9 +28,20 @@ export default function FlaskDashboard  () {
         const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
 
     fetch(FLASK_BACKEND_API) 
-      .then(response => response.text())
-      .then(html => setDashApp(html))
-      .catch(error => console.error('Error fetching Dash app:', error));  
+    .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch the Dash layout.');
+        }
+        return response.json();
+      })
+      .then((layoutJson) => {
+        setDashLayout(JSON.parse(layoutJson)); // Parse the JSON string into a JavaScript object
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
 
       } else {
         console.warn("Unauthorized - please login first to continue");
@@ -43,9 +56,10 @@ export default function FlaskDashboard  () {
 
   return (
     <div>
-      {dashApp && (
-        <div dangerouslySetInnerHTML={{ __html: dashApp }} />
-      )}
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error}</div>}
+      {dashLayout && <DashRenderer dashJson={dashLayout} />}
+      {/* Your other React components */}
     </div>
   );
 };
