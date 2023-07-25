@@ -28,6 +28,7 @@ export default function FlaskDashboard  () {
     fetch(FLASK_BACKEND_API) 
       .then(response => response.text())
       .then(html => setDashApp(html))
+      .then(html => console.log(html))
       .catch(error => console.error('Error fetching Dash app:', error));  
 
       } else {
