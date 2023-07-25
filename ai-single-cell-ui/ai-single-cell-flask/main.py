@@ -29,6 +29,10 @@ flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
 
+# Initialize the variables
+datasets = []
+datasetMap = {}
+
 def get_dash_layout(authToken, username):
     return html.Div(
         className="main-container",
@@ -121,10 +125,6 @@ flask_app.logger.setLevel(logging.INFO)
 #               "CSV Dataset": "GSE60749_RnaSeq_single_cell_NPC_TPM.csv", "Text Dataset": "updated_text_dataset.txt",
 #               "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
 
-
-# Initialize the variables
-datasets = []
-datasetMap = {}
 
 def create_dataframe(adata):
     # Access the data matrix
