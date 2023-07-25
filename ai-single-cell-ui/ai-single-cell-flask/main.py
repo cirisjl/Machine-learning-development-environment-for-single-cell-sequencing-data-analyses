@@ -1117,8 +1117,7 @@ def dashboard():
         return "Authentication Failed. Please login to continue"
 
     app.layout = get_dash_layout(authToken, username)  # Set the Dash app layout with the query parameter
-    dash_layout_json = json.dumps(app.to_plotly_json())
-    return jsonify(dash_layout_json)
+    return app.index()
 
 
 @flask_app.route('/preview/dataset', methods=['POST'])
