@@ -1,0 +1,159 @@
+---
+title: "Normalization for `r params$dataset`"
+author: "Lei Jiang"
+date: "`r Sys.Date()`"
+params:
+  datasets: NA # Vector of the datasets names
+  inputs: NA # Vector of input file path to scRNA data.
+  output_folder: NA # Output file path of the Seurat object.
+  output_format: AnnDate # Seurat or AnnDate
+  default_assay: RNA # Default assay for each integration method
+  methods: NULL # Integration methods: c("Seurat", "Harmony", "LIGER")
+  reference: NULL # Reference dataset for Seurat integration
+  genes: NULL # Genes for MAGIC integration
+  show_code: TRUE
+  show_warning: TRUE
+  show_message: TRUE
+  show_error: TRUE
+output: html_document
+---
+```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
+```
+# Integration
+
+```{r Load data, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if(is.null(params$methods)) stop("No integration method is selected.")
+if(length(params$datasets) != length(params$inputs)) stop("The number of datasets and files does not match.")
+if(length(params$inputs) < 2 ) stop("Integration requires at least 2 samples.")
+
+library(SeuratWrappers)
+library(reshape2)
+library(RColorBrewer)
+library(dplyr)
+source("../formating/formating.R")
+
+srats.list <- list()
+for (i in 1:length(params$inputs)) {
+  srats.list[[datasets[i]]] <- load_seurat(inputs[i], project = datasets[i])
+  srats.list[[datasets[i]]]@meta.data$orig.ident <- params$datasets[i]
+  if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
+  DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
+  print(paste("Seurat object for '", params$datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
+  if(params$default_assay == 'RNA') samples_list[[datasets[i]]] <- NormalizeData(samples_list[[datasets[i]]], verbose = F)
+  srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
+}
+names(srats.list) <- params$datasets
+
+methods = toupper(params$methods)
+```
+## Seurat
+
+```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if("SEURAT" %in% methods) {
+  srats.integrated <- NULL
+  if(params$default_assay == 'SCT' && !is.null(params$reference)) {
+    if(!params$reference %in% params$datasets) stop(paste(params$reference, "does not exist."))
+    srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
+    srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
+    reference_dataset <- which(names(srats.list) == params$reference)
+    srats.anchors <- FindIntegrationAnchors(object.list = srats.list, normalization.method = "SCT", anchor.features = srats.features, reference = reference_dataset)
+    srats.integrated <- IntegrateData(anchorset = srats.anchors, normalization.method = "SCT")
+  } else if (params$default_assay == 'SCT'){
+    srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
+    srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
+    srats.anchors <- FindIntegrationAnchors(object.list = srats.list, normalization.method = "SCT", anchor.features = srats.features)
+    srats.integrated <- IntegrateData(anchorset = srats.anchors, normalization.method = "SCT")
+  } else {
+    srats.anchors <- FindIntegrationAnchors(object.list = srats.list, dims = 1:30)
+    srats.integrated <- IntegrateData(anchorset = srats.anchors, dims = 1:30)
+  }
+
+  # Visulization
+  DefaultAssay(srats.integrated) <- "integrated"
+  srats.integrated <- ScaleData(srats.integrated, verbose = F)
+  srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
+  srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:30) 
+
+  DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
+
+  SaveH5Seurat(srats.integrated, filename = file.path(params$output_folder, "seurat_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  print("Seurat object for Seurat integration is saved successfully.")
+} else {
+  print("Not selected by user, skipped.")
+}
+```
+## Harmony
+
+```{r Harmony, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if("HARMONY" %in% methods) {
+  library(harmony)
+  srat.harmony <- Reduce(merge, srats.list)
+  srat.harmony <- NormalizeData(srat.harmony, verbose = F)
+  srat.harmony <- FindVariableFeatures(srat.harmony, selection.method = "vst", nfeatures = 2000, verbose = F)
+  srat.harmony <- ScaleData(srat.harmony, verbose = F)
+  srat.harmony <- RunPCA(srat.harmony, npcs = 30, verbose = F)
+  srat.harmony <- RunUMAP(srat.harmony, reduction = "pca", dims = 1:30, verbose = F)
+  srat.harmony <- srat.harmony %>% RunHarmony("orig.ident", plot_convergence = T)
+  harmony_embeddings <- Embeddings(srat.harmony, 'harmony')
+  harmony_embeddings[1:5, 1:5]
+
+  p1 <- DimPlot(object = srat.harmony, reduction = "harmony", pt.size = .1, group.by = "orig.ident") + NoLegend()
+  p2 <- VlnPlot(object = srat.harmony, features = "harmony_1", group.by = "orig.ident", pt.size = .1) + NoLegend()
+  plot_grid(p1,p2)
+
+  srat.harmony <- srat.harmony %>% 
+  RunUMAP(reduction = "harmony", dims = 1:30, verbose = F) %>% 
+  FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:30) %>% 
+  FindClusters() %>% 
+  identity()
+
+  srat.harmony <- SetIdent(srat.harmony, value = "orig.ident")
+  DimPlot(srat.harmony, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Harmony integration")
+
+  DimPlot(srat.harmony, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
+
+  srat.harmony <- SetIdent(srat.harmony,value = "seurat_clusters")
+  DimPlot(srat.harmony,label = T) + NoLegend()
+
+  plot_integrated_clusters(srat.harmony)
+
+  SaveH5Seurat(srat.harmony, filename = file.path(params$output_folder, "harmony_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  print("Seurat object for Harmony integration is saved successfully.")
+  rm(srats.harmony)
+} else {
+  print("Not selected by user, skipped.")
+}
+```
+## Seurat
+
+```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if("SEURAT" %in% methods) {
+  library(rliger)
+  srat.liger <- Reduce(merge, srats.list)
+  srat.liger <- NormalizeData(srat.liger)
+  srat.liger <- FindVariableFeatures(srat.liger)
+  srat.liger <- ScaleData(srat.liger, split.by = "orig.ident", do.center = F)
+  srat.liger <- RunOptimizeALS(srat.liger, k = 30, lambda = 5, split.by = "orig.ident") ## this one takes a while
+  srat.liger <- RunQuantileNorm(srat.liger, split.by = "orig.ident")
+  srat.liger <- FindNeighbors(srat.liger, reduction = "iNMF", k.param = 10, dims = 1:30)
+  srat.liger <- FindClusters(srat.liger)
+
+  srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["iNMF"]]), reduction = "iNMF", verbose = F)
+  srat.liger <- SetIdent(srat.liger,value = "orig.ident")
+  DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
+  DimPlot(srat.liger, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
+
+  srat.liger <- SetIdent(srat.liger,v alue = "seurat_clusters")
+  DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
+
+  plot_integrated_clusters(srat.liger)
+
+  SaveH5Seurat(srat.liger, filename = file.path(params$output_folder, "liger_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  print("Seurat object for LIGER integration is saved successfully.")
+  rm(srat.liger)
+} else {
+  print("Not selected by user, skipped.")
+}
+```
+
