@@ -26,7 +26,7 @@ pandas2ri.activate()
 import os
 
 
-mongo_url = "mongodb://oscbdeepdb:65528/aisinglecell"
+mongo_url = "mongodb://mongodb:65528/aisinglecell"
 
 # Connect to MongoDB using the URL
 client = pymongo.MongoClient(mongo_url)
@@ -365,11 +365,6 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             file_path = datasetMap[dataset]
             suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
-            try:
-                parse_h5ad(file_path)
-            except Exception as error:
-                traceback.print_exc() 
-                flask_app.logger.info(traceback.print_exc())
 
             if suffix == "rds" or suffix == "h5seurat":
                 ro.r('''
@@ -670,6 +665,13 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # Serialize and store the adata
             adata_df = create_dataframe(adata)
             adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+
+            try:
+                parse_h5ad(file_path)
+                flask_app.logger.info("Inserted metadata of the dtasets into the mongoDB")
+            except Exception as error:
+                traceback.print_exc() 
+                flask_app.logger.info(traceback.print_exc())
 
             return dataset_info, [
                 # components_component,
