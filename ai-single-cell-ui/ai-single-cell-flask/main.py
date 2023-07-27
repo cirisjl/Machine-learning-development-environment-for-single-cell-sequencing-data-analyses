@@ -62,8 +62,8 @@ def parse_h5ad(adata, file_path):
         "varm_keys": list(adata.varm.keys()),
         "varp_keys": list(adata.varp.keys()),
         # Store the complete obs and var data as dictionaries
-        "obs_data": dict(adata.obs.to_dict(orient="list")),
-        "var_data": dict(adata.var.to_dict(orient="list")),
+        # "obs_data": dict(adata.obs.to_dict(orient="list")),
+        # "var_data": dict(adata.var.to_dict(orient="list")),
         # Add more metadata fields as needed
     }
     metadata_collection.insert_one(metadata)
