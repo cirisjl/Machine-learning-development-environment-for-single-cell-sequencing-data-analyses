@@ -48,8 +48,8 @@ datasetMap = {}
 
 
 # Function to parse h5ad files and extract metadata from all groups
-def parse_h5ad(file_path):
-    adata = sc.read_h5ad(file_path)
+def parse_h5ad(adata, file_path):
+    # adata = sc.read_h5ad(file_path)
     metadata = {
         "file_name": os.path.basename(file_path),
         "file_type": "h5ad",
@@ -667,7 +667,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             adata_pickle = adata_df.to_json(date_format='iso', orient='split')
 
             try:
-                parse_h5ad(file_path)
+                parse_h5ad(adata, file_path)
                 flask_app.logger.info("Inserted metadata of the dtasets into the mongoDB")
             except Exception as error:
                 traceback.print_exc() 
