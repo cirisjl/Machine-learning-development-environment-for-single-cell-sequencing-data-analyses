@@ -19,9 +19,21 @@ from dash.exceptions import PreventUpdate
 import requests
 import logging
 import json
+import pymongo
+
 
 pandas2ri.activate()
 import os
+
+
+mongo_url = "mongodb://oscbdeepdb:65528/aisinglecell"
+
+# Connect to MongoDB using the URL
+client = pymongo.MongoClient(mongo_url)
+
+# Access your database and collection
+db = client["aisinglecell"]
+metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
 flask_app = Flask(__name__)
@@ -33,6 +45,28 @@ CORS(flask_app)
 # Initialize the variables
 datasets = []
 datasetMap = {}
+
+
+# Function to parse h5ad files and extract metadata from all groups
+def parse_h5ad(file_path):
+    adata = sc.read_h5ad(file_path)
+    metadata = {
+        "file_name": os.path.basename(file_path),
+        "file_type": "h5ad",
+        "layers_keys": list(adata.layers.keys()),
+        "obs_keys": list(adata.obs.keys()),
+        "obsm_keys": list(adata.obsm.keys()),
+        "obsp_keys": list(adata.obsp.keys()),
+        "uns_keys": list(adata.uns.keys()),
+        "var_keys": list(adata.var.keys()),
+        "varm_keys": list(adata.varm.keys()),
+        "varp_keys": list(adata.varp.keys()),
+        # Store the complete obs and var data as dictionaries
+        "obs_data": dict(adata.obs.to_dict(orient="list")),
+        "var_data": dict(adata.var.to_dict(orient="list")),
+        # Add more metadata fields as needed
+    }
+    metadata_collection.insert_one(metadata)
 
 def get_dash_layout(authToken, username):
     return html.Div(
@@ -331,6 +365,12 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             file_path = datasetMap[dataset]
             suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
+            try:
+                parse_h5ad(file_path)
+            except Exception as error:
+                traceback.print_exc() 
+                flask_app.logger.info(traceback.print_exc())
+
             if suffix == "rds" or suffix == "h5seurat":
                 ro.r('''
                     library(scater)

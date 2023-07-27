@@ -8,3 +8,4 @@ pandas
 scanpy
 detect-delimiter
 requests
+pymongo
