@@ -30,7 +30,7 @@ RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.
 # RUN echo ".libPaths(c('/usr/local/lib/R/site-library', .libPaths()))" > /usr/local/lib/R/etc/Rprofile.site
 
 # Install github packages
-RUN Rscript -e 'devtools::install_github(c("stuart-lab/signac"))'
+RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
 
 WORKDIR /usr/src/app
 
