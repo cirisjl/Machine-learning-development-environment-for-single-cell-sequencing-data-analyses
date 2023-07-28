@@ -225,9 +225,9 @@ def get_report_path(dataset, output, method):
 
 
 def list_py_to_r(list):
-    list = [x.upper() for x in list if isinstance(x,str)]
+    list = [x.upper() for x in list if isinstance(x, str)]
     return 'c(' + ','.join(list) + ')'
 
-def methods_list(list):
-    list = [x.upper() for x in list if isinstance(x,str)]
+def list_to_string(list):
+    list = [x.upper() for x in list if isinstance(x, str)]
     return ','.join(list)
