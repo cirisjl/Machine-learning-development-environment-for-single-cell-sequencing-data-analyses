@@ -376,6 +376,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     library(SeuratDisk)
                     library(SeuratData)
                     library(patchwork)
+                    install.packages("Signac")
                     library(Signac)
                  ''')
                 if suffix == "rds":
