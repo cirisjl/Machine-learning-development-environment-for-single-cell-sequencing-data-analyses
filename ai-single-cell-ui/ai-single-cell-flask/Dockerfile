@@ -18,8 +18,6 @@ RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'gr
 RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
 
-RUN Rscript -e 'install.packages("devtools", type = "win.binary")'
-
 
 RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
 
@@ -32,7 +30,7 @@ RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.
 # RUN echo ".libPaths(c('/usr/local/lib/R/site-library', .libPaths()))" > /usr/local/lib/R/etc/Rprofile.site
 
 # Install github packages
-RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
+# RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
 
 WORKDIR /usr/src/app
 
