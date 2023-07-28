@@ -15,8 +15,10 @@ RUN apt-get update && \
 RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
 
 ## Install base R packages
-RUN Rscript -e 'install.packages(c("BiocManager", "devtools"))' && \
+RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
+
+RUN Rscript -e 'install.packages("devtools", type = "win.binary")'
 
 
 RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
