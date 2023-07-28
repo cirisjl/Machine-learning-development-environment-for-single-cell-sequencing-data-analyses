@@ -15,11 +15,11 @@ RUN apt-get update && \
 RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
 
 ## Install base R packages
-RUN Rscript -e 'install.packages(c("BiocManager"))' && \
+RUN Rscript -e 'install.packages(c("BiocManager", "devtools"))' && \
    Rscript -e 'BiocManager::install()'
 
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils"))'
+RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "Seurat","SeuratDisk","SeuratData", "patchwork"))'
 
 # Install Bioconductor packages
 # RUN Rscript -e 'BiocManager::install(c("org.Hs.eg.db"))'
@@ -28,6 +28,9 @@ RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.
 
 # Set the default library location to /usr/local/lib/R/site-library
 # RUN echo ".libPaths(c('/usr/local/lib/R/site-library', .libPaths()))" > /usr/local/lib/R/etc/Rprofile.site
+
+# Install github packages
+RUN Rscript -e 'devtools::install_github(c("stuart-lab/signac"))'
 
 WORKDIR /usr/src/app
 
