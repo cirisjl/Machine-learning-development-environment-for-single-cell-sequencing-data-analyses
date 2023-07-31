@@ -1,5 +1,8 @@
 FROM python:3.9-slim-buster
 
+FROM rocker/r-ver:4.2.1
+
+
 # ENV R_LIBS=/usr/local/lib/R/site-library
 
 ENV R_LIBS_USER=/usr/local/lib/R/site-library
@@ -7,7 +10,7 @@ ENV R_LIBS_USER=/usr/local/lib/R/site-library
 
 # Install R and required libraries
 RUN apt-get update && \
-    apt-get install -y r-base libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
+    apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
