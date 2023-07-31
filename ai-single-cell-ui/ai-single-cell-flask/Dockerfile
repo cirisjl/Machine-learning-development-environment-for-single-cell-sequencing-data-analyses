@@ -12,7 +12,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up default R packages
-RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
+RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods', 'Seurat'))" >> /usr/lib/R/etc/Rprofile.site
 
 ## Install base R packages
 RUN Rscript -e 'install.packages(c("BiocManager"))' && \
