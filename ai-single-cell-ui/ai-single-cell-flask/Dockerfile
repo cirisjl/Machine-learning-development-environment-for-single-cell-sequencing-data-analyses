@@ -19,7 +19,7 @@ RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
 
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
+RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
 
 # Install Bioconductor packages
 # RUN Rscript -e 'BiocManager::install(c("org.Hs.eg.db"))'
