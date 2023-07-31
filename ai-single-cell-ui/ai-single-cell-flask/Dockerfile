@@ -55,7 +55,7 @@ RUN Rscript -e 'install.packages(c("devtools","BiocManager"))' && \
 RUN Rscript -e 'install.packages(c( \
     "dplyr", "R.utils", "Seurat", "reticulate", "SeuratDisk", "SeuratData", "patchwork", "cli"))'
 
-RUN R -e "install.packages(c('utils', 'grDevices', 'graphics', 'stats', 'methods'))"
+RUN Rscript -e "install.packages(c('utils', 'grDevices', 'graphics', 'stats', 'methods'))"
 
 
 # Install Bioconductor packages
