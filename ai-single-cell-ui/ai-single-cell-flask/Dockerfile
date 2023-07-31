@@ -22,10 +22,10 @@ RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
 
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli"))'
+RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli", "Seurat"))'
 
 # Install Seurat from GitHub
-RUN Rscript -e 'remotes::install_github("satijalab/seurat", ref = "release/4.0")'
+# RUN Rscript -e 'remotes::install_github("satijalab/seurat", ref = "release/4.0")'
 
 # Install Bioconductor packages
 # RUN Rscript -e 'BiocManager::install(c("org.Hs.eg.db"))'
