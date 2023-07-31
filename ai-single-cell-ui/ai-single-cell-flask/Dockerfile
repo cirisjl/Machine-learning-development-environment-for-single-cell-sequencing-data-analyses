@@ -1,5 +1,3 @@
-FROM python:3.9-slim-buster
-
 FROM rocker/r-ver:4.2.1
 
 
@@ -10,9 +8,13 @@ ENV R_LIBS_USER=/usr/local/lib/R/site-library
 
 # Install R and required libraries
 RUN apt-get update && \
-    apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
+    apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev python3 python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Set Python path for reticulate
+ENV RETICULATE_PYTHON /usr/bin/python3
+
 
 # Set up default R packages
 # RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
