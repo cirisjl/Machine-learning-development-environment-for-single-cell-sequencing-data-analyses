@@ -55,6 +55,9 @@ RUN Rscript -e 'install.packages(c("devtools","BiocManager"))' && \
 RUN Rscript -e 'install.packages(c( \
     "dplyr", "R.utils", "Seurat", "reticulate", "SeuratDisk", "SeuratData", "patchwork", "cli"))'
 
+RUN R -e "install.packages(c('utils', 'grDevices', 'graphics', 'stats', 'methods'))"
+
+
 # Install Bioconductor packages
 RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
 
