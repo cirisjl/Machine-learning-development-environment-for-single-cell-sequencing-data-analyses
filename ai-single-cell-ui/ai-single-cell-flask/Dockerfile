@@ -1,23 +1,21 @@
 FROM python:3.9-slim-buster
 
-# ENV R_LIBS=/usr/local/lib/R/site-library
-
-ENV R_LIBS_USER=/usr/local/lib/R/site-library
-
-
-# Install R and required libraries
+# Install R and required libraries from the 'rocker/r-ver' image
 RUN apt-get update && \
-    apt-get install -y r-base libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
+    apt-get install -y --no-install-recommends dirmngr gnupg && \
+    echo "deb https://cloud.r-project.org/bin/linux/debian buster-cran40/" >> /etc/apt/sources.list && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up default R packages
-RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods', 'Seurat'))" >> /usr/lib/R/etc/Rprofile.site
+RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods', 'Seurat'))" >> /etc/R/Rprofile.site
 
 ## Install base R packages
 RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
-
 
 RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
 
