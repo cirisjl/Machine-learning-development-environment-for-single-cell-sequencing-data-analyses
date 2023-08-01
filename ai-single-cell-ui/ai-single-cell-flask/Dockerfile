@@ -28,7 +28,7 @@ RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.
 #RUN echo ".libPaths(c('/usr/local/lib/R/site-library', .libPaths()))" > /usr/local/lib/R/etc/Rprofile.site
 
 # Install github packages
-RUN Rscript -e 'devtools::install_github("stuart-lab/signac", "mojaveazure/seurat-disk", "satijalab/seurat-data")'
+# RUN Rscript -e 'devtools::install_github("stuart-lab/signac", "mojaveazure/seurat-disk", "satijalab/seurat-data")'
 
 WORKDIR /usr/src/app
 
