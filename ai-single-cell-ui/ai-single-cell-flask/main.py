@@ -369,14 +369,12 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             if suffix == "rds" or suffix == "h5seurat":
                 ro.r('''
                     library(scater)
-                    install.packages("anndata")
                     library(anndata)
                     library(Seurat)
                     library(SingleCellExperiment)
                     library(SeuratDisk)
                     library(SeuratData)
                     library(patchwork)
-                    install.packages("Signac")
                     library(Signac)
                  ''')
                 if suffix == "rds":
