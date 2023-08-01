@@ -4,7 +4,7 @@ FROM python:3.9-slim-buster
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dirmngr gnupg && \
     echo "deb https://cloud.r-project.org/bin/linux/debian buster-cran40/" >> /etc/apt/sources.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 B8F25A8A73EACF41 && \
     apt-get update && \
     apt-get install -y --no-install-recommends r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev && \
     apt-get clean && \
