@@ -1,5 +1,7 @@
 FROM rocker/r-ver:4.2.1
 
+# Create directories for R configuration
+RUN mkdir -p /usr/lib/R/etc
 
 # ENV R_LIBS=/usr/local/lib/R/site-library
 
