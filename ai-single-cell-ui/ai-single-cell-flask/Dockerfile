@@ -14,15 +14,15 @@ RUN apt-get update && \
 RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods', 'Seurat'))" >> /etc/R/Rprofile.site
 
 ## Install base R packages
-RUN Rscript -e 'install.packages(c("BiocManager"))' && \
-   Rscript -e 'BiocManager::install()'
+# RUN Rscript -e 'install.packages(c("BiocManager"))' && \
+#    Rscript -e 'BiocManager::install()'
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli"))'
+RUN Rscript -e 'install.packages(c("reticulate", "Seurat"))'
 
 # Install Bioconductor packages
 # RUN Rscript -e 'BiocManager::install(c("org.Hs.eg.db"))'
 
-RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
+# RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
 
 # Set the default library location to /usr/local/lib/R/site-library
 #RUN echo ".libPaths(c('/usr/local/lib/R/site-library', .libPaths()))" > /usr/local/lib/R/etc/Rprofile.site
