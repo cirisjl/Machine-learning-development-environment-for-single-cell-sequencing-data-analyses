@@ -3,8 +3,8 @@ FROM rocker/r-ver:4.2.1
 
 # ENV R_LIBS=/usr/local/lib/R/site-library
 
-ENV R_LIBS_USER=/usr/local/lib/R/site-library
-
+# ENV R_LIBS_USER=/usr/local/lib/R/site-library
+ENV RETICULATE_MINICONDA_ENABLED=FALSE
 
 # Install R and required libraries
 RUN apt-get update && \
@@ -24,7 +24,7 @@ RUN Rscript -e 'install.packages(c("BiocManager"))' && \
    Rscript -e 'BiocManager::install()'
 
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli", "Seurat"))'
+RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli", "Seurat", "reticulate"))'
 
 # Install Seurat from GitHub
 # RUN Rscript -e 'remotes::install_github("satijalab/seurat", ref = "release/4.0")'
@@ -37,7 +37,9 @@ RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.
 # Install github packages
 # RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
 
-WORKDIR /usr/src/app
+RUN mkdir /app
+
+WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
