@@ -5,7 +5,7 @@ RUN mkdir -p /usr/lib/R/etc
 
 # ENV R_LIBS=/usr/local/lib/R/site-library
 
-# ENV R_LIBS_USER=/usr/local/lib/R/site-library
+ENV R_LIBS_USER=/usr/local/lib/R/site-library
 ENV RETICULATE_MINICONDA_ENABLED=FALSE
 
 # Install R and required libraries
