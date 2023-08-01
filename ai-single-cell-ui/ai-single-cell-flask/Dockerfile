@@ -160,3 +160,5 @@ ENV FLASK_APP=main.py
 EXPOSE 5003
 
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0","--port=5003"]
+
+
