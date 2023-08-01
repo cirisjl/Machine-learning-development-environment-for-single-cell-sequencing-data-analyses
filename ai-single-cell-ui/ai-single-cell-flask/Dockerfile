@@ -15,6 +15,7 @@ RUN apt-get update && \
 # Set Python path for reticulate
 ENV RETICULATE_PYTHON /usr/bin/python3
 
+RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
 
 # Set up default R packages
 # RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
