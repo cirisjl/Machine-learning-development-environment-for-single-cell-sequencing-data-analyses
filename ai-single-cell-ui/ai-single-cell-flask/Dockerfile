@@ -46,6 +46,17 @@ ENV PATH="${PATH}:/usr/lib/rstudio-server/bin"
 ENV LD_LIBRARY_PATH="/usr/lib/R/lib:/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server"
 RUN pip3 install radian
 
+# Install UMAP
+RUN LLVM_CONFIG=/usr/lib/llvm-10/bin/llvm-config pip3 install llvmlite
+RUN pip3 install numpy==1.22.4
+RUN pip3 install umap-learn
+
+# Install FIt-SNE
+RUN git clone --branch v1.2.1 https://github.com/KlugerLab/FIt-SNE.git
+RUN g++ -std=c++11 -O3 FIt-SNE/src/sptree.cpp FIt-SNE/src/tsne.cpp FIt-SNE/src/nbodyfft.cpp  -o bin/fast_tsne -pthread -lfftw3 -lm
+
+# Install hdf5r
+RUN R --no-echo --no-restore --no-save -e "install.packages('hdf5r')"
 
 # Install base R packages
 RUN Rscript -e 'install.packages(c("languageserver", "devtools", "Rmagic", "BiocManager"))' && \
@@ -86,6 +97,53 @@ RUN Rscript -e 'devtools::install_github(c( \
     "cole-trapnell-lab/monocle3", "mojaveazure/seurat-disk", "satijalab/seurat-wrappers", \
     "satijalab/seurat-data", "stuart-lab/signac"))'
 
+# Install python packages
+RUN pip install --upgrade --no-cache \
+    PyYAML==3.13 protobuf==3.19.4 rich==11.1 cutadapt magic-impute awscli==1.16.14 handout scrublet \
+    scipy==1.9.1 biopython h5py matplotlib matplotlib_venn tqdm python-igraph scprep python-resources \
+    torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin \
+    rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
+    zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph
+
+# Install Jupyter
+RUN pip install --upgrade --no-cache \
+    jupyter jupyter-server-proxy \
+    jupyter-rsession-proxy
+RUN Rscript -e 'install.packages("IRkernel")' && \
+    Rscript -e 'IRkernel::installspec()' 
+	
+# Install SAVER
+RUN Rscript -e 'devtools::install_github("mohuangx/SAVER")'
+
+# Install scGNN
+RUN Rscript -e 'devtools::install_github("BMEngineeR/scGNNLTMG")'
+
+# Install SIMLR
+RUN Rscript -e 'devtools::install_github("BatzoglouLabSU/SIMLR", ref = "master")'
+
+# Install scanpy&&dropkick&&scvi-tools
+RUN pip install --upgrade --no-cache 'scanpy[leiden]' \
+    anndata muon dropkick scvi-tools
+
+# Install snakemake
+# RUN pip3 install git+https://github.com/snakemake/snakemake
+
+# Install pandoc for R markdown
+RUN PANDOC_PKG=pandoc-3.1.1-1-amd64.deb && \
+    cd /tmp && \
+    wget https://github.com/jgm/pandoc/releases/download/3.1.1/${PANDOC_PKG} && \
+    dpkg -i ${PANDOC_PKG} && \
+    rm /tmp/${PANDOC_PKG}
+
+# Install hdf5
+# RUN cd /tmp && \
+#     wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar.gz && \
+#     tar -xvf hdf5-1.14.0.tar.gz && \
+#     cd hdf5-1.14.0 && \
+#     ./configure --prefix=/usr/local/hdf5 && \
+#     make -j 8 && \
+#     make install && \
+#     rm /tmp/hdf5-1.14.0
 
 RUN mkdir /app
 WORKDIR /app
