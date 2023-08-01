@@ -8,7 +8,7 @@ ENV RETICULATE_MINICONDA_ENABLED=FALSE
 
 # Install R and required libraries
 RUN apt-get update && \
-    apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev libcairo2-dev libxt-dev libbz2-dev liblzma-dev libffi-dev python3 python3-pip && \
+    apt-get install -y python3 python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -19,9 +19,9 @@ ENV RETICULATE_PYTHON /usr/bin/python3
 # Set up default R packages
 # RUN echo "options(defaultPackages = c(getOption('defaultPackages'), 'utils', 'grDevices', 'graphics', 'stats', 'methods'))" >> /usr/lib/R/etc/Rprofile.site
 
-## Install base R packages
-RUN Rscript -e 'install.packages(c("BiocManager"))' && \
-   Rscript -e 'BiocManager::install()'
+# ## Install base R packages
+# RUN Rscript -e 'install.packages(c("BiocManager"))' && \
+#    Rscript -e 'BiocManager::install()'
 
 
 RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli", "Seurat", "reticulate"))'
@@ -32,7 +32,7 @@ RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "cli", "Seurat", "reticul
 # Install Bioconductor packages
 # RUN Rscript -e 'BiocManager::install(c("org.Hs.eg.db"))'
 
-RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
+# RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
 
 # Install github packages
 # RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
