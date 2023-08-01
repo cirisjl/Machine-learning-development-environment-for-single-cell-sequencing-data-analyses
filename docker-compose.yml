@@ -290,6 +290,8 @@ services:
       - "5003:5003"
     networks:
       - oscb-network
+    env_file:
+      - .env
     volumes:
       - user_storage:/usr/src/app/storage/
 
