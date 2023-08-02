@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
-const { storageDir, storageAllowance, intermediateStorage } = storageConfig;
+const { storageDir, storageAllowance, intermediateStorage, publicStorage } = storageConfig;
 
 // Create a connection pool to handle multiple connections to the database
 const pool = mysql.createPool({
@@ -68,6 +68,63 @@ function getUserFromToken(token) {
         return 'Unauthorized';
     }
 }
+const createDirectoryIfNotExists = async (dirPath) => {
+    try {
+      await fs.mkdir(dirPath, { recursive: true });
+      console.log(`Directory "${dirPath}" created successfully.`);
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        console.error('Error creating the directory:', err);
+        throw err;
+      }
+    }
+  };
+
+const createUniqueFolder = (destinationDir, folderName, index = 1) => {
+    const targetFolderName = index === 1 ?  path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
+    const targetFolderPath = path.join(__dirname, targetFolderName);
+  
+    if (!fs.existsSync(targetFolderPath)) {
+      try {
+        fs.mkdirSync(targetFolderPath);
+        console.log(`Directory "${targetFolderName}" created successfully.`);
+        return targetFolderName;
+      } catch (err) {
+        console.error('Error creating the directory:', err);
+        return null;
+      }
+    } else {
+      return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
+    }
+  };
+
+// Function to copy files from source directory to destination directory
+const copyFiles = async (sourceDir, destinationDir, dirName) => {
+    try {
+
+        if(dirName) {
+            sourceDir = path.join(sourceDir, dirName);
+            destinationDir = path.join(destinationDir, dirName);
+        } else  {
+            dirName = "Dataset";
+            destinationDir = createUniqueFolder(destinationDir, dirName);
+        }
+        // Ensure the destination directory exists before copying files
+        await createDirectoryIfNotExists(destinationDir);
+      const files = await fs.readdir(sourceDir);
+  
+      for (const file of files) {
+        const sourceFilePath = path.join(sourceDir, file);
+        const destinationFilePath = path.join(destinationDir, file);0
+  
+        // Perform the actual file copy
+        await fs.copyFile(sourceFilePath, destinationFilePath);
+      }
+    } catch (error) {
+      console.error('Error copying files:', error);
+      throw error;
+    }
+  };
 
 // Route to handle user signup
 app.post('/api/signup', (req, res) => {
@@ -196,9 +253,9 @@ app.get('/protected', verifyToken, (req, res) => {
     });
 });
 
-app.post('/createDataset', (req, res) => {
+app.post('/createDataset', async (req, res) => {
 
-    const { title, n_cells, reference, summary, authToken, files } = req.body;
+    const { title, n_cells, reference, summary, authToken, files, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
@@ -261,6 +318,19 @@ app.post('/createDataset', (req, res) => {
             });
         });
     });
+
+    if(makeItpublic) {
+
+        let dirName = ""
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
+
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+  
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles(userPrivateStorageDir, publicStorage, dirName);
+      }
 });
 
 app.put('/updateDataset', async (req, res) => {
