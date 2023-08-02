@@ -174,6 +174,23 @@ app.get('/protected', verifyToken, (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
+            if (authData.username !== null && authData.username !== undefined) {
+                pool.query('SELECT isAdmin FROM users WHERE username = ?', [username], (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        res.json({ message: 'Internal Server Error' , null});
+                        return;
+                    }
+            
+                    if (results.length === 0) {
+                        res.json({ message: 'Invalid credentials', null });
+                        return;
+                    }
+            
+                    const adminFlag = results[0].isAdmin;
+                    authData.isAdmin = adminFlag;
+                });
+            }
             res.json({ message: 'You have access to the protected resource', authData });
         }
     });
