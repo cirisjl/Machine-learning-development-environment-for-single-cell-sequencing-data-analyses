@@ -8,6 +8,9 @@ import { getCookie } from '../../utils/utilFunctions';
 import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
+import React from "react";
+import ToggleSwitch from "../ToggleSwitch";
+
 
 import schema from "../../schema/react-json-schema/uploadDataSchema.json";
 import RightRail from "../RightNavigation/rightRail";
@@ -38,6 +41,8 @@ export default function UploadData() {
     const [fileNames, setFileNames] = useState([]);
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    const [publicdataset, setPublicdataset] = useState(false);
+
     let [selectedAliases, setSelectedAliases] = useState([]);
     const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'count_matrix.mtx', 'features.tsv.gz', 'count_matrix.mtx.gz'];
     const acceptedMultiFileSets = [
@@ -106,6 +111,10 @@ export default function UploadData() {
         );
     };
 
+    const toggleSwitchForPublicDatasets = () => {
+        setPublicdataset(!publicdataset)
+    }
+    
     // toggle modal window visibility
     const toggleModal = async () => {
         await setIsFileManagerOpen(!isFileManagerOpen);
@@ -416,7 +425,9 @@ export default function UploadData() {
 
                         </div>
                         <div className="publish-dataset-div">
-
+                            <React.Fragment>
+                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" onChange={toggleSwitchForPublicDatasets}/>
+                            </React.Fragment>
                         </div>
                         <br />
                         <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
