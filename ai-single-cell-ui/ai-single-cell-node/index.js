@@ -232,7 +232,7 @@ app.get('/protected', verifyToken, (req, res) => {
             res.sendStatus(403);
         } else {
             if (authData.username !== null && authData.username !== undefined) {
-                pool.query('SELECT isAdmin FROM users WHERE username = ?', [username], (err, results) => {
+                pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
                     if (err) {
                         console.error(err);
                         res.json({ message: 'Internal Server Error'});
