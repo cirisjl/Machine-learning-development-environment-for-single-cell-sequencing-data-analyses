@@ -2,7 +2,7 @@ import React from "react";
   
 const ToggleSwitch = ({ label }) => {
   return (
-    <div className="container">
+    <div>
       {label}{" "}
       <div className="toggle-switch">
         <input type="checkbox" className="checkbox" 
