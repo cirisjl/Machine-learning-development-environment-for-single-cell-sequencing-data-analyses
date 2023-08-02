@@ -178,12 +178,12 @@ app.get('/protected', verifyToken, (req, res) => {
                 pool.query('SELECT isAdmin FROM users WHERE username = ?', [username], (err, results) => {
                     if (err) {
                         console.error(err);
-                        res.json({ message: 'Internal Server Error' , null});
+                        res.json({ message: 'Internal Server Error'});
                         return;
                     }
             
                     if (results.length === 0) {
-                        res.json({ message: 'Invalid credentials', null });
+                        res.json({ message: 'Invalid credentials'});
                         return;
                     }
             
