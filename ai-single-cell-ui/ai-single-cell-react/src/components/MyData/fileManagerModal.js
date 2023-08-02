@@ -273,6 +273,8 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                 </div>
                 <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
                     <div style={{ paddingLeft: '16%', width: "40%" }} onClick={() => fetchDirContents("publicDatasets")}>Public Datasets</div>
+                    <div style={{ paddingLeft: '4%', width: "25%" }}>Folder</div>
+                    <div></div>
                 </div>
                 {dirNames.map((dir, index) => (
                     <div className="modal-item" key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
