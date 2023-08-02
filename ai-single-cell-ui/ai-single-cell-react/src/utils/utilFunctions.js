@@ -31,16 +31,18 @@ export function getCookie(name) {
         }) 
         .then((response) => response.json())
         .then((data) => {
-          if (data.authData.username !== null && data.authData.username !== undefined) {
-            resolve({isAuth: true, username: data.authData.username});
-          } else {
-            resolve({isAuth: false, username: null});
+          if(data.authData !== null) {
+              if (data.authData.username !== null && data.authData.username !== undefined) {
+                resolve({isAuth: true, username: data.authData.username, isAdmin: data.authData.isAdmin});
+              } else {
+                resolve({isAuth: false, username: null, isAdmin: false});
+              }
           }
         })
         .catch((error) => {
           console.error(error);
           // reject(error);
-          resolve({isAuth: false, username: null});
+          resolve({isAuth: false, username: null, isAdmin: false});
         });
       }
     });

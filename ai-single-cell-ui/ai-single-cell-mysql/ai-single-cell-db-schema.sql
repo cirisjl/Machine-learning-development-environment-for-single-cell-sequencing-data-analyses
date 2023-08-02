@@ -971,6 +971,7 @@ CREATE TABLE `users` (
   `username` varchar(45) NOT NULL,
   `email` varchar(45) NOT NULL,
   `password_hash` varchar(300) DEFAULT NULL,
+  `isAdmin` BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username_UNIQUE` (`username`),
   UNIQUE KEY `email_UNIQUE` (`email`)
