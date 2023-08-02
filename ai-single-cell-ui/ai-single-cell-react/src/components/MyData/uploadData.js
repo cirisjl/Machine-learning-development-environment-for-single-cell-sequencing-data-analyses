@@ -275,9 +275,12 @@ export default function UploadData() {
             }
         }
 
+        formData['makeItpublic'] = publicdataset
         formData['authToken'] = jwtToken;
         formData['files'] = selectedFiles;
 
+        console.log("Form Data ::::::: ")
+        console.log(formData['makeItpublic'])
         if (mode === 'update') {
             formData.currentFileList = currentFileList;
             fetch(`${SERVER_URL}/updateDataset`, {
