@@ -113,8 +113,9 @@ export default function UploadData() {
 
     const toggleSwitchForPublicDatasets = () => {
         setPublicdataset(!publicdataset)
+        console.log(publicdataset)
     }
-    
+
     // toggle modal window visibility
     const toggleModal = async () => {
         await setIsFileManagerOpen(!isFileManagerOpen);
