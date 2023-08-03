@@ -759,7 +759,7 @@ app.get('/getDirContents', async (req, res) => {
 
         subdir = req.query.subdir;
         console.log("Debug point to check the value of subdir");
-        console.log(subdir);
+        console.log(dirPath);
 
         if(dirPath == "publicDatasets") {
             var directoryPath = publicStorage;
