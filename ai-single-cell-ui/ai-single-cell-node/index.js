@@ -251,6 +251,7 @@ app.get('/protected', verifyToken, (req, res) => {
                         res.json({ message: 'Invalid credentials'});
                         return;
                     }
+                    console.log("Inside the protected API, result after the query:: " + results[0].isAdmin);
             
                     const adminFlag = results[0].isAdmin;
                     authData.isAdmin = adminFlag;
@@ -767,7 +768,7 @@ app.get('/getDirContents', async (req, res) => {
         
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
-            
+
         if(dirPath == "publicDatasets") {
             directoryPath = publicStorage;
         }

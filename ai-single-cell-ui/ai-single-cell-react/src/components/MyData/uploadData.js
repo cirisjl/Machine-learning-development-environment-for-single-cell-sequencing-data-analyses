@@ -73,6 +73,7 @@ export default function UploadData() {
             if (authData.isAuth) {
               setIsAdminUser(authData.isAdmin);
               console.log("is Admin User::::: " + isAdminuser);
+              console.log("is Admin User::::: " + authData.isAdmin);
             } else {
               console.warn("Unauthorized - pLease login first to continue");
               navigate("/routing");
