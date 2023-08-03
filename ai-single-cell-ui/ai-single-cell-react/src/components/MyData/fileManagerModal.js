@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowAltCircleUp, faCheck, faDownload, faFile, faFolder, faPencil, faPlus, faRefresh, faTrash, faTurnUp, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowAltCircleUp, faCheck, faDatabase, faDownload, faFile, faFolder, faPencil, faPlus, faRefresh, faTrash, faTurnUp, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from 'react';
 import './ModalWindow.css';
 import UppyUploader from "./uppy";
@@ -250,7 +250,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     return <div className="modal">
         <div>
             <button type="button" className="fileManagerButton" onClick={() => { fetchDirContents("publicDatasets") }} >
-                <FontAwesomeIcon icon={faPlus} /> Public Datasets
+                <FontAwesomeIcon icon={faDatabase} /> Public Datasets
             </button> &nbsp;&nbsp;
             <button type="button" className="fileManagerButton" onClick={() => setIsNewDirOn(true)} >
                 <FontAwesomeIcon icon={faPlus} /> New Folder
