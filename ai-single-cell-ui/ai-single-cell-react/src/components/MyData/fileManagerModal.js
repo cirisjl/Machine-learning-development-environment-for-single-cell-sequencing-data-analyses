@@ -266,6 +266,9 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
             </button></div>
         <div className="modal-content" style={{ overflowX: "hidden", overflowY: "hidden" }}>
             <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
+                <div style={{ paddingLeft: '2%'}}>Path: {pwd} </div>
+            </div>
+            <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
                 <div style={{ paddingLeft: '15%', width: "45%" }}>Name</div>
                 <div style={{ width: "25%" }}>Type</div>
                 <div style={{ width: "25%", paddingLeft: "5%" }}>Time Created</div>
