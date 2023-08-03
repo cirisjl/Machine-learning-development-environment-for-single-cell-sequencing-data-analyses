@@ -185,7 +185,14 @@ export default function UploadData() {
         let newDir = ''
         jwtToken = getCookie('jwtToken');
 
-        if (subdir == '..') {
+        if(subdir === "publicDatasets") {
+            newDir = subdir;
+            setPwd(newDir)
+        } else if(pwd === "publicDatasets" && subdir === ".." ) {
+            newDir = ""
+            setPwd(newDir)
+        }
+        else if (subdir === '..') {
             let slashIndex = pwd.lastIndexOf('/');
             newDir = slashIndex !== -1 ? pwd.substring(0, slashIndex) : pwd;
             setPwd(newDir)
