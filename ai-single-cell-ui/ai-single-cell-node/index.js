@@ -120,6 +120,8 @@ const copyFiles = async (sourceDir, destinationDir, dirName) => {
       for (const file of files) {
         const sourceFilePath = path.join(sourceDir, file);
         const destinationFilePath = path.join(destinationDir, file);
+        createDirectoryIfNotExists(sourceFilePath)
+        createDirectoryIfNotExists(destinationFilePath)
         console.log("final paths");
         console.log("source paths" + sourceFilePath);
         console.log("destination paths" + destinationFilePath);
