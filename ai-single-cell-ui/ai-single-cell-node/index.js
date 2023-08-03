@@ -760,19 +760,21 @@ app.get('/getDirContents', async (req, res) => {
         subdir = req.query.subdir;
         console.log("Debug point to check the value of subdir");
         console.log(dirPath);
+        var directoryPath = ""
 
-        if(dirPath == "publicDatasets") {
-            var directoryPath = publicStorage;
-        }
-
-        if(dirPath.includes("publicDatasets/")) {
-            var directoryPath = "/usr/src/app/storage/" + dirPath;
-        }
-
+        
         var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
         
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
+            
+        if(dirPath == "publicDatasets") {
+            directoryPath = publicStorage;
+        }
+
+        if(dirPath.includes("publicDatasets/")) {
+            directoryPath = "/usr/src/app/storage/" + dirPath;
+        }
 
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
