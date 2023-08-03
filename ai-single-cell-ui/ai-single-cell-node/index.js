@@ -265,7 +265,7 @@ app.post('/createDataset', async (req, res) => {
     const { title, n_cells, reference, summary, authToken, files, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
 
-    console.log("Logger to debug makeit public flag" + makeItpublic);
+    console.log("Logger to debug makeit public flag : " + makeItpublic);
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
