@@ -4,7 +4,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ModalWindow.css';
-import { getCookie } from '../../utils/utilFunctions';
+import { getCookie, isUserAuth } from '../../utils/utilFunctions';
 import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
@@ -42,6 +42,10 @@ export default function UploadData() {
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [publicdataset, setPublicdataset] = useState(false);
+    const [isAdminuser, setIsAdminUser] = useState(false);
+
+    const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
+
 
     let [selectedAliases, setSelectedAliases] = useState([]);
     const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'count_matrix.mtx', 'features.tsv.gz', 'count_matrix.mtx.gz'];
@@ -63,7 +67,19 @@ export default function UploadData() {
     const handleCrossButtonClick = () => {
         setErrorMessage('');
     }
-
+    useEffect(() => {
+        isUserAuth(jwtToken)  
+        .then((authData) => {
+            if (authData.isAuth) {
+              setIsAdminUser(authData.isAdmin)
+            } else {
+              console.warn("Unauthorized - pLease login first to continue");
+              navigate("/routing");
+            }
+          })
+          .catch((error) => console.error(error));
+    }, []);
+    
     useEffect(() => {
         const hookForUpdate = async () => {
             if (mode === 'update') {
@@ -435,11 +451,13 @@ export default function UploadData() {
                             </button>
 
                         </div>
-                        <div className="publish-dataset-div">
-                            <React.Fragment>
-                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets}/>
-                            </React.Fragment>
-                        </div>
+                        {isAdminuser && 
+                            <div className="publish-dataset-div">
+                                <React.Fragment>
+                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets}/>
+                                </React.Fragment>
+                            </div>
+                        }
                         <br />
                         <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
 
