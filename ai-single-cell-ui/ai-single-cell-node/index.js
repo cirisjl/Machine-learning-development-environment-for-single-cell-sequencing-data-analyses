@@ -254,7 +254,7 @@ app.get('/protected', verifyToken, (req, res) => {
                     console.log("Inside the protected API, result after the query:: " + results[0].isAdmin);
             
                     const adminFlag = results[0].isAdmin;
-                    authData.isAdmin = adminFlag;
+                    authData.isAdmin = (adminFlag == 1) ? true: false;
                 });
             }
             res.json({ message: 'You have access to the protected resource', authData });
