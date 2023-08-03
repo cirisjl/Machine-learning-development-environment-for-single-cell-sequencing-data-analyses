@@ -113,7 +113,6 @@ export default function UploadData() {
 
     const toggleSwitchForPublicDatasets = () => {
         setPublicdataset((prevState) => !prevState)
-        console.info(publicdataset)
     }
 
     // toggle modal window visibility
@@ -430,7 +429,7 @@ export default function UploadData() {
                         </div>
                         <div className="publish-dataset-div">
                             <React.Fragment>
-                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" onClick={toggleSwitchForPublicDatasets}/>
+                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets}/>
                             </React.Fragment>
                         </div>
                         <br />
