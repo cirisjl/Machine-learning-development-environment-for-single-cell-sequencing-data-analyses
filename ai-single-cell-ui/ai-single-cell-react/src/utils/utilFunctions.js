@@ -33,6 +33,7 @@ export function getCookie(name) {
         .then((data) => {
           if(data.authData !== null) {
               if (data.authData.username !== null && data.authData.username !== undefined) {
+                console.log("Heeloo from isUserAuth ::: " + data.authData.isAdmin);
                 resolve({isAuth: true, username: data.authData.username, isAdmin: data.authData.isAdmin});
               } else {
                 resolve({isAuth: false, username: null, isAdmin: false});
