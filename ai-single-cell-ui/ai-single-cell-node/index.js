@@ -759,6 +759,14 @@ app.get('/getDirContents', async (req, res) => {
 
         subdir = req.query.subdir;
 
+        if(dirPath == "publicDatasets") {
+            var directoryPath = publicStorage;
+        }
+
+        if(dirPath.includes("publicDatasets/")) {
+            var directoryPath = "/usr/src/app/storage/" + dirPath;
+        }
+
         var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
         
         if (subdir != undefined)
