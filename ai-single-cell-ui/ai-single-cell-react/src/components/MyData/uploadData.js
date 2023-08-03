@@ -430,7 +430,7 @@ export default function UploadData() {
                         </div>
                         <div className="publish-dataset-div">
                             <React.Fragment>
-                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" onChange={toggleSwitchForPublicDatasets}/>
+                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" onClick={toggleSwitchForPublicDatasets}/>
                             </React.Fragment>
                         </div>
                         <br />
