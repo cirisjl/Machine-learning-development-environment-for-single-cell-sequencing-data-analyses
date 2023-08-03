@@ -71,7 +71,8 @@ export default function UploadData() {
         isUserAuth(jwtToken)  
         .then((authData) => {
             if (authData.isAuth) {
-              setIsAdminUser(authData.isAdmin)
+              setIsAdminUser(authData.isAdmin);
+              console.log("is Admin User::::: " + isAdminuser);
             } else {
               console.warn("Unauthorized - pLease login first to continue");
               navigate("/routing");
