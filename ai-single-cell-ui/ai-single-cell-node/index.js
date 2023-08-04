@@ -529,15 +529,27 @@ app.post('/renameFile', async (req, res) => {
         if (results.length > 0) {
             return res.status(409).json({ status: 409, message: 'Directory already exists' });
         } else {
-            fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ status: 500, message: 'Internal Server Error' });
-                } else {
-                    console.log('File renamed successfully!');
-                    return res.status(200).jsonp('Ok');
-                }
-            });
+            if (oldName.includes("publicDatasets") && newName.includes("publicDatasets")) {
+                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {    
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
+                    } else {
+                        console.log('File renamed successfully!');
+                        return res.status(200).jsonp('Ok');
+                    }
+                });
+            } else {
+                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {    
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
+                    } else {
+                        console.log('File renamed successfully!');
+                        return res.status(200).jsonp('Ok');
+                    }
+                });
+            }
         }
     });
 });
