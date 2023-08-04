@@ -6,7 +6,7 @@ import UppyUploader from "./uppy";
 import { red } from "@mui/material/colors";
 import { useNavigate } from 'react-router-dom';
 
-export default function FileManagerModal({ setEnabledCheckboxes, setFileToPreview, tempFileList, fileNames, dirNames, jwtToken, fetchDirContents, pwd, setPwd, setPreviewBoxOpen, selectedFiles, setSelectedFiles, setErrorMessage, setTempFileList, enabledCheckboxes, toggleModal }) {
+export default function FileManagerModal({ setEnabledCheckboxes, setFileToPreview, tempFileList, fileNames, dirNames, jwtToken, fetchDirContents, pwd, setPwd, setPreviewBoxOpen, selectedFiles, setSelectedFiles, setErrorMessage, setTempFileList, enabledCheckboxes, toggleModal, isAdminuser}) {
 
     const [isUppyModalOpen, setIsUppyModalOpen] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState(null);
@@ -252,15 +252,18 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
             <button type="button" className="fileManagerButton" onClick={() => { fetchDirContents("publicDatasets") }} >
                 <FontAwesomeIcon icon={faDatabase} /> Public Datasets
             </button> &nbsp;&nbsp;
+            {isAdminuser && (
             <button type="button" className="fileManagerButton" onClick={() => setIsNewDirOn(true)} >
                 <FontAwesomeIcon icon={faPlus} /> New Folder
-            </button> &nbsp;&nbsp;
+            </button> )}&nbsp;&nbsp;
+        
             <button type="button" className="fileManagerButton" onClick={() => downloadFiles(selectedFiles)} >
                 <FontAwesomeIcon icon={faDownload} /> Download
             </button>&nbsp;&nbsp;
+            {isAdminuser && (
             <button type="button" className="fileManagerButton" onClick={() => { deleteFiles(selectedFiles); }} >
                 <FontAwesomeIcon icon={faTrash} color={red} /> Delete
-            </button>&nbsp;&nbsp;
+            </button>)}&nbsp;&nbsp;
             <button type="button" className="fileManagerButton" onClick={() => { fetchDirContents() }} >
                 <FontAwesomeIcon icon={faRefresh} color={red} /> Refresh
             </button></div>
@@ -285,7 +288,8 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                 {dirNames.map((dir, index) => (
                     <div className="modal-item" key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                         <FontAwesomeIcon icon={faFolder} onClick={log} /> &nbsp;&nbsp;
-                        <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`d${index}`); }} /> &nbsp;&nbsp;
+                        {isAdminuser && (
+                        <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`d${index}`); }} /> )}&nbsp;&nbsp;
                         <input type='checkbox' id={`dirCheckbox${index + 1}`} className="selectFiles" align='center' onChange={async () => { setEnabledCheckboxes([...enabledCheckboxes, `dirCheckbox${index + 1}`]); await pushOrPopName(pwd + '/' + dir.name) }}></input>
                         {selectedItemId === `d${index}` ? (
                             <input type="text" defaultValue={dir.name} onKeyDown={(event) => {
@@ -312,7 +316,8 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                     {fileNames.map((file, index) => (
                         <div className="modal-item" key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                             <FontAwesomeIcon icon={faFile} /> &nbsp;&nbsp;&nbsp;
-                            <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`f${index}`); }} /> &nbsp;&nbsp;
+                            {isAdminuser && (
+                            <FontAwesomeIcon icon={faPencil} id={`fedit${index + 1}`} onClick={() => { handleRenameIcon(`f${index}`); }} />)} &nbsp;&nbsp;
                             <input type='checkbox' id={`fileCheckbox${index + 1}`} className="selectFiles" onChange={async () => { setEnabledCheckboxes([...enabledCheckboxes, `fileCheckbox${index + 1}`]); await pushOrPopName(pwd + '/' + file.name); }}></input>
                             {selectedItemId === `f${index}` ? (
                                 <input type="text" defaultValue={file.name} onKeyDown={(event) => {
