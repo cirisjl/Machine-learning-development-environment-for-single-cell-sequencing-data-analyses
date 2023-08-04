@@ -260,11 +260,9 @@ app.get('/protected', verifyToken, (req, res) => {
                     authData.isAdmin = (adminFlag == 1) ? true: false;
                     console.log("Inside authData.isAdmin:: " + authData.isAdmin);
 
+                    res.json({ message: 'You have access to the protected resource', authData });
                 });
             }
-            console.log(authData);
-
-            res.json({ message: 'You have access to the protected resource', authData });
         }
     });
 });
