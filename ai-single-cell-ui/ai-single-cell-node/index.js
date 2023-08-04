@@ -704,6 +704,7 @@ app.get('/fetchPreview', async (req, res) => {
 app.delete('/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
+    const { pwd } = req.query
     console.log('Entered delete function');
     const uname = getUserFromToken(authToken);
     if (uname === 'Unauthorized') {
@@ -721,7 +722,12 @@ app.delete('/deleteFiles', async (req, res) => {
                     res.status(401).json({ message: 'File(s) being used by datasets.' });
                     return;
                 } else {
-                    const filePath = `${storageDir}${uname}/${file}`;
+                    const filePath = ""
+                    if(pwd.includes("publicDatasets")) {
+                        filePath = `${storageDir}${file}`;
+                    } else {
+                        filePath = `${storageDir}${uname}/${file}`;
+                    }
                     console.log(filePath);
                     try {
                         if (fs.existsSync(filePath)) {
@@ -877,7 +883,12 @@ app.post('/upload', async (req, res) => {
 app.post('/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
-    const folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
+    let folderPath = ""
+    if(pwd.includes("publicDatasets")) {
+        folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
+    } else {
+        folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
+    }
     if (fs.existsSync(folderPath)) {
         res.status(400).jsonp('Folder already exists');
         return;

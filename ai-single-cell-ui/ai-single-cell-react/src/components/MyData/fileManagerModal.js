@@ -210,7 +210,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     }
 
     async function deleteFiles() {
-        const deleteApiUrl = `${SERVER_URL}/deleteFiles?authToken=${jwtToken}`
+        const deleteApiUrl = `${SERVER_URL}/deleteFiles?authToken=${jwtToken}&pwd=${pwd}`
         await fetch(`${deleteApiUrl}`, {
             method: 'DELETE',
             headers: {
