@@ -722,7 +722,7 @@ app.delete('/deleteFiles', async (req, res) => {
                     res.status(401).json({ message: 'File(s) being used by datasets.' });
                     return;
                 } else {
-                    const filePath = ""
+                    let filePath = ""
                     if(pwd.includes("publicDatasets")) {
                         filePath = `${storageDir}${file}`;
                     } else {
