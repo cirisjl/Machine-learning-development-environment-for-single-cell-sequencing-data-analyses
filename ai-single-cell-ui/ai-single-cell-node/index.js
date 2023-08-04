@@ -262,6 +262,8 @@ app.get('/protected', verifyToken, (req, res) => {
 
                 });
             }
+            console.log(authData);
+
             res.json({ message: 'You have access to the protected resource', authData });
         }
     });
