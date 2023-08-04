@@ -56,6 +56,17 @@ export default function UploadData() {
         ['barcodes.tsv', 'features.tsv', 'count_matrix.mtx'],
         ['barcodes.tsv.gz', 'features.tsv.gz', 'count_matrix.mtx.gz']
     ];
+
+    const [publicDatasetFlag, setPublicDatasetFlag] = useState(false);
+
+    useEffect(() => {
+      // Check if pwd starts with "publicDatasets" or contains "publicDatasets"
+      const containsPublicDatasets = pwd.startsWith('publicDatasets');
+      
+      // Update the state of publicDatasets accordingly
+      setPublicDatasetFlag(containsPublicDatasets);
+    }, [pwd]); // Run this effect whenever pwd changes
+
     const handleMouseOver = () => {
         setHoveredErrPopup(true);
     };
@@ -402,7 +413,7 @@ export default function UploadData() {
                         </div>
                     </div>}
                     {previewBoxOpen && <FilePreviewModal selectedFile={fileToPreview} setPreviewBoxOpen={setPreviewBoxOpen} jwtToken={jwtToken} forResultFile={false} />}
-                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser}/>}
+                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser} publicDatasetFlag={publicDatasetFlag}/>}
                     <div>        <div>
                         <div id="upload-data-div">
                             <div className="info-icon" onClick={() => { setIsInfoModalOpen(true); }}>
