@@ -236,6 +236,7 @@ app.post('/api/login', (req, res) => {
 // Route to handle protected resource
 app.get('/protected', verifyToken, (req, res) => {
     jwt.verify(req.token, 'secret', (err, authData) => {
+        console.log(authData);
         if (err) {
             res.sendStatus(403);
         } else {
