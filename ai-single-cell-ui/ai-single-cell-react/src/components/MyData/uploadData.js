@@ -70,6 +70,7 @@ export default function UploadData() {
     useEffect(() => {
         isUserAuth(jwtToken)  
         .then((authData) => {
+            console.log(authData)
             if (authData.isAuth) {
               setIsAdminUser(authData.isAdmin);
               console.log("is Admin User::::: " + isAdminuser);
