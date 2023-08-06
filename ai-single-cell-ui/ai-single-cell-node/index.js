@@ -620,6 +620,7 @@ app.post('/download', async (req, res) => {
 
 app.get('/download', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
+    const { pwd } = req.query
     const username = getUserFromToken(authToken);
     let filePath = '';
     console.log('Entered download function');
@@ -627,8 +628,11 @@ app.get('/download', async (req, res) => {
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
     }
-
-    filePath = `${storageDir}${username}${fileUrl}`;
+    if(pwd.includes("publicDatasets")) {
+        filePath = path.join(storageDir, fileUrl);
+    } else {
+        filePath = path.join(storageDir, username, fileUrl);
+    }
   
 
     console.log('file: ' + filePath);
