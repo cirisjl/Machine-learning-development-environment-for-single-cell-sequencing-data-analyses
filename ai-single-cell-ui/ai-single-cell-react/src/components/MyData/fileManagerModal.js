@@ -160,7 +160,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         if (tempFileList.length == 1) {
             const fileUrl = tempFileList[0]
             const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-            fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}`)
+            fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}&pwd=${pwd}`)
                 .then(response => {
                     return response.blob();
                 })

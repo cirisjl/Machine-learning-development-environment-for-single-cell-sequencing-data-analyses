@@ -558,6 +558,7 @@ app.post('/renameFile', async (req, res) => {
 app.post('/download', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
+    const { pwd } = req.query
     console.log('Entered download function');
 
     const username = getUserFromToken(authToken);
@@ -587,7 +588,12 @@ app.post('/download', async (req, res) => {
         }
 
         for (const item of fileList) {
-            const filePath = path.join(storageDir, username, item);
+            let filePath = "";
+            if(pwd.includes("publicDatasets")) {
+                filePath = path.join(storageDir, item);
+            } else {
+                filePath = path.join(storageDir, username, item);
+            }
             const archivePath = item;
             await appendToArchive(filePath, archivePath);
         }
