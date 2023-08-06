@@ -181,7 +181,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         }
 
         else if (tempFileList.length > 1) {
-            fetch(`${apiUrl}?authToken=${jwtToken}`, {
+            fetch(`${apiUrl}?authToken=${jwtToken}&pwd=${pwd}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
