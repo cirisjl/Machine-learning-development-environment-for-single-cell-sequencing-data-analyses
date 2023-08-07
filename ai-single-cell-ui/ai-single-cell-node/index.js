@@ -846,13 +846,13 @@ app.post('/upload', async (req, res) => {
 
     let destDir = "" 
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
-    if(!publicDatasetFlag) {
+    if(publicDatasetFlag) {
         console.log("Inside if");
-        destDir =  `./storage/${username}/${uploadDir}`;
+        destDir =   `./storage/${uploadDir}`;
         console.log("Inside if destDir::: " + destDir);
     } else {
         console.log("Inside else");
-        destDir =   `./storage/${uploadDir}`;
+        destDir =  `./storage/${username}/${uploadDir}`;
         console.log("Inside else destDir:: " + destDir);
 
     }
