@@ -99,7 +99,7 @@ const createUniqueFolder = (destinationDir, folderName, index = 1) => {
   };
 
 // Function to copy files from source directory to destination directory
-const copyFiles = async (sourceDir, destinationDir, dirName, files) => {
+const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
     try {
 
         // if(dirName) {
@@ -292,6 +292,7 @@ app.post('/createDataset', async (req, res) => {
 
     if(filesFromPublic) {
         let dirName = ""
+        const fromPublic = true;
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
@@ -300,7 +301,7 @@ app.post('/createDataset', async (req, res) => {
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
         // Copy files from user's private storage to public dataset directory
-        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, fromPublic);
     }
 
     pool.getConnection(function (err, connection) {
@@ -366,7 +367,8 @@ app.post('/createDataset', async (req, res) => {
 
     if(makeItpublic) {
         try {
-            let dirName = ""
+            let dirName = "";
+            const fromPublic = false;
             if (files.length > 0) {
                 dirName = path.dirname(files[0])
             } 
@@ -376,7 +378,7 @@ app.post('/createDataset', async (req, res) => {
             console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
 
             // Copy files from user's private storage to public dataset directory
-            await copyFiles(userPrivateStorageDir, publicStorage, dirName, files);
+            await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
 
          } catch (err) {
             console.error(err);
