@@ -115,7 +115,13 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
   
       for (const file of files) {
         const sourceFilePath = path.join(sourceDir, file);
-        const destinationFilePath = path.join(destinationDir, file);
+        let destinationFilePath = "";
+        if(fromPublic) {
+            file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
+            destinationFilePath = path.join(destinationDir, file);
+        } else {
+            destinationFilePath = path.join(destinationDir, file);
+        }
 
         const sourceFileDir = path.dirname(sourceFilePath);
         const destinationFileDir = path.dirname(destinationFilePath);
@@ -292,7 +298,6 @@ app.post('/createDataset', async (req, res) => {
 
     if(filesFromPublic) {
         let dirName = ""
-        const fromPublic = true;
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
@@ -301,7 +306,7 @@ app.post('/createDataset', async (req, res) => {
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
         // Copy files from user's private storage to public dataset directory
-        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, fromPublic);
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
     }
 
     pool.getConnection(function (err, connection) {
@@ -343,6 +348,9 @@ app.post('/createDataset', async (req, res) => {
                         const datasetId = datasetResult.insertId;
 
                         for (const file of files) {
+                            if(filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
 
