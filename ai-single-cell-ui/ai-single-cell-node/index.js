@@ -286,18 +286,18 @@ app.post('/createDataset', async (req, res) => {
         }
     }
 
-    // if(filesFromPublic) {
-    //     let dirName = ""
+    if(filesFromPublic) {
+        let dirName = ""
 
-    //     if (files.length > 0) {
-    //         dirName = path.dirname(files[0])
-    //     } 
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
 
-    //     let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
-    //     // Copy files from user's private storage to public dataset directory
-    //     await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
-    // }
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
+    }
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
