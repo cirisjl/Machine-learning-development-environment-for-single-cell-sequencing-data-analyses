@@ -380,7 +380,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         <div style={{ paddingTop: "7px" }}><button className="fileManagerButton" onClick={() => { setPwd('/'); setSelectedFiles(tempFileList); toggleModal(); }} ><FontAwesomeIcon icon={faCheck} style={{ fontWeight: "bold" }} /> Select Files</button>&nbsp;&nbsp;
             <button className="fileManagerButton" onClick={() => { setIsUppyModalOpen(!isUppyModalOpen) }} > <FontAwesomeIcon icon={faArrowAltCircleUp} /> Upload Here </button>&nbsp;&nbsp;
             {isUppyModalOpen && (
-                <UppyUploader isUppyModalOpen={isUppyModalOpen} setIsUppyModalOpen={setIsUppyModalOpen} pwd={pwd} authToken={jwtToken} freeSpace={totalStorage - usedStorage} />
+                <UppyUploader isUppyModalOpen={isUppyModalOpen} setIsUppyModalOpen={setIsUppyModalOpen} pwd={pwd} authToken={jwtToken} freeSpace={totalStorage - usedStorage} publicDatasetFlag= {publicDatasetFlag}/>
             )}
             <button className="fileManagerButton" onClick={async () => {
                 await setTempFileList([]); setSelectedFiles([]); toggleModal(); setPwd('/')
