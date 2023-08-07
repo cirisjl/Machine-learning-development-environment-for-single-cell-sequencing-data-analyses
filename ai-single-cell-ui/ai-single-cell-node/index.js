@@ -841,26 +841,14 @@ app.get('/getDirContents', async (req, res) => {
 
 
 app.post('/upload', async (req, res) => {
-    let { uploadDir, authToken, publicDatasetFlag } = req.query;
+    let { uploadDir, authToken } = req.query;
     let username = getUserFromToken(authToken);
-    console.log("username:::: " + username);
-    console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
 
-    let destDir = publicDatasetFlag ? `./storage/${uploadDir}` : `./storage/${username}/${uploadDir}`;
+    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
     console.log("Inside else destDir:: " + destDir);
 
-
-    // if(publicDatasetFlag){
-    //     console.log("Inside if");
-    //     destDir =   `./storage/${uploadDir}`;
-    //     console.log("Inside if destDir::: " + destDir);
-    // } else {
-    //     console.log("Inside else");
-    //     destDir =  `./storage/${username}/${uploadDir}`;
-    //     console.log("Inside else destDir:: " + destDir);
-    // }
-    let tempDir = './uploads'; // Replace with a temporary directory for uploads
+    let tempDir = './uploads'; 
 
     let storage = multer.diskStorage({
         destination: (req, file, cb) => {
