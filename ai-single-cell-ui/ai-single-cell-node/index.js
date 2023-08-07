@@ -844,7 +844,7 @@ app.post('/upload', async (req, res) => {
     let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = "" 
+    let destDir = "" ;
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
     if(publicDatasetFlag) {
         console.log("Inside if");
