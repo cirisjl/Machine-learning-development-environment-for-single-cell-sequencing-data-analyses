@@ -396,11 +396,38 @@ app.post('/createDataset', async (req, res) => {
 
 app.put('/updateDataset', async (req, res) => {
 
-    const { title, n_cells, reference, summary, authToken, files, currentFileList, makeItpublic } = req.body;
+    const { title, n_cells, reference, summary, authToken, files, currentFileList } = req.body;
     const username = getUserFromToken(authToken);
 
     const insertList = files.filter(item => !currentFileList.includes(item));
     const deleteList = currentFileList.filter(item => !files.includes(item));
+
+    let filesFromPublic = false;
+
+    // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+    for (const file of insertList) {
+        console.log("inside for loop")
+        console.log(file);
+        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+            console.log("inside if loop for my check");
+            filesFromPublic = true;
+            break;
+        }
+    }
+
+    if(filesFromPublic) {
+        let dirName = ""
+
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
+
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
+    }
+
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
@@ -450,7 +477,10 @@ app.put('/updateDataset', async (req, res) => {
                                 throw err;
                             });
                         }
-                        for (const file of insertList) {
+                        for (let file of insertList) {
+                            if(filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
 
