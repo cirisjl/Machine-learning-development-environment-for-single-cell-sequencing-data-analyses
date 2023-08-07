@@ -99,23 +99,19 @@ const createUniqueFolder = (destinationDir, folderName, index = 1) => {
   };
 
 // Function to copy files from source directory to destination directory
-const copyFiles = async (sourceDir, destinationDir, dirName) => {
+const copyFiles = async (sourceDir, destinationDir, dirName, files) => {
     try {
 
         if(dirName) {
-            sourceDir = path.join(sourceDir, dirName);
             destinationDir = path.join(destinationDir, dirName);
-        } else  {
-            dirName = "Dataset";
-            destinationDir = createUniqueFolder(destinationDir, dirName);
-        }
+        } 
         console.log("logger to debug the source and destination directories");
         console.log("source" + sourceDir);
         console.log(destinationDir);
 
         // Ensure the destination directory exists before copying files
       await createDirectoryIfNotExists(destinationDir);
-      const files = await fs.readdir(sourceDir);
+    //   const files = await fs.readdir(sourceDir);
   
       for (const file of files) {
         const sourceFilePath = path.join(sourceDir, file);
@@ -272,7 +268,30 @@ app.post('/createDataset', async (req, res) => {
     const { title, n_cells, reference, summary, authToken, files, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
 
+    let filesFromPublic = false;
+
     console.log("Logger to debug makeit public flag : " + makeItpublic);
+
+    // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+    for (const file of files) {
+        if(file.startsWith("publicdataset") || file.startsWith("/publicDatasets")) {
+            filesFromPublic = true;
+            break;
+        }
+    }
+
+    if(filesFromPublic) {
+        let dirName = ""
+
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
+
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
+    }
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
@@ -347,7 +366,7 @@ app.post('/createDataset', async (req, res) => {
         console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
   
         // Copy files from user's private storage to public dataset directory
-        await copyFiles(userPrivateStorageDir, publicStorage, dirName);
+        await copyFiles(userPrivateStorageDir, publicStorage, dirName, files);
       }
 });
 
