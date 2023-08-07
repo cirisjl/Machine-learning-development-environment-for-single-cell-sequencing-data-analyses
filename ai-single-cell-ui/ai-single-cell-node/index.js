@@ -113,7 +113,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     //   await createDirectoryIfNotExists(destinationDir);
     //   const files = await fs.readdir(sourceDir);
   
-      for (const file of files) {
+      for (let file of files) {
         const sourceFilePath = path.join(sourceDir, file);
         let destinationFilePath = "";
         if(fromPublic) {
@@ -347,7 +347,7 @@ app.post('/createDataset', async (req, res) => {
                     } else {
                         const datasetId = datasetResult.insertId;
 
-                        for (const file of files) {
+                        for (let file of files) {
                             if(filesFromPublic) {
                                 file = file.replace(/^\/?publicDatasets\//, '/'); 
                             }
