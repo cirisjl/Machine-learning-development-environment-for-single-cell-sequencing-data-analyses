@@ -841,10 +841,17 @@ app.get('/getDirContents', async (req, res) => {
 
 
 app.post('/upload', async (req, res) => {
-    let { uploadDir, authToken } = req.query;
+    let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = `./storage/${username}/${uploadDir}`; // Replace with your storage directory
+    let destDir = "" 
+
+    if(publicDatasetFlag) {
+        destDir =  `./storage/${uploadDir}`; // Replace with your storage directory
+    } else {
+        destDir =  `./storage/${username}/${uploadDir}`; // Replace with your storage directory
+    }
+    
     let tempDir = './uploads'; // Replace with a temporary directory for uploads
 
     let storage = multer.diskStorage({

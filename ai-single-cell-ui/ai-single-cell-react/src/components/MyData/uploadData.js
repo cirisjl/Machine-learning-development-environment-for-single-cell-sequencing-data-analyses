@@ -61,7 +61,7 @@ export default function UploadData() {
 
     useEffect(() => {
       // Check if pwd starts with "publicDatasets" or contains "publicDatasets"
-      const containsPublicDatasets = pwd.startsWith('publicDatasets');
+      const containsPublicDatasets = pwd.startsWith('publicDatasets')  || pwd.startsWith('/publicDatasets');
       
       // Update the state of publicDatasets accordingly
       setPublicDatasetFlag(containsPublicDatasets);
