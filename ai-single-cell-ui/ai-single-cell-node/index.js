@@ -847,9 +847,14 @@ app.post('/upload', async (req, res) => {
     let destDir = "" 
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
     if(!publicDatasetFlag) {
+        console.lof("Inside if");
         destDir =  `./storage/${username}/${uploadDir}`;
+        console.lof("Inside if destDir::: " + destDir);
     } else {
+        console.lof("Inside else");
         destDir =   `./storage/${uploadDir}`;
+        console.lof("Inside else destDir:: " + destDir);
+
     }
     let tempDir = './uploads'; // Replace with a temporary directory for uploads
 
