@@ -98,7 +98,7 @@ export default function UploadData() {
         const hookForUpdate = async () => {
             if (mode === 'update') {
                 console.log('Mode: ' + mode);
-                formInfo.makeItpublic = (formInfo.makeItpublic ! ==null) ? formInfo.makeItpublic : false
+                formInfo.makeItpublic = (formInfo.makeItpublic !==null) ? formInfo.makeItpublic : false
                 formInfo.reference = (formInfo.reference !== null) ? formInfo.reference : '';
                 formInfo.summary = (formInfo.summary !== null) ? formInfo.summary : '';
                 setSelectedFiles(currentFileList);
