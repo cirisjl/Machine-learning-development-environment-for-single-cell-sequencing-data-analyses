@@ -281,6 +281,7 @@ app.post('/createDataset', async (req, res) => {
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
         console.log("inside for loop")
+        console.log(file);
         if(file.startsWith("publicdataset") || file.startsWith("/publicDatasets")) {
             console.log("inside if loop for my check");
             filesFromPublic = true;
