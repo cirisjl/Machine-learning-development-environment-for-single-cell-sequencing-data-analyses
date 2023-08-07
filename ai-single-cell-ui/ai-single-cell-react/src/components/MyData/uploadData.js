@@ -216,11 +216,10 @@ export default function UploadData() {
         jwtToken = getCookie('jwtToken');
 
         if(subdir === "publicDatasets") {
-            console.log("Entered inside the public Dataset if")
-            newDir = subdir;
+            newDir = "/" + subdir;
             setPwd(newDir)
         } else if(pwd === "publicDatasets" && subdir === ".." ) {
-            newDir = ""
+            newDir = "/"
             setPwd(newDir)
         }
         else if (subdir === '..') {
