@@ -282,7 +282,7 @@ app.post('/createDataset', async (req, res) => {
     for (const file of files) {
         console.log("inside for loop")
         console.log(file);
-        if(file.startsWith("publicdataset") || file.startsWith("/publicDatasets")) {
+        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
             console.log("inside if loop for my check");
             filesFromPublic = true;
             break;
