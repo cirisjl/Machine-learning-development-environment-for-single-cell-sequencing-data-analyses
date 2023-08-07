@@ -102,9 +102,9 @@ const createUniqueFolder = (destinationDir, folderName, index = 1) => {
 const copyFiles = async (sourceDir, destinationDir, dirName, files) => {
     try {
 
-        if(dirName) {
-            destinationDir = path.join(destinationDir, dirName);
-        } 
+        // if(dirName) {
+        //     destinationDir = path.join(destinationDir, dirName);
+        // } 
         console.log("logger to debug the source and destination directories");
         console.log("source" + sourceDir);
         console.log(destinationDir);
@@ -116,7 +116,13 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files) => {
       for (const file of files) {
         const sourceFilePath = path.join(sourceDir, file);
         const destinationFilePath = path.join(destinationDir, file);
+
+        const sourceFileDir = path.dirname(sourceFilePath);
+        const destinationFileDir = path.dirname(destinationFilePath);
   
+        // Ensure the destination directory exists before copying files
+        await createDirectoryIfNotExists(destinationFileDir);
+ 
         console.log("final paths");
         console.log("source paths" + sourceFilePath);
         console.log("destination paths" + destinationFilePath);
