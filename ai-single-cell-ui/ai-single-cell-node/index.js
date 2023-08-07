@@ -372,7 +372,7 @@ app.post('/createDataset', async (req, res) => {
         console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
   
         // Copy files from user's private storage to public dataset directory
-        await copyFiles(userPrivateStorageDir, publicStorage, dirName, files);
+        await copyFiles(userPrivateStorageDir, "/usr/src/app/storage/", dirName, files);
       }
 });
 
