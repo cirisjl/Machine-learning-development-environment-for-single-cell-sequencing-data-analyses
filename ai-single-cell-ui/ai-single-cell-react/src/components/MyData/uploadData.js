@@ -216,10 +216,10 @@ export default function UploadData() {
         jwtToken = getCookie('jwtToken');
 
         if(subdir === "publicDatasets") {
-            newDir = "/" + subdir;
+            newDir = subdir;
             setPwd(newDir)
         } else if(pwd === "publicDatasets" && subdir === ".." ) {
-            newDir = "/"
+            newDir = ""
             setPwd(newDir)
         }
         else if (subdir === '..') {
