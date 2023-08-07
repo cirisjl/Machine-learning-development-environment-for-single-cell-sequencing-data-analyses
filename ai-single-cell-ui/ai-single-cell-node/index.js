@@ -845,7 +845,7 @@ app.post('/upload', async (req, res) => {
     let username = getUserFromToken(authToken);
 
     let destDir = "" 
-
+    console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
     if(publicDatasetFlag) {
         destDir =  `./storage/${uploadDir}`; // Replace with your storage directory
     } else {
