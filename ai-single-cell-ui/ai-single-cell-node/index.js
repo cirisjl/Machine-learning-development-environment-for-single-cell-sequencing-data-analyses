@@ -843,6 +843,7 @@ app.get('/getDirContents', async (req, res) => {
 app.post('/upload', async (req, res) => {
     let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
+    console.log("username:::: " + username);
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
 
     let destDir = publicDatasetFlag ? `./storage/${uploadDir}` : `./storage/${username}/${uploadDir}`;
