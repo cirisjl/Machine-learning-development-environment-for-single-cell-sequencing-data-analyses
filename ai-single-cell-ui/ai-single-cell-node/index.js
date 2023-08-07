@@ -846,12 +846,11 @@ app.post('/upload', async (req, res) => {
 
     let destDir = "" 
     console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
-    if(publicDatasetFlag) {
-        destDir =  `./storage/${uploadDir}`; // Replace with your storage directory
+    if(!publicDatasetFlag) {
+        destDir =  `./storage/${username}/${uploadDir}`;
     } else {
-        destDir =  `./storage/${username}/${uploadDir}`; // Replace with your storage directory
+        destDir =   `./storage/${uploadDir}`;
     }
-    
     let tempDir = './uploads'; // Replace with a temporary directory for uploads
 
     let storage = multer.diskStorage({
