@@ -396,7 +396,7 @@ app.post('/createDataset', async (req, res) => {
 
 app.put('/updateDataset', async (req, res) => {
 
-    const { title, n_cells, reference, summary, authToken, files, currentFileList } = req.body;
+    const { title, n_cells, reference, summary, authToken, files, currentFileList, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
 
     const insertList = files.filter(item => !currentFileList.includes(item));
