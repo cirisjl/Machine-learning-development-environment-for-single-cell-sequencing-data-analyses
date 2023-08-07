@@ -110,7 +110,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files) => {
         console.log(destinationDir);
 
         // Ensure the destination directory exists before copying files
-      await createDirectoryIfNotExists(destinationDir);
+    //   await createDirectoryIfNotExists(destinationDir);
     //   const files = await fs.readdir(sourceDir);
   
       for (const file of files) {
@@ -286,18 +286,18 @@ app.post('/createDataset', async (req, res) => {
         }
     }
 
-    if(filesFromPublic) {
-        let dirName = ""
+    // if(filesFromPublic) {
+    //     let dirName = ""
 
-        if (files.length > 0) {
-            dirName = path.dirname(files[0])
-        } 
+    //     if (files.length > 0) {
+    //         dirName = path.dirname(files[0])
+    //     } 
 
-        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+    //     let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
-        // Copy files from user's private storage to public dataset directory
-        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
-    }
+    //     // Copy files from user's private storage to public dataset directory
+    //     await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files);
+    // }
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
@@ -361,18 +361,22 @@ app.post('/createDataset', async (req, res) => {
     });
 
     if(makeItpublic) {
+        try {
+            let dirName = ""
+            if (files.length > 0) {
+                dirName = path.dirname(files[0])
+            } 
 
-        let dirName = ""
-        if (files.length > 0) {
-            dirName = path.dirname(files[0])
-        } 
+            let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
-        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+            console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
 
-        console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
-  
-        // Copy files from user's private storage to public dataset directory
-        await copyFiles(userPrivateStorageDir, "/usr/src/app/storage/", dirName, files);
+            // Copy files from user's private storage to public dataset directory
+            await copyFiles(userPrivateStorageDir, publicStorage, dirName, files);
+
+         } catch (err) {
+            console.error(err);
+        }
       }
 });
 
