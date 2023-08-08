@@ -29,8 +29,8 @@ inputs <- strsplit(params$inputs, ",")[[1]]
 methods <- strsplit(params$methods, ",")[[1]]
 methods = toupper(methods)
 if(is.null(params$methods)) stop("No integration method is selected.")
-if(length(params$datasets) != length(params$inputs)) stop("The number of datasets and files does not match.")
-if(length(params$inputs) < 2 ) stop("Integration requires at least 2 samples.")
+if(length(datasets) != length(inputs)) stop("The number of datasets and files does not match.")
+if(length(inputs) < 2 ) stop("Integration requires at least 2 samples.")
 
 library(SeuratWrappers)
 library(reshape2)
