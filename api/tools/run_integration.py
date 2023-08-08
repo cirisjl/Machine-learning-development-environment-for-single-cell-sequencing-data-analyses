@@ -34,17 +34,19 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     output = get_output(output, userID, task_id)
 
     output = get_output_path(datasets, output, method='Integration', format='Seurat')
+    print("Calling RMD1")
 
 
     try:
         report_path = os.path.join(output, "integration_report.html")
+        print("Calling RMD2")
         # Get the absolute path of the current file
         current_file = os.path.abspath(__file__)
         # Construct the relative path to the desired file
         relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
         # Get the absolute path of the desired file
         rmd_path = os.path.abspath(relative_path)
-
+        print("Calling RMD")
         s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + datasets + "', inputs='" + inputs + "', output='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', genes=" + genes + "', reference=" + str(reference) + "', show_error=" + str(show_error) + "), output_file='" + report_path + "')\""], shell = True)
         print(s)
     except Exception as e:
