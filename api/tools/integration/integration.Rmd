@@ -17,13 +17,13 @@ params:
   show_error: TRUE
 output: html_document
 ---
-```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
-knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
-```
-# Integration
-print(params$methods)
-print(params$datasets)
-print(params$inputs)
+# ```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+# knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
+# ```
+# # Integration
+# print(params$methods)
+# print(params$datasets)
+# print(params$inputs)
 # ```{r Load data, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 # if(is.null(params$methods)) stop("No integration method is selected.")
 # if(length(params$datasets) != length(params$inputs)) stop("The number of datasets and files does not match.")
