@@ -407,7 +407,7 @@ app.put('/updateDataset', async (req, res) => {
     console.log("type of insert list" + typeof insertList);
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
-    for (const file of insertList) {
+    for (const file of files) {
         console.log("inside for loop")
         console.log(file);
         if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
