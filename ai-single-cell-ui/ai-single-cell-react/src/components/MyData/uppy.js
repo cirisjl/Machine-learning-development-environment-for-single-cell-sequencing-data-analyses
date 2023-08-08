@@ -13,7 +13,7 @@ import "@uppy/drag-drop/dist/style.css"
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 export default function UppyUploader(props) {
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -59,7 +59,7 @@ export default function UppyUploader(props) {
         companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
     });
     uppy.use(XHRUpload, {
-        endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}`,
+        endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
         formData: true,
         fieldName: 'files'
     });
