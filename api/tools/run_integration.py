@@ -15,9 +15,6 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     # methods = list_py_to_r(methods)
     abs_inputList = []
 
-    for input in inputs:
-        abs_inputList.append(get_input_path(input, userID))
-
     if inputs is not None:
         for input in inputs:
             if input is not None:
