@@ -191,3 +191,7 @@ def list_py_to_r(list):
 def methods_list(list):
     list = [x.upper() for x in list if isinstance(x,str)]
     return ','.join(list)
+
+def list_to_string(list):
+    list = [x.upper() for x in list if isinstance(x, str)]
+    return ','.join(list)

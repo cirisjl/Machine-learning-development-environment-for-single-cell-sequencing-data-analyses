@@ -17,10 +17,10 @@ def run_normalization(task_id, dataset, input, userID, output, methods, species,
     #Get the absolute path for the given output
     output = get_output(output, userID, task_id)
 
-    methods = [x.upper() for x in methods if isinstance(x,str)]
+    # methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(dataset, output, method='normalization', format='Seurat')
     # methods = list_py_to_r(methods)
-    methods = methods_list(methods)
+    methods = list_to_string(methods)
 
     try:
         report_path = get_report_path(dataset, output, "normalization")
