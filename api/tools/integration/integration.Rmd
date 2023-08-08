@@ -23,6 +23,11 @@ knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_
 # Integration
 
 ```{r Load data, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+datasets <- strsplit(params$datasets, ",")[[1]]
+inputs <- strsplit(params$inputs, ",")[[1]]
+
+methods <- strsplit(params$methods, ",")[[1]]
+methods = toupper(methods)
 if(is.null(params$methods)) stop("No integration method is selected.")
 if(length(params$datasets) != length(params$inputs)) stop("The number of datasets and files does not match.")
 if(length(params$inputs) < 2 ) stop("Integration requires at least 2 samples.")
@@ -33,8 +38,7 @@ library(RColorBrewer)
 library(dplyr)
 source("../formating/formating.R")
 
-datasets <- strsplit(params$datasets, ",")[[1]]
-inputs <- strsplit(params$inputs, ",")[[1]]
+
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
@@ -48,8 +52,7 @@ for (i in 1:length(inputs)) {
 }
 names(srats.list) <-datasets
 
-methods <- strsplit(params$methods, ",")[[1]]
-methods = toupper(methods)```
+```
 ## Seurat
 
 ```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
