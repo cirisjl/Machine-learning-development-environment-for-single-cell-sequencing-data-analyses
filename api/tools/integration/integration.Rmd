@@ -3,12 +3,12 @@ title: "Normalization for `r params$dataset`"
 author: "Lei Jiang"
 date: "`r Sys.Date()`"
 params:
-  datasets: NA # Vector of the datasets names
-  inputs: NA # Vector of input file path to scRNA data.
+  datasets: NA # Strings  of the datasets names
+  inputs: NA # Strings  of input file path to scRNA data.
   output_folder: NA # Output file path of the Seurat object.
-  output_format: AnnDate # Seurat or AnnDate
+  output_format: Seurat  # Seurat or AnnDate
   default_assay: RNA # Default assay for each integration method
-  methods: NULL # Integration methods: c("Seurat", "Harmony", "LIGER")
+  methods: NULL # Integration methods: "Seurat", "Harmony", "LIGER"
   reference: NULL # Reference dataset for Seurat integration
   genes: NULL # Genes for MAGIC integration
   show_code: TRUE
@@ -33,27 +33,30 @@ library(RColorBrewer)
 library(dplyr)
 source("../formating/formating.R")
 
+datasets <- strsplit(params$datasets, ",")[[1]]
+inputs <- strsplit(params$inputs, ",")[[1]]
+
 srats.list <- list()
-for (i in 1:length(params$inputs)) {
+for (i in 1:length(inputs)) {
   srats.list[[datasets[i]]] <- load_seurat(inputs[i], project = datasets[i])
-  srats.list[[datasets[i]]]@meta.data$orig.ident <- params$datasets[i]
+  srats.list[[datasets[i]]]@meta.data$orig.ident <- datasets[i]
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
-  print(paste("Seurat object for '", params$datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
+  print(paste("Seurat object for '",datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
   if(params$default_assay == 'RNA') samples_list[[datasets[i]]] <- NormalizeData(samples_list[[datasets[i]]], verbose = F)
   srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
 }
-names(srats.list) <- params$datasets
+names(srats.list) <-datasets
 
-methods = toupper(params$methods)
-```
+methods <- strsplit(params$methods, ",")[[1]]
+methods = toupper(methods)```
 ## Seurat
 
 ```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("SEURAT" %in% methods) {
   srats.integrated <- NULL
   if(params$default_assay == 'SCT' && !is.null(params$reference)) {
-    if(!params$reference %in% params$datasets) stop(paste(params$reference, "does not exist."))
+    if(!params$reference %in%datasets) stop(paste(params$reference, "does not exist."))
     srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
     srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
     reference_dataset <- which(names(srats.list) == params$reference)
