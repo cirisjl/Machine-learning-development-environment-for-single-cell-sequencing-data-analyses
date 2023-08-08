@@ -4,7 +4,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 
 
-def run_integration(task_id, userID, datasets, inputs,output, methods, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error=True):
+def run_integration(task_id, datasets, inputs,userID,output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error=True):
     if methods is None:
         print("No integration method is selected.")
         return None
