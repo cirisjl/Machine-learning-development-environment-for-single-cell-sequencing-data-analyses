@@ -17,7 +17,7 @@ import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import styled from 'styled-components';
 
-const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5000`;
+const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
 const PREVIEW_DATASETS_API = `http://${process.env.REACT_APP_HOST_URL}:3001`;
 
 export function Preview(props) {

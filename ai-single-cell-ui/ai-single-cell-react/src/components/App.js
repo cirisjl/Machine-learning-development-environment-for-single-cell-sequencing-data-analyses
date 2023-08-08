@@ -27,6 +27,7 @@ import ClusteringUsingRaceID from '../pages/MyData/Workflows/ClusteringUsingRace
 import NormalizeUsingScanpy from '../pages/MyData/Tools/normalizeUsingScanpy';
 import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
+import FlaskDashboard from './MyData/dashboard';
 
 function App() {
 
@@ -46,6 +47,7 @@ function App() {
           <Route path="mydata/workflows" element={<ClusteringUsingRaceID/>}></Route>
           <Route path="mydata/tools" element={<NormalizeUsingScanpy/>}></Route>
           <Route path="team"         element={<Team/>}/>
+          <Route path="dashboard"         element={<FlaskDashboard/>}/>
           <Route path="docs"         element={<Docs/>}/>
           <Route path="login"         element={<Login/>}/>
           <Route path="signup"         element={<SignUp/>}/>

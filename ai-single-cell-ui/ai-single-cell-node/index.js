@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
-const { storageDir, storageAllowance, intermediateStorage } = storageConfig;
+const { storageDir, storageAllowance, intermediateStorage, publicStorage } = storageConfig;
 
 // Create a connection pool to handle multiple connections to the database
 const pool = mysql.createPool({
@@ -68,6 +68,79 @@ function getUserFromToken(token) {
         return 'Unauthorized';
     }
 }
+const createDirectoryIfNotExists = async (dirPath) => {
+    try {
+      await fs.mkdir(dirPath, { recursive: true });
+      console.log(`Directory "${dirPath}" created successfully.`);
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        console.error('Error creating the directory:', err);
+        throw err;
+      }
+    }
+  };
+
+const createUniqueFolder = (destinationDir, folderName, index = 1) => {
+    const targetFolderName = index === 1 ?  path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
+    const targetFolderPath = path.join(__dirname, targetFolderName);
+  
+    if (!fs.existsSync(targetFolderPath)) {
+      try {
+        fs.mkdirSync(targetFolderPath);
+        console.log(`Directory "${targetFolderName}" created successfully.`);
+        return targetFolderName;
+      } catch (err) {
+        console.error('Error creating the directory:', err);
+        return null;
+      }
+    } else {
+      return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
+    }
+  };
+
+// Function to copy files from source directory to destination directory
+const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
+    try {
+
+        // if(dirName) {
+        //     destinationDir = path.join(destinationDir, dirName);
+        // } 
+        console.log("logger to debug the source and destination directories");
+        console.log("source" + sourceDir);
+        console.log(destinationDir);
+
+        // Ensure the destination directory exists before copying files
+    //   await createDirectoryIfNotExists(destinationDir);
+    //   const files = await fs.readdir(sourceDir);
+  
+      for (let file of files) {
+        const sourceFilePath = path.join(sourceDir, file);
+        let destinationFilePath = "";
+        if(fromPublic) {
+            file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
+            destinationFilePath = path.join(destinationDir, file);
+        } else {
+            destinationFilePath = path.join(destinationDir, file);
+        }
+
+        const sourceFileDir = path.dirname(sourceFilePath);
+        const destinationFileDir = path.dirname(destinationFilePath);
+  
+        // Ensure the destination directory exists before copying files
+        await createDirectoryIfNotExists(destinationFileDir);
+ 
+        console.log("final paths");
+        console.log("source paths" + sourceFilePath);
+        console.log("destination paths" + destinationFilePath);
+
+        // Perform the actual file copy
+        await fs.copyFile(sourceFilePath, destinationFilePath);
+      }
+    } catch (error) {
+      console.error('Error copying files:', error);
+      throw error;
+    }
+  };
 
 // Route to handle user signup
 app.post('/api/signup', (req, res) => {
@@ -171,18 +244,70 @@ app.post('/api/login', (req, res) => {
 // Route to handle protected resource
 app.get('/protected', verifyToken, (req, res) => {
     jwt.verify(req.token, 'secret', (err, authData) => {
+        console.log(authData);
         if (err) {
             res.sendStatus(403);
         } else {
-            res.json({ message: 'You have access to the protected resource', authData });
+            if (authData.username !== null && authData.username !== undefined) {
+                pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        res.json({ message: 'Internal Server Error'});
+                        return;
+                    }
+            
+                    if (results.length === 0) {
+                        res.json({ message: 'Invalid credentials'});
+                        return;
+                    }
+                    console.log("Inside the protected API, result after the query:: " + results[0].isAdmin);
+            
+                    const adminFlag = results[0].isAdmin;
+                    console.log("Inside adminFlag:: " + adminFlag);
+
+                    authData.isAdmin = (adminFlag == 1) ? true: false;
+                    console.log("Inside authData.isAdmin:: " + authData.isAdmin);
+
+                    res.json({ message: 'You have access to the protected resource', authData });
+                });
+            }
         }
     });
 });
 
-app.post('/createDataset', (req, res) => {
+app.post('/createDataset', async (req, res) => {
 
-    const { title, n_cells, reference, summary, authToken, files } = req.body;
+    const { title, n_cells, reference, summary, authToken, files, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
+
+    let filesFromPublic = false;
+
+    console.log("Logger to debug makeit public flag : " + makeItpublic);
+
+    // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+    for (const file of files) {
+        console.log("inside for loop")
+        console.log(file);
+        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+            console.log("inside if loop for my check");
+            filesFromPublic = true;
+            break;
+        }
+    }
+    console.log("value of filesFromPublic::: " + filesFromPublic);
+
+    if(filesFromPublic) {
+        let dirName = ""
+
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
+
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
+    }
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
@@ -222,7 +347,10 @@ app.post('/createDataset', (req, res) => {
                     } else {
                         const datasetId = datasetResult.insertId;
 
-                        for (const file of files) {
+                        for (let file of files) {
+                            if(filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
 
@@ -244,6 +372,26 @@ app.post('/createDataset', (req, res) => {
             });
         });
     });
+
+    if(makeItpublic) {
+        try {
+            let dirName = "";
+            const fromPublic = false;
+            if (files.length > 0) {
+                dirName = path.dirname(files[0])
+            } 
+
+            let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+            console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
+
+            // Copy files from user's private storage to public dataset directory
+            await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
+
+         } catch (err) {
+            console.error(err);
+        }
+      }
 });
 
 app.put('/updateDataset', async (req, res) => {
@@ -253,6 +401,38 @@ app.put('/updateDataset', async (req, res) => {
 
     const insertList = files.filter(item => !currentFileList.includes(item));
     const deleteList = currentFileList.filter(item => !files.includes(item));
+
+    let filesFromPublic = false;
+    console.log(insertList);
+    console.log("type of insert list" + typeof insertList);
+
+    // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+    for (const file of files) {
+        console.log("inside for loop")
+        console.log(file);
+        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
+            console.log("inside if loop for my check");
+            filesFromPublic = true;
+            break;
+        }
+    }
+
+    console.log("value of filesFromPublic::: " + filesFromPublic);
+
+
+    if(filesFromPublic) {
+        let dirName = ""
+
+        if (files.length > 0) {
+            dirName = path.dirname(files[0])
+        } 
+
+        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+        // Copy files from user's private storage to public dataset directory
+        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
+    }
+
 
     pool.getConnection(function (err, connection) {
         if (err) throw err;
@@ -302,7 +482,11 @@ app.put('/updateDataset', async (req, res) => {
                                 throw err;
                             });
                         }
-                        for (const file of insertList) {
+                        for (let file of insertList) {
+                            if(filesFromPublic) {
+                                console.log("value of filesFromPublic inside ifffffffffffff::: " + filesFromPublic);
+                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
 
@@ -415,29 +599,45 @@ app.post('/renameFile', async (req, res) => {
     if (uname == 'Unauthorized')
         return res.status(403).jsonp('Unauthorized');
 
-    pool.query(`UPDATE aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id SET f.file_loc = CONCAT('${newName}', SUBSTRING(f.file_loc, LENGTH('${oldName}') + 1)) WHERE u.username = '${uname}' AND f.file_loc LIKE '${oldName}%';`, [newName, oldName, uname, oldName + '%'], (err, results) => {
-
-        console.log(results);
+    pool.query(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc LIKE '${oldName}%';`, (err, results) => {
         if (err) {
             console.error(err);
-            res.json({ status: 500, message: 'Internal Server Error' });
-            return;
+            return res.status(500).json({ status: 500, message: 'Internal Server Error' });
         }
-    })
 
-    fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
-        if (err) {
-            console.error(err);
+        if (results.length > 0) {
+            return res.status(409).json({ status: 409, message: 'Directory already exists' });
         } else {
-            console.log('File renamed successfully!');
+            if (oldName.includes("publicDatasets") && newName.includes("publicDatasets")) {
+                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {    
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
+                    } else {
+                        console.log('File renamed successfully!');
+                        return res.status(200).jsonp('Ok');
+                    }
+                });
+            } else {
+                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {    
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
+                    } else {
+                        console.log('File renamed successfully!');
+                        return res.status(200).jsonp('Ok');
+                    }
+                });
+            }
         }
     });
-    return res.status(200).jsonp('Ok');
 });
+
 
 app.post('/download', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
+    const { pwd } = req.query;
     console.log('Entered download function');
 
     const username = getUserFromToken(authToken);
@@ -467,7 +667,12 @@ app.post('/download', async (req, res) => {
         }
 
         for (const item of fileList) {
-            const filePath = path.join(storageDir, username, item);
+            let filePath = "";
+            if(pwd.includes("publicDatasets")) {
+                filePath = path.join(storageDir, item);
+            } else {
+                filePath = path.join(storageDir, username, item);
+            }
             const archivePath = item;
             await appendToArchive(filePath, archivePath);
         }
@@ -494,6 +699,7 @@ app.post('/download', async (req, res) => {
 
 app.get('/download', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
+    const { pwd } = req.query
     const username = getUserFromToken(authToken);
     let filePath = '';
     console.log('Entered download function');
@@ -501,8 +707,11 @@ app.get('/download', async (req, res) => {
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
     }
-
-    filePath = `${storageDir}/${username}/${fileUrl}`;
+    if(pwd.includes("publicDatasets")) {
+        filePath = path.join(storageDir, fileUrl);
+    } else {
+        filePath = path.join(storageDir, username, fileUrl);
+    }
   
 
     console.log('file: ' + filePath);
@@ -584,6 +793,7 @@ app.get('/fetchPreview', async (req, res) => {
 app.delete('/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
+    const { pwd } = req.query
     console.log('Entered delete function');
     const uname = getUserFromToken(authToken);
     if (uname === 'Unauthorized') {
@@ -601,7 +811,12 @@ app.delete('/deleteFiles', async (req, res) => {
                     res.status(401).json({ message: 'File(s) being used by datasets.' });
                     return;
                 } else {
-                    const filePath = `${storageDir}${uname}/${file}`;
+                    let filePath = ""
+                    if(pwd.includes("publicDatasets")) {
+                        filePath = `${storageDir}${file}`;
+                    } else {
+                        filePath = `${storageDir}${uname}/${file}`;
+                    }
                     console.log(filePath);
                     try {
                         if (fs.existsSync(filePath)) {
@@ -656,11 +871,23 @@ app.get('/getDirContents', async (req, res) => {
         }
 
         subdir = req.query.subdir;
+        console.log("Debug point to check the value of subdir");
+        console.log(dirPath);
+        var directoryPath = ""
 
+        
         var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
         
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
+
+        if(dirPath == "publicDatasets") {
+            directoryPath = publicStorage;
+        }
+
+        if(dirPath.includes("publicDatasets/")) {
+            directoryPath = "/usr/src/app/storage/" + dirPath;
+        }
 
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
@@ -693,11 +920,14 @@ app.get('/getDirContents', async (req, res) => {
 
 
 app.post('/upload', async (req, res) => {
-    let { uploadDir, authToken } = req.query;
+    let { uploadDir, authToken ,publicDatasetFlag} = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = `./storage/${username}/${uploadDir}`; // Replace with your storage directory
-    let tempDir = './uploads'; // Replace with a temporary directory for uploads
+    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
+    console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
+    console.log("Inside else destDir:: " + destDir);
+
+    let tempDir = './uploads'; 
 
     let storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -745,7 +975,12 @@ app.post('/upload', async (req, res) => {
 app.post('/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
-    const folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
+    let folderPath = ""
+    if(pwd.includes("publicDatasets")) {
+        folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
+    } else {
+        folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
+    }
     if (fs.existsSync(folderPath)) {
         res.status(400).jsonp('Folder already exists');
         return;
