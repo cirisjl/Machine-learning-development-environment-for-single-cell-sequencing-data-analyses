@@ -37,7 +37,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (1,'Quality Control'),(2,'Imputation'),(3,'Normalization');
+INSERT INTO `categories` VALUES (1,'Quality Control'),(2,'Imputation'),(3,'Normalization'),(4, 'Integration');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -891,7 +891,7 @@ CREATE TABLE `filters` (
 
 LOCK TABLES `filters` WRITE;
 /*!40000 ALTER TABLE `filters` DISABLE KEYS */;
-INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,2,'scGNN'),(8,3,'LogCPM'),(9,3,'LogCP10K'),(10,3,'sctransform'),(11,3,'DEseq2'),(12,3,'scran'),(13,3,'TMM'),(14,3,'RLE'),(15,3,'UQ'),(16,3,'UPPERQUARTILE'),(17,3,'TPM'),(18,3,'FPKM'),(19,3,'PEARSON_RESIDUALS');
+INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,2,'scGNN'),(8,3,'LogCPM'),(9,3,'LogCP10K'),(10,3,'sctransform'),(11,3,'DEseq2'),(12,3,'scran'),(13,3,'TMM'),(14,3,'RLE'),(15,3,'UQ'),(16,3,'UPPERQUARTILE'),(17,3,'TPM'),(18,3,'FPKM'),(19,3,'PEARSON_RESIDUALS'),(20, 4 , 'Seurat'), (21, 4 , 'Harmony'), (22, 4, 'Liger');
 /*!40000 ALTER TABLE `filters` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -131,7 +131,7 @@ if("HARMONY" %in% methods) {
 ## Seurat
 
 ```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
-if("SEURAT" %in% methods) {
+if("LIGER" %in% methods) {
   library(rliger)
   srat.liger <- Reduce(merge, srats.list)
   srat.liger <- NormalizeData(srat.liger)
