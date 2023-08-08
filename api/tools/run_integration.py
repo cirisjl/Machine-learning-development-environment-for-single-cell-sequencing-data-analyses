@@ -13,13 +13,23 @@ def run_integration(task_id, userID, datasets, inputs,output, methods, default_a
     # adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
 
     # methods = list_py_to_r(methods)
+    abs_inputList = []
+
+    for input in inputs:
+        abs_inputList.append(get_input_path(input, userID))
+
+    if inputs is not None:
+        for input in inputs:
+            if input is not None:
+                abs_inputList.append(get_input_path(input, userID))
+
 
     datasets = list_to_string(datasets)
-    inputs = list_to_string(inputs)
     methods = list_to_string(methods)
+    
 
-    #Get the absolute path for the given input
-    input = get_input_path(input, userID)
+    # #Get the absolute path for the given input
+    # input = get_input_path(input, userID)
     #Get the absolute path for the given output
     output = get_output(output, userID, task_id)
 
