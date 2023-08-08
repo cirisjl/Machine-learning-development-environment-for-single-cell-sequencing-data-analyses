@@ -26,6 +26,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
 
     datasets = list_to_string(datasets)
     methods = list_to_string(methods)
+    input = list_to_string_default(abs_inputList)
     
 
     # #Get the absolute path for the given input
@@ -47,7 +48,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
         # Get the absolute path of the desired file
         rmd_path = os.path.abspath(relative_path)
         print("Calling RMD")
-        s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + datasets + "', inputs='" + abs_inputList + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', genes=" + genes + "', reference=" + str(reference) + "', show_error=" + str(show_error) + "), output_file='" + report_path + "')\""], shell = True)
+        s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + datasets + "', inputs='" + input + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', genes=" + genes + "', reference=" + str(reference) + "', show_error=" + str(show_error) + "), output_file='" + report_path + "')\""], shell = True)
         print(s)
     except Exception as e:
         print("Integration  is failed")
