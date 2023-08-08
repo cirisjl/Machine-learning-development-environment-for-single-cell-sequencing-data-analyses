@@ -37,7 +37,7 @@ class IntegrationDataset(BaseModel):
     species: Optional[str] = None
     idtype: Optional[str] = None 
     genes: Optional[List[str]] = None
-    ncores: Optional[int] = 12
+    reference: Optional[int] = 12
     colour_by: Optional[str] = None
     shape_by_1: Optional[str] = None
     shape_by_2: Optional[str] = None
