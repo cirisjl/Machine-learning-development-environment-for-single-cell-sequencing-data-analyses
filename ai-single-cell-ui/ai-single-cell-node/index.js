@@ -403,12 +403,14 @@ app.put('/updateDataset', async (req, res) => {
     const deleteList = currentFileList.filter(item => !files.includes(item));
 
     let filesFromPublic = false;
+    console.log(insertList);
+    console.log("type of insert list" + typeof insertList);
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of insertList) {
         console.log("inside for loop")
         console.log(file);
-        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
             console.log("inside if loop for my check");
             filesFromPublic = true;
             break;
