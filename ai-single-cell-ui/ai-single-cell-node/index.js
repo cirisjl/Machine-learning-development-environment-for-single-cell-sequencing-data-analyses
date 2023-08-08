@@ -415,6 +415,9 @@ app.put('/updateDataset', async (req, res) => {
         }
     }
 
+    console.log("value of filesFromPublic::: " + filesFromPublic);
+
+
     if(filesFromPublic) {
         let dirName = ""
 
@@ -479,6 +482,7 @@ app.put('/updateDataset', async (req, res) => {
                         }
                         for (let file of insertList) {
                             if(filesFromPublic) {
+                                console.log("value of filesFromPublic inside ifffffffffffff::: " + filesFromPublic);
                                 file = file.replace(/^\/?publicDatasets\//, '/'); 
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
