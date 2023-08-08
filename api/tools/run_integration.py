@@ -36,7 +36,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
 
 
     try:
-        report_path = get_report_path(output, "integration")
+        report_path = get_report_path(datasets, output, "integration")
         print("Calling RMD2")
         # Get the absolute path of the current file
         current_file = os.path.abspath(__file__)
