@@ -125,7 +125,7 @@ if("HARMONY" %in% methods) {
 
   plot_integrated_clusters(srat.harmony)
 
-  SaveH5Seurat(srat.harmony, filename = file.path(params$output_folder, "harmony_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srat.harmony, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for Harmony integration is saved successfully.")
   rm(srats.harmony)
 } else {
@@ -156,7 +156,7 @@ if("LIGER" %in% methods) {
 
   plot_integrated_clusters(srat.liger)
 
-  SaveH5Seurat(srat.liger, filename = file.path(params$output_folder, "liger_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srat.liger, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for LIGER integration is saved successfully.")
   rm(srat.liger)
 } else {
