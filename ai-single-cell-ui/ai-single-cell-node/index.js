@@ -892,7 +892,7 @@ app.get('/getDirContents', async (req, res) => {
         // Check if the directory exists
         if (!fs.existsSync(directoryPath)) {
             // Create the directory if it doesn't exist
-            fs.mkdirSync(givenPath, { recursive: true });
+            fs.mkdirSync(directoryPath, { recursive: true });
             console.log(`Directory "${directoryPath}" created successfully.`);
         } else {
             console.log(`Directory "${directoryPath}" already exists.`);
