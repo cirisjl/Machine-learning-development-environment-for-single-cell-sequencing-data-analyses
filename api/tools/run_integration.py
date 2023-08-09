@@ -21,6 +21,8 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
                 abs_inputList.append(get_input_path(input, userID))
 
 
+    if datasets is not None:
+        dataset = datasets[0]
     datasets = list_to_string(datasets)
     methods = list_to_string(methods)
     input = list_to_string_default(abs_inputList)
@@ -31,12 +33,12 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     #Get the absolute path for the given output
     output = get_output(output, userID, task_id)
 
-    output = get_output_path(datasets, output, method='Integration', format='Seurat')
+    output = get_output_path(dataset, output, method='Integration', format='Seurat')
     print("Calling RMD1")
 
 
     try:
-        report_path = get_report_path(datasets, output, "integration")
+        report_path = get_report_path(dataset, output, "integration")
         print("Calling RMD2")
         # Get the absolute path of the current file
         current_file = os.path.abspath(__file__)
