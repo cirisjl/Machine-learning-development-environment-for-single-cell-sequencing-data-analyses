@@ -83,7 +83,7 @@ if("SEURAT" %in% methods) {
 
   DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
 
-  # SaveH5Seurat(srats.integrated, filename = file.path(params$output_folder, "seurat_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srats.integrated, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for Seurat integration is saved successfully.")
 } else {
   print("Not selected by user, skipped.")
