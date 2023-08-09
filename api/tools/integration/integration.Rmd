@@ -150,7 +150,7 @@ if("LIGER" %in% methods) {
   DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
   DimPlot(srat.liger, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
 
-  srat.liger <- SetIdent(srat.liger,v alue = "seurat_clusters")
+  srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
   DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
 
   plot_integrated_clusters(srat.liger)
