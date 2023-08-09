@@ -889,6 +889,15 @@ app.get('/getDirContents', async (req, res) => {
             directoryPath = "/usr/src/app/storage/" + dirPath;
         }
 
+        // Check if the directory exists
+        if (!fs.existsSync(directoryPath)) {
+            // Create the directory if it doesn't exist
+            fs.mkdirSync(givenPath, { recursive: true });
+            console.log(`Directory "${directoryPath}" created successfully.`);
+        } else {
+            console.log(`Directory "${directoryPath}" already exists.`);
+        }
+        
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
         const fileList = [];
