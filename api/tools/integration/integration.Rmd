@@ -47,7 +47,7 @@ for (i in 1:length(inputs)) {
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
   print(paste("Seurat object for '",datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
-  # if(params$default_assay == 'RNA') samples_list[[datasets[i]]] <- NormalizeData(samples_list[[datasets[i]]], verbose = F)
+  if(params$default_assay == 'RNA') srats.list[[datasets[i]]] <- NormalizeData(srats.list[[datasets[i]]], verbose = F)
   srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
 }
 names(srats.list) <-datasets
