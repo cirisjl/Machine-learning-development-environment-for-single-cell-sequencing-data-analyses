@@ -94,6 +94,7 @@ if("SEURAT" %in% methods) {
 ```{r Harmony, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("HARMONY" %in% methods) {
   library(harmony)
+  library(cowplot)
   srat.harmony <- Reduce(merge, srats.list)
   srat.harmony <- NormalizeData(srat.harmony, verbose = F)
   srat.harmony <- FindVariableFeatures(srat.harmony, selection.method = "vst", nfeatures = 2000, verbose = F)
