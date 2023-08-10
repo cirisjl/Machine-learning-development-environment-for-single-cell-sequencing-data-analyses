@@ -19,6 +19,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: '/tools/qc',
       normalization: '/tools/normalize',
       imputation: '/tools/impute',
+      integration: 'tools/integrate'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -26,6 +27,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'Quality Control',
       normalization: 'Normalization',
       imputation: 'Imputation',
+      integration: 'Integration'
       // Add more filter categories and their corresponding Names as needed
     };
 
@@ -216,6 +218,8 @@ export default function ToolsDetailsComponent(props) {
         let value = event.target.value;
         if(value !== "") {
           setSelectedDataset(event.target.value);
+          console.log("handledataset change");
+          console.log(selectedDataset);
         } else {
           setSelectedDataset([]);
         }
