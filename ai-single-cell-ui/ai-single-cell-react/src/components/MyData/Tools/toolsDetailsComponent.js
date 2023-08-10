@@ -69,26 +69,34 @@ export default function ToolsDetailsComponent(props) {
         formData = formData.parameters;
 
         // Perform form validation and set formErrors accordingly
-        if(selectedDataset.length === 0) {
+        if(filterCategory === "integration" && selectedOptions.length < 2) {
+          setFormErrors("Please select atleast two datasets for integration before submitting the form");
+          console.log("Failed to submit the form");
+        }
+        else if(selectedDataset.length === 0) {
           setFormErrors("Please select a dataset before submitting the form");
           console.log("Failed to submit the form");
         } else {
           setLoading(true);
+          if(filterCategory === "integration") {
+            const parsedSelelectedOptions = JSON.parse(selectedOptions);
+            console.log(parsedSelelectedOptions);
 
-          console.log(selectedDataset);
-            const parsedSelectedDataset = JSON.parse(selectedDataset);
-            formData.dataset = parsedSelectedDataset.title;
+          } else {
+              const parsedSelectedDataset = JSON.parse(selectedDataset);
+              formData.dataset = parsedSelectedDataset.title;
 
-            if (parsedSelectedDataset.files.length > 1) {
-              formData.input = extractDir(parsedSelectedDataset.files[0].file_loc)
-              formData.output = formData.input + "/Results";
-            } else if(parsedSelectedDataset.files.length === 1) {
-              formData.input = parsedSelectedDataset.files[0].file_loc;
-              const directory = extractDir(formData.input)
-              formData.output = directory + "/Results";
-            }
+              if (parsedSelectedDataset.files.length > 1) {
+                formData.input = extractDir(parsedSelectedDataset.files[0].file_loc)
+                formData.output = formData.input + "/Results";
+              } else if(parsedSelectedDataset.files.length === 1) {
+                formData.input = parsedSelectedDataset.files[0].file_loc;
+                const directory = extractDir(formData.input)
+                formData.output = directory + "/Results";
+              }
             console.log(formData);
-
+          }
+      
           // Verify the authenticity of the user
           isUserAuth(jwtToken)
           .then((authData) => {
