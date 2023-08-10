@@ -73,7 +73,7 @@ export default function ToolsDetailsComponent(props) {
           setFormErrors("Please select atleast two datasets for integration before submitting the form");
           console.log("Failed to submit the form");
         }
-        else if(selectedDataset.length === 0) {
+        else if(filterCategory !== "integration" && selectedDataset.length === 0) {
           setFormErrors("Please select a dataset before submitting the form");
           console.log("Failed to submit the form");
         } else {
