@@ -83,7 +83,7 @@ export default function ToolsDetailsComponent(props) {
             console.log(parsedSelelectedOptions);
 
           } else {
-              const parsedSelectedDataset = JSON.parse(selectedDataset);
+              var parsedSelectedDataset = JSON.parse(selectedDataset);
               formData.dataset = parsedSelectedDataset.title;
 
               if (parsedSelectedDataset.files.length > 1) {
