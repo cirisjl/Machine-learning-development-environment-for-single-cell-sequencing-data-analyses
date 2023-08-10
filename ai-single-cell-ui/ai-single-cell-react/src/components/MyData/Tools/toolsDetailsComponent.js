@@ -79,8 +79,9 @@ export default function ToolsDetailsComponent(props) {
         } else {
           setLoading(true);
           if(filterCategory === "integration") {
-            const parsedSelelectedOptions = JSON.parse(selectedOptions);
-            console.log(parsedSelelectedOptions);
+            const parsedObjects = selectedOptions.map(selectedOption => JSON.parse(selectedOption));
+            // const parsedSelelectedOptions = JSON.parse(selectedOptions);
+            console.log(parsedObjects);
 
           } else {
               var parsedSelectedDataset = JSON.parse(selectedDataset);
