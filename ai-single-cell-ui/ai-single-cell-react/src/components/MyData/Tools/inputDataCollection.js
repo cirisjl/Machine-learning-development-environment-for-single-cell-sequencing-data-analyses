@@ -13,6 +13,7 @@ export default function InputDataComponent(props) {
     const [datasets, setDatasets] = useState([]);
     const navigate = useNavigate();
 
+    const handleMultipleDatasetChange = props.handleMultipleDatasetChange;
     const handleDatasetChange = props.handleDatasetChange;
     const filterName = props.filterName;
     const filterCategory = props.filterCategory;
@@ -53,7 +54,7 @@ export default function InputDataComponent(props) {
                 </div>
                 <div className='datasets-input-select'>
                 {filterCategory === "integration" ? (
-                    <select onChange={handleDatasetChange} multiple>
+                    <select onChange={handleMultipleDatasetChange} multiple>
                         <option value="">Select the dataset from the list</option>
                         {datasets.map((dataset) => (
                             <option value={JSON.stringify(dataset)}>{dataset.title}</option>

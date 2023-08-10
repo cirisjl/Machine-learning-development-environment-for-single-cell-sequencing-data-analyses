@@ -38,6 +38,7 @@ export default function ToolsDetailsComponent(props) {
     const [filterSchema, setFilterSchema] = useState(null);
     const [UIfilterSchema, setUIFilterSchema] = useState(null);
     const [selectedDataset, setSelectedDataset] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState([]);
     const [formErrors, setFormErrors] = useState("");
 
     const [loading, setLoading] = useState(false);
@@ -218,12 +219,19 @@ export default function ToolsDetailsComponent(props) {
         let value = event.target.value;
         if(value !== "") {
           setSelectedDataset(event.target.value);
-          console.log("handledataset change");
-          console.log(selectedDataset);
         } else {
           setSelectedDataset([]);
         }
       };
+
+      const handleMultipleDatasetChange = (event) => {
+        const selectedValues = Array.from(event.target.selectedOptions)
+            .filter(option => option.value !== "") // Filter out options with empty value
+            .map(option => option.value);
+    
+        setSelectedOptions(selectedValues);
+        console.log(selectedOptions);
+    };
 
 
   useEffect(() => {
@@ -294,7 +302,7 @@ export default function ToolsDetailsComponent(props) {
       </div>
       {/* {formErrors && <span className="error">{formErrors}</span>} */}
       <div>
-        <InputDataComponent handleDatasetChange={handleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} />
+        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} />
       </div>
             
         {filterSchema && UIfilterSchema ? (
