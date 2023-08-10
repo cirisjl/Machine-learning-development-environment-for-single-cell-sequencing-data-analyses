@@ -83,7 +83,7 @@ export default function ToolsDetailsComponent(props) {
             const titlesArray = parsedObjects.map(parsedObject => parsedObject.title);
             formData.dataset = titlesArray;
             let inputArray = [];
-            for(let parsedObject in parsedObjects) {
+            for(let parsedObject of parsedObjects) {
               if(parsedObject.files.length > 1) {
                 inputArray.push(extractDir(parsedObject.files[0].file_loc));
               } else {
