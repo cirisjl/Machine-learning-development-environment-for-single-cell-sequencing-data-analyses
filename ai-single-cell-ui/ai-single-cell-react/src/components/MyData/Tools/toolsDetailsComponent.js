@@ -290,7 +290,7 @@ export default function ToolsDetailsComponent(props) {
       </div>
       {/* {formErrors && <span className="error">{formErrors}</span>} */}
       <div>
-        <InputDataComponent handleDatasetChange={handleDatasetChange} formErrors={formErrors}/>
+        <InputDataComponent handleDatasetChange={handleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} />
       </div>
             
         {filterSchema && UIfilterSchema ? (
