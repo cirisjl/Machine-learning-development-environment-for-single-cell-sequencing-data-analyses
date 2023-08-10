@@ -14,6 +14,8 @@ export default function InputDataComponent(props) {
     const navigate = useNavigate();
 
     const handleDatasetChange = props.handleDatasetChange;
+    const filterName = props.filterName;
+    const filterCategory = props.filterCategory;
 
     useEffect(() => {
         if (jwtToken) {
@@ -50,12 +52,22 @@ export default function InputDataComponent(props) {
                 </button>
                 </div>
                 <div className='datasets-input-select'>
-                    <select onChange={handleDatasetChange}>
+                {filterCategory === "integration" ? (
+                    <select onChange={handleDatasetChange} multiple>
                         <option value="">Select the dataset from the list</option>
                         {datasets.map((dataset) => (
                             <option value={JSON.stringify(dataset)}>{dataset.title}</option>
                         ))}
                     </select>
+                    ) : ( 
+                        <select onChange={handleDatasetChange}>
+                            <option value="">Select the dataset from the list</option>
+                            {datasets.map((dataset) => (
+                                <option value={JSON.stringify(dataset)}>{dataset.title}</option>
+                            ))}
+                        </select>
+              )}
+
                     {props.formErrors && <FormHelperText>{props.formErrors}</FormHelperText>}
                 </div>
                 <div>
