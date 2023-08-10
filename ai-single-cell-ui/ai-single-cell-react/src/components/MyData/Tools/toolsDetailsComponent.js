@@ -19,7 +19,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: '/tools/qc',
       normalization: '/tools/normalize',
       imputation: '/tools/impute',
-      integration: 'tools/integrate'
+      integration: '/tools/integrate'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -80,7 +80,18 @@ export default function ToolsDetailsComponent(props) {
           setLoading(true);
           if(filterCategory === "integration") {
             const parsedObjects = selectedOptions.map(selectedOption => JSON.parse(selectedOption));
-            // const parsedSelelectedOptions = JSON.parse(selectedOptions);
+            const titlesArray = parsedObjects.map(parsedObject => parsedObject.title);
+            formData.dataset = titlesArray;
+            let inputArray = [];
+            for(let parsedObject in parsedObjects) {
+              if(parsedObject.files.length > 1) {
+                inputArray.push(extractDir(parsedObject.files[0].file_loc));
+              } else {
+                inputArray.push(parsedObject.files[0].file_loc);
+              }
+            }
+            formData.input = inputArray;
+            formData.output = "/IntegrationResults";
             console.log(parsedObjects);
 
           } else {
@@ -88,11 +99,11 @@ export default function ToolsDetailsComponent(props) {
               formData.dataset = parsedSelectedDataset.title;
 
               if (parsedSelectedDataset.files.length > 1) {
-                formData.input = extractDir(parsedSelectedDataset.files[0].file_loc)
+                formData.input = extractDir(parsedSelectedDataset.files[0].file_loc);
                 formData.output = formData.input + "/Results";
               } else if(parsedSelectedDataset.files.length === 1) {
                 formData.input = parsedSelectedDataset.files[0].file_loc;
-                const directory = extractDir(formData.input)
+                const directory = extractDir(formData.input);
                 formData.output = directory + "/Results";
               }
             console.log(formData);
