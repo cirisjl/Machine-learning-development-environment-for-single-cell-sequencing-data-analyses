@@ -141,7 +141,7 @@ export default function ToolsDetailsComponent(props) {
 
                 // After a successfull task creation, store the intermediate task information in the database
                 const taskId = response.task_id;
-                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + formData.dataset + " Using " + filterName;
+                const taskTitle = filterStaticCategoryMap[filterCategory] + " on   Using " + filterName;
                 const datasetId = 46;
                 const method = formData.methods[0];
                 const output = formData.output;
