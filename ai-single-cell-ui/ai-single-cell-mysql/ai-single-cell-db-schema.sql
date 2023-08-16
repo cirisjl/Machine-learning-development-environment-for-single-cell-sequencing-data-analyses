@@ -989,17 +989,15 @@ CREATE TABLE `task` (
   `task_id` varchar(100) NOT NULL,
   `user_id` int NOT NULL,
   `tool` varchar(255) DEFAULT NULL,
-  `dataset_id` int NOT NULL,
   `results_path` varchar(500) NOT NULL,
   `status` varchar(15) DEFAULT NULL,
   `created_datetime` BIGINT UNSIGNED DEFAULT NULL,
   `finish_datetime` BIGINT UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`task_id`),
   KEY `user_id_fk_idx` (`user_id`),
-  KEY `dataset_id_fk_idx` (`dataset_id`),
-  CONSTRAINT `user_id_fk_task` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `dataset_id_fk_task` FOREIGN KEY (`dataset_id`) REFERENCES `dataset` (`dataset_id`)
-)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `user_id_fk_task` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
