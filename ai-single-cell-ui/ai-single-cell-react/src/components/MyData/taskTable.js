@@ -149,7 +149,6 @@ const TaskTable = () => {
                             <TableHeaderCell>Tool</TableHeaderCell>
                             <TableHeaderCell>Created</TableHeaderCell>
                             <TableHeaderCell>Finished</TableHeaderCell>
-                            <TableHeaderCell>Dataset ID</TableHeaderCell>
                             <TableHeaderCell>Status</TableHeaderCell>
                             <TableHeaderCell>Result</TableHeaderCell>
                         </TableRow>
@@ -172,7 +171,6 @@ const TaskTable = () => {
                                         ''
                                     )}
                                 </TableCell>
-                                <TableCell>{task.dataset_id}</TableCell>
                                 <TableCell style={{ textAlign: 'center' }}>
                                     {task.status === 'Success' ? (
                                         <CheckCircleIcon style={{ color: 'green' }} />
