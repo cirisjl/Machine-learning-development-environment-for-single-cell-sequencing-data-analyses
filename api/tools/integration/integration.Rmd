@@ -1,5 +1,5 @@
 ---
-title: "Normalization for `r params$dataset`"
+title: "Integration for `r params$dataset`"
 author: "Lei Jiang"
 date: "`r Sys.Date()`"
 params:
@@ -23,9 +23,14 @@ knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_
 # Integration
 
 ```{r Load data, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+datasets <- strsplit(params$datasets, ",")[[1]]
+inputs <- strsplit(params$inputs, ",")[[1]]
+
+methods <- strsplit(params$methods, ",")[[1]]
+methods = toupper(methods)
 if(is.null(params$methods)) stop("No integration method is selected.")
-if(length(params$datasets) != length(params$inputs)) stop("The number of datasets and files does not match.")
-if(length(params$inputs) < 2 ) stop("Integration requires at least 2 samples.")
+if(length(datasets) != length(inputs)) stop("The number of datasets and files does not match.")
+if(length(inputs) < 2 ) stop("Integration requires at least 2 samples.")
 
 library(SeuratWrappers)
 library(reshape2)
@@ -33,8 +38,7 @@ library(RColorBrewer)
 library(dplyr)
 source("../formating/formating.R")
 
-datasets <- strsplit(params$datasets, ",")[[1]]
-inputs <- strsplit(params$inputs, ",")[[1]]
+
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
@@ -43,13 +47,12 @@ for (i in 1:length(inputs)) {
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
   print(paste("Seurat object for '",datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
-  if(params$default_assay == 'RNA') samples_list[[datasets[i]]] <- NormalizeData(samples_list[[datasets[i]]], verbose = F)
+  if(params$default_assay == 'RNA') srats.list[[datasets[i]]] <- NormalizeData(srats.list[[datasets[i]]], verbose = F)
   srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
 }
 names(srats.list) <-datasets
 
-methods <- strsplit(params$methods, ",")[[1]]
-methods = toupper(methods)```
+```
 ## Seurat
 
 ```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
@@ -80,7 +83,7 @@ if("SEURAT" %in% methods) {
 
   DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
 
-  SaveH5Seurat(srats.integrated, filename = file.path(params$output_folder, "seurat_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srats.integrated, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for Seurat integration is saved successfully.")
 } else {
   print("Not selected by user, skipped.")
@@ -91,6 +94,7 @@ if("SEURAT" %in% methods) {
 ```{r Harmony, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("HARMONY" %in% methods) {
   library(harmony)
+  library(cowplot)
   srat.harmony <- Reduce(merge, srats.list)
   srat.harmony <- NormalizeData(srat.harmony, verbose = F)
   srat.harmony <- FindVariableFeatures(srat.harmony, selection.method = "vst", nfeatures = 2000, verbose = F)
@@ -121,17 +125,17 @@ if("HARMONY" %in% methods) {
 
   plot_integrated_clusters(srat.harmony)
 
-  SaveH5Seurat(srat.harmony, filename = file.path(params$output_folder, "harmony_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srat.harmony, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for Harmony integration is saved successfully.")
   rm(srats.harmony)
 } else {
   print("Not selected by user, skipped.")
 }
 ```
-## Seurat
+## Liger
 
-```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
-if("SEURAT" %in% methods) {
+```{r Liger, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if("LIGER" %in% methods) {
   library(rliger)
   srat.liger <- Reduce(merge, srats.list)
   srat.liger <- NormalizeData(srat.liger)
@@ -147,12 +151,12 @@ if("SEURAT" %in% methods) {
   DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
   DimPlot(srat.liger, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
 
-  srat.liger <- SetIdent(srat.liger,v alue = "seurat_clusters")
+  srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
   DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
 
   plot_integrated_clusters(srat.liger)
 
-  SaveH5Seurat(srat.liger, filename = file.path(params$output_folder, "liger_integrated.h5Seurat", fsep = '/'), overwrite = TRUE, verbose = FALSE)
+  SaveH5Seurat(srat.liger, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for LIGER integration is saved successfully.")
   rm(srat.liger)
 } else {

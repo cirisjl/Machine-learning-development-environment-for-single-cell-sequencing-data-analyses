@@ -19,6 +19,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: '/tools/qc',
       normalization: '/tools/normalize',
       imputation: '/tools/impute',
+      integration: '/tools/integrate'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -26,6 +27,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'Quality Control',
       normalization: 'Normalization',
       imputation: 'Imputation',
+      integration: 'Integration'
       // Add more filter categories and their corresponding Names as needed
     };
 
@@ -36,6 +38,7 @@ export default function ToolsDetailsComponent(props) {
     const [filterSchema, setFilterSchema] = useState(null);
     const [UIfilterSchema, setUIFilterSchema] = useState(null);
     const [selectedDataset, setSelectedDataset] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState([]);
     const [formErrors, setFormErrors] = useState("");
 
     const [loading, setLoading] = useState(false);
@@ -66,26 +69,46 @@ export default function ToolsDetailsComponent(props) {
         formData = formData.parameters;
 
         // Perform form validation and set formErrors accordingly
-        if(selectedDataset.length === 0) {
+        if(filterCategory === "integration" && selectedOptions.length < 2) {
+          setFormErrors("Please select atleast two datasets for integration before submitting the form");
+          console.log("Failed to submit the form");
+        }
+        else if(filterCategory !== "integration" && selectedDataset.length === 0) {
           setFormErrors("Please select a dataset before submitting the form");
           console.log("Failed to submit the form");
         } else {
           setLoading(true);
-
-          console.log(selectedDataset);
-            const parsedSelectedDataset = JSON.parse(selectedDataset);
-            formData.dataset = parsedSelectedDataset.title;
-
-            if (parsedSelectedDataset.files.length > 1) {
-              formData.input = extractDir(parsedSelectedDataset.files[0].file_loc)
-              formData.output = formData.input + "/Results";
-            } else if(parsedSelectedDataset.files.length === 1) {
-              formData.input = parsedSelectedDataset.files[0].file_loc;
-              const directory = extractDir(formData.input)
-              formData.output = directory + "/Results";
+          if(filterCategory === "integration") {
+            const parsedObjects = selectedOptions.map(selectedOption => JSON.parse(selectedOption));
+            const titlesArray = parsedObjects.map(parsedObject => parsedObject.title);
+            formData.dataset = titlesArray;
+            let inputArray = [];
+            for(let parsedObject of parsedObjects) {
+              if(parsedObject.files.length > 1) {
+                inputArray.push(extractDir(parsedObject.files[0].file_loc));
+              } else {
+                inputArray.push(parsedObject.files[0].file_loc);
+              }
             }
-            console.log(formData);
+            formData.input = inputArray;
+            formData.output = "/IntegrationResults";
+            console.log(parsedObjects);
 
+          } else {
+              var parsedSelectedDataset = JSON.parse(selectedDataset);
+              formData.dataset = parsedSelectedDataset.title;
+
+              if (parsedSelectedDataset.files.length > 1) {
+                formData.input = extractDir(parsedSelectedDataset.files[0].file_loc);
+                formData.output = formData.input + "/Results";
+              } else if(parsedSelectedDataset.files.length === 1) {
+                formData.input = parsedSelectedDataset.files[0].file_loc;
+                const directory = extractDir(formData.input);
+                formData.output = directory + "/Results";
+              }
+            console.log(formData);
+          }
+      
           // Verify the authenticity of the user
           isUserAuth(jwtToken)
           .then((authData) => {
@@ -115,11 +138,20 @@ export default function ToolsDetailsComponent(props) {
 
                 // Handle the successful response from the API
                 console.log(JSON.stringify(response)); // Log the response data to the console
+                let datasetName = "";
+                if (typeof formData.dataset === 'string') {
+                  datasetName = formData.dataset
+                } else if (Array.isArray(formData.dataset)) {
+                  if (formData.dataset.length > 1) {
+                    datasetName = formData.dataset.join('_');
+                  } else if (formData.dataset.length === 1) {
+                    datasetName = formData.dataset[0];
+                  }
+                }
 
                 // After a successfull task creation, store the intermediate task information in the database
                 const taskId = response.task_id;
-                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + formData.dataset + " Using " + filterName;
-                const datasetId = parsedSelectedDataset.dataset_id;
+                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
                 const method = formData.methods[0];
                 const output = formData.output;
                       // Make API call to store the task information
@@ -127,7 +159,6 @@ export default function ToolsDetailsComponent(props) {
                       const requestBody = {
                         taskTitle: taskTitle,
                         taskId: taskId,
-                        datasetId: datasetId,
                         method: method,
                         authToken:jwtToken,
                         outputPath: output
@@ -221,6 +252,15 @@ export default function ToolsDetailsComponent(props) {
         }
       };
 
+      const handleMultipleDatasetChange = (event) => {
+        const selectedValues = Array.from(event.target.selectedOptions)
+            .filter(option => option.value !== "") // Filter out options with empty value
+            .map(option => option.value);
+    
+        setSelectedOptions(selectedValues);
+        console.log(selectedOptions);
+    };
+
 
   useEffect(() => {
     import(`./../../../schema/react-json-schema/Tools/${filterCategory}/${filterName}.json`)
@@ -290,7 +330,7 @@ export default function ToolsDetailsComponent(props) {
       </div>
       {/* {formErrors && <span className="error">{formErrors}</span>} */}
       <div>
-        <InputDataComponent handleDatasetChange={handleDatasetChange} formErrors={formErrors}/>
+        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} />
       </div>
             
         {filterSchema && UIfilterSchema ? (
