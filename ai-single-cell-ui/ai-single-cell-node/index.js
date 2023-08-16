@@ -1149,7 +1149,7 @@ app.post('/createTask', (req, res) => {
 
                 const date = new Date();
                 const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, dataset_id, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
+                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
                     if (err) {
                         connection.rollback(function () {
                             throw err;
