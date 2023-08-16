@@ -138,11 +138,20 @@ export default function ToolsDetailsComponent(props) {
 
                 // Handle the successful response from the API
                 console.log(JSON.stringify(response)); // Log the response data to the console
+                let datasetName = "";
+                if (typeof formData.dataset === 'string') {
+                  datasetName = formData.dataset
+                } else if (Array.isArray(formData.dataset)) {
+                  if (formData.dataset.length > 1) {
+                    datasetName = formData.dataset.join('_');
+                  } else if (formData.dataset.length === 1) {
+                    datasetName = formData.dataset[0];
+                  }
+                }
 
                 // After a successfull task creation, store the intermediate task information in the database
                 const taskId = response.task_id;
-                const taskTitle = filterStaticCategoryMap[filterCategory] + " on   Using " + filterName;
-                const datasetId = 48;
+                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
                 const method = formData.methods[0];
                 const output = formData.output;
                       // Make API call to store the task information
@@ -150,7 +159,6 @@ export default function ToolsDetailsComponent(props) {
                       const requestBody = {
                         taskTitle: taskTitle,
                         taskId: taskId,
-                        datasetId: datasetId,
                         method: method,
                         authToken:jwtToken,
                         outputPath: output

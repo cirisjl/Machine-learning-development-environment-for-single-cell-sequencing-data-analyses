@@ -1121,7 +1121,7 @@ app.get('/api/tools/leftnav', function (req, res) {
 });
 
 app.post('/createTask', (req, res) => {
-    const {taskTitle, taskId, datasetId, method, authToken, outputPath} = req.body;
+    const {taskTitle, taskId, method, authToken, outputPath} = req.body;
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
@@ -1149,7 +1149,7 @@ app.post('/createTask', (req, res) => {
 
                 const date = new Date();
                 const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, dataset_id, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, datasetId, outputPath, timestamp], function (err, taskResult) {
+                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, dataset_id, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
                     if (err) {
                         connection.rollback(function () {
                             throw err;
@@ -1237,7 +1237,7 @@ app.get('/getTasks', (req, res) => {
                     return;
                 }
 
-                connection.query('SELECT task_title, task_id, results_path, tool, dataset_id, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
+                connection.query('SELECT task_title, task_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
                     if (err) {
                         connection.rollback(function () {
                             throw err;
