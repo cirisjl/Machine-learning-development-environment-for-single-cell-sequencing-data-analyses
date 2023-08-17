@@ -88,7 +88,7 @@ RUN Rscript -e 'BiocManager::install(c( \
     "Rhdf5lib", "GenomicRanges", "scater", "IRanges", "scran", "RUVSeq", "sva", "SC3", "TSCAN", "monocle", "destiny", \
     "rtracklayer", "BiocGenerics", "DESeq2", "edgeR", "sctransform", "MAST", "scmap", "biomaRt", "MultiAssayExperiment", "SummarizedExperiment", \
     "Biobase","monocle", "beachmat", "DropletUtils", "EnsDb.Hsapiens.v86", "EnsDb.Mmusculus.v79", "batchelor", "SingleR", "celldex", "singleCellTK", \
-    "convert", "glmGamPoi", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
+    "convert", "glmGamPoi", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db", "DuoClustering2018", "VCCRI/CIDR"))'
 
 # Install github packages
 RUN Rscript -e 'devtools::install_github(c( \
