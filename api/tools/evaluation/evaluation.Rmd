@@ -29,7 +29,7 @@ if(is.null(params$methods)) stop("No Evaluation method is selected.")
 source("evaluation.R")
 
 library(DuoClustering2018)
-library(cidr)
+# library(cidr)
 library(Seurat)
 library(SingleCellExperiment)
 library(optparse)
