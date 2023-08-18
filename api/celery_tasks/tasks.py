@@ -4,6 +4,7 @@ from tools.run_qc import run_qc
 from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
 from tools.run_integration import run_integration
+from tools.run_evaluation import run_evaluation
 
 
 @shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
