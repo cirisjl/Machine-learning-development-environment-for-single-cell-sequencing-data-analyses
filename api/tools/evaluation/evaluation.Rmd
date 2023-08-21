@@ -16,3 +16,43 @@ params:
   show_error: TRUE
 output: html_document
 ---
+
+
+```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
+```
+# Evaluation
+
+```{r Load data, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+if(is.null(params$input)) stop("Inupt_path can not be NULL.")
+if(is.null(params$methods)) stop("No Evaluation method is selected.")
+
+source("evaluation.R")
+
+library(DuoClustering2018)
+# library(cidr)
+library(Seurat)
+library(SingleCellExperiment)
+library(optparse)
+library(dplyr)
+
+methods <- strsplit(params$methods, ",")[[1]]
+methods = toupper(methods)
+
+scename <- params$dataset
+
+sce_data <- null
+sce_data <- tryCatch(
+readRDS(params$input),
+    error = function(e) {
+        stop("The file format is not supported.")
+        if(params$show_error) print(e)
+    }
+)
+
+if(is.null(sce_data)) stop("The file format is not supported.")
+                                                      
+n_rep <- 2
+# set.seed(1234)
+
+```
