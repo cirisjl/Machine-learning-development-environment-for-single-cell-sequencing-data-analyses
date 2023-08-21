@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task
+from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task
 from config.celery_utils import get_task_info
 from schemas.schemas import Dataset, IntegrationDataset
 router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description": "Not found"}})
@@ -41,6 +41,15 @@ async def create_integration_task_async(ds: IntegrationDataset):
     Create a task for integration
     """
     task = create_integration_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods, ds.species], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'genes':ds.genes, 'reference':ds.reference, 'show_error': ds.show_error})
+    return JSONResponse({"task_id": task.id})
+
+
+@router.post("/evaluate")
+async def create_evaluation_task_async(ds: Dataset):
+    """
+    Create a task for evaluation
+    """
+    task = create_evaluation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 
