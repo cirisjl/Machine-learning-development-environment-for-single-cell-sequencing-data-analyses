@@ -36,12 +36,12 @@ library(SingleCellExperiment)
 library(optparse)
 library(dplyr)
 
-methods <- strsplit(params$methods, ",")[[1]]
-methods = toupper(methods)
+# methods <- strsplit(params$methods, ",")[[1]]
+# methods = toupper(methods)
 
-scename <- params$dataset
+# scename <- params$dataset
 
-sce_data <- null
+# sce_data <- null
 # sce_data <- tryCatch(
 # readRDS(params$input),
 #     error = function(e) {
@@ -50,9 +50,9 @@ sce_data <- null
 #     }
 # )
 
-if(is.null(sce_data)) stop("The file format is not supported.")
+# if(is.null(sce_data)) stop("The file format is not supported.")
                                                       
-n_rep <- 2
+# n_rep <- 2
 # set.seed(1234)
 
 ```
