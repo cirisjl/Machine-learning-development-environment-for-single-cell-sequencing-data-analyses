@@ -36,8 +36,8 @@ library(SingleCellExperiment)
 library(optparse)
 library(dplyr)
 
-# methods <- strsplit(params$methods, ",")[[1]]
-# methods = toupper(methods)
+methods <- strsplit(params$methods, ",")[[1]]
+methods = toupper(methods)
 
 # scename <- params$dataset
 
