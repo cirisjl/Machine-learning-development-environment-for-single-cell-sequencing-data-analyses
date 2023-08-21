@@ -41,7 +41,7 @@ methods = toupper(methods)
 
 scename <- params$dataset
 
-sce_data <- null
+# sce_data <- null
 # sce_data <- tryCatch(
 # readRDS(params$input),
 #     error = function(e) {
