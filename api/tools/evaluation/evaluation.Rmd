@@ -157,7 +157,7 @@ if("CIDR" %in% methods){
                                 stringsAsFactors = FALSE, row.names = NULL)
             list(clusters = df, timing = tm, kest = kest)
         })  ## End for each k
-        
+
       ## Summarize across different values of k
       assignments <- do.call(rbind, lapply(tmp, function(w) w$clusters))
       timings <- do.call(rbind, lapply(tmp, function(w) w$timing))
@@ -185,7 +185,7 @@ res <- list(assignments = assignments, timings = timings,
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
-                                       resolution, cluster, trueclass),
+                                       resolution, cluster),
                        res$k_estimates %>%
                          dplyr::select(dataset, method, run, k, 
                                        resolution, est_k)
