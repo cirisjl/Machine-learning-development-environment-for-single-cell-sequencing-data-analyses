@@ -182,9 +182,12 @@ assignments$trueclass <- sce_data$Tru_lab$majorType[match(assignments$cell, sce_
 
 res <- list(assignments = assignments, timings = timings,
             k_estimates = k_estimates)
-print(res)
 print(res$assignments)
 print(sce_data)
+print(assignments$trueclass)
+print(sce_data$Tru_lab$majorType[match(assignments$cell, sce_data$Tru_lab$X)])
+print(sce_data$Tru_lab$majorType)
+print(sce_data$Tru_lab$X)
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
@@ -207,6 +210,6 @@ if(file.exists("df.RData")){
 }else{
   df=result
 }
-save(df,file=paste0(directory, "df.RData"))
+save(df,file=paste0(directory, "/df.RData"))
 print("Done")
 ```
