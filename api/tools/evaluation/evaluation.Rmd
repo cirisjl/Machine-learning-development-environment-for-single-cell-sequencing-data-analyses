@@ -190,6 +190,9 @@ print(assignments$trueclass)
 print(sce_data$Tru_lab$majorType[match(assignments$cell, sce_data$Tru_lab$X)])
 print(sce_data$Tru_lab$majorType)
 print(sce_data$Tru_lab$X)
+print(colData(sce_data)$phenoid)
+print(colData(sce_data))
+
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
