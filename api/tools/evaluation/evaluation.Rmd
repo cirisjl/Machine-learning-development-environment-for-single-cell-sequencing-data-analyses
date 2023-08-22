@@ -182,6 +182,8 @@ assignments$trueclass <- sce_data$Tru_lab$majorType[match(assignments$cell, sce_
 
 res <- list(assignments = assignments, timings = timings,
             k_estimates = k_estimates)
+print(res)
+print(res$assignments)
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
@@ -195,6 +197,8 @@ df <- dplyr::full_join(res$assignments %>%
 # setwd(opt$workspace)
 
 result=df
+directory <- dirname(output_folder)
+
 rm(df)
 if(file.exists("df.RData")){
   load("df.RData")
@@ -202,6 +206,6 @@ if(file.exists("df.RData")){
 }else{
   df=result
 }
-save(df,file="df.RData")
+save(df,file=paste0(directory, "df.RData"))
 print("Done")
 ```
