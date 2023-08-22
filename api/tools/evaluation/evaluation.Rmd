@@ -184,6 +184,8 @@ res <- list(assignments = assignments, timings = timings,
             k_estimates = k_estimates)
 print(res$assignments)
 print(sce_data)
+print(sce_data$Tru_lab)
+print(sce_data$X)
 print(assignments$trueclass)
 print(sce_data$Tru_lab$majorType[match(assignments$cell, sce_data$Tru_lab$X)])
 print(sce_data$Tru_lab$majorType)
