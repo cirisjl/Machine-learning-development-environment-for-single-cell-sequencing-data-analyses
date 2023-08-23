@@ -17,6 +17,7 @@ params:
 output: html_document
 ---
 
+
 ```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
 ```
@@ -29,7 +30,7 @@ if(is.null(params$methods)) stop("No Evaluation method is selected.")
 source("evaluation.R")
 
 library(DuoClustering2018)
-library(cidr)
+# library(cidr)
 library(Seurat)
 library(SingleCellExperiment)
 library(optparse)
@@ -40,7 +41,7 @@ methods = toupper(methods)
 
 scename <- params$dataset
 
-sce_data <- null
+sce_data <- NULL
 sce_data <- tryCatch(
 readRDS(params$input),
     error = function(e) {
@@ -55,6 +56,7 @@ n_rep <- 2
 set.seed(1234)
 
 ```
+
 
 ## Seurat
 About Seurat evaluation
@@ -101,13 +103,13 @@ if("SEURAT" %in% methods){
                                 stringsAsFactors = FALSE, row.names = NULL)
             list(clusters = df, timing = tm, kest = kest)
         })  ## End for each resolution
-    })
 
-    ## Summarize across different values of k
-    assignments <- do.call(rbind, lapply(tmp, function(w) w$clusters))
-    timings <- do.call(rbind, lapply(tmp, function(w) w$timing))
-    k_estimates <- do.call(rbind, lapply(tmp, function(w) w$kest))
-    list(assignments = assignments, timings = timings, k_estimates = k_estimates)
+      ## Summarize across different values of k
+      assignments <- do.call(rbind, lapply(tmp, function(w) w$clusters))
+      timings <- do.call(rbind, lapply(tmp, function(w) w$timing))
+      k_estimates <- do.call(rbind, lapply(tmp, function(w) w$kest))
+      list(assignments = assignments, timings = timings, k_estimates = k_estimates)
+    })
 } else {
   print("Not selected by user, skipped.")
 }
@@ -155,13 +157,14 @@ if("CIDR" %in% methods){
                                 stringsAsFactors = FALSE, row.names = NULL)
             list(clusters = df, timing = tm, kest = kest)
         })  ## End for each k
+
+      ## Summarize across different values of k
+      assignments <- do.call(rbind, lapply(tmp, function(w) w$clusters))
+      timings <- do.call(rbind, lapply(tmp, function(w) w$timing))
+      k_estimates <- do.call(rbind, lapply(tmp, function(w) w$kest))
+      list(assignments = assignments, timings = timings, k_estimates = k_estimates)
     })
 
-    ## Summarize across different values of k
-    assignments <- do.call(rbind, lapply(tmp, function(w) w$clusters))
-    timings <- do.call(rbind, lapply(tmp, function(w) w$timing))
-    k_estimates <- do.call(rbind, lapply(tmp, function(w) w$kest))
-    list(assignments = assignments, timings = timings, k_estimates = k_estimates)
 } else {
   print("Not selected by user, skipped.")
 }
@@ -179,6 +182,17 @@ assignments$trueclass <- sce_data$Tru_lab$majorType[match(assignments$cell, sce_
 
 res <- list(assignments = assignments, timings = timings,
             k_estimates = k_estimates)
+print(res$assignments)
+print(sce_data)
+print(sce_data$Tru_lab)
+print(sce_data$X)
+print(assignments$trueclass)
+print(sce_data$Tru_lab$majorType[match(assignments$cell, sce_data$Tru_lab$X)])
+print(sce_data$Tru_lab$majorType)
+print(sce_data$Tru_lab$X)
+print(colData(sce_data)$phenoid)
+print(colData(sce_data))
+
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
@@ -191,7 +205,46 @@ df <- dplyr::full_join(res$assignments %>%
 
 # setwd(opt$workspace)
 
+ind=unique(df$method)
+
+method_colors <- c(CIDR = "#332288", FlowSOM = "#6699CC", PCAHC = "#88CCEE", 
+                   PCAKmeans = "#44AA99", pcaReduce = "#117733",
+                   RtsneKmeans = "#999933", Seurat = "#DDCC77", SC3svm = "#661100", 
+                   SC3 = "#CC6677", TSCAN = "grey34", ascend = "orange", SAFE = "black",
+                   monocle = "red", RaceID2 = "blue",my_seurat="yellow")
+
+include_colors=method_colors[ind]
+
+perf <- plot_performance(df, method_colors = include_colors)
+names(perf)
+png("median_ari_vs_k.png")
+perf$median_ari_vs_k
+dev.off()
+
+#perf$median_ari_heatmap_truek
+
+stab <- plot_stability(df, method_colors = include_colors)
+names(stab)
+png("stability_vs_k.png")
+stab$stability_vs_k
+dev.off()
+
+entr <- plot_entropy(df, method_colors = include_colors)
+names(entr)
+png("entropy_vs_k.png")
+entr$entropy_vs_k
+dev.off()
+
+timing <- plot_timing(df, method_colors = include_colors, 
+                      scaleMethod = "RtsneKmeans")
+names(timing)
+png("time_boxplot.png")
+timing$time_boxplot
+dev.off()
+
 result=df
+directory <- dirname(params$output_folder)
+
 rm(df)
 if(file.exists("df.RData")){
   load("df.RData")
@@ -199,6 +252,6 @@ if(file.exists("df.RData")){
 }else{
   df=result
 }
-save(df,file="df.RData")
+save(df,file=paste0(directory, "/df.RData"))
 print("Done")
 ```
