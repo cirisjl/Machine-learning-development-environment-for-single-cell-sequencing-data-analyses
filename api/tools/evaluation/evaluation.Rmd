@@ -196,7 +196,7 @@ print(colData(sce_data))
 
 df <- dplyr::full_join(res$assignments %>%
                          dplyr::select(dataset, method, cell, run, k, 
-                                       resolution, cluster),
+                                       resolution, cluster, trueclass),
                        res$k_estimates %>%
                          dplyr::select(dataset, method, run, k, 
                                        resolution, est_k)
