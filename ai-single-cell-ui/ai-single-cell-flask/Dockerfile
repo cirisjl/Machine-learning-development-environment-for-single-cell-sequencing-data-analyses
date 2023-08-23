@@ -90,13 +90,13 @@ RUN Rscript -e 'devtools::install_github(c( \
     "cole-trapnell-lab/monocle3", "mojaveazure/seurat-disk", "satijalab/seurat-wrappers", \
     "satijalab/seurat-data", "stuart-lab/signac"))'
 
-# Install python packages
-RUN pip install --upgrade --no-cache \
-    PyYAML==3.13 protobuf==3.19.4 rich==11.1 cutadapt magic-impute awscli==1.16.14 handout scrublet \
-    scipy==1.9.1 biopython h5py matplotlib matplotlib_venn tqdm python-igraph scprep python-resources \
-    torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin \
-    rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
-    zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph
+# # Install python packages
+# RUN pip install --upgrade --no-cache \
+#     PyYAML==3.13 protobuf==3.19.4 rich==11.1 cutadapt magic-impute awscli==1.16.14 handout scrublet \
+#     scipy==1.9.1 biopython h5py matplotlib matplotlib_venn tqdm python-igraph scprep python-resources \
+#     torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin \
+#     rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
+#     zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph
 
 # Install Jupyter
 RUN pip install --upgrade --no-cache \
