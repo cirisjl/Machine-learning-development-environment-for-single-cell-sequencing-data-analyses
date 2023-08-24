@@ -41,12 +41,12 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
 RUN Rscript -e 'install.packages(c("BiocManager", "devtools"))' && \
    Rscript -e 'BiocManager::install()'
 
-RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat","SeuratDisk","SeuratData", "patchwork", "cli", "anndata"))'
+RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat", "patchwork", "cli", "anndata"))'
 
 RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
 
 # Install github packages
-RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
+RUN Rscript -e 'devtools::install_github("stuart-lab/signac", "mojaveazure/seurat-disk", "satijalab/seurat-data")'
 
 WORKDIR /usr/src/app
 
