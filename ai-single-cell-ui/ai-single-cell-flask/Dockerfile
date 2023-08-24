@@ -46,9 +46,12 @@ RUN Rscript -e 'install.packages(c("dplyr", "R.utils", "reticulate", "Seurat", "
 RUN Rscript -e 'BiocManager::install(c("SingleCellExperiment" , "EnsDb.Hsapiens.v86", "scater", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
 
 # Install github packages
-# RUN Rscript -e 'devtools::install_github("stuart-lab/signac", "satijalab/seurat-data")'
+RUN Rscript -e 'devtools::install_github("stuart-lab/signac")'
 
-# RUN Rscript -e 'remotes::install_github("mojaveazure/seurat-disk")'
+RUN Rscript -e 'devtools::install_github("satijalab/seurat-data")'
+
+
+RUN Rscript -e 'remotes::install_github("mojaveazure/seurat-disk")'
 
 
 WORKDIR /usr/src/app

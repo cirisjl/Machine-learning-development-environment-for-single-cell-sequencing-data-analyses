@@ -1,0 +1,62 @@
+/* styles.css */
+
+.upload-component {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .upload-component a{
+    color: blue; /* Change the text color to blue */
+    text-decoration: none; /* Remove underline */
+  }
+  
+  .upload-component a:hover {
+    color: red; /* Change the text color to red when hovering */
+    text-decoration: underline; /* Add underline when hovering */
+  }
+  
+  .drag-text {
+    font-weight: bold;
+  }
+  
+  .select-text {
+    margin: 5px;
+  }
+  
+  .update-button, .edit-button, .default-assay {
+    margin-top: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .dashboard-title {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+  }
+  
+  .input container {
+  
+  }
+  
+  .data-input {
+      margin-top: 20px;
+  }
+  
+  .update-status {
+      margin-top: 10px;
+  }
+  
+  .main-container {
+  margin: 0 10%;
+  }
