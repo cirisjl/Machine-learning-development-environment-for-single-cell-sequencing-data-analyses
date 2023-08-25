@@ -45,6 +45,31 @@ flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
 
+# Initialize the variables
+datasets = []
+datasetMap = {}
+
+
+# Function to parse h5ad files and extract metadata from all groups
+def parse_h5ad(adata, file_path):
+    # adata = sc.read_h5ad(file_path)
+    metadata = {
+        "file_name": os.path.basename(file_path),
+        "file_type": "h5ad",
+        "layers_keys": list(adata.layers.keys()),
+        "obs_keys": list(adata.obs.keys()),
+        "obsm_keys": list(adata.obsm.keys()),
+        "obsp_keys": list(adata.obsp.keys()),
+        "uns_keys": list(adata.uns.keys()),
+        "var_keys": list(adata.var.keys()),
+        "varm_keys": list(adata.varm.keys()),
+        "varp_keys": list(adata.varp.keys()),
+        # Store the complete obs and var data as dictionaries
+        # "obs_data": dict(adata.obs.to_dict(orient="list")),
+        # "var_data": dict(adata.var.to_dict(orient="list")),
+        # Add more metadata fields as needed
+    }
+    metadata_collection.insert_one(metadata)
 
 SIDEBAR_STYLE = {
     "position": "fixed",
@@ -79,32 +104,6 @@ sidebar = html.Div(
     ],
     style=SIDEBAR_STYLE,
 )
-
-# Initialize the variables
-datasets = []
-datasetMap = {}
-
-
-# Function to parse h5ad files and extract metadata from all groups
-def parse_h5ad(adata, file_path):
-    # adata = sc.read_h5ad(file_path)
-    metadata = {
-        "file_name": os.path.basename(file_path),
-        "file_type": "h5ad",
-        "layers_keys": list(adata.layers.keys()),
-        "obs_keys": list(adata.obs.keys()),
-        "obsm_keys": list(adata.obsm.keys()),
-        "obsp_keys": list(adata.obsp.keys()),
-        "uns_keys": list(adata.uns.keys()),
-        "var_keys": list(adata.var.keys()),
-        "varm_keys": list(adata.varm.keys()),
-        "varp_keys": list(adata.varp.keys()),
-        # Store the complete obs and var data as dictionaries
-        # "obs_data": dict(adata.obs.to_dict(orient="list")),
-        # "var_data": dict(adata.var.to_dict(orient="list")),
-        # Add more metadata fields as needed
-    }
-    metadata_collection.insert_one(metadata)
 
 def get_dash_layout(authToken, username):
     return  html.Div (children = [
