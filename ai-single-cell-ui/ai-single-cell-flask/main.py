@@ -185,7 +185,7 @@ def get_dash_layout(authToken, username):
             dcc.Store(id='adata-storage'),
             dcc.Store(id='updated-adata-storage'),
         ]
-    )), width = 9
+    ), width = 9)
                     ])
                 ]
             )
