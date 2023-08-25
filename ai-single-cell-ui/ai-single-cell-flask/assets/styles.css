@@ -25,8 +25,8 @@
     margin: 5px;
   }
   
-  .update-button, .edit-button, .default-assay {
-    margin-top: 10px;
+  .update-button, .edit-button, .default-assay, .continue-button {
+    margin-top: 2rem;
     background-color: #4CAF50;
     color: white;
     border: none;
