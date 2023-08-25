@@ -27,7 +27,7 @@ from dash_bootstrap_templates import load_figure_template
 pandas2ri.activate()
 import os
 
-load_figure_template('CYBORG')
+load_figure_template('LUX')
 
 mongo_url = "mongodb://mongodb:65528/aisinglecell"
 
@@ -40,7 +40,7 @@ metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
 flask_app = Flask(__name__)
-app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.CYBORG ])
+app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.LUX ])
 flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
