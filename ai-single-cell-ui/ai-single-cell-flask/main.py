@@ -110,7 +110,7 @@ def get_dash_layout(authToken, username):
                 dbc.Row([
                     dbc.Col(),
 
-                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'7px'})
+                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'7px', 'padding-left': '3rem'})
                     ]),
                 dbc.Row(
                     [dbc.Col(sidebar),
