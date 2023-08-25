@@ -141,7 +141,7 @@ def get_dash_layout(authToken, username):
 
                 ],
                 id="element-to-hide",
-                style={'display': 'none'}  # Hide the container div initially
+                style={'display': 'none', 'background-color': '#f8f9fa','border': '1px solid transparent', 'border-radius': '4px', 'padding': '20px'}  # Hide the container div initially
             ),
             dcc.Loading(id="loading", type="circle", children=[
                 html.Div(id="file-info"),
