@@ -9,3 +9,4 @@ scanpy
 detect-delimiter
 requests
 pymongo
+dash-bootstrap-components
