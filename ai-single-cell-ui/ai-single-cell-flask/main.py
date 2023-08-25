@@ -110,7 +110,7 @@ def get_dash_layout(authToken, username):
                 dbc.Row([
                     dbc.Col(),
 
-                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'7px', 'padding-left': '3rem'})
+                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'17px', 'padding-left': '3rem'})
                     ]),
                 dbc.Row(
                     [dbc.Col(sidebar),
@@ -385,7 +385,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         traceback.print_exc()  # Print the traceback to the console
                         error_message = html.Div(
                             "An error occurred: {}".format(str(error)),
-                            style={"color": "red"}
+                            style={"color": "red", "padding-top": "1rem"}
                         )
                         return None, [error_message], {'display': 'none'}, None, {'display': 'none'}, None
                 elif replace_nan == "no":
