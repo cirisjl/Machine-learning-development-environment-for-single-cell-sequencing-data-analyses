@@ -20,11 +20,14 @@ import requests
 import logging
 import json
 import pymongo
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
 
 
 pandas2ri.activate()
 import os
 
+load_figure_template('CYBORG')
 
 mongo_url = "mongodb://mongodb:65528/aisinglecell"
 
@@ -37,10 +40,45 @@ metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
 flask_app = Flask(__name__)
-app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True)
+app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.CYBORG ])
 flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
+
+
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "24rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
+
+
+sidebar = html.Div(
+    [
+        html.H2("Filters"),
+        html.Hr(),
+        html.P(
+            "Select a dataset", className="lead"
+        ),
+        dbc.Nav(
+            [
+                dcc.Dropdown(id = 'one'),
+                html.Br(),
+                dcc.Dropdown(id = 'two'),
+                html.Br(),
+                dcc.Dropdown(id = 'three')
+
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    style=SIDEBAR_STYLE,
+)
 
 # Initialize the variables
 datasets = []
@@ -69,10 +107,18 @@ def parse_h5ad(adata, file_path):
     metadata_collection.insert_one(metadata)
 
 def get_dash_layout(authToken, username):
-    return html.Div(
+    return  html.Div (children = [
+                dbc.Row([
+                    dbc.Col(),
+
+                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'7px'})
+                    ]),
+                dbc.Row(
+                    [dbc.Col(sidebar),
+                    dbc.Col(html.Div(
         className="main-container",
         children=[
-            html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
+            # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', type='hidden', value=authToken),
             dcc.Input(id='username-container', type='hidden', value=username),
             dcc.Dropdown(
@@ -146,7 +192,10 @@ def get_dash_layout(authToken, username):
             dcc.Store(id='adata-storage'),
             dcc.Store(id='updated-adata-storage'),
         ]
-    )
+    ))
+                    ])
+                ]
+            )
 
 
 app.layout = get_dash_layout(authToken=None, username=None)
