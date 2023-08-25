@@ -95,7 +95,7 @@ sidebar = html.Div(
                 id="dataset-dropdown",
                 options=[{"label": dataset, "value": dataset} for dataset in datasets],
                 placeholder="Select a dataset",
-                style={"width": "400px", "margin-bottom": "20px"}
+                style={"margin-bottom": "20px"}
             ),
             ],
             vertical=True,
