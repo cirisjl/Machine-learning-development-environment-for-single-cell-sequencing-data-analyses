@@ -66,12 +66,12 @@ sidebar = html.Div(
         ),
         dbc.Nav(
             [
-                dcc.Dropdown(id = 'one'),
-                html.Br(),
-                dcc.Dropdown(id = 'two'),
-                html.Br(),
-                dcc.Dropdown(id = 'three')
-
+            dcc.Dropdown(
+                id="dataset-dropdown",
+                options=[{"label": dataset, "value": dataset} for dataset in datasets],
+                placeholder="Select a dataset",
+                style={"width": "400px", "margin-bottom": "20px"}
+            ),
             ],
             vertical=True,
             pills=True,
@@ -121,12 +121,6 @@ def get_dash_layout(authToken, username):
             # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', type='hidden', value=authToken),
             dcc.Input(id='username-container', type='hidden', value=username),
-            dcc.Dropdown(
-                id="dataset-dropdown",
-                options=[{"label": dataset, "value": dataset} for dataset in datasets],
-                placeholder="Select a dataset",
-                style={"width": "400px", "margin-bottom": "20px"}
-            ),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
