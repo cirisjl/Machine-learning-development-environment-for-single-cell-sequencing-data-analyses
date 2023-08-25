@@ -398,7 +398,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         traceback.print_exc()  # Print the traceback to the console
                         error_message = html.Div(
                             "An error occurred: {}".format(str(error)),
-                            style={"color": "red"}
+                            style={"color": "red", "padding-top": "1rem"}
                         )
                         return None, [error_message], {'display': 'none'}, None, {'display': 'none'}, None
         elif triggered_id == 'dataset-dropdown':
@@ -528,7 +528,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 traceback.print_exc()  # Print the traceback to the console
                 error_message = html.Div(
                     "An error occurred: {}".format(str(error)),
-                    style={"color": "red"}
+                    style={"color": "red", "padding-top": "1rem"}
                 )
                 return None, [error_message], {'display': 'block'}, None, {'display': 'none'}, None
 
@@ -759,7 +759,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             traceback.print_exc()  # Print the traceback to the console
             error_message = html.Div(
                 "An error occurred while processing the dataset: {}".format(str(error)),
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, None, {'display': 'none'}, None, {'display': 'none'}, None
     else:
@@ -832,7 +832,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
             # If no rows or columns selected, return an error message
             error_message = html.Div(
                 "Please select at least one row or column.",
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, "", ""
 
@@ -988,7 +988,7 @@ def update_dataset_content(update_status, dataset, updatedData):
             traceback.print_exc()  # Print the traceback to the console
             error_message = html.Div(
                 "An error occurred while processing the dataset: {}".format(str(error)),
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, None, None, {"display": "none"}, None
     raise PreventUpdate
