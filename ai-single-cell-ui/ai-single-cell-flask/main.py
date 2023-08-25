@@ -134,6 +134,7 @@ def get_dash_layout(authToken, username):
                     html.Button(
                         "Continue",
                         id="continue-button",
+                        className="continue-button",
                         n_clicks=0,
                         style={"margin-top": "10px"}
                     ),
