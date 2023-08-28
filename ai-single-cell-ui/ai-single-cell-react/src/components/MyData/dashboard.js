@@ -11,6 +11,7 @@ export default function FlaskDashboard  (props) {
   const title = props.title;
   console.log("Helo Wolrd");
   console.log(title);
+  console.log(props.message);
 
   const navigate = useNavigate();
 
