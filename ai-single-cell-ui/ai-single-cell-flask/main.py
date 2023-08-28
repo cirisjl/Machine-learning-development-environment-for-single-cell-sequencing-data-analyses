@@ -354,7 +354,8 @@ def update_dataset_dropdown(authToken, username, title):
         print("AuthToken:::")
         print(authToken)
         dataset_options = get_dataset_options(authToken, username, title)
-        return dataset_options, title
+        updated_default_value = title if title in datasets else None
+        return dataset_options, updated_default_value
     else:
         # For other pages, no need to update the dropdown
         print("Outside the path")
