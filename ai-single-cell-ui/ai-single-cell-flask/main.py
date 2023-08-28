@@ -96,6 +96,7 @@ sidebar = html.Div(
                 id="dataset-dropdown",
                 options=[{"label": dataset, "value": dataset} for dataset in datasets],
                 placeholder="Select a dataset",
+                value=None,
                 style={"margin-bottom": "20px"}
             ),
             ],
@@ -321,11 +322,7 @@ def get_dataset_options(authToken, username, title):
             datasetMap[title] = user_directory + path
         flask_app.logger.info('API Datasets: %s', datasets)
         flask_app.logger.info('API DatasetsMap: %s', datasetMap)
-
-        if title is not None:
-            return [{'label': option, 'value': option} for option in datasets], title
-        else:
-            return [{'label': option, 'value': option} for option in datasets], None
+        return [{'label': option, 'value': option} for option in datasets]
         
     # else:
     #     # Handle the case when the API call fails
@@ -357,7 +354,7 @@ def update_dataset_dropdown(authToken, username, title):
         print("AuthToken:::")
         print(authToken)
         dataset_options = get_dataset_options(authToken, username, title)
-        return dataset_options
+        return dataset_options, title
     else:
         # For other pages, no need to update the dropdown
         print("Outside the path")
