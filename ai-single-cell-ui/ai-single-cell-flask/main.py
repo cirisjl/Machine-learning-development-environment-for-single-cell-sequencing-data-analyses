@@ -323,8 +323,11 @@ def get_dataset_options(authToken, username, title):
         flask_app.logger.info('API Datasets: %s', datasets)
         flask_app.logger.info('API DatasetsMap: %s', datasetMap)
 
-
-        return [{'label': option, 'value': option} for option in datasets]
+        if title is not None:
+            return [{'label': option, 'value': option} for option in datasets], title
+        else:
+            return [{'label': option, 'value': option} for option in datasets], None
+        
     # else:
     #     # Handle the case when the API call fails
     #     return []
@@ -344,6 +347,7 @@ def is_valid_query_param(query_param):
 
 @app.callback(
     Output('dataset-dropdown', 'options'),
+    Output('dataset-dropdown', 'value'),
     Input('authToken-container', 'value'),
     Input('username-container', 'value'), 
     Input('title-container', 'value'), 
