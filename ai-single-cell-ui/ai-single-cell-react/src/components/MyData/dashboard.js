@@ -9,6 +9,8 @@ export default function FlaskDashboard  (props) {
   const [dashApp, setDashApp] = useState(null);
   const [flaskURL, setFlaskURL] = useState(null);
   const title = props.title;
+  console.log("Helo Wolrd");
+  console.log(title);
 
   const navigate = useNavigate();
 
