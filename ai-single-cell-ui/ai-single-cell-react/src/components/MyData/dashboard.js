@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Iframe from 'react-iframe';
 
 
-export default function FlaskDashboard  (props) {
+export default function FlaskDashboard (props) {
   const [dashApp, setDashApp] = useState(null);
   const [flaskURL, setFlaskURL] = useState(null);
   const title = props.title;
