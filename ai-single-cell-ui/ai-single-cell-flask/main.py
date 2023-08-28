@@ -1195,8 +1195,8 @@ def dashboard():
     username = request.args.get('username')  # Get the query parameter from the request
     title = request.args.get('title')
 
-    print("Hello World")
-    print(title)
+    flask_app.logger.info("Hello World")
+    flask_app.logger.info(title)
 
     if authToken is None or not is_valid_query_param(authToken):
         # Handle the case when the query parameter is missing or invalid
