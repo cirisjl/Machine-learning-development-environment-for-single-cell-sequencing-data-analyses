@@ -1193,6 +1193,10 @@ def dashboard():
 
     authToken = request.args.get('authToken')  # Get the query parameter from the request
     username = request.args.get('username')  # Get the query parameter from the request
+    title = request.args.get('title')
+
+    print("Hello World")
+    print(title)
 
     if authToken is None or not is_valid_query_param(authToken):
         # Handle the case when the query parameter is missing or invalid
