@@ -329,7 +329,7 @@ export default function UploadData() {
             })
                 .then(response => {
                     if (response.status === 200) {
-                        navigate('/dashboard', { state: { message: 'Dataset updated successfully.' } });
+                        navigate('/dashboard', { state: { message: 'Dataset updated successfully.', title: formData['title'] } });
                     }
                     else {
                         console.log('Error updating dataset:', response);
@@ -350,7 +350,7 @@ export default function UploadData() {
         })
             .then(response => {
                 if (response.status === 201) {
-                    navigate('/dashboard', { state: { message: 'Dataset created successfully.' } });
+                    navigate('/dashboard', { state: { message: 'Dataset created successfully.', title: formData['title']  } });
                 }
                 else if (response.status === 400) {
                     setErrorMessage(`Dataset '${formData.title}' already exists. Choose a different name.`);
