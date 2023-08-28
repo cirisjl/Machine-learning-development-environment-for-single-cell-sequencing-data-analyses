@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Iframe from 'react-iframe';
 
 
 export default function FlaskDashboard (props) {
   const [dashApp, setDashApp] = useState(null);
   const [flaskURL, setFlaskURL] = useState(null);
-  const title = props.title;
+
+  const location = useLocation();
+  const state = location.state; // This will contain the state passed through navigate
+
+  // Now you can use the 'state' object to access the passed data
+  const message = state.message;
   console.log("Helo Wolrd");
-  console.log(title);
-  console.log(props.message);
+  console.log(state.title);
+  console.log(message);
 
   const navigate = useNavigate();
 
@@ -28,7 +33,7 @@ export default function FlaskDashboard (props) {
         const queryParams = new URLSearchParams({
             authToken: jwtToken,
             username: userID,
-            title: title
+            title: state.title
         });
     const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
         setFlaskURL(FLASK_BACKEND_API)
