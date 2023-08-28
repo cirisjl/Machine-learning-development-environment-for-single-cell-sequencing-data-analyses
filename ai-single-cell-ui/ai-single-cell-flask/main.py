@@ -48,6 +48,7 @@ CORS(flask_app)
 # Initialize the variables
 datasets = []
 datasetMap = {}
+default_title = "Select a dataset"
 
 
 # Function to parse h5ad files and extract metadata from all groups
@@ -95,6 +96,7 @@ sidebar = html.Div(
                 id="dataset-dropdown",
                 options=[{"label": dataset, "value": dataset} for dataset in datasets],
                 placeholder="Select a dataset",
+                value= default_title,
                 style={"margin-bottom": "20px"}
             ),
             ],
@@ -105,7 +107,7 @@ sidebar = html.Div(
     style=SIDEBAR_STYLE,
 )
 
-def get_dash_layout(authToken, username):
+def get_dash_layout(authToken, username, title):
     return  html.Div (children = [
                 dbc.Row([
                     dbc.Col(),
@@ -120,6 +122,7 @@ def get_dash_layout(authToken, username):
             # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', type='hidden', value=authToken),
             dcc.Input(id='username-container', type='hidden', value=username),
+            dcc.Input(id='title-container', type='hidden', value=title),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
@@ -192,7 +195,7 @@ def get_dash_layout(authToken, username):
             )
 
 
-app.layout = get_dash_layout(authToken=None, username=None)
+app.layout = get_dash_layout(authToken=None, username=None, title=None)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 flask_app.logger.setLevel(logging.INFO)
 
@@ -288,7 +291,7 @@ def load_annData(file_path, replace_invalid=False):
     return adata
 
 
-def get_dataset_options(authToken, username):
+def get_dataset_options(authToken, username, title):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
     # Initialize the variables
@@ -333,7 +336,6 @@ def is_valid_query_param(query_param):
         return False
 
     # Add any additional validation logic here if needed
-    # For example, check if the query_param is a valid integer, or follows a certain pattern
 
     return True
 
@@ -344,13 +346,14 @@ def is_valid_query_param(query_param):
     Output('dataset-dropdown', 'options'),
     Input('authToken-container', 'value'),
     Input('username-container', 'value'), 
+    Input('title-container', 'value'), 
 )
-def update_dataset_dropdown(authToken, username):
+def update_dataset_dropdown(authToken, username, title):
     if authToken is not None:
         print("Inside the path")
         print("AuthToken:::")
         print(authToken)
-        dataset_options = get_dataset_options(authToken, username)
+        dataset_options = get_dataset_options(authToken, username, title)
         return dataset_options
     else:
         # For other pages, no need to update the dropdown
@@ -1198,11 +1201,16 @@ def dashboard():
     flask_app.logger.info("Hello World")
     flask_app.logger.info(title)
 
+    if title is not None:
+        default_title = title
+    
+    flask_app.logger.info(default_title)
+
     if authToken is None or not is_valid_query_param(authToken):
         # Handle the case when the query parameter is missing or invalid
         return "Authentication Failed. Please login to continue"
 
-    app.layout = get_dash_layout(authToken, username)  # Set the Dash app layout with the query parameter
+    app.layout = get_dash_layout(authToken, username, title)  # Set the Dash app layout with the query parameter
     return app.index()
 
 
