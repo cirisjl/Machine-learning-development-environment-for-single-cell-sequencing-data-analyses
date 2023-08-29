@@ -416,7 +416,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # Read h5ad file and extract relevant information
             print(dataset)
             file_path = datasetMap[dataset]
-            suffix = file_path.split(".")[1]
+            if not os.path.isdir(file_path):
+                suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
 
             if suffix == "rds" or suffix == "h5seurat":
