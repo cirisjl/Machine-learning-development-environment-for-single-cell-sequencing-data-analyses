@@ -416,6 +416,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # Read h5ad file and extract relevant information
             print(dataset)
             file_path = datasetMap[dataset]
+            suffix = None
             if not os.path.isdir(file_path):
                 suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
@@ -1092,10 +1093,15 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
     # Assuming 'seurat_obj' is your Seurat object
     # Update the Seurat object to use the selected assay as the default assay
     file_path = datasetMap[dataset]
-    file_name = file_path.split("/")
-    fileparts = file_name[len(file_name)-1].split(".")
-    suffix = fileparts[1]
-    fileName = fileparts[0]
+    fileName = None
+    suffix = None
+    if not os.path.isdir(file_path):
+        file_name = file_path.split("/")
+        fileparts = file_name[len(file_name)-1].split(".")
+        suffix = fileparts[1]
+        fileName = fileparts[0]
+    else:
+        fileName = "10X_dataset"
     output = fileName + "_corrected"
     ro.globalenv["output"] = output
     ro.globalenv["file_path"] = file_path
