@@ -378,7 +378,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # normalized_counts <- seurat_obj@assays$RNA@counts
                     # 
                     # print(normalized_counts)
-                 ''')
+                 '''.strip())
                 seurat_obj = ro.globalenv["seurat_obj"]
                 assay_names = ro.globalenv["assay_names"]
                 dimensional_reductions = ro.globalenv["dimensional_reductions"]
