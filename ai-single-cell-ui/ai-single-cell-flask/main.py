@@ -413,7 +413,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         id='dim-dropdown',
                         options=[{'label': dim, 'value': dim} for dim in dimensional_reductions] if dimensional_reductions is not None else [],
                         value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
-                    )
+                    ),
 
                     # Output to display the selected assay
                     html.Div(id='selected-dim'),
