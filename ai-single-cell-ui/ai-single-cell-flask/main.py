@@ -381,12 +381,12 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 num_cells = ro.globalenv["num_cells"]
                 default_assay = ro.globalenv["default_assay"]
 
-                if dimensional_reductions is not None and isinstance(dimensional_reductions, list):
+                if dimensional_reductions is not None:
                     dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
                 else:
                     dropdown_options = []
                 
-                if assay_names is not None and isinstance(assay_names, list):
+                if assay_names is not None:
                     assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
                 else:
                     assay_options = []
