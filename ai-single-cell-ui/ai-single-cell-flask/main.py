@@ -38,6 +38,7 @@ ro.r(r_source)
 load_expression_matrix = ro.globalenv['load_expression_matrix']
 load_seurat = ro.globalenv['load_seurat']
 detect_delim = ro.globalenv['detect_delim']
+load_metadata = ro.globalenv['load_metadata']
 
 load_figure_template('LUX')
 
@@ -338,56 +339,23 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
                 srat = load_seurat(file_path)
                 ro.globalenv["seurat_obj"] = srat
-    
-                ro.r(f'''
-                    #Get the Default Assay
-                    default_assay <- DefaultAssay(object = seurat_obj)
-                    # Get the names of all assays
-                    assay_names <- names(seurat_obj@assays)
-                    print(assay_names)
-
-                    # Get the dimensions of the Seurat object
-                    seurat_dims <- dim(seurat_obj)
-
-                    # Get the number of genes
-                    num_genes <- seurat_dims[1]
-
-                    # Get the number of cells
-                    num_cells <- seurat_dims[2]
-
-                    # # Access a specific assay by name (e.g., 'RNA')
-                    # specific_assay <- seurat_obj[["RNA"]]
-                    # print(specific_assay)
-
-                    # Get the list of dimensional reductions
-                    dimensional_reductions <- names(seurat_obj@reductions)
-                     if (is.null(dimensional_reductions)) {
-                        # Return an empty array (vector)
-                        dimensional_reductions <- c()  
-                    }
-                     print(class(dimensional_reductions))
-
-                    # Print the names of the dimensional reductions
-                    print(dimensional_reductions)
-
-                    # # Access the raw counts matrix
-                    # raw_counts <- seurat_obj@assays$RNA@counts
-                    # print(raw_counts)
-                    # 
-                    # # Access the normalized counts matrix
-                    # normalized_counts <- seurat_obj@assays$RNA@counts
-                    # 
-                    # print(normalized_counts)
-                 '''.strip())
+                r_metadata = load_metadata(seurat_obj)
+                # Access specific R variables from the returned R list
+                assay_names = r_metadata.rx2('assay_names')
+                num_genes = int(r_metadata.rx2('num_genes'))
+                num_cells = int(r_metadata.rx2('num_cells'))
+                default_assay = r_metadata.rx2["default_assay"]
+                dimensional_reductions = r_metadata.rx2('dimensional_reductions')
+                
                 seurat_obj = ro.globalenv["seurat_obj"]
-                assay_names = ro.globalenv["assay_names"]
-                dimensional_reductions = ro.globalenv["dimensional_reductions"]
-                num_genes = ro.globalenv["num_genes"]
-                num_cells = ro.globalenv["num_cells"]
-                default_assay = ro.globalenv["default_assay"]
+                # assay_names = ro.globalenv["assay_names"]
+                # dimensional_reductions = ro.globalenv["dimensional_reductions"]
+                # num_genes = ro.globalenv["num_genes"]
+                # num_cells = ro.globalenv["num_cells"]
+                # default_assay = ro.globalenv["default_assay"]
 
                 print(type(dimensional_reductions))
-                if dimensional_reductions is not None and isinstance(dimensional_reductions, list):
+                if dimensional_reductions is not None:
                     dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
                 else:
                     dropdown_options = []
