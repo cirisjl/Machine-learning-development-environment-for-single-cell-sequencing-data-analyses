@@ -348,11 +348,6 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 dimensional_reductions = r_metadata.rx2('dimensional_reductions')
                 
                 seurat_obj = ro.globalenv["seurat_obj"]
-                # assay_names = ro.globalenv["assay_names"]
-                # dimensional_reductions = ro.globalenv["dimensional_reductions"]
-                # num_genes = ro.globalenv["num_genes"]
-                # num_cells = ro.globalenv["num_cells"]
-                # default_assay = ro.globalenv["default_assay"]
 
                 print(type(dimensional_reductions))
                 if dimensional_reductions is not None:
