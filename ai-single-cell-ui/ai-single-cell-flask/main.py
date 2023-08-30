@@ -361,6 +361,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
 
                     # Get the list of dimensional reductions
                     dimensional_reductions <- names(seurat_obj@reductions)
+                     print(class(dimensional_reductions))
 
                     # Print the names of the dimensional reductions
                     print(dimensional_reductions)
@@ -387,7 +388,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 else:
                     dropdown_options = []
                 
-                if assay_names is not None and isinstance(assay_names, list):
+                if assay_names is not None:
                     assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
                 else:
                     assay_options = []
