@@ -361,6 +361,10 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
 
                     # Get the list of dimensional reductions
                     dimensional_reductions <- names(seurat_obj@reductions)
+                     if (is.null(dimensional_reductions)) {
+                        # Return an empty array (vector)
+                        dimensional_reductions <- c()  
+                    }
                      print(class(dimensional_reductions))
 
                     # Print the names of the dimensional reductions
