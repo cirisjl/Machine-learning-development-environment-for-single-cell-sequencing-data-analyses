@@ -398,8 +398,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='assay-dropdown',
-                        options=[{'label': assay, 'value': assay} for assay in assay_names],
-                        value=assay_names[0]  # Set the initial value
+                        options=[{'label': assay, 'value': assay} for assay in assay_names] if assay_names is not None else [],
+                        value=assay_names[0] if assay_names and len(assay_names) > 0 else None
                     ),
                     html.Div(id='assay-change-confirmation'),
 
@@ -411,9 +411,9 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='dim-dropdown',
-                        options=[{'label': dim, 'value': dim} for dim in dimensional_reductions],
-                        value=dimensional_reductions[0]  # Set the initial value
-                    ),
+                        options=[{'label': dim, 'value': dim} for dim in dimensional_reductions] if dimensional_reductions is not None else [],
+                        value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
+                    )
 
                     # Output to display the selected assay
                     html.Div(id='selected-dim'),
