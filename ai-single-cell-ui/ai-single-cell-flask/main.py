@@ -339,7 +339,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
                 srat = load_seurat(file_path)
                 ro.globalenv["seurat_obj"] = srat
-                r_metadata = load_metadata(seurat_obj)
+                r_metadata = load_metadata(srat)
                 # Access specific R variables from the returned R list
                 assay_names = r_metadata.rx2('assay_names')
                 num_genes = int(r_metadata.rx2('num_genes'))
