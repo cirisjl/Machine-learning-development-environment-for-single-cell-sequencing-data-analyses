@@ -1,8 +1,7 @@
 from rpy2.robjects.packages import importr
-import urllib.parse
 from constants import USER_STORAGE_PATH, DATASETS_API
 import rpy2.robjects as ro
-from flask import Flask, request, make_response, jsonify, render_template
+from flask import Flask, request, jsonify, render_template
 import dash
 from flask_cors import CORS
 from dash import html, dcc, ctx
@@ -13,19 +12,32 @@ from dash.dependencies import Input, Output, State
 from dash import dash_table
 import pandas as pd
 import numpy as np
-import csv
 import traceback
 from dash.exceptions import PreventUpdate
 import requests
 import logging
-import json
 import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 
+from formatting.formatting import load_annData, load_invalid_adata, read_text
+from utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
 import os
+
+# Load the R script file
+r_source_path = os.path.join('formatting', 'formatting.R')
+with open(r_source_path, 'r') as r_source_file:
+    r_source = r_source_file.read()
+
+# Evaluate the R script in the R environment
+ro.r(r_source)
+
+# Access the loaded R functions
+load_expression_matrix = ro.globalenv['load_expression_matrix']
+load_seurat = ro.globalenv['load_seurat']
+detect_delim = ro.globalenv['detect_delim']
 
 load_figure_template('LUX')
 
@@ -207,94 +219,7 @@ flask_app.logger.setLevel(logging.INFO)
 #               "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
 
 
-def create_dataframe(adata):
-    # Access the data matrix
-    data_matrix = adata.X
 
-    if not isinstance(data_matrix, np.ndarray):
-        data_matrix = data_matrix.toarray()
-
-    # Access the row and column names
-    row_names = adata.obs_names
-    column_names = adata.var_names
-
-    # Convert to a pandas DataFrame
-    df = pd.DataFrame(data_matrix, index=row_names, columns=column_names)
-
-    return df
-
-
-def detect_delimiter(file_path):
-    with open(file_path, 'r') as file:
-        # Read the first line of the file to detect the delimiter
-        first_line = file.readline()
-        dialect = csv.Sniffer().sniff(first_line)
-        return dialect.delimiter
-
-
-def read_text_replace_invalid(file_path, delimiter):
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    df = df.apply(pd.to_numeric, errors='coerce')
-    return sc.AnnData(df)
-
-
-def read_text(file_path):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    return sc.AnnData(df)
-
-
-def load_invalid_adata(file_path, replace_nan):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    if replace_nan == "yes":
-        df = df.apply(pd.to_numeric, errors='coerce')
-    invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
-    invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
-    invalid_df = df.loc[invalid_rows, invalid_columns]
-    return sc.AnnData(invalid_df)
-
-
-def load_annData(file_path, replace_invalid=False):
-    adata = None
-    if os.path.isdir(file_path) and os.path.exists(os.path.join(file_path, "matrix.mtx")) and os.path.exists(
-        os.path.join(file_path, "genes.tsv")) and os.path.exists(os.path.join(file_path, "barcodes.tsv")):
-        adata = sc.read_10x_mtx(file_path,
-                            var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
-                            cache=True)  # write a cache file for faster subsequent reading
-    elif(os.path.exists(file_path)):
-        suffix = os.path.splitext(file_path)[-1]
-        if suffix == ".h5ad":
-            adata = sc.read_h5ad(file_path)
-        elif suffix == ".csv" or suffix == ".tsv":
-            print("Inside the loadAnndata CSV")
-            print(detect_delimiter(file_path))
-            print("Inside the loadAnndata CSV 2")
-            adata = sc.read_csv(file_path, delimiter=detect_delimiter(file_path))
-            print("Inside the loadAnndata CSV 3")
-        elif suffix == ".xlsx" or suffix == ".xls":
-            adata = sc.read_excel(file_path, 0)
-        elif suffix == ".h5" and "pbmc" in file_path:
-            adata = sc.read_10x_h5(file_path)
-        elif suffix == ".h5":
-            adata = sc.read_hdf(file_path)
-        elif suffix == ".loom":
-            adata = sc.read_loom(file_path)
-        elif suffix == ".mtx":
-            adata = sc.read_mtx(file_path)
-        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
-            delimiter = detect_delimiter(file_path)
-            if replace_invalid:
-                adata = read_text_replace_invalid(file_path, delimiter)
-                print(adata)
-                print(adata.var_names[:10])
-                print(adata.obs_names[:10])
-            else:
-                adata = sc.read_text(file_path, delimiter=detect_delimiter(file_path))
-        elif suffix == ".gz":
-            adata = sc.read_umi_tools(file_path)
-
-    return adata
 
 
 def get_dataset_options(authToken, username, title):
@@ -333,17 +258,6 @@ def get_dataset_options(authToken, username, title):
     # else:
     #     # Handle the case when the API call fails
     #     return []
-
-
-def is_valid_query_param(query_param):
-    # Check if the query parameter is not empty and meets specific criteria
-    if query_param is None or not query_param.strip():
-        return False
-
-    # Add any additional validation logic here if needed
-
-    return True
-
 
 
 
@@ -421,29 +335,10 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
 
-            if suffix == "rds" or suffix == "h5seurat":
-                ro.r('''
-                    library(scater)
-                    library(anndata)
-                    library(Seurat)
-                    library(SingleCellExperiment)
-                    library(SeuratDisk)
-                    library(SeuratData)
-                    library(patchwork)
-                    library(Signac)
-                 ''')
-                if suffix == "rds":
-                    ro.r(f'''
-                            sce <- readRDS(file_path)
-                            print(sce)
-                            seurat_obj <- as.Seurat(sce, slot = "counts", data = NULL)
-                            print(seurat_obj)
-                    ''')
-                elif suffix == "h5seurat":
-                    ro.r(f'''
-                            seurat_obj <- LoadH5Seurat(file_path)
-                    ''')
-
+            if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
+                srat = load_seurat(file_path)
+                ro.globalenv["seurat_obj"] = srat
+    
                 ro.r(f'''
                     #Get the Default Assay
                     default_assay <- DefaultAssay(object = seurat_obj)
@@ -1107,28 +1002,9 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
     ro.globalenv["file_path"] = file_path
     ro.globalenv["selected_assay"] = selected_assay_name
     if suffix == "rds" or suffix == "h5seurat":
-        ro.r('''
-                    library(scater)
-                    library(anndata)
-                    library(Seurat)
-                    library(SingleCellExperiment)
-                    library(SeuratDisk)
-                    library(SeuratData)
-                    library(patchwork)
-                    library(Signac)
-                     ''')
+        srat = load_seurat(file_path)
+        ro.globalenv["seurat_obj"] = srat
 
-        if suffix == "rds":
-            ro.r(f'''
-                    sce <- readRDS(file_path)
-                    print(sce)
-                    seurat_obj <- as.Seurat(sce, slot = "counts", data = NULL)
-                    print(seurat_obj)
-            ''')
-        elif suffix == "h5seurat":
-            ro.r(f'''
-                    seurat_obj <- LoadH5Seurat(file_path)
-            ''')
         if "yes" in checklist_value:
             # Rename the assay to "RNA" in the Seurat object or RDS dataset
             ro.r(f'''
