@@ -381,6 +381,16 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 num_cells = ro.globalenv["num_cells"]
                 default_assay = ro.globalenv["default_assay"]
 
+                if dimensional_reductions is not None and isinstance(dimensional_reductions, list):
+                    dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
+                else:
+                    dropdown_options = []
+                
+                if assay_names is not None and isinstance(assay_names, list):
+                    assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
+                else:
+                    assay_options = []
+
                 print(seurat_obj)
                 dataset_info = f"Dataset Name: {dataset}"
 
@@ -398,7 +408,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='assay-dropdown',
-                        options=[{'label': assay, 'value': assay} for assay in assay_names] if assay_names is not None else [],
+                        options=assay_options,
                         value=assay_names[0] if assay_names and len(assay_names) > 0 else None
                     ),
                     html.Div(id='assay-change-confirmation'),
@@ -407,11 +417,6 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     html.Div(id='selected-assay'),
 
                     html.H3("List of all the dimensional reductions calculated:"),
-
-                    if dimensional_reductions is not None and isinstance(dimensional_reductions, list):
-                        dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
-                    else:
-                        dropdown_options = []
 
                     # Dropdown to select the assay
                     dcc.Dropdown(
