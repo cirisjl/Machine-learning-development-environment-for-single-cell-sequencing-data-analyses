@@ -408,10 +408,15 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
 
                     html.H3("List of all the dimensional reductions calculated:"),
 
+                    if dimensional_reductions is not None and isinstance(dimensional_reductions, list):
+                        dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
+                    else:
+                        dropdown_options = []
+
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='dim-dropdown',
-                        options=[{'label': dim, 'value': dim} for dim in dimensional_reductions] if dimensional_reductions is not None else [],
+                        options=dropdown_options,
                         value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
                     ),
 
