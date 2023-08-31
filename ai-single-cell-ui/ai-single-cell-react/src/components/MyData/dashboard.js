@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Iframe from 'react-iframe';
 
 
-export default function FlaskDashboard  () {
+export default function FlaskDashboard (props) {
   const [dashApp, setDashApp] = useState(null);
   const [flaskURL, setFlaskURL] = useState(null);
+
+  const location = useLocation();
+  const state = location.state; // This will contain the state passed through navigate
+
+  // Now you can use the 'state' object to access the passed data
+  const message = state.message;
+  console.log("Helo Wolrd");
+  console.log(state.title);
+  console.log(message);
 
   const navigate = useNavigate();
 
@@ -24,16 +33,10 @@ export default function FlaskDashboard  () {
         const queryParams = new URLSearchParams({
             authToken: jwtToken,
             username: userID,
+            title: state.title
         });
     const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
         setFlaskURL(FLASK_BACKEND_API)
-    // fetch(FLASK_BACKEND_API) 
-    // .then(response => console.log(response))
-    //   .then(response => response.text())
-    //   .then(html => setDashApp(html))
-    //   .then(html => console.log(html))
-    //   .catch(error => console.error('Error fetching Dash app:', error));  
-
       } else {
         console.warn("Unauthorized - please login first to continue");
         navigate("/routing");

@@ -19,7 +19,8 @@ export default function ToolsDetailsComponent(props) {
       quality_control: '/tools/qc',
       normalization: '/tools/normalize',
       imputation: '/tools/impute',
-      integration: '/tools/integrate'
+      integration: '/tools/integrate',
+      evaluation: '/tools/evaluate'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -27,7 +28,8 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'Quality Control',
       normalization: 'Normalization',
       imputation: 'Imputation',
-      integration: 'Integration'
+      integration: 'Integration',
+      evaluation: 'Evaluation'
       // Add more filter categories and their corresponding Names as needed
     };
 
