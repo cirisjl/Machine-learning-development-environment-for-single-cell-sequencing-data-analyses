@@ -72,33 +72,6 @@ load_seurat <- function(path, project = NULL){
     seurat_object
 }
 
-# load_metadata <- function (seurat_obj) {
-#         #Get the Default Assay
-#         default_assay <- DefaultAssay(object = seurat_obj)
-#         # Get the names of all assays
-#         assay_names <- names(seurat_obj@assays)
-#         print(assay_names)
-
-#         # Get the dimensions of the Seurat object
-#         seurat_dims <- dim(seurat_obj)
-
-#         # Get the number of genes
-#         num_genes <- seurat_dims[1]
-
-#         # Get the number of cells
-#         num_cells <- seurat_dims[2]
-
-#         # Get the list of dimensional reductions
-#         dimensional_reductions <- names(seurat_obj@reductions)
-#             if (is.null(dimensional_reductions)) {
-#             # Return an empty array (vector)
-#             dimensional_reductions <- c()  
-#         }
-#             print(class(dimensional_reductions))
-
-#         # Print the names of the dimensional reductions
-#         print(dimensional_reductions)
-# }
 load_metadata <- function(seurat_obj) {
     metadata <- list()  # Create an empty list to hold metadata
     
