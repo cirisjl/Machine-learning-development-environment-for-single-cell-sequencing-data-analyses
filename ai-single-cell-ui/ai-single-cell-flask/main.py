@@ -1,8 +1,7 @@
 from rpy2.robjects.packages import importr
-import urllib.parse
 from constants import USER_STORAGE_PATH, DATASETS_API
 import rpy2.robjects as ro
-from flask import Flask, request, make_response, jsonify, render_template
+from flask import Flask, request, jsonify, render_template
 import dash
 from flask_cors import CORS
 from dash import html, dcc, ctx
@@ -13,18 +12,35 @@ from dash.dependencies import Input, Output, State
 from dash import dash_table
 import pandas as pd
 import numpy as np
-import csv
 import traceback
 from dash.exceptions import PreventUpdate
 import requests
 import logging
-import json
 import pymongo
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
 
+from formatting.formatting import load_annData, load_invalid_adata, read_text
+from utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
 import os
 
+# Load the R script file
+r_source_path = os.path.join('formatting', 'formatting.R')
+with open(r_source_path, 'r') as r_source_file:
+    r_source = r_source_file.read()
+
+# Evaluate the R script in the R environment
+ro.r(r_source)
+
+# Access the loaded R functions
+load_expression_matrix = ro.globalenv['load_expression_matrix']
+load_seurat = ro.globalenv['load_seurat']
+detect_delim = ro.globalenv['detect_delim']
+load_metadata = ro.globalenv['load_metadata']
+
+load_figure_template('LUX')
 
 mongo_url = "mongodb://mongodb:65528/aisinglecell"
 
@@ -37,7 +53,7 @@ metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
 flask_app = Flask(__name__)
-app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True)
+app = dash.Dash(__name__, server=flask_app, url_base_pathname='/dashboard/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.LUX ])
 flask_app.config['MINIFY_HTML'] = True
 htmlmin = HTMLMIN(flask_app)
 CORS(flask_app)
@@ -45,6 +61,7 @@ CORS(flask_app)
 # Initialize the variables
 datasets = []
 datasetMap = {}
+default_title = None
 
 
 # Function to parse h5ad files and extract metadata from all groups
@@ -68,19 +85,57 @@ def parse_h5ad(adata, file_path):
     }
     metadata_collection.insert_one(metadata)
 
-def get_dash_layout(authToken, username):
-    return html.Div(
-        className="main-container",
-        children=[
-            html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
-            dcc.Input(id='authToken-container', type='hidden', value=authToken),
-            dcc.Input(id='username-container', type='hidden', value=username),
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "24rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
+
+
+sidebar = html.Div(
+    [
+        html.H2("Filters"),
+        html.Hr(),
+        html.P(
+            "Select a dataset", className="lead"
+        ),
+        dbc.Nav(
+            [
             dcc.Dropdown(
                 id="dataset-dropdown",
                 options=[{"label": dataset, "value": dataset} for dataset in datasets],
                 placeholder="Select a dataset",
-                style={"width": "400px", "margin-bottom": "20px"}
+                value=None,
+                style={"margin-bottom": "20px"}
             ),
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    style=SIDEBAR_STYLE,
+)
+
+def get_dash_layout(authToken, username, title):
+    return  html.Div (children = [
+                dbc.Row([
+                    dbc.Col(),
+
+                    dbc.Col(html.H1('Dataset Exploration Dashboard'),width = 9, style = {'margin-left':'7px','margin-top':'17px', 'padding-left': '3rem'})
+                    ]),
+                dbc.Row(
+                    [dbc.Col(sidebar),
+                    dbc.Col(html.Div(
+        className="main-container",
+        children=[
+            # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
+            dcc.Input(id='authToken-container', type='hidden', value=authToken),
+            dcc.Input(id='username-container', type='hidden', value=username),
+            dcc.Input(id='title-container', type='hidden', value=title),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
@@ -95,13 +150,14 @@ def get_dash_layout(authToken, username):
                     html.Button(
                         "Continue",
                         id="continue-button",
+                        className="continue-button",
                         n_clicks=0,
                         style={"margin-top": "10px"}
                     ),
 
                 ],
                 id="element-to-hide",
-                style={'display': 'none'}  # Hide the container div initially
+                style={'display': 'none', 'background-color': '#f8f9fa','border': '1px solid transparent', 'border-radius': '4px', 'padding': '20px'}  # Hide the container div initially
             ),
             dcc.Loading(id="loading", type="circle", children=[
                 html.Div(id="file-info"),
@@ -146,10 +202,13 @@ def get_dash_layout(authToken, username):
             dcc.Store(id='adata-storage'),
             dcc.Store(id='updated-adata-storage'),
         ]
-    )
+    ), width = 9)
+                    ])
+                ]
+            )
 
 
-app.layout = get_dash_layout(authToken=None, username=None)
+app.layout = get_dash_layout(authToken=None, username=None, title=None)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 flask_app.logger.setLevel(logging.INFO)
 
@@ -161,91 +220,10 @@ flask_app.logger.setLevel(logging.INFO)
 #               "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
 
 
-def create_dataframe(adata):
-    # Access the data matrix
-    data_matrix = adata.X
-
-    if not isinstance(data_matrix, np.ndarray):
-        data_matrix = data_matrix.toarray()
-
-    # Access the row and column names
-    row_names = adata.obs_names
-    column_names = adata.var_names
-
-    # Convert to a pandas DataFrame
-    df = pd.DataFrame(data_matrix, index=row_names, columns=column_names)
-
-    return df
 
 
-def detect_delimiter(file_path):
-    with open(file_path, 'r') as file:
-        # Read the first line of the file to detect the delimiter
-        first_line = file.readline()
-        dialect = csv.Sniffer().sniff(first_line)
-        return dialect.delimiter
 
-
-def read_text_replace_invalid(file_path, delimiter):
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    df = df.apply(pd.to_numeric, errors='coerce')
-    return sc.AnnData(df)
-
-
-def read_text(file_path):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    return sc.AnnData(df)
-
-
-def load_invalid_adata(file_path, replace_nan):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    if replace_nan == "yes":
-        df = df.apply(pd.to_numeric, errors='coerce')
-    invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
-    invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
-    invalid_df = df.loc[invalid_rows, invalid_columns]
-    return sc.AnnData(invalid_df)
-
-
-def load_annData(file_path, replace_invalid=False):
-    adata = None
-    suffix = os.path.splitext(file_path)[-1]
-    if suffix == ".h5ad":
-        adata = sc.read_h5ad(file_path)
-    elif suffix == ".csv" or suffix == ".tsv":
-        print("Inside the loadAnndata CSV")
-        print(detect_delimiter(file_path))
-        print("Inside the loadAnndata CSV 2")
-        adata = sc.read_csv(file_path, delimiter=detect_delimiter(file_path))
-        print("Inside the loadAnndata CSV 3")
-    elif suffix == ".xlsx" or suffix == ".xls":
-        adata = sc.read_excel(file_path, 0)
-    elif suffix == ".h5" and "pbmc" in file_path:
-        adata = sc.read_10x_h5(file_path)
-    elif suffix == ".h5":
-        adata = sc.read_hdf(file_path)
-    elif suffix == ".loom":
-        adata = sc.read_loom(file_path)
-    elif suffix == ".mtx":
-        adata = sc.read_mtx(file_path)
-    elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
-        delimiter = detect_delimiter(file_path)
-        if replace_invalid:
-            adata = read_text_replace_invalid(file_path, delimiter)
-            print(adata)
-            print(adata.var_names[:10])
-            print(adata.obs_names[:10])
-        else:
-            adata = sc.read_text(file_path, delimiter=detect_delimiter(file_path))
-    elif suffix == ".gz":
-        adata = sc.read_umi_tools(file_path)
-
-    return adata
-
-
-def get_dataset_options(authToken, username):
+def get_dataset_options(authToken, username, title):
     params = {'authToken': authToken}
     flask_app.logger.info("Params for API Call")
     # Initialize the variables
@@ -276,39 +254,29 @@ def get_dataset_options(authToken, username):
             datasetMap[title] = user_directory + path
         flask_app.logger.info('API Datasets: %s', datasets)
         flask_app.logger.info('API DatasetsMap: %s', datasetMap)
-
-
         return [{'label': option, 'value': option} for option in datasets]
+        
     # else:
     #     # Handle the case when the API call fails
     #     return []
 
 
-def is_valid_query_param(query_param):
-    # Check if the query parameter is not empty and meets specific criteria
-    if query_param is None or not query_param.strip():
-        return False
-
-    # Add any additional validation logic here if needed
-    # For example, check if the query_param is a valid integer, or follows a certain pattern
-
-    return True
-
-
-
 
 @app.callback(
     Output('dataset-dropdown', 'options'),
+    Output('dataset-dropdown', 'value'),
     Input('authToken-container', 'value'),
     Input('username-container', 'value'), 
+    Input('title-container', 'value'), 
 )
-def update_dataset_dropdown(authToken, username):
+def update_dataset_dropdown(authToken, username, title):
     if authToken is not None:
         print("Inside the path")
         print("AuthToken:::")
         print(authToken)
-        dataset_options = get_dataset_options(authToken, username)
-        return dataset_options
+        dataset_options = get_dataset_options(authToken, username, title)
+        updated_default_value = title if title in datasets else None
+        return dataset_options, updated_default_value
     else:
         # For other pages, no need to update the dropdown
         print("Outside the path")
@@ -343,7 +311,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         traceback.print_exc()  # Print the traceback to the console
                         error_message = html.Div(
                             "An error occurred: {}".format(str(error)),
-                            style={"color": "red"}
+                            style={"color": "red", "padding-top": "1rem"}
                         )
                         return None, [error_message], {'display': 'none'}, None, {'display': 'none'}, None
                 elif replace_nan == "no":
@@ -356,80 +324,41 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         traceback.print_exc()  # Print the traceback to the console
                         error_message = html.Div(
                             "An error occurred: {}".format(str(error)),
-                            style={"color": "red"}
+                            style={"color": "red", "padding-top": "1rem"}
                         )
                         return None, [error_message], {'display': 'none'}, None, {'display': 'none'}, None
         elif triggered_id == 'dataset-dropdown':
             # Read h5ad file and extract relevant information
             print(dataset)
             file_path = datasetMap[dataset]
-            suffix = file_path.split(".")[1]
+            suffix = None
+            if not os.path.isdir(file_path):
+                suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
 
-            if suffix == "rds" or suffix == "h5seurat":
-                ro.r('''
-                    library(scater)
-                    library(anndata)
-                    library(Seurat)
-                    library(SingleCellExperiment)
-                    library(SeuratDisk)
-                    library(SeuratData)
-                    library(patchwork)
-                    library(Signac)
-                 ''')
-                if suffix == "rds":
-                    ro.r(f'''
-                            sce <- readRDS(file_path)
-                            print(sce)
-                            seurat_obj <- as.Seurat(sce, slot = "counts", data = NULL)
-                            print(seurat_obj)
-                    ''')
-                elif suffix == "h5seurat":
-                    ro.r(f'''
-                            seurat_obj <- LoadH5Seurat(file_path)
-                    ''')
-
-                ro.r(f'''
-                    #Get the Default Assay
-                    default_assay <- DefaultAssay(object = seurat_obj)
-                    # Get the names of all assays
-                    assay_names <- names(seurat_obj@assays)
-                    print(assay_names)
-
-                    # Get the dimensions of the Seurat object
-                    seurat_dims <- dim(seurat_obj)
-
-                    # Get the number of genes
-                    num_genes <- seurat_dims[1]
-
-                    # Get the number of cells
-                    num_cells <- seurat_dims[2]
-
-                    # # Access a specific assay by name (e.g., 'RNA')
-                    # specific_assay <- seurat_obj[["RNA"]]
-                    # print(specific_assay)
-
-                    # Get the list of dimensional reductions
-                    dimensional_reductions <- names(seurat_obj@reductions)
-
-                    # Print the names of the dimensional reductions
-                    print(dimensional_reductions)
-
-                    # # Access the raw counts matrix
-                    # raw_counts <- seurat_obj@assays$RNA@counts
-                    # print(raw_counts)
-                    # 
-                    # # Access the normalized counts matrix
-                    # normalized_counts <- seurat_obj@assays$RNA@counts
-                    # 
-                    # print(normalized_counts)
-                 ''')
+            if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
+                srat = load_seurat(file_path)
+                ro.globalenv["seurat_obj"] = srat
+                r_metadata = load_metadata(srat)
+                # Access specific R variables from the returned R list
+                assay_names = r_metadata.rx2('assay_names')
+                num_genes = int(r_metadata.rx2('num_genes'))
+                num_cells = int(r_metadata.rx2('num_cells'))
+                default_assay = r_metadata.rx2["default_assay"]
+                dimensional_reductions = r_metadata.rx2('dimensional_reductions')
+                
                 seurat_obj = ro.globalenv["seurat_obj"]
-                assay_names = ro.globalenv["assay_names"]
-                dimensional_reductions = ro.globalenv["dimensional_reductions"]
-                num_genes = ro.globalenv["num_genes"]
-                num_cells = ro.globalenv["num_cells"]
-                default_assay = ro.globalenv["default_assay"]
+
+                print(type(dimensional_reductions))
+                if dimensional_reductions is not None:
+                    dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
+                else:
+                    dropdown_options = []
+                
+                if assay_names is not None:
+                    assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
+                else:
+                    assay_options = []
 
                 print(seurat_obj)
                 dataset_info = f"Dataset Name: {dataset}"
@@ -448,8 +377,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='assay-dropdown',
-                        options=[{'label': assay, 'value': assay} for assay in assay_names],
-                        value=assay_names[0]  # Set the initial value
+                        options=assay_options,
+                        value=assay_names[0] if assay_names and len(assay_names) > 0 else None
                     ),
                     html.Div(id='assay-change-confirmation'),
 
@@ -461,8 +390,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Dropdown to select the assay
                     dcc.Dropdown(
                         id='dim-dropdown',
-                        options=[{'label': dim, 'value': dim} for dim in dimensional_reductions],
-                        value=dimensional_reductions[0]  # Set the initial value
+                        options=dropdown_options,
+                        value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
                     ),
 
                     # Output to display the selected assay
@@ -486,7 +415,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 traceback.print_exc()  # Print the traceback to the console
                 error_message = html.Div(
                     "An error occurred: {}".format(str(error)),
-                    style={"color": "red"}
+                    style={"color": "red", "padding-top": "1rem"}
                 )
                 return None, [error_message], {'display': 'block'}, None, {'display': 'none'}, None
 
@@ -717,7 +646,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             traceback.print_exc()  # Print the traceback to the console
             error_message = html.Div(
                 "An error occurred while processing the dataset: {}".format(str(error)),
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, None, {'display': 'none'}, None, {'display': 'none'}, None
     else:
@@ -790,7 +719,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
             # If no rows or columns selected, return an error message
             error_message = html.Div(
                 "Please select at least one row or column.",
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, "", ""
 
@@ -946,7 +875,7 @@ def update_dataset_content(update_status, dataset, updatedData):
             traceback.print_exc()  # Print the traceback to the console
             error_message = html.Div(
                 "An error occurred while processing the dataset: {}".format(str(error)),
-                style={"color": "red"}
+                style={"color": "red", "padding-top": "1rem"}
             )
             return error_message, None, None, {"display": "none"}, None
     raise PreventUpdate
@@ -1038,37 +967,23 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
     # Assuming 'seurat_obj' is your Seurat object
     # Update the Seurat object to use the selected assay as the default assay
     file_path = datasetMap[dataset]
-    file_name = file_path.split("/")
-    fileparts = file_name[len(file_name)-1].split(".")
-    suffix = fileparts[1]
-    fileName = fileparts[0]
+    fileName = None
+    suffix = None
+    if not os.path.isdir(file_path):
+        file_name = file_path.split("/")
+        fileparts = file_name[len(file_name)-1].split(".")
+        suffix = fileparts[1]
+        fileName = fileparts[0]
+    else:
+        fileName = "10X_dataset"
     output = fileName + "_corrected"
     ro.globalenv["output"] = output
     ro.globalenv["file_path"] = file_path
     ro.globalenv["selected_assay"] = selected_assay_name
     if suffix == "rds" or suffix == "h5seurat":
-        ro.r('''
-                    library(scater)
-                    library(anndata)
-                    library(Seurat)
-                    library(SingleCellExperiment)
-                    library(SeuratDisk)
-                    library(SeuratData)
-                    library(patchwork)
-                    library(Signac)
-                     ''')
+        srat = load_seurat(file_path)
+        ro.globalenv["seurat_obj"] = srat
 
-        if suffix == "rds":
-            ro.r(f'''
-                    sce <- readRDS(file_path)
-                    print(sce)
-                    seurat_obj <- as.Seurat(sce, slot = "counts", data = NULL)
-                    print(seurat_obj)
-            ''')
-        elif suffix == "h5seurat":
-            ro.r(f'''
-                    seurat_obj <- LoadH5Seurat(file_path)
-            ''')
         if "yes" in checklist_value:
             # Rename the assay to "RNA" in the Seurat object or RDS dataset
             ro.r(f'''
@@ -1150,12 +1065,21 @@ def dashboard():
 
     authToken = request.args.get('authToken')  # Get the query parameter from the request
     username = request.args.get('username')  # Get the query parameter from the request
+    title = request.args.get('title')
+
+    flask_app.logger.info("Hello World")
+    flask_app.logger.info(title)
+
+    if title is not None:
+        default_title = title
+    
+    flask_app.logger.info(default_title)
 
     if authToken is None or not is_valid_query_param(authToken):
         # Handle the case when the query parameter is missing or invalid
         return "Authentication Failed. Please login to continue"
 
-    app.layout = get_dash_layout(authToken, username)  # Set the Dash app layout with the query parameter
+    app.layout = get_dash_layout(authToken, username, title)  # Set the Dash app layout with the query parameter
     return app.index()
 
 
