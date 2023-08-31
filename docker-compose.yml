@@ -216,7 +216,7 @@ services:
     build:
       context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
-        - ./mysql_db:/var/lib/mysql
+        - mysql_db:/var/lib/mysql
     command:
         [
             "--character-set-server=utf8mb4",
@@ -271,7 +271,7 @@ services:
     ports:
         - 8055:8055
     volumes:
-        - ./uploads:/directus/uploads
+        - Directus_uploads:/directus/uploads
     depends_on:
         - oscb_mysql
     env_file:
@@ -304,4 +304,6 @@ volumes:
   Uploads:
   Errors:
   user_storage: {}
+  Directus_uploads:
+  mysql_db:
 
