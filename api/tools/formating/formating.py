@@ -22,7 +22,19 @@ def load_anndata(path):
                              var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
                              cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(path)):
-        filename, suffix = os.path.splitext(path)
+        # filename, suffix = os.path.splitext(path)
+
+        # Split the file_path into parts using '/'
+        parts = path.split('/')
+
+        # Extract the last part as the filename
+        filename = parts[-1]
+
+        # Split the filename into parts using '.'
+        filename_parts = filename.split('.')
+
+        # Extract all parts except the first one as the complete extension
+        suffix = "." + ".".join(filename_parts[1:])
         print("Suffix :::::: ")
         print(suffix)
         if suffix == ".h5ad":
