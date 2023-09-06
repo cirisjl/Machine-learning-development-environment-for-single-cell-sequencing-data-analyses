@@ -8,6 +8,7 @@ import pandas as pd
 from detect_delimiter import detect
 from string import ascii_letters
 import csv
+import gzip
 
 
 def load_anndata(path):
@@ -56,7 +57,11 @@ def load_anndata(path):
         elif suffix == ".mtx":
             adata = sc.read_mtx(path)
         elif suffix == ".txt" or suffix == ".tab" or suffix == ".data" or suffix == ".txt.gz":
-            adata = sc.read_text(path, delimiter=detect_delim(path))
+            if suffix == ".txt.gz":
+                with gzip.open(path, 'rt') as f:
+                    adata = sc.read_text(f, delimiter=detect_delim(f))
+            else:
+                adata = sc.read_text(path, delimiter=detect_delim(path))
         elif suffix == ".gz":
             adata = sc.read_umi_tools(path)
 
