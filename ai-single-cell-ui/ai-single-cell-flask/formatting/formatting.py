@@ -31,7 +31,9 @@ def load_annData(file_path, replace_invalid=False):
                             var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
                             cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(file_path)):
-        suffix = os.path.splitext(file_path)[-1]
+        # suffix = os.path.splitext(file_path)[-1]
+        filename, suffix = os.path.splitext(file_path)
+
         if suffix == ".h5ad":
             adata = sc.read_h5ad(file_path)
         elif suffix == ".csv" or suffix == ".tsv" or suffix == ".csv.gz":
