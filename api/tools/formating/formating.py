@@ -41,7 +41,7 @@ def load_anndata(path):
             adata = sc.read_loom(path)
         elif suffix == ".mtx":
             adata = sc.read_mtx(path)
-        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
+        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data" or suffix == ".txt.gz":
             adata = sc.read_text(path, delimiter=detect_delim(path))
         elif suffix == ".gz":
             adata = sc.read_umi_tools(path)

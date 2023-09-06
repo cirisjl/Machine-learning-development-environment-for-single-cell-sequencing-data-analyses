@@ -50,7 +50,7 @@ def load_annData(file_path, replace_invalid=False):
             adata = sc.read_loom(file_path)
         elif suffix == ".mtx":
             adata = sc.read_mtx(file_path)
-        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
+        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data" or suffix == ".txt.gz":
             delimiter = detect_delimiter(file_path)
             if replace_invalid:
                 adata = read_text_replace_invalid(file_path, delimiter)
