@@ -59,7 +59,8 @@ def load_anndata(path):
         elif suffix == ".txt" or suffix == ".tab" or suffix == ".data" or suffix == ".txt.gz":
             if suffix == ".txt.gz":
                 with gzip.open(path, 'rt') as f:
-                    adata = sc.read_text(f, delimiter=detect_delim(f))
+                    print(f)
+                    adata = sc.read_text(f, delimiter="\t")
             else:
                 adata = sc.read_text(path, delimiter=detect_delim(path))
         elif suffix == ".gz":
