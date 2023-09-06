@@ -34,7 +34,7 @@ def load_annData(file_path, replace_invalid=False):
         suffix = os.path.splitext(file_path)[-1]
         if suffix == ".h5ad":
             adata = sc.read_h5ad(file_path)
-        elif suffix == ".csv" or suffix == ".tsv":
+        elif suffix == ".csv" or suffix == ".tsv" or suffix == ".csv.gz":
             print("Inside the loadAnndata CSV")
             print(detect_delimiter(file_path))
             print("Inside the loadAnndata CSV 2")

@@ -22,10 +22,10 @@ def load_anndata(path):
                              var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
                              cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(path)):
-        suffix = os.path.splitext(path)[-1]
+        suffix = os.path.splitext(path)[1]
         if suffix == ".h5ad":
             adata = sc.read_h5ad(path)
-        elif suffix == ".csv" or suffix == ".tsv":
+        elif suffix == ".csv" or suffix == ".tsv" or suffix == ".csv.gz":
             print("Inside the loadAnndata CSV")
             print(detect_delimiter(path))
             print("Inside the loadAnndata CSV 2")
