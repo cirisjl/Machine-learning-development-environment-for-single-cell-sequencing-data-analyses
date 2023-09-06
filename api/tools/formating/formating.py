@@ -23,6 +23,8 @@ def load_anndata(path):
                              cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(path)):
         filename, suffix = os.path.splitext(path)
+        print("Suffix :::::: ")
+        print(suffix)
         if suffix == ".h5ad":
             adata = sc.read_h5ad(path)
         elif suffix == ".csv" or suffix == ".tsv" or suffix == ".csv.gz":
