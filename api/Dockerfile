@@ -1,4 +1,4 @@
-FROM u15ec104/ai-singl-cell:celery-backend-base
+FROM u15ec104/ai-single-cell:celery-backend-base
 
 RUN mkdir /app
 WORKDIR /app
