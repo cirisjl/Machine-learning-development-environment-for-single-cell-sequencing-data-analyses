@@ -13,6 +13,10 @@ sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
 def scanpy_qc(adata, min_genes=200, min_cells=3):
+        if adata is None:
+            print("File format is not supported.")
+            return None
+
         adata.var_names_make_unique() 
 
         #Preprocessing
@@ -25,7 +29,7 @@ def scanpy_qc(adata, min_genes=200, min_cells=3):
         sc.pp.normalize_total(adata, target_sum=1e4)
 
         sc.pp.log1p(adata)
-        
+
         sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
 
 
@@ -35,7 +39,7 @@ def scanpy_qc(adata, min_genes=200, min_cells=3):
 
         # Principal component analysis
         sc.tl.pca(adata, svd_solver='arpack')
-        
+
         # Computing the neighborhood graph
         sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40)
 
@@ -47,4 +51,3 @@ def scanpy_qc(adata, min_genes=200, min_cells=3):
 
         # return adata, output
         return adata
-

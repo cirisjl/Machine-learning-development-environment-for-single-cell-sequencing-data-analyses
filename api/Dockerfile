@@ -79,7 +79,7 @@ RUN Rscript -e 'install.packages(c( \
     "foreach", "vegan", "tidyr", "withr", "magrittr", "rmpi", "knitr", "future", "kableExtra", \
     "statmod", "mvoutlier", "penalized", "mgcv", "corrplot", "scales", "rliger", "pandoc", \
     "rlang", "R6", "cli", "crayon", "SeuratObject", "stringi", "anndata", "loomR", \
-    "tinytex", "lsa", "uwot", "optparse", "DrImpute", "alluvial", "dplyr", "RColorBrewer"))'
+    "tinytex", "lsa", "uwot", "optparse", "DrImpute", "alluvial", "dplyr", "RColorBrewer", "Signac"))'
 # RUN Rscript -e 'tinytex::install_tinytex()'
 
 # Install Bioconductor packages
@@ -103,7 +103,7 @@ RUN pip install --upgrade --no-cache \
     scipy==1.9.1 biopython h5py matplotlib matplotlib_venn tqdm python-igraph scprep python-resources \
     torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin \
     rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
-    zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph
+    zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph loompy
 
 # Install Jupyter
 RUN pip install --upgrade --no-cache \
@@ -111,7 +111,7 @@ RUN pip install --upgrade --no-cache \
     jupyter-rsession-proxy
 RUN Rscript -e 'install.packages("IRkernel")' && \
     Rscript -e 'IRkernel::installspec()' 
-	
+
 # Install SAVER
 RUN Rscript -e 'devtools::install_github("mohuangx/SAVER")'
 

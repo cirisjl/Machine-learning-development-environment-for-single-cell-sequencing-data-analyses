@@ -22,7 +22,6 @@ def _safe_accumulator_op(op, x, *args, **kwargs):
     This function provides numpy accumulator functions with a float64 dtype
     when used on a floating point input. This prevents accumulator overflow on
     smaller floating point dtypes.
-
     Parameters
     ----------
     op : function
@@ -34,7 +33,6 @@ def _safe_accumulator_op(op, x, *args, **kwargs):
         input x.
     **kwargs : keyword arguments
         Keyword arguments passed to the accumulator function.
-
     Returns
     -------
     result

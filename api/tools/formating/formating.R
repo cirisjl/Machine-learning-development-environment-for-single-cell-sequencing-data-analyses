@@ -40,13 +40,13 @@ load_anndata <- function(path) {
         adata <- read_umi_tools(path)
     } else if(suffix == "h5Seurat" || suffix == "h5seurat"){
         Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(paste0(tools::file_path_sans_ext(path), ".h5ad"))
+        adata <- read_h5ad(adata_path)
     } else if(suffix == "rds"){
         seurat_object <- load_seurat(path)
-        SaveH5Seurat(seurat_object, overwrite = TRUE)
-        Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(paste0(tools::file_path_sans_ext(path), ".h5ad"))
-    } 
+        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+        SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+        adata <- read_h5ad(adata_path)    } 
     # else if(suffix == "loom"){
     #     seurat_object <- load_seurat(path)
     #     SaveH5Seurat(seurat_object, overwrite = TRUE)
@@ -198,6 +198,21 @@ seurat_to_csv <- function(seurat_object, srat_path, assay = 'RNA', slot = "count
         print("CSV file already exists.")
     }
     csv_path
+}
+
+convert_to_anndata <- function(path) {
+    adata_path <- NULL
+    suffix <- tolower(get_suffix(path))
+    if(suffix == "h5Seurat" || suffix == "h5seurat"){
+        adata_path <- Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
+    } else if(suffix == "rds"){
+        seurat_object <- load_seurat(path)
+        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+        SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    } 
+
+    adata_path
 }
 
 
