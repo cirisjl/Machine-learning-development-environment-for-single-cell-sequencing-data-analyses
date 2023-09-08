@@ -1,5 +1,6 @@
 import scanpy as sc
 import os
+import subprocess
 import numpy as np
 import pandas as pd
 # import anndata2ri
@@ -10,44 +11,74 @@ from string import ascii_letters
 import csv
 
 
-def load_anndata(path):
+def load_anndata(path, dataset=None, show_error=True):
 
     # path = os.path.abspath(path)
     adata = None
     print(path)
 
-    if os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
-            os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv")):
+    # if (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
+    #         os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv"))) 
+    #         or (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx.gz")) and os.path.exists(
+    #         os.path.join(path, "genes.tsv.gz")) and os.path.exists(os.path.join(path, "barcodes.tsv.gz"))):
+    if (os.path.isdir(path)):
         adata = sc.read_10x_mtx(path,
                              var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
                              cache=True)  # write a cache file for faster subsequent reading
     elif(os.path.exists(path)):
-        suffix = os.path.splitext(path)[-1]
-        if suffix == ".h5ad":
+        # suffix = os.path.splitext(path)[-1]
+        if path.endswith(".h5ad"):
             adata = sc.read_h5ad(path)
-        elif suffix == ".csv" or suffix == ".tsv":
-            print("Inside the loadAnndata CSV")
+        elif path.endswith(".csv") or path.endswith(".tsv"):
+            # print("Inside the loadAnndata CSV")
             print(detect_delimiter(path))
-            print("Inside the loadAnndata CSV 2")
+            # print("Inside the loadAnndata CSV 2")
             adata = sc.read_csv(path, delimiter=detect_delimiter(path))
-            print("Inside the loadAnndata CSV 3")
-        elif suffix == ".xlsx" or suffix == ".xls":
+            # print("Inside the loadAnndata CSV 3")
+        elif path.endswith(".csv.gz") or path.endswith(".tsv.gz"):
+            data = sc.read_csv(path)
+        elif path.endswith(".xlsx") or path.endswith(".xls"):
             adata = sc.read_excel(path, 0)
-        elif suffix == ".h5" and "pbmc" in path:
-            adata = sc.read_10x_h5(path)
-        elif suffix == ".h5":
-            adata = sc.read_hdf(path)
-        elif suffix == ".loom":
+        # elif suffix == ".h5" and "pbmc" in path:
+            # adata = sc.read_10x_h5(path)
+        elif path.endswith(".h5"):
+            try:
+                adata = sc.read_10x_h5(path)
+            except Exception as e:
+                print(e)
+                adata = sc.read_hdf(path, key=dataset)
+        elif path.endswith(".loom"):
             adata = sc.read_loom(path)
-        elif suffix == ".mtx":
+        elif path.endswith(".mtx"):
             adata = sc.read_mtx(path)
-        elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
+        elif path.endswith(".txt") or path.endswith(".tab") or path.endswith(".data"):
             adata = sc.read_text(path, delimiter=detect_delim(path))
-        elif suffix == ".gz":
+        elif path.endswith(".txt.gz"):
+            adata = sc.read_text(path)
+        elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
+        elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
+            try:
+                current_file = os.path.abspath(__file__)
+                # Construct the relative path to the desired file
+                relative_path = os.path.join(os.path.dirname(current_file), 'convert_to_anndata.Rmd')
+
+                # Get the absolute path of the desired file
+                operation_path = os.path.abspath(relative_path)
+                report_path = os.path.join(os.path.dirname(path), "file_conversion_report.html")
+                adata_path = os.path.splitext(path)[0] + '.h5ad'
+
+                s = subprocess.call(["R -e \"rmarkdown::render('" + operation_path + "', params=list(path='" + str(path) + "'), output_file='" + report_path + "')\""], shell = True)
+                print(s)
+
+                if os.path.exists(adata_path):
+                    adata = sc.read_h5ad(adata_path)
+
+            except Exception as e:
+                print("Object format conversion is failed")
+                if show_error: print(e)
 
     return adata
-
 
 def anndata_to_csv(adata, output_path, layer = None):
     counts = None
@@ -55,7 +86,10 @@ def anndata_to_csv(adata, output_path, layer = None):
     print(adata)
 
     if layer is None:
-        counts = adata.X.toarray()
+        if type(adata.layers[layer]) != "numpy.ndarray":
+            counts = adata.X.toarray()
+        else:
+            counts = adata.X
     else:
         if type(adata.layers[layer]) != "numpy.ndarray":
             counts = adata.layers[layer].toarray()
@@ -66,14 +100,14 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer, show_error):
+def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
     adata = None
     adata_path = None
     counts = None
 
     if os.path.exists(output):
         try:
-            adata = load_anndata(output)
+            adata = load_anndata(output, dataset)
             adata_path = output
         except Exception as e:
             print("File format is not supported.")
@@ -83,7 +117,7 @@ def load_anndata_to_csv(input, output, layer, show_error):
         try:
             print("Inside else , read from input path")
             print(input)
-            adata = load_anndata(input)
+            adata = load_anndata(input, dataset)
             print(adata)
             adata_path = input
         except Exception as e:

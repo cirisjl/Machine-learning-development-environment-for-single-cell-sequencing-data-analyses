@@ -25,9 +25,7 @@ library(SingleR)
 library(dplyr)
 library(celldex)
 library(RColorBrewer)
-
 source("../formating/formating.R")
-
 if(is.null(params$input)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
@@ -39,53 +37,49 @@ srat <- tryCatch(
     }
   )
 if(is.null(srat)) stop("The file format is not supported.")
-if(!params$default_assay %in% names(x = srat)) stop(paste(params$default_assay, "does not exist."))
-DefaultAssay(object = srat) <- ifelse((is.null(params$default_assay)|| is.na(params$default_assay)), "RNA", params$default_assay)
-print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
+default_assay <- params$default_assay
+if(!default_assay %in% names(x = srat)) stop(paste(default_assay, "does not exist."))
+DefaultAssay(object = srat) <- ifelse((is.null(default_assay)|| is.na(default_assay)), "RNA", default_assay)
+print(paste("Seurat object is loaded and default assay is set to", default_assay, "."))
 srat
-
+if(!paste0("nCount_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nCount_", default_assay)]] <- colSums(x = srat[[default_assay]], slot = "counts")  # nCount of the default assay
+if(!paste0("nFeature_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nFeature_", default_assay)]] <- colSums(x = GetAssayData(object = srat[[default_assay]], slot = "counts") > 0)  # nFeature of the default assay
 meta <- srat@meta.data
 dim(meta)
 head(meta)
-
-summary(meta$nCount_RNA)
-summary(meta$nFeature_RNA)
-
+summary(meta[paste0("nCount_", default_assay)])
+summary(meta[paste0("nFeature_", default_assay)])
 srat[["percent.mt"]] <- PercentageFeatureSet(srat, pattern = "^MT-") # Michochondrial genes
 srat[["percent.rb"]] <- PercentageFeatureSet(srat, pattern = "^RP[SL]") # Ribosomal proteins (their names begin with RPS or RPL)
-
 # add the doublet annotation
 doublets <- read.table(params$path_of_scrublet_calls, header = F, row.names = 1)
 colnames(doublets) <- c("Doublet_score", "Is_doublet")
 srat <- AddMetaData(srat, doublets)
 head(srat[[]])
-
 ```
 ### Violin Plot
 ```{r Violin Plot, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-VlnPlot(srat, features = c("nFeature_RNA","nCount_RNA","percent.mt","percent.rb"),ncol = 4,pt.size = 0.1) & 
+VlnPlot(srat, features = c(paste0("nFeature_", default_assay), paste0("nCount_", default_assay),"percent.mt","percent.rb"),ncol = 4,pt.size = 0.1) & 
   theme(plot.title = element_text(size=10))
 ```
 ### Metadata features against each other
 ```{r Metadata features, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-FeatureScatter(srat, feature1 = "nCount_RNA", feature2 = "percent.mt")
-FeatureScatter(srat, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
-FeatureScatter(srat, feature1 = "nCount_RNA", feature2 = "percent.rb")
+FeatureScatter(srat, feature1 = paste0("nCount_", default_assay), feature2 = "percent.mt")
+FeatureScatter(srat, feature1 = paste0("nCount_", default_assay), feature2 = paste0("nFeature_", default_assay))
+FeatureScatter(srat, feature1 = paste0("nCount_", default_assay), feature2 = "percent.rb")
 FeatureScatter(srat, feature1 = "percent.rb", feature2 = "percent.mt")
-FeatureScatter(srat, feature1 = "nFeature_RNA", feature2 = "Doublet_score")
+FeatureScatter(srat, feature1 = paste0("nFeature_", default_assay), feature2 = "Doublet_score")
 ```
 ### Identifying filtering cutoff
 ```{r Identifying filtering cutoff, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-
 srat[['QC']] <- ifelse(srat@meta.data$Is_doublet == 'True','Doublet','Pass')
-srat[['QC']] <- ifelse(srat@meta.data$nFeature_RNA < 500 & srat@meta.data$QC == 'Pass','Low_nFeature',srat@meta.data$QC)
-srat[['QC']] <- ifelse(srat@meta.data$nFeature_RNA < 500 & srat@meta.data$QC != 'Pass' & srat@meta.data$QC != 'Low_nFeature',paste('Low_nFeature',srat@meta.data$QC,sep = ','),srat@meta.data$QC)
+srat[['QC']] <- ifelse(srat@meta.data[paste0("nFeature_", default_assay)] < 500 & srat@meta.data$QC == 'Pass','Low_nFeature',srat@meta.data$QC)
+srat[['QC']] <- ifelse(srat@meta.data[paste0("nFeature_", default_assay)] < 500 & srat@meta.data$QC != 'Pass' & srat@meta.data$QC != 'Low_nFeature',paste('Low_nFeature',srat@meta.data$QC,sep = ','),srat@meta.data$QC)
 srat[['QC']] <- ifelse(srat@meta.data$percent.mt > 15 & srat@meta.data$QC == 'Pass','High_MT',srat@meta.data$QC)
-srat[['QC']] <- ifelse(srat@meta.data$nFeature_RNA < 500 & srat@meta.data$QC != 'Pass' & srat@meta.data$QC != 'High_MT',paste('High_MT',srat@meta.data$QC,sep = ','),srat@meta.data$QC)
+srat[['QC']] <- ifelse(srat@meta.data[paste0("nFeature_", default_assay)] < 500 & srat@meta.data$QC != 'Pass' & srat@meta.data$QC != 'High_MT',paste('High_MT',srat@meta.data$QC,sep = ','),srat@meta.data$QC)
 table(srat[['QC']])
-
 VlnPlot(subset(srat, subset = QC == 'Pass'), 
-        features = c("nFeature_RNA", "nCount_RNA", "percent.mt","percent.rb"), ncol = 4, pt.size = 0.1) & 
+        features = c(paste0("nFeature_", default_assay), paste0("nCount_", default_assay), "percent.mt","percent.rb"), ncol = 4, pt.size = 0.1) & 
   theme(plot.title = element_text(size=10))
 ```
 
