@@ -1,4 +1,4 @@
-FROM u15ec104/ai-single-cell:flask-base
+FROM u15ec104/ai-single-cell:celery-backend-base
 
 WORKDIR /usr/src/app
 
