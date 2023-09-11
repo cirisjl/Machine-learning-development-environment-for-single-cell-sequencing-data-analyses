@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import scanpy as sc
+import gzip
 
 def detect_delimiter(file_path):
     with open(file_path, 'r') as file:
@@ -20,8 +21,9 @@ def read_text_replace_invalid(file_path, delimiter):
 
 def read_text(file_path):
     if file_path.endswith(".gz"):
-        df = pd.read_csv(file_path, on_bad_lines='skip', index_col=0)
-        return sc.AnnData(df)
+        with gzip.open(file_path, 'rt') as file:
+            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)        
+            return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
@@ -79,9 +81,10 @@ def load_annData(path, replace_invalid=False):
                 adata = sc.read_text(path, delimiter=detect_delimiter(path))      
         elif path.endswith(".txt.gz"):
             if replace_invalid:
-                df = pd.read_csv(path, on_bad_lines='skip', index_col=0)
-                df = df.apply(pd.to_numeric, errors='coerce')
-                adata = sc.AnnData(df)
+                with gzip.open(path, 'rt') as file:
+                    df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
+                    df = df.apply(pd.to_numeric, errors='coerce')
+                    adata = sc.AnnData(df)
             else:
                 adata = sc.read_text(path)      
         elif path.endswith(".gz"):
