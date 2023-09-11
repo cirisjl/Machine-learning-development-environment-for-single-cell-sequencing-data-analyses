@@ -96,11 +96,12 @@ def load_annData(path, replace_invalid=False):
                 operation_path = os.path.abspath(relative_path)
                 report_path = os.path.join(os.path.dirname(path), "file_conversion_report.html")
                 adata_path = os.path.splitext(path)[0] + '.h5ad'
-
-                s = subprocess.call(["R -e \"rmarkdown::render('" + operation_path + "', params=list(path='" + str(path) + "'), output_file='" + report_path + "')\""], shell = True)
-                print(s)
-
+                
                 if os.path.exists(adata_path):
+                    adata = sc.read_h5ad(adata_path)
+                else:
+                    s = subprocess.call(["R -e \"rmarkdown::render('" + operation_path + "', params=list(path='" + str(path) + "'), output_file='" + report_path + "')\""], shell = True)
+                    print(s)
                     adata = sc.read_h5ad(adata_path)
 
             except Exception as e:
