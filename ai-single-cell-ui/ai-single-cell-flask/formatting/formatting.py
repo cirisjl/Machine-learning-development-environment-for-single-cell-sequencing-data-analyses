@@ -23,8 +23,9 @@ def read_text(file_path):
     df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
     return sc.AnnData(df)
     
-def load_anndata(path, dataset=None, replace_invalid=False,show_error=True):
-
+def load_annData(path, replace_invalid=False):
+    show_error=True
+    dataset = None
     # path = os.path.abspath(path)
     adata = None
     print(path)
