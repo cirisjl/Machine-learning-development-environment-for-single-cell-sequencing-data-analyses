@@ -19,9 +19,13 @@ def read_text_replace_invalid(file_path, delimiter):
 
 
 def read_text(file_path):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    return sc.AnnData(df)
+    if file_path.endswith(".gz"):
+        df = pd.read_csv(file_path, on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
+    else:
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
     
 def load_annData(path, replace_invalid=False):
     show_error=True
@@ -75,14 +79,11 @@ def load_annData(path, replace_invalid=False):
                 adata = sc.read_text(path, delimiter=detect_delimiter(path))      
         elif path.endswith(".txt.gz"):
             if replace_invalid:
-                adata = read_text_replace_invalid(path, delimiter)
-                print(adata)
-                print(adata.var_names[:10])
-                print(adata.obs_names[:10])
-            else:
                 df = pd.read_csv(path, on_bad_lines='skip', index_col=0)
                 df = df.apply(pd.to_numeric, errors='coerce')
                 adata = sc.AnnData(df)
+            else:
+                adata = sc.read_text(path)      
         elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
         elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
