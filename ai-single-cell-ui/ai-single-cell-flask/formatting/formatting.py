@@ -16,6 +16,7 @@ def detect_delimiter(file_path):
 def read_text_replace_invalid(file_path, delimiter):
     df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
     df = df.apply(pd.to_numeric, errors='coerce')
+    df = df.astype(float)
     return sc.AnnData(df)
 
 
