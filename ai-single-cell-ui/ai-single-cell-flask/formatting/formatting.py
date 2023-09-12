@@ -25,7 +25,7 @@ def read_text(file_path):
     if file_path.endswith(".gz"):
         with gzip.open(file_path, 'rb') as file:
             compressed_data = file.read()
-        decompressed_data = gzip.decompress(compressed_data)
+        # decompressed_data = gzip.decompress(compressed_data)
         # Get the base name of the file without extension
         
         file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
@@ -35,7 +35,7 @@ def read_text(file_path):
 
         # Write the decompressed data to a plain .txt file
         with open(new_file_path, 'wb') as txt_file:
-            txt_file.write(decompressed_data)
+            txt_file.write(compressed_data)
 
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(new_file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
