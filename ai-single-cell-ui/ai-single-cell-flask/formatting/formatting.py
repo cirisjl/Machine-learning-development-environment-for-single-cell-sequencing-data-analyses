@@ -21,8 +21,8 @@ def read_text_replace_invalid(file_path, delimiter):
 
 def read_text(file_path):
     if file_path.endswith(".gz"):
-        delimiter = detect_delimiter(file_path)
-        df = pd.read_csv(file_path, on_bad_lines='skip', index_col=0)
+        with gzip.open(file_path, 'rt', encoding='utf-8') as file:
+            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
