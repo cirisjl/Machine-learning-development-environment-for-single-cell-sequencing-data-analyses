@@ -336,78 +336,78 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
 
-            if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
-                srat = load_seurat(file_path)
-                ro.globalenv["seurat_obj"] = srat
-                r_metadata = load_metadata(srat)
-                # Access specific R variables from the returned R list
-                assay_names = r_metadata.rx2('assay_names')
-                num_genes = int(r_metadata.rx2('num_genes'))
-                num_cells = int(r_metadata.rx2('num_cells'))
-                default_assay = r_metadata.rx2["default_assay"]
-                dimensional_reductions = r_metadata.rx2('dimensional_reductions')
+            # if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
+            #     srat = load_seurat(file_path)
+            #     ro.globalenv["seurat_obj"] = srat
+            #     r_metadata = load_metadata(srat)
+            #     # Access specific R variables from the returned R list
+            #     assay_names = r_metadata.rx2('assay_names')
+            #     num_genes = int(r_metadata.rx2('num_genes'))
+            #     num_cells = int(r_metadata.rx2('num_cells'))
+            #     default_assay = r_metadata.rx2["default_assay"]
+            #     dimensional_reductions = r_metadata.rx2('dimensional_reductions')
                 
-                seurat_obj = ro.globalenv["seurat_obj"]
+            #     seurat_obj = ro.globalenv["seurat_obj"]
 
-                print(type(dimensional_reductions))
-                if dimensional_reductions is not None:
-                    dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
-                else:
-                    dropdown_options = []
+            #     print(type(dimensional_reductions))
+            #     if dimensional_reductions is not None:
+            #         dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
+            #     else:
+            #         dropdown_options = []
                 
-                if assay_names is not None:
-                    assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
-                else:
-                    assay_options = []
+            #     if assay_names is not None:
+            #         assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
+            #     else:
+            #         assay_options = []
 
-                print(seurat_obj)
-                dataset_info = f"Dataset Name: {dataset}"
+            #     print(seurat_obj)
+            #     dataset_info = f"Dataset Name: {dataset}"
 
-                metadata = {
-                    "Number of Cells": num_cells,
-                    "Number of Genes": num_genes,
-                }
-                output = html.Div([
-                    html.H3("Active Assay: "),
+            #     metadata = {
+            #         "Number of Cells": num_cells,
+            #         "Number of Genes": num_genes,
+            #     }
+            #     output = html.Div([
+            #         html.H3("Active Assay: "),
 
-                    html.Div(default_assay[0], id='active-assay'),
+            #         html.Div(default_assay[0], id='active-assay'),
 
-                    html.H3("List of Assays"),
+            #         html.H3("List of Assays"),
 
-                    # Dropdown to select the assay
-                    dcc.Dropdown(
-                        id='assay-dropdown',
-                        options=assay_options,
-                        value=assay_names[0] if assay_names and len(assay_names) > 0 else None
-                    ),
-                    html.Div(id='assay-change-confirmation'),
+            #         # Dropdown to select the assay
+            #         dcc.Dropdown(
+            #             id='assay-dropdown',
+            #             options=assay_options,
+            #             value=assay_names[0] if assay_names and len(assay_names) > 0 else None
+            #         ),
+            #         html.Div(id='assay-change-confirmation'),
 
-                    # Output to display the selected assay
-                    html.Div(id='selected-assay'),
+            #         # Output to display the selected assay
+            #         html.Div(id='selected-assay'),
 
-                    html.H3("List of all the dimensional reductions calculated:"),
+            #         html.H3("List of all the dimensional reductions calculated:"),
 
-                    # Dropdown to select the assay
-                    dcc.Dropdown(
-                        id='dim-dropdown',
-                        options=dropdown_options,
-                        value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
-                    ),
+            #         # Dropdown to select the assay
+            #         dcc.Dropdown(
+            #             id='dim-dropdown',
+            #             options=dropdown_options,
+            #             value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
+            #         ),
 
-                    # Output to display the selected assay
-                    html.Div(id='selected-dim'),
+            #         # Output to display the selected assay
+            #         html.Div(id='selected-dim'),
 
-                    html.Button("Update Default Assay", id="default-assay", n_clicks=0, className="edit-button"),
-                    html.Div(id='output-message'),
-                ])
+            #         html.Button("Update Default Assay", id="default-assay", n_clicks=0, className="edit-button"),
+            #         html.Div(id='output-message'),
+            #     ])
 
-                return dataset_info, [
-                    html.H3("Metadata:", style={"margin-top": "20px"}),
-                    html.Table(
-                        [html.Tr([html.Th(key), html.Td(str(value))]) for key, value in metadata.items()],
-                        style={"margin-bottom": "20px"}
-                    ),
-                    output], {'display': 'none'}, None, {'display': 'none'}, None
+            #     return dataset_info, [
+            #         html.H3("Metadata:", style={"margin-top": "20px"}),
+            #         html.Table(
+            #             [html.Tr([html.Th(key), html.Td(str(value))]) for key, value in metadata.items()],
+            #             style={"margin-bottom": "20px"}
+            #         ),
+            #         output], {'display': 'none'}, None, {'display': 'none'}, None
             try:
                 adata = load_annData(file_path)
                 invalidadata = None
@@ -591,6 +591,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # Serialize and store the adata
             adata_df = create_dataframe(adata)
             adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            adata_df = None
+            adata_pickle = None
 
             try:
                 parse_h5ad(adata, file_path)
