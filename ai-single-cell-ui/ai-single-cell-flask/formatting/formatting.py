@@ -174,4 +174,7 @@ def load_invalid_adata(file_path, replace_nan):
     invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
     invalid_df = df.loc[invalid_rows, invalid_columns]
 
+    if file_path.endswith(".gz"):
+        invalid_df = df.to_numpy()
+
     return sc.AnnData(invalid_df)
