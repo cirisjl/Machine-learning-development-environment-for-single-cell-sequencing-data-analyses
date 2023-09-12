@@ -23,11 +23,22 @@ def read_text_replace_invalid(file_path, delimiter):
 def read_text(file_path):
     if file_path.endswith(".gz"):
         with gzip.open(file_path, 'rt', encoding='utf-8') as file:
-            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
-            df = df.apply(pd.to_numeric, errors='coerce')
-            df = df.astype(float)
-        adata = sc.AnnData(df.to_numpy())
-        return adata
+            compressed_data = file.read()
+        decompressed_data = gzip.decompress(compressed_data)
+        # Get the base name of the file without extension
+        
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+
+        # Write the decompressed data to a plain .txt file
+        with open(new_file_path, 'wb') as txt_file:
+            txt_file.write(decompressed_data)
+
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(new_file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
