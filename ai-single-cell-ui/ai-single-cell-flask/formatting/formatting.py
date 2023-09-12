@@ -160,11 +160,18 @@ def load_annData(path, replace_invalid=False):
 
 
 def load_invalid_adata(file_path, replace_nan):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    if file_path.endswith(".gz"):
+        with gzip.open(file_path, 'rb') as file:  # Open in binary mode ('rb') for gzip files
+            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
+    else:
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+
     if replace_nan == "yes":
         df = df.apply(pd.to_numeric, errors='coerce')
+
     invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
     invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
     invalid_df = df.loc[invalid_rows, invalid_columns]
+
     return sc.AnnData(invalid_df)
