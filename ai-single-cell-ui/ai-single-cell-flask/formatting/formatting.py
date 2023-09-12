@@ -26,7 +26,7 @@ def read_text(file_path):
             df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
             df = df.apply(pd.to_numeric, errors='coerce')
             df = df.astype(float)
-        adata = sc.AnnData(df)
+        adata = sc.AnnData(df.to_numpy())
         return adata
     else:
         delimiter = detect_delimiter(file_path)
