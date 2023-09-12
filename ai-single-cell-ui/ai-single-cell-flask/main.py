@@ -62,6 +62,7 @@ CORS(flask_app)
 datasets = []
 datasetMap = {}
 default_title = None
+annData = None
 
 
 # Function to parse h5ad files and extract metadata from all groups
