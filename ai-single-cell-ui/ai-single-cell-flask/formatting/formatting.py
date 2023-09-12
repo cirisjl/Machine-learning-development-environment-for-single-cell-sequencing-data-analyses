@@ -22,7 +22,7 @@ def read_text_replace_invalid(file_path, delimiter):
 
 def read_text(file_path):
     if file_path.endswith(".gz"):
-        with gzip.open(file_path, 'rt', encoding='utf-8') as file:
+        with gzip.open(file_path, 'rb', encoding='utf-8') as file:
             compressed_data = file.read()
         decompressed_data = gzip.decompress(compressed_data)
         # Get the base name of the file without extension
