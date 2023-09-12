@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import scanpy as sc
+from detect_delimiter import detect
 import gzip
 
 def detect_delimiter(file_path):
@@ -11,6 +12,14 @@ def detect_delimiter(file_path):
         first_line = file.readline()
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
+    
+def detect_delim(path):
+    # look at the first ten thousand bytes to guess the character encoding
+    with open(path, 'rb') as file:
+        rawdata = file.read(10000)
+        rawdata = rawdata.decode('utf-8')
+        delimiter = detect(rawdata, whitelist=[' ', ',', ';', ':', '|', '\t'])
+        return delimiter
     
     
 def read_text_replace_invalid(file_path, delimiter):
