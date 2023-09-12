@@ -217,6 +217,7 @@ services:
       context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
         - mysql_db:/var/lib/mysql
+    restart: unless-stopped
     command:
         [
             "--character-set-server=utf8mb4",
