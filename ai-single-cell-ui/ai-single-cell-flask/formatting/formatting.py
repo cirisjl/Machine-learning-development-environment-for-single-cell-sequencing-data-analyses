@@ -13,6 +13,11 @@ def detect_delimiter(file_path):
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
     
+def convert_gz_to_txt(gz_file_path, txt_file_path):
+  with gzip.open(gz_file_path, 'rb') as f_in:
+    with open(txt_file_path, 'w') as f_out:
+      f_out.write(f_in.read().decode())
+    
 def detect_delim(path):
     # look at the first ten thousand bytes to guess the character encoding
     with open(path, 'rb') as file:
@@ -32,19 +37,21 @@ def read_text_replace_invalid(file_path, delimiter):
 def read_text(file_path):
     # file_path = '/usr/src/app/storage/kbcfh/GZ Dataset/GSE50244_Genes_counts_TMM_NormLength_atLeastMAF5_expressed.txt.gz'
     if file_path.endswith(".gz"):
-        with gzip.open(file_path, 'rb') as file:
-            compressed_data = file.read()
+        # with gzip.open(file_path, 'rb') as file:
+        #     compressed_data = file.read()
+       
         # decompressed_data = gzip.decompress(compressed_data)
-        # Get the base name of the file without extension
+        # # Get the base name of the file without extension
         
         file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
 
         # Create the new file path with a .txt extension
         new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
 
         # Write the decompressed data to a plain .txt file
-        with open(new_file_path, 'wb') as txt_file:
-            txt_file.write(compressed_data)
+        # with open(new_file_path, 'wb') as txt_file:
+        #     txt_file.write(decompressed_data)
 
         df = pd.read_csv(new_file_path, sep=detect_delimiter(file_path), on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
