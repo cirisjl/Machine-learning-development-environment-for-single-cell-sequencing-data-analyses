@@ -212,7 +212,9 @@ services:
   
   oscb_mysql:
     container_name: oscb_mysql_container
-    image: mysql:8.0
+    image: oscb_mysql
+    build:
+      context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
         - mysql_db:/var/lib/mysql
     command:
