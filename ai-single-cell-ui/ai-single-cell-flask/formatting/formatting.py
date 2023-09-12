@@ -25,6 +25,7 @@ def read_text(file_path):
         with gzip.open(file_path, 'rt', encoding='utf-8') as file:
             df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
             df = df.apply(pd.to_numeric, errors='coerce')
+            df = df.astype(float)
         return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
