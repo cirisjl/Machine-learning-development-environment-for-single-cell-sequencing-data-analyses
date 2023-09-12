@@ -28,9 +28,16 @@ def detect_delim(path):
     
     
 def read_text_replace_invalid(file_path, delimiter):
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    if file_path.endswith(".gz"):
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+    else:
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    
     df = df.apply(pd.to_numeric, errors='coerce')
-    df = df.astype(float)
     return sc.AnnData(df)
 
 
@@ -112,10 +119,7 @@ def load_annData(path, replace_invalid=False):
                 adata = sc.read_text(path, delimiter=detect_delimiter(path))      
         elif path.endswith(".txt.gz"):
             if replace_invalid:
-                with gzip.open(path, 'rt') as file:
-                    df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
-                    df = df.apply(pd.to_numeric, errors='coerce')
-                    adata = sc.AnnData(df)
+                adata = read_text_replace_invalid(path, "/t")
             else:
                 adata = sc.read_text(path)      
         elif path.endswith(".gz"):
@@ -197,9 +201,6 @@ def load_invalid_adata(file_path, replace_nan):
     else:
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-
-    if replace_nan == "yes":
-        df = df.apply(pd.to_numeric, errors='coerce')
 
     invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
     invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
