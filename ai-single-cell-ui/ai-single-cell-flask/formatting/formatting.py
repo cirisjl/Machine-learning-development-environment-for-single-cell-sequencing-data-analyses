@@ -53,7 +53,7 @@ def read_text(file_path):
         # with open(new_file_path, 'wb') as txt_file:
         #     txt_file.write(decompressed_data)
 
-        df = pd.read_csv(new_file_path, sep=detect_delim(file_path), on_bad_lines='skip', index_col=0)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
@@ -188,8 +188,12 @@ def load_annData(path, replace_invalid=False):
 
 def load_invalid_adata(file_path, replace_nan):
     if file_path.endswith(".gz"):
-        with gzip.open(file_path, 'rb') as file:  # Open in binary mode ('rb') for gzip files
-            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
     else:
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
@@ -200,8 +204,5 @@ def load_invalid_adata(file_path, replace_nan):
     invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
     invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
     invalid_df = df.loc[invalid_rows, invalid_columns]
-
-    if file_path.endswith(".gz"):
-        invalid_df = invalid_df.to_numpy()
 
     return sc.AnnData(invalid_df)
