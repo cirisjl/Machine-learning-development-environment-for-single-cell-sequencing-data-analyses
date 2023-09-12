@@ -21,6 +21,7 @@ def read_text_replace_invalid(file_path, delimiter):
 
 
 def read_text(file_path):
+    file_path = '/usr/src/app/storage/kbcfh/GZ Dataset/GSE50244_Genes_counts_TMM_NormLength_atLeastMAF5_expressed.txt.gz'
     if file_path.endswith(".gz"):
         with gzip.open(file_path, 'rb') as file:
             compressed_data = file.read()
