@@ -455,8 +455,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             }
             subset_genes = adata.var_names[:10]
             if invalidadata is not None:
-                invalid_subset_genes = invalidadata.var_names[:]  # Select the first 10 genes
-                invalid_subset_matrix = invalidadata.X[:, :]  # Convert to dense matrix
+                invalid_subset_genes = invalidadata.var_names[:10]  # Select the first 10 genes
+                invalid_subset_matrix = invalidadata.X[:10, :]  # Convert to dense matrix
                 expression_invalid_table = html.Div(
                     [
                         html.H3("Invalid Subset of Gene Expression Matrix (Table):", style={"margin-top": "20px"}),
@@ -466,7 +466,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                                                      invalid_subset_genes],
                             data=[
                                 {"Cells": cell, **{gene: value for gene, value in zip(invalid_subset_genes, row)}}
-                                for cell, row in zip(invalidadata.obs_names[:], invalid_subset_matrix)
+                                for cell, row in zip(invalidadata.obs_names[:10], invalid_subset_matrix)
                             ],
                             style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
                                          "textAlign": "center"},
@@ -489,7 +489,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         html.H3("Select Rows to Remove:", style={"margin-top": "20px"}),
                         dcc.Checklist(
                             id="row-checklist",
-                            options=[{"label": cell, "value": cell} for cell in invalidadata.obs_names[:]],
+                            options=[{"label": cell, "value": cell} for cell in invalidadata.obs_names[:10]],
                             value=[],
                             className="checklist"
                         )
