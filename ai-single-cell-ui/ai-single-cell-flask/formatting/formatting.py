@@ -53,7 +53,7 @@ def read_text(file_path):
         # with open(new_file_path, 'wb') as txt_file:
         #     txt_file.write(decompressed_data)
 
-        df = pd.read_csv(new_file_path, sep=detect_delimiter(file_path), on_bad_lines='skip', index_col=0)
+        df = pd.read_csv(new_file_path, sep=detect_delim(file_path), on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
