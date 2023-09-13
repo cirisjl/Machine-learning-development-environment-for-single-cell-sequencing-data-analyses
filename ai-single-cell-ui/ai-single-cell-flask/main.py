@@ -750,7 +750,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
 
         print("Matrix type:", matrix_type)
         # Save the filtered dataset to a file
+        flask_app.logger.info("Writing annData object to a new file")
+        flask_app.logger.info(filtered_file_name)
+
         adata.write_h5ad(filtered_file_name)
+        flask_app.logger.info("Done writing annData object to a new file")
         print("after update and download4")
 
         # Generate the download link for the filtered dataset file
