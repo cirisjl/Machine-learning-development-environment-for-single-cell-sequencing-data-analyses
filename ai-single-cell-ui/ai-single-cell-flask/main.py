@@ -64,6 +64,12 @@ datasetMap = {}
 default_title = None
 annData = None
 
+def getannData():
+    return annData
+
+def setAnnData(adata):
+    global annData 
+    annData = adata
 
 # Function to parse h5ad files and extract metadata from all groups
 def parse_h5ad(adata, file_path):
@@ -592,7 +598,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # # Serialize and store the adata
             # adata_df = create_dataframe(adata)
             # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
-            annData = adata
+            setAnnData(adata)
             adata_pickle = None
 
             try:
@@ -698,7 +704,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         # Convert adata_df to AnnData object
         # adata = sc.AnnData(adata_df)
 
-        adata = annData
+        adata = getannData()
         print(adata)
         print(adata.X)
         matrix_type = adata.X.dtype
@@ -757,7 +763,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         # adata_df = create_dataframe(adata)
         # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
 
-        annData = adata
+        setAnnData()
         adata_pickle = None
 
         return update_status, download_link, adata_pickle
@@ -783,7 +789,7 @@ def update_dataset_content(update_status, dataset, updatedData):
 
         # # Convert adata_df to AnnData object
         # adata = sc.AnnData(adata_df)
-        adata = annData
+        adata = getannData()
 
         try:
             dataset_info = f"Dataset Name: {dataset}"
@@ -904,7 +910,7 @@ def toggle_edit_update_buttons(n_clicks, data):
         # # Convert adata_df to AnnData object
         # adata = sc.AnnData(adata_df)
 
-        adata = annData
+        adata = getannData()
 
         # Create checkboxes for rows and columns
         row_checkboxes = html.Div(
