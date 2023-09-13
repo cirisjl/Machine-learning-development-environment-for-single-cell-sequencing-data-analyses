@@ -847,8 +847,11 @@ def update_dataset_content(update_status, dataset, updatedData):
             )
 
             # Serialize and store the adata
-            adata_df = create_dataframe(adata)
-            adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            # adata_df = create_dataframe(adata)
+            # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            setAnnData(adata)
+
+            adata_pickle = None
 
             return dataset_info, [
                 html.H3("Metadata:", style={"margin-top": "20px"}),
