@@ -592,8 +592,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             # Serialize and store the adata
             adata_df = create_dataframe(adata)
             adata_pickle = adata_df.to_json(date_format='iso', orient='split')
-            adata_df = None
-            adata_pickle = None
+            # adata_df = None
+            # adata_pickle = None
 
             try:
                 parse_h5ad(adata, file_path)
