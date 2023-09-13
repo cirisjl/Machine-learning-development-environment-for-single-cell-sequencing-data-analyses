@@ -763,7 +763,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         # adata_df = create_dataframe(adata)
         # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
 
-        setAnnData()
+        setAnnData(adata)
         adata_pickle = None
 
         return update_status, download_link, adata_pickle
