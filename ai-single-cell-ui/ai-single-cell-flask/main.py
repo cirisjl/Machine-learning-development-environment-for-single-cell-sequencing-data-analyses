@@ -589,11 +589,11 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 value=available_assays[0] if available_assays else None
             )
 
-            # Serialize and store the adata
-            adata_df = create_dataframe(adata)
-            adata_pickle = adata_df.to_json(date_format='iso', orient='split')
-            # adata_df = None
-            # adata_pickle = None
+            # # Serialize and store the adata
+            # adata_df = create_dataframe(adata)
+            # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            annData = adata
+            adata_pickle = None
 
             try:
                 parse_h5ad(adata, file_path)
@@ -693,10 +693,12 @@ def update_selected_columns_output(selected_columns):
 )
 def update_and_download_dataset(n_clicks, selected_rows, selected_columns, dataset, adata_pickle):
     if n_clicks is not None and n_clicks > 0:
-        adata_df = pd.read_json(adata_pickle, orient='split')
+        # adata_df = pd.read_json(adata_pickle, orient='split')
         print("before update and download")
         # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # adata = sc.AnnData(adata_df)
+
+        adata = annData
         print(adata)
         print(adata.X)
         matrix_type = adata.X.dtype
@@ -752,8 +754,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         update_status = html.Span("Dataset updated and file created successfully!", className="success-message")
         print(update_status)
         # Serialize and store the adata
-        adata_df = create_dataframe(adata)
-        adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+        # adata_df = create_dataframe(adata)
+        # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+
+        annData = adata
+        adata_pickle = None
 
         return update_status, download_link, adata_pickle
 
@@ -774,10 +779,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
 def update_dataset_content(update_status, dataset, updatedData):
     if update_status is not None and update_status != "":
 
-        adata_df = pd.read_json(updatedData, orient='split')
+        # adata_df = pd.read_json(updatedData, orient='split')
 
-        # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # # Convert adata_df to AnnData object
+        # adata = sc.AnnData(adata_df)
+        adata = annData
 
         try:
             dataset_info = f"Dataset Name: {dataset}"
