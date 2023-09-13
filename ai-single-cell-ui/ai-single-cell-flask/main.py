@@ -899,10 +899,12 @@ def update_dataset_content(update_status, dataset, updatedData):
 )
 def toggle_edit_update_buttons(n_clicks, data):
     if n_clicks > 0:
-        adata_df = pd.read_json(data, orient='split')
+        # adata_df = pd.read_json(data, orient='split')
 
-        # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # # Convert adata_df to AnnData object
+        # adata = sc.AnnData(adata_df)
+
+        adata = annData
 
         # Create checkboxes for rows and columns
         row_checkboxes = html.Div(
