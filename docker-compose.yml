@@ -19,6 +19,9 @@ services:
     environment:
       ME_CONFIG_MONGODB_SERVER: oscbdb
       ME_CONFIG_MONGODB_PORT: "65528"
+      ME_CONFIG_BASICAUTH: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
     ports:
       - "0.0.0.0:8081:8081"
     depends_on:
@@ -198,7 +201,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_dashboard
-    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5672//
+    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5672// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       - 5555:5555
     env_file:
