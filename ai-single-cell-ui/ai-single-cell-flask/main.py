@@ -738,9 +738,9 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         file_name = file_path.split("/")
         fileparts = file_name[len(file_name)-1].split(".")
         filename = fileparts[0] + "_corrected.h5ad"
-
+       
         # Generate a new file name for the filtered dataset
-        filtered_file_name = filename
+        filtered_file_name = os.path.join(os.path.dirname(file_path), filename)
 
         print(adata.X)
         print("after update and download3")
