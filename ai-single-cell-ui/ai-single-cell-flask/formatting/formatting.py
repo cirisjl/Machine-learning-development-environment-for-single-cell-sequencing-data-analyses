@@ -74,6 +74,14 @@ def load_annData(path, replace_invalid=False):
     adata = None
     print(path)
 
+    #Check for the corrected / updated file by the user. If the file exits then show the contents of the updated file.
+    file_name = path.split("/")
+    fileparts = file_name[len(file_name)-1].split(".")
+    filename = fileparts[0] + "_user_corrected.h5ad"
+    updated_filename = os.path.join(os.path.dirname(path), filename)
+    if os.path.exists(updated_filename):
+        path = updated_filename
+
     # if (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
     #         os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv"))) 
     #         or (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx.gz")) and os.path.exists(
