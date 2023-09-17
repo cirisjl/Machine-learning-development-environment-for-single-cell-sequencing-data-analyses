@@ -474,7 +474,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                 {"Cells": cell, **{gene: value for gene, value in zip(invalid_subset_genes, row)}}
                                 for cell, row in zip(invalidadata.obs_names[:10], invalid_subset_matrix)
                             ],
-                            style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                            style_table={"overflow": "auto", "padding": "10px",
                                          "textAlign": "center"},
                             style_header={"fontWeight": "bold", "word-break": "break-word"},
                             style_cell={
@@ -567,7 +567,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     {"Cells": cell, **{gene: value for gene, value in zip(subset_genes, row)}}
                     for cell, row in zip(adata.obs_names[:10], subset_matrix)
                 ],
-                style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                style_table={"overflow": "auto", "padding": "10px",
                              "textAlign": "center"},
                 style_header={"fontWeight": "bold", "word-break": "break-word"},
                 style_cell={
@@ -822,7 +822,7 @@ def update_dataset_content(update_status, dataset, updatedData):
                     {"Cells": cell, **{gene: value for gene, value in zip(subset_genes, row)}}
                     for cell, row in zip(adata.obs_names[:10], subset_matrix)
                 ],
-                style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                style_table={"overflow": "auto", "padding": "10px",
                              "textAlign": "center"},
                 style_header={"fontWeight": "bold", "word-break": "break-word"},
                 style_cell={
