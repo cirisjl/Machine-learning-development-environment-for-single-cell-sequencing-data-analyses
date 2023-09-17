@@ -56,7 +56,7 @@ export default function FlaskDashboard (props) {
 {flaskURL && (
     <Iframe url= {flaskURL} // Replace this with the Flask app URL
         width="100%"
-        height="600px"
+        height="100%"
         id="dashFrame"
         display="initial"
         position="relative"
