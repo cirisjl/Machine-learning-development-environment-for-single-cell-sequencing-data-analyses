@@ -1623,3 +1623,8 @@ width
 .publish-dataset-div .checkbox:checked + .label .switch {
   right: 0px;
 }
+
+
+#dashFrame{
+  height: 100vh;
+}
