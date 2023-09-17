@@ -482,6 +482,9 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                 'whiteSpace': 'normal',
                                 'height': 'auto',
                                 'textAlign': 'center',
+                                 'minWidth': 95, 
+                                'maxWidth': 95, 
+                                'width': 95 # Center-align the text in the cells
                             },
                             fixed_rows={"headers": True, "data": 0}
                         )
@@ -574,7 +577,10 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     'padding': '10px',  # Add padding to the cells
                     'whiteSpace': 'normal',  # Allow wrapping of cell contents
                     'height': 'auto',  # Set cell height to auto to accommodate wrapped contents
-                    'textAlign': 'center',  # Center-align the text in the cells
+                    'textAlign': 'center', 
+                     'minWidth': 95, 
+                     'maxWidth': 95, 
+                     'width': 95 # Center-align the text in the cells
                 },
                 fixed_rows={"headers": True, "data": 0}
             )
@@ -830,6 +836,9 @@ def update_dataset_content(update_status, dataset, updatedData):
                     'whiteSpace': 'normal',  # Allow wrapping of cell contents
                     'height': 'auto',  # Set cell height to auto to accommodate wrapped contents
                     'textAlign': 'center',  # Center-align the text in the cells
+                     'minWidth': 95, 
+                     'maxWidth': 95, 
+                     'width': 95 # Center-align the text in the cells
                 },
                 fixed_rows={"headers": True, "data": 0}
             )
