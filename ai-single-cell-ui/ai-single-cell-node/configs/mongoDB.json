@@ -1,5 +1,5 @@
 {
-    "url": "mongodb://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscbdb:65528",
+    "mongoUrl": "mongodb://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscbdb:65528",
     "dbName": "ai-single-cell",
     "collectionName": "form-options"
 }
