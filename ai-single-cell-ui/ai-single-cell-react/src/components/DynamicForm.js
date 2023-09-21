@@ -11,11 +11,6 @@ const DynamicForm = () => {
     const [commonOptions, setCommonOptions] = useState({});
     const [UISchema, setUISchema] = useState(null);
 
-    const uiSchema = createUISchema(commonOptions); // Pass commonOptions to create the uiSchema
-
-    console.log("Ui Schema");
-    console.log(uiSchema);
-
     useEffect(() => {
       // Fetch common options from MongoDB API once when the component mounts
       const fetchCommonOptions = async () => {
@@ -31,6 +26,10 @@ const DynamicForm = () => {
       };
   
       fetchCommonOptions();
+      const uiSchema = createUISchema(commonOptions); // Pass commonOptions to create the uiSchema
+
+      console.log("Ui Schema");
+      console.log(uiSchema);
     }, []);
 
   return (
