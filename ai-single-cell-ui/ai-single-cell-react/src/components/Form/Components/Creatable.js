@@ -4,9 +4,14 @@ import { SERVER_URL } from '../../../constants/declarations';
 
 
 function MyCreatableSelect({ fieldName, options }) {
+
+  console.log("mycreatbale component");
+  console.log(fieldName);
   const [selectedOption, setSelectedOption] = useState(null);
 
   const filteredOptions = options[fieldName] || [];
+
+  console.log(filteredOptions);
 
  // Initialize the options 
  const [filteredValues, setFilterValues] = useState(filteredOptions);
