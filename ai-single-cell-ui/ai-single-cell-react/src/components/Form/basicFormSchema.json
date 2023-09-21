@@ -1,9 +1,6 @@
 {
     "type": "object",
     "properties": {
-      "ID": {
-        "type": "string"
-      },
       "Dataset": {
         "type": "string"
       },
@@ -11,7 +8,7 @@
         "type": "string"
       },
       "Downloads": {
-        "type": "number"
+        "type": "string"
       },
       "Title": {
         "type": "string"
@@ -73,29 +70,19 @@
       "Cell Count Estimate": {
         "type": "number"
       },
-      "Submission Date": {
+      "Source": {
         "type": "string"
+      },
+      "Source Key": {
+        "type": "string"
+      },
+      "Submission Date": {
+        "type": "string",
+        "format": "date"
       },
       "Update Date": {
-        "type": "string"
-      },
-      "Genes": {
-        "type": "string"
-      },
-      "Cells": {
-        "type": "string"
-      },
-      "Label": {
-        "type": "string"
-      },
-      "Data Split": {
-        "type": "string"
-      },
-      "Metrics": {
-        "type": "string"
-      },
-      "Benchmarks": {
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       }
     },
     "required": [
