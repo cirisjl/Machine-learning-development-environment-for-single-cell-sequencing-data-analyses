@@ -11,7 +11,10 @@ const DynamicForm = () => {
     const [commonOptions, setCommonOptions] = useState({});
     const [UISchema, setUISchema] = useState(null);
 
-    // const uiSchema = createUISchema(commonOptions); // Pass commonOptions to create the uiSchema
+    const uiSchema = createUISchema(commonOptions); // Pass commonOptions to create the uiSchema
+
+    console.log("Ui Schema");
+    console.log(uiSchema);
 
     useEffect(() => {
       // Fetch common options from MongoDB API once when the component mounts
@@ -37,7 +40,7 @@ const DynamicForm = () => {
             // formData={formData}
             // widgets={widgets}
             onChange={({ formData }) => setFormData(formData)}
-            uiSchema={UISchema}
+            uiSchema={uiSchema}
             // onSubmit={onSubmit}
         />
     </div>
