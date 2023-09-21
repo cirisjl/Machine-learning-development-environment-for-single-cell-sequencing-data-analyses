@@ -20,6 +20,7 @@ function MyCreatableSelect({ fieldName, options }) {
   };
 
   const handleCreateOption = (inputValue) => {
+    setSelectedOption(inputValue);
     // Update the options state to include the new option
     setFilteredOptionsState([...filteredOptionsState, inputValue]);
 
