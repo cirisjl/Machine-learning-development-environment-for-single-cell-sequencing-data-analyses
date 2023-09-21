@@ -28,6 +28,7 @@ import NormalizeUsingScanpy from '../pages/MyData/Tools/normalizeUsingScanpy';
 import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
+import DynamicForm from './DynamicForm';
 
 function App() {
 
@@ -54,6 +55,7 @@ function App() {
           <Route path="routing"         element={<RoutingTemplate/>}/>
           <Route path="myTasks"         element={<MyTasks/>}/>
           <Route path="resultfiles"         element={<ResultFiles/>}/>
+          <Route path="basicForm"         element={<DynamicForm/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
