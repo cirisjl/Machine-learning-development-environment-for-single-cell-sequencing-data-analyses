@@ -7,6 +7,7 @@ function MyCreatableSelect({ fieldName, options }) {
 
   console.log("mycreatbale component");
   console.log(fieldName);
+  console.log(options);
   const [selectedOption, setSelectedOption] = useState(null);
 
   const filteredOptions = options[fieldName] || [];
