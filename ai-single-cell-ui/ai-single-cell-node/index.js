@@ -14,6 +14,11 @@ const stat = util.promisify(fs.stat);
 const multer = require("multer");
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 
+const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
+const { mongoUrl, dbName, collectionName} = mongoDBConfig;
+const { MongoClient } = require('mongodb');
+
+
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
@@ -1251,6 +1256,49 @@ app.get('/getTasks', (req, res) => {
         });
     });
 });
+
+
+// Connect to MongoDB and retrieve options
+app.get('/mongoDB/api/options', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(collectionName);
+
+        // Use the aggregation framework to group options by field
+        const pipeline = [
+            {
+                $group: {
+                    _id: '$field',
+                    options: { $addToSet: '$name' },
+                },
+            },
+        ];
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Transform the result into an object with field names as keys
+        const optionsByField = {};
+        result.forEach((item) => {
+            optionsByField[item._id] = item.options;
+        });
+
+        // Close the MongoDB connection
+        client.close();
+
+        // Return the options as a JSON response
+        res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

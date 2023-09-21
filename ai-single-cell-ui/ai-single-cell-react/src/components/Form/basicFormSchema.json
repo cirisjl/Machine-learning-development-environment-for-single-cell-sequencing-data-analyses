@@ -1,0 +1,118 @@
+{
+    "type": "object",
+    "properties": {
+      "ID": {
+        "type": "string"
+      },
+      "Dataset": {
+        "type": "string"
+      },
+      "Task": {
+        "type": "string"
+      },
+      "Downloads": {
+        "type": "number"
+      },
+      "Title": {
+        "type": "string"
+      },
+      "Author": {
+        "type": "string"
+      },
+      "Reference (paper)": {
+        "type": "string"
+      },
+      "Abstract": {
+        "type": "string"
+      },
+      "DOI": {
+        "type": "string"
+      },
+      "Species": {
+        "type": "string"
+      },
+      "Sample Type": {
+        "type": "string"
+      },
+      "Anatomical Entity": {
+        "type": "string"
+      },
+      "Organ Part": {
+        "type": "string"
+      },
+      "Model Organ": {
+        "type": "string"
+      },
+      "Selected Cell Types": {
+        "type": "string"
+      },
+      "Library Construction Method": {
+        "type": "string"
+      },
+      "Nucleic Acid Source": {
+        "type": "string"
+      },
+      "Paired End": {
+        "type": "boolean"
+      },
+      "Analysis Protocol": {
+        "type": "string"
+      },
+      "Disease Status (Specimen)": {
+        "type": "string"
+      },
+      "Disease Status (Donor)": {
+        "type": "string"
+      },
+      "Development Stage": {
+        "type": "string"
+      },
+      "Donor Count": {
+        "type": "number"
+      },
+      "Cell Count Estimate": {
+        "type": "number"
+      },
+      "Submission Date": {
+        "type": "string"
+      },
+      "Update Date": {
+        "type": "string"
+      },
+      "Genes": {
+        "type": "string"
+      },
+      "Cells": {
+        "type": "string"
+      },
+      "Label": {
+        "type": "string"
+      },
+      "Data Split": {
+        "type": "string"
+      },
+      "Metrics": {
+        "type": "string"
+      },
+      "Benchmarks": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "Task",
+      "Author",
+      "Species",
+      "Organ Part",
+      "Anatomical Entity",
+      "Selected Cell Types",
+      "Disease Status (Specimen)",
+      "Disease Status (Donor)",
+      "Cell Count Estimate",
+
+      "ID",
+      "Dataset",
+      "Downloads",
+      "Submission Date"
+    ]
+  }
+  
