@@ -9,7 +9,7 @@ import { SERVER_URL } from '../constants/declarations';
 const DynamicForm = () => {
     const [formData, setFormData] = useState({});
     const [commonOptions, setCommonOptions] = useState({});
-    const [UISchema, setUISchema] = useState(null);
+    const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
     useEffect(() => {
       // Fetch common options from MongoDB API once when the component mounts
@@ -19,31 +19,31 @@ const DynamicForm = () => {
           const response = await fetch(optionsURL);
           const data = await response.json();
           setCommonOptions(data);
-          setUISchema(createUISchema(commonOptions))
+        
+          // Create the uiSchema based on commonOptions
+          const generatedUiSchema = createUISchema(data);
+          setUiSchema(generatedUiSchema);
+
         } catch (error) {
           console.error(`Error fetching common options:`, error);
         }
       };
   
       fetchCommonOptions();
-      const uiSchema = createUISchema(commonOptions); // Pass commonOptions to create the uiSchema
-
-      console.log("Ui Schema");
-      console.log(uiSchema);
     }, []);
-
-  return (
-    <div className='tools-container common-class-tools-and-workflows'>
-         <Form
+  
+  
+    return (
+      <div className='tools-container common-class-tools-and-workflows'>
+        {uiSchema && (
+          <Form
             schema={formSchema}
-            // formData={formData}
-            // widgets={widgets}
             onChange={({ formData }) => setFormData(formData)}
             uiSchema={uiSchema}
-            // onSubmit={onSubmit}
-        />
-    </div>
-  );
+          />
+        )}
+      </div>
+    );
 };
 
 export default DynamicForm;
