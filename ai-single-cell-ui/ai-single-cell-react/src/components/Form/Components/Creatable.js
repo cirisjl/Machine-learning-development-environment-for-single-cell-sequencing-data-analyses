@@ -9,7 +9,7 @@ function MyCreatableSelect({ fieldName, options }) {
   const filteredOptions = options[fieldName] || [];
 
  // Initialize the options 
- const [options, setOptions] = useState(filteredOptions);
+ const [filteredValues, setFilterValues] = useState(filteredOptions);
 
   const handleChange = (newValue) => {
     setSelectedOption(newValue);
@@ -18,7 +18,7 @@ function MyCreatableSelect({ fieldName, options }) {
   const handleCreateOption = (inputValue) => {
 
     // Update the options state to include the new option
-    setOptions([...options, inputValue]);
+    setFilterValues([...options, inputValue]);
 
     // Set the selected option to the newly created option
     setSelectedOption(inputValue);
@@ -30,7 +30,7 @@ function MyCreatableSelect({ fieldName, options }) {
       isSearchable
       onChange={handleChange}
       onCreateOption={handleCreateOption}
-      options={options.map((option) => ({ value: option, label: option }))}
+      options={filteredValues.map((option) => ({ value: option, label: option }))}
       value={selectedOption}
     />
   );
