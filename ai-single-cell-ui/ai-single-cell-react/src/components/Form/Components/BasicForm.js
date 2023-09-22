@@ -16,6 +16,11 @@ const BasicFormComponent = () => {
      console.log(formData)
       }, [formData]);
 
+      const handleSelectChange = (fieldName, selectedOption) => {
+        // Update the form data with the selected option
+        setFormData({ ...formData, [fieldName]: selectedOption });
+      };
+
     const onSubmit = ({ formData }) => {
 
         console.log(formData);
@@ -50,7 +55,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Task" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Task" options={commonOptions}  onSelectChange={handleSelectChange} />
           </div>
         ),
       },
@@ -64,7 +69,7 @@ const BasicFormComponent = () => {
           "ui:placeholder": "Select/Create an Option",
           'ui:widget': () => (
             <div className='common-row-wrap'>
-              <MyCreatableSelect fieldName="Author" options={commonOptions} />
+              <MyCreatableSelect fieldName="Author" options={commonOptions} onSelectChange={handleSelectChange}/>
             </div>
           ),
       },
@@ -81,7 +86,7 @@ const BasicFormComponent = () => {
           "ui:placeholder": "Select/Create an Option",
           'ui:widget': () => (
             <div className='common-row-wrap'>
-              <MyCreatableSelect fieldName="Species" options={commonOptions} />
+              <MyCreatableSelect fieldName="Species" options={commonOptions} onSelectChange={handleSelectChange}/>
             </div>
           ),
       },
@@ -89,7 +94,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Sample Type" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Sample Type" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -97,7 +102,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Anatomical Entity" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Anatomical Entity" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -105,7 +110,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Organ Part" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Organ Part" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -113,7 +118,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Model Organ" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Model Organ" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -121,7 +126,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Selected Cell Types" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Selected Cell Types" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -130,7 +135,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Library Construction Method" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Library Construction Method" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -139,7 +144,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Nucleic Acid Source" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Nucleic Acid Source" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -156,7 +161,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Disease Status (Specimen)" options={commonOptions} />
+            <MyCreatableSelect fieldName="Disease Status (Specimen)" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -165,7 +170,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Disease Status (Donor)" options={commonOptions} />
+            <MyCreatableSelect fieldName="Disease Status (Donor)" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -174,7 +179,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Development Stage" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Development Stage" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -185,7 +190,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Cell Count Estimate" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Cell Count Estimate" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
@@ -193,7 +198,7 @@ const BasicFormComponent = () => {
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Source" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Source" options={commonOptions} onSelectChange={handleSelectChange}/>
           </div>
         ),
       },
