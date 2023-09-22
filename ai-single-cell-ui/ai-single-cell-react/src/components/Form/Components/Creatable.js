@@ -6,7 +6,7 @@ const createOption = (label) => ({
   value: label.toLowerCase().replace(/\W/g, ''),
 });
 
-function MyCreatableSelect({ fieldName, options, onSelectChange }) {
+function MyCreatableSelect({ fieldName, options }) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState(null);
