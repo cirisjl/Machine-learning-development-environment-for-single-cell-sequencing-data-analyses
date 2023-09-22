@@ -216,6 +216,18 @@ const BasicFormComponent = () => {
         "className":"date"
       },
   };
+
+
+  const customWidgets = {
+    MyCreatableSelectWidget: (props) => (
+      <MyCreatableSelect
+        fieldName={props.fieldName}
+        options={props.options}
+        onSelectChange={props.onChange}
+      />
+    ),
+  };
+  
   
   
     return (
@@ -227,6 +239,7 @@ const BasicFormComponent = () => {
           formData={formData}
           onChange={({ formData }) => setFormData(formData)}
           uiSchema={uiSchema}
+          widgets={customWidgets} // Pass the custom widgets here
           onSubmit={onSubmit}
       />
         ) : (

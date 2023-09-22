@@ -8,11 +8,12 @@ import MyCreatableSelect from "../../components/Form/Components/Creatable";
       },
       "Task": {
         "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Task" options={commonOptions} formData={formData} setFormData={setFormData}/>
-          </div>
-        ),
+        // 'ui:widget': () => (
+        //   <div className='common-row-wrap'>
+        //     <MyCreatableSelect fieldName="Task" options={commonOptions} formData={formData} setFormData={setFormData}/>
+        //   </div>
+        // ),
+        "ui:widget": "MyCreatableSelectWidget", // Use your custom widget here
       },
       "Downloads": {
         "ui:placeholder": "http://"
