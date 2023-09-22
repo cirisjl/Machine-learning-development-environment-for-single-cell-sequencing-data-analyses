@@ -6,7 +6,7 @@ const createOption = (label) => ({
   value: label.toLowerCase().replace(/\W/g, ''),
 });
 
-function MyCreatableSelect({ fieldName, options, formData, setFormData}) {
+function MyCreatableSelect({ fieldName, options}) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState(null);
@@ -22,12 +22,6 @@ function MyCreatableSelect({ fieldName, options, formData, setFormData}) {
 
   const handleChange = (inputValue) => {
     setValue(inputValue);
-
-    // Update the formData state with the selected option
-    setFormData({
-      ...formData,
-      [fieldName]: inputValue,
-    });
   }
 
   const handleCreateOption = (inputValue) => {
@@ -39,12 +33,6 @@ function MyCreatableSelect({ fieldName, options, formData, setFormData}) {
       setFilteredOptionsState((prev) => [...prev, newOption]);
       setValue(newOption);
     }, 1000);
-
-    // Update the formData state with the newly created option
-    setFormData({
-      ...formData,
-      [fieldName]: inputValue,
-    });
   };
 
   return (
