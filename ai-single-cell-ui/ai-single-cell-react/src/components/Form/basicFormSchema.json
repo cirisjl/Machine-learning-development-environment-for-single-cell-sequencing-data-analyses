@@ -7,94 +7,14 @@
       "Task": {
         "type": "string"
       },
-      "Downloads": {
-        "type": "string",
-        "format": "uri"
-      },
-      "Title": {
-        "type": "string"
-      },
-      "Author": {
-        "type": "string"
-      },
-      "Reference (paper)": {
-        "type": "string"
-      },
-      "Abstract": {
-        "type": "string"
-      },
-      "DOI": {
-        "type": "string",
-        "format": "uri"
-      },
-      "Species": {
-        "type": "string"
-      },
-      "Sample Type": {
-        "type": "string"
-      },
-      "Anatomical Entity": {
-        "type": "string"
-      },
-      "Organ Part": {
-        "type": "string"
-      },
-      "Model Organ": {
-        "type": "string"
-      },
-      "Selected Cell Types": {
-        "type": "string"
-      },
-      "Library Construction Method": {
-        "type": "string"
-      },
-      "Nucleic Acid Source": {
-        "type": "string"
-      },
-      "Paired End": {
-        "type": "boolean"
-      },
-      "Analysis Protocol": {
-        "type": "string"
-      },
-      "Disease Status (Specimen)": {
-        "type": "string"
-      },
-      "Disease Status (Donor)": {
-        "type": "string"
-      },
-      "Development Stage": {
-        "type": "string"
-      },
-      "Donor Count": {
-        "type": "number"
-      },
-      "Cell Count Estimate": {
-        "type": "number"
-      },
-      "Source": {
-        "type": "string"
-      },
-      "Source Key": {
-        "type": "string"
-      },
       "Submission Date": {
         "type": "string",
         "format": "date"
       }
     },
     "required": [
-      "Task",
-      "Author",
-      "Species",
-      "Organ Part",
-      "Anatomical Entity",
-      "Selected Cell Types",
-      "Disease Status (Specimen)",
-      "Disease Status (Donor)",
-      "Cell Count Estimate",
       "Dataset",
-      "Downloads",
+      "Task",
       "Submission Date"
     ]
   }
