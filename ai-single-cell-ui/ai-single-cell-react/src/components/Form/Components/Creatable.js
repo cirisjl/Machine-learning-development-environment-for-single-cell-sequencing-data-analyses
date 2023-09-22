@@ -22,7 +22,7 @@ function MyCreatableSelect({ fieldName, options }) {
 
   const handleChange = (inputValue) => {
     setValue(inputValue);
-    onSelectChange(fieldName, inputValue); // Call the callback function to update form state
+    // onSelectChange(fieldName, inputValue); // Call the callback function to update form state
   }
 
   const handleCreateOption = (inputValue) => {
@@ -34,7 +34,7 @@ function MyCreatableSelect({ fieldName, options }) {
       setFilteredOptionsState((prev) => [...prev, newOption]);
       setValue(newOption);
     }, 1000);
-    onSelectChange(fieldName, inputValue); // Call the callback function to update form state
+    // onSelectChange(fieldName, inputValue); // Call the callback function to update form state
   };
 
   return (
