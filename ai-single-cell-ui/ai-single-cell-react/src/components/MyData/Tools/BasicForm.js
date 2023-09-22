@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import Select from 'react-select';
 import Form from 'react-jsonschema-form';
-import { SERVER_URL } from '../constants/declarations';
+import { SERVER_URL } from '../../../constants/declarations';
 import createUISchema from '../../../schema/UI-schema/Tools/evaluation/basicFormUISchema';
 import formSchema from '../../../schema/react-json-schema/Tools/evaluation/basicFormSchema.json'
 
