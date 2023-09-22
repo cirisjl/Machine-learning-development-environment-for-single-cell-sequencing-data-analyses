@@ -16,7 +16,7 @@ function MyCreatableSelect({ fieldName, options}) {
   const [filteredOptionsState, setFilteredOptionsState] = useState(filteredOptions);
 
   const handleChange = (newValue) => {
-    setSelectedOption({ value: newValue, label: newValue });
+    setSelectedOption(newValue);
   };
 
   const handleCreateOption = (inputValue) => {
@@ -24,7 +24,7 @@ function MyCreatableSelect({ fieldName, options}) {
     setFilteredOptionsState([...filteredOptionsState, inputValue]);
 
     // Set the selected option to the newly created option
-    setSelectedOption({ value: inputValue, label: inputValue });
+    setSelectedOption(inputValue);
   };
 
   return (
