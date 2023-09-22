@@ -54,17 +54,28 @@ const BasicFormComponent = () => {
       fetchCommonOptions();
     }, []);
 
+    const customWidgets = {
+      MyCreatableSelectWidget: (props) => (
+        <MyCreatableSelect
+          fieldName={props.fieldName}
+          options={props.options}
+          onSelectChange={props.onChange}
+        />
+      ),
+    };
+    
     const uiSchema = {
       "Dataset": {
         "ui:placeholder": "Enter the Dataset name"
       },
       "Task": {
         "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Task" options={commonOptions}  onSelectChange={handleSelectChange} />
-          </div>
-        ),
+        // 'ui:widget': () => (
+        //   <div className='common-row-wrap'>
+        //     <MyCreatableSelect fieldName="Task" options={commonOptions}  onSelectChange={handleSelectChange} />
+        //   </div>
+        // ),
+        "ui:widget": "MyCreatableSelectWidget", // Use your custom widget here
       },
       "Downloads": {
         "ui:placeholder": "http://"
@@ -218,17 +229,7 @@ const BasicFormComponent = () => {
   };
 
 
-  const customWidgets = {
-    MyCreatableSelectWidget: (props) => (
-      <MyCreatableSelect
-        fieldName={props.fieldName}
-        options={props.options}
-        onSelectChange={props.onChange}
-      />
-    ),
-  };
-  
-  
+
   
     return (
       <div className='tools-container common-class-tools-and-workflows'>
