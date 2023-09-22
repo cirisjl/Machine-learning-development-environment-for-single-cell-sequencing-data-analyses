@@ -17,12 +17,14 @@ const BasicFormComponent = () => {
       }, [formData]);
 
       const handleSelectChange = (fieldName, selectedOption) => {
-        // Update the form data with the selected option
-        // setFormData({ ...formData, [fieldName]: selectedOption });
 
-        setFormData((formData) => {
-          formData[fieldName] = selectedOption;
-        });
+        // Create a new formData object with the updated field
+        const updatedFormData = { ...formData, [fieldName]: selectedOption };
+        console.log("Debug");
+        console.log(updatedFormData);
+        
+        // Update the state with the new formData
+        setFormData(updatedFormData);
     
       };
 
