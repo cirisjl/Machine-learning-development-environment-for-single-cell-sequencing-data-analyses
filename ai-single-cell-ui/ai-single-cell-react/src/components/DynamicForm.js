@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 // import Select from 'react-select';
 import Form from 'react-jsonschema-form';
 import formSchema from "../components/Form/basicFormSchema.json"
-import {uiSchemaa} from "../components/Form/basicFormUISchema.js"
+import {uiSchema} from "../components/Form/basicFormUISchema.js"
 import { SERVER_URL } from '../constants/declarations';
 
 
 const DynamicForm = () => {
     const [formData, setFormData] = useState({});
     const [commonOptions, setCommonOptions] = useState({});
-    const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
+    // const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
     useEffect(() => {
       // Fetch common options from MongoDB API once when the component mounts
@@ -35,11 +35,11 @@ const DynamicForm = () => {
   
     return (
       <div>
-        {uiSchemaa && (
+        {uiSchema && (
           <Form
             schema={formSchema}
             onChange={({ formData }) => setFormData(formData)}
-            uiSchema={uiSchemaa}
+            uiSchema={uiSchema}
           />
         )}
       </div>
