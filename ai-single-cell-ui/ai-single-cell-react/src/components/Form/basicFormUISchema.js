@@ -48,12 +48,10 @@ export const uiSchema = {
         "ui:widget": "range",
       },
       "show_umap": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
+        "classNames": "sub-category"
       },
       "show_error": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
+        "classNames": "sub-category"
       }
   }
 };
