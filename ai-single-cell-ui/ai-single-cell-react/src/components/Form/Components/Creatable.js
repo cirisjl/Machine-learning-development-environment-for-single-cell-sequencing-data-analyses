@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 
-function MyCreatableSelect({ fieldName, options }) {
+function MyCreatableSelect({ fieldName, options}) {
   console.log("mycreatbale component");
   console.log(fieldName);
   console.log(options);
@@ -16,7 +16,7 @@ function MyCreatableSelect({ fieldName, options }) {
   const [filteredOptionsState, setFilteredOptionsState] = useState(filteredOptions);
 
   const handleChange = (newValue) => {
-    setSelectedOption(newValue);
+    setSelectedOption({ value: newValue, label: newValue });
   };
 
   const handleCreateOption = (inputValue) => {
