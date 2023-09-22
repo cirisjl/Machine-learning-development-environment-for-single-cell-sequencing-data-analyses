@@ -8,7 +8,8 @@
         "type": "string"
       },
       "Downloads": {
-        "type": "string"
+        "type": "string",
+        "format": "uri"
       },
       "Title": {
         "type": "string"
@@ -23,7 +24,8 @@
         "type": "string"
       },
       "DOI": {
-        "type": "string"
+        "type": "string",
+        "format": "uri"
       },
       "Species": {
         "type": "string"
@@ -79,10 +81,6 @@
       "Submission Date": {
         "type": "string",
         "format": "date"
-      },
-      "Update Date": {
-        "type": "string",
-        "format": "date-time"
       }
     },
     "required": [
