@@ -7,7 +7,7 @@
    return {
      "parameters": {
          "dataset": {
-           "ui:widget": "text-area",
+           "ui:widget": "textarea",
            "ui:placeholder": "Enter Text"
          },
          "submission_date": {
