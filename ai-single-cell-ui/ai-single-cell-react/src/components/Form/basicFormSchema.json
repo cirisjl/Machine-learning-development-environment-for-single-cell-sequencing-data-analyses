@@ -1,17 +1,23 @@
 {
-    "type": "object",
-    "properties": {
-      "Dataset": {
-        "type": "string"
-      },
-      "Submission Date": {
-        "type": "string",
-        "format": "date"
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type":"object",
+      "title": "Metadata",  
+      "required": [
+        "dataset"  ,
+      "submission_date"],
+      "properties": {
+        "dataset": {
+          "type": "string",
+          "title": "Dataset"
+        },
+        "submission_date": { 
+           "type": "string",
+     "format": "date"
+         }
+
       }
-    },
-    "required": [
-      "Dataset",
-      "Submission Date"
-    ]
+    }
   }
-  
+}
