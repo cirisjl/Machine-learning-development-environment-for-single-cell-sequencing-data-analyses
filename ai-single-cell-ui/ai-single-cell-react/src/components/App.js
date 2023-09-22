@@ -28,7 +28,7 @@ import NormalizeUsingScanpy from '../pages/MyData/Tools/normalizeUsingScanpy';
 import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
-import BasicFormComponent from './MyData/Tools/BasicForm';
+import BasicFormComponent from './Form/Components/BasicForm';
 
 function App() {
 
