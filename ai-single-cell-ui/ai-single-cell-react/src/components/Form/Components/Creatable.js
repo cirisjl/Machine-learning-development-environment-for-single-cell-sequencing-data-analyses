@@ -1,40 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { SERVER_URL } from '../../../constants/declarations';
+
+const createOption = (label) => ({
+  label,
+  value: label.toLowerCase().replace(/\W/g, ''),
+});
 
 function MyCreatableSelect({ fieldName, options}) {
-  console.log("mycreatbale component");
-  console.log(fieldName);
-  console.log(options);
-  const [selectedOption, setSelectedOption] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [value, setValue] = useState(null);
 
   const filteredOptions = options[fieldName] || [];
 
   console.log(filteredOptions);
 
   // Initialize the options 
-  const [filteredOptionsState, setFilteredOptionsState] = useState(filteredOptions);
-
-  const handleChange = (newValue) => {
-    setSelectedOption(newValue);
-  };
+  const [filteredOptionsState, setFilteredOptionsState] = useState(
+    filteredOptions.map((option) => createOption(option))
+  );
 
   const handleCreateOption = (inputValue) => {
-    // Update the options state to include the new option
-    setFilteredOptionsState([...filteredOptionsState, inputValue]);
+    setIsLoading(true);
 
-    // Set the selected option to the newly created option
-    setSelectedOption(inputValue);
+    setTimeout(() => {
+      const newOption = createOption(inputValue);
+      setIsLoading(false);
+      setFilteredOptionsState((prev) => [...prev, newOption]);
+      setValue(newOption);
+    }, 1000);
   };
 
   return (
     <CreatableSelect
       isClearable
+      isDisabled={isLoading}
       isSearchable
-      onChange={handleChange}
+      onChange={(newValue) => setValue(newValue)}
       onCreateOption={handleCreateOption}
-      options={filteredOptionsState.map((option) => ({ value: option, label: option }))}
-      value={selectedOption}
+      options={filteredOptionsState}
+      value={value}
     />
   );
 }
