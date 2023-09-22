@@ -18,7 +18,12 @@ const BasicFormComponent = () => {
 
       const handleSelectChange = (fieldName, selectedOption) => {
         // Update the form data with the selected option
-        setFormData({ ...formData, [fieldName]: selectedOption });
+        // setFormData({ ...formData, [fieldName]: selectedOption });
+
+        setFormData((formData) => {
+          formData[fieldName] = selectedOption;
+        });
+    
       };
 
     const onSubmit = ({ formData }) => {
