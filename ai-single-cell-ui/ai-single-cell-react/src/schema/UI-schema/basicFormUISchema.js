@@ -35,7 +35,7 @@ import MyCreatableSelect from "../../components/Form/Components/Creatable";
         "ui:widget": "textarea"
       },
       "DOI": {
-        "ui:widget": "textarea"
+        "ui:placeholder": "http://"
       },
       "Species": {
           "ui:placeholder": "Select/Create an Option",

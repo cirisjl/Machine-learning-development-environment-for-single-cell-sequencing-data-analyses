@@ -11,6 +11,10 @@ const BasicFormComponent = () => {
     const [commonOptions, setCommonOptions] = useState({});
     const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
+    useEffect(() => {
+     console.log(formData)
+      }, [formData]);
+      
     const onSubmit = ({ formData }) => {
 
         console.log(formData);
