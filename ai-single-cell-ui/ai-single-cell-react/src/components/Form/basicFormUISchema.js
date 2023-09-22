@@ -108,7 +108,7 @@ const createUISchema = (commonOptions) => {
 
     
     "Paired End": {
-      "ui:widget": "select" // could also be "select"
+      "ui:widget": "radio" // could also be "select"
     },
     
     "Analysis Protocol": {
