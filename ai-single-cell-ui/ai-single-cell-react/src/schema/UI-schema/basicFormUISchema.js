@@ -1,7 +1,7 @@
 import MyCreatableSelect from "../../components/Form/Components/Creatable";
 
   // Define the function that takes commonOptions as an argument
-  const createUISchema = (commonOptions) => {
+  const createUISchema = (commonOptions, formData, setFormData) => {
     return {
       "Dataset": {
         "ui:placeholder": "Enter the Dataset name"
@@ -10,7 +10,7 @@ import MyCreatableSelect from "../../components/Form/Components/Creatable";
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Task" options={commonOptions}/>
+            <MyCreatableSelect fieldName="Task" options={commonOptions} formData={formData} setFormData={setFormData}/>
           </div>
         ),
       },
