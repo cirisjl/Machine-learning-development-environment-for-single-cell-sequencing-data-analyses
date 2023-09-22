@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import Select from 'react-select';
 import Form from 'react-jsonschema-form';
 import formSchema from "../components/Form/basicFormSchema.json"
-import createUISchema from "../components/Form/basicFormUISchema.js"
+import {uiSchema} from "../components/Form/basicFormUISchema.js"
 import { SERVER_URL } from '../constants/declarations';
 
 
@@ -21,8 +21,8 @@ const DynamicForm = () => {
           setCommonOptions(data);
         
           // Create the uiSchema based on commonOptions
-          const generatedUiSchema = createUISchema(data);
-          setUiSchema(generatedUiSchema);
+          // const generatedUiSchema = createUISchema(data);
+          setUiSchema(uiSchema);
 
         } catch (error) {
           console.error(`Error fetching common options:`, error);
@@ -34,7 +34,7 @@ const DynamicForm = () => {
   
   
     return (
-      <div className='tools-container common-class-tools-and-workflows'>
+      <div>
         {uiSchema && (
           <Form
             schema={formSchema}
