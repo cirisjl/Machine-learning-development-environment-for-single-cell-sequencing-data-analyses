@@ -24,9 +24,6 @@ export const uiSchema = {
       "dataset": {
         "ui:widget": "textarea",
         "ui:placeholder": "Enter Text"
-      },
-      "submission_date": {
-        "classNames": "sub-category",
       }
   }
 };

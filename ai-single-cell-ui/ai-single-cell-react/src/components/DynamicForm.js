@@ -11,26 +11,26 @@ const DynamicForm = () => {
     const [commonOptions, setCommonOptions] = useState({});
     // const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
-    useEffect(() => {
-      // Fetch common options from MongoDB API once when the component mounts
-      const fetchCommonOptions = async () => {
-        try {
-          const optionsURL = `${SERVER_URL}/mongoDB/api/options`;
-          const response = await fetch(optionsURL);
-          const data = await response.json();
-          setCommonOptions(data);
+    // useEffect(() => {
+    //   // Fetch common options from MongoDB API once when the component mounts
+    //   const fetchCommonOptions = async () => {
+    //     try {
+    //       const optionsURL = `${SERVER_URL}/mongoDB/api/options`;
+    //       const response = await fetch(optionsURL);
+    //       const data = await response.json();
+    //       setCommonOptions(data);
         
-          // Create the uiSchema based on commonOptions
-          // const generatedUiSchema = createUISchema(data);
-          // setUiSchema(uiSchema);
+    //       // Create the uiSchema based on commonOptions
+    //       // const generatedUiSchema = createUISchema(data);
+    //       // setUiSchema(uiSchema);
 
-        } catch (error) {
-          console.error(`Error fetching common options:`, error);
-        }
-      };
+    //     } catch (error) {
+    //       console.error(`Error fetching common options:`, error);
+    //     }
+    //   };
   
-      fetchCommonOptions();
-    }, []);
+    //   fetchCommonOptions();
+    // }, []);
   
   
     return (

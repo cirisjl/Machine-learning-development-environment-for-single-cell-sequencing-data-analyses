@@ -5,18 +5,12 @@
       "type":"object",
       "title": "Metadata",  
       "required": [
-        "dataset"  ,
-      "submission_date"],
+        "dataset"],
       "properties": {
         "dataset": {
           "type": "string",
           "title": "Dataset"
-        },
-        "submission_date": { 
-           "type": "string",
-     "format": "date"
-         }
-
+        }
       }
     }
   }
