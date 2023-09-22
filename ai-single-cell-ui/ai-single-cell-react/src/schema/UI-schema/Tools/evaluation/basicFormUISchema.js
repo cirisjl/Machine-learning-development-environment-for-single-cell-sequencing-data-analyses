@@ -1,10 +1,8 @@
-  // uiSchema.js
-
-  // import MyCreatableSelect from "./Components/Creatable";
+import MyCreatableSelect from "../../../../components/Form/Components/Creatable";
 
   // Define the function that takes commonOptions as an argument
-  
-  export const uiSchema = {
+  const createUISchema = (commonOptions) => {
+    return {
       "Dataset": {
         "ui:placeholder": "Enter the Dataset name"
       },
@@ -12,7 +10,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Task" /> */}
+            <MyCreatableSelect fieldName="Task" options={commonOptions}/>
           </div>
         ),
       },
@@ -26,7 +24,7 @@
           "ui:placeholder": "Select/Create an Option",
           'ui:widget': () => (
             <div className='common-row-wrap'>
-              {/* <MyCreatableSelect fieldName="Author" /> */}
+              <MyCreatableSelect fieldName="Author" options={commonOptions} />
             </div>
           ),
       },
@@ -43,7 +41,7 @@
           "ui:placeholder": "Select/Create an Option",
           'ui:widget': () => (
             <div className='common-row-wrap'>
-              {/* <MyCreatableSelect fieldName="Species" /> */}
+              <MyCreatableSelect fieldName="Species" options={commonOptions} />
             </div>
           ),
       },
@@ -51,7 +49,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Sample Type" /> */}
+            <MyCreatableSelect fieldName="Sample Type" options={commonOptions}/>
           </div>
         ),
       },
@@ -59,7 +57,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Anatomical Entity"/> */}
+            <MyCreatableSelect fieldName="Anatomical Entity" options={commonOptions}/>
           </div>
         ),
       },
@@ -67,7 +65,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Organ Part"/> */}
+            <MyCreatableSelect fieldName="Organ Part" options={commonOptions}/>
           </div>
         ),
       },
@@ -75,7 +73,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Model Organ"/> */}
+            <MyCreatableSelect fieldName="Model Organ" options={commonOptions}/>
           </div>
         ),
       },
@@ -83,7 +81,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Selected Cell Types"/> */}
+            <MyCreatableSelect fieldName="Selected Cell Types" options={commonOptions}/>
           </div>
         ),
       },
@@ -92,7 +90,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Library Construction Method"/> */}
+            <MyCreatableSelect fieldName="Library Construction Method" options={commonOptions}/>
           </div>
         ),
       },
@@ -101,7 +99,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Nucleic Acid Source"/> */}
+            <MyCreatableSelect fieldName="Nucleic Acid Source" options={commonOptions}/>
           </div>
         ),
       },
@@ -118,7 +116,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Disease Status (Specimen)" /> */}
+            <MyCreatableSelect fieldName="Disease Status (Specimen)" options={commonOptions} />
           </div>
         ),
       },
@@ -127,7 +125,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Disease Status (Donor)"/> */}
+            <MyCreatableSelect fieldName="Disease Status (Donor)" options={commonOptions} />
           </div>
         ),
       },
@@ -136,7 +134,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Development Stage"/> */}
+            <MyCreatableSelect fieldName="Development Stage" options={commonOptions}/>
           </div>
         ),
       },
@@ -147,7 +145,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Cell Count Estimate"/> */}
+            <MyCreatableSelect fieldName="Cell Count Estimate" options={commonOptions}/>
           </div>
         ),
       },
@@ -155,7 +153,7 @@
         "ui:placeholder": "Select/Create an Option",
         'ui:widget': () => (
           <div className='common-row-wrap'>
-            {/* <MyCreatableSelect fieldName="Source" /> */}
+            <MyCreatableSelect fieldName="Source" options={commonOptions}/>
           </div>
         ),
       },
@@ -166,4 +164,7 @@
         "className":"date"
       },
   };
+  };
+  
+  export default createUISchema;
   

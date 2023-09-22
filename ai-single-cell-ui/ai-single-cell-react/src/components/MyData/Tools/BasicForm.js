@@ -1,39 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { getCookie, isUserAuth} from '../../../utils/utilFunctions';
-import { useNavigate } from 'react-router-dom';
+// import Select from 'react-select';
 import Form from 'react-jsonschema-form';
-import Toggle from 'react-toggle';
-import 'react-toggle/style.css';
-import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL } from '../../../constants/declarations';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { uiSchema } from '../../../schema/UI-schema/Tools/evaluation/basicFormUISchema';
-import schema from '../../../schema/react-json-schema/Tools/evaluation/basicFormSchema.json'
+import { SERVER_URL } from '../constants/declarations';
+import createUISchema from '../../../schema/UI-schema/Tools/evaluation/basicFormUISchema';
+import formSchema from '../../../schema/react-json-schema/Tools/evaluation/basicFormSchema.json'
 
 
-export default function BasicFormComponent(props) {
+const BasicFormComponent = () => {
     const [formData, setFormData] = useState({});
+    const [commonOptions, setCommonOptions] = useState({});
+    const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
     const onSubmit = ({ formData }) => {
 
         console.log(formData);
       };
 
-  return (
-    <div className='tools-container common-class-tools-and-workflows'>
+    useEffect(() => {
+      // Fetch common options from MongoDB API once when the component mounts
+      const fetchCommonOptions = async () => {
+        try {
+          const optionsURL = `${SERVER_URL}/mongoDB/api/options`;
+          const response = await fetch(optionsURL);
+          const data = await response.json();
+          setCommonOptions(data);
+        
+          // Create the uiSchema based on commonOptions
+          const generatedUiSchema = createUISchema(data);
+          setUiSchema(generatedUiSchema);
+
+        } catch (error) {
+          console.error(`Error fetching common options:`, error);
+        }
+      };
+  
+      fetchCommonOptions();
+    }, []);
+  
+  
+    return (
+      <div className='tools-container common-class-tools-and-workflows'>
             
-        {schema && uiSchema ? (
-            <Form
-            schema={schema}
-            formData={formData}
-            onChange={({ formData }) => setFormData(formData)}
-            uiSchema={uiSchema}
-            onSubmit={onSubmit}
-        />
-          ) : (
-            <div>No Schema for this tool.</div>
-          )}
-    </div>
-  )
+      {formSchema && uiSchema ? (
+          <Form
+          schema={formSchema}
+          formData={formData}
+          onChange={({ formData }) => setFormData(formData)}
+          uiSchema={uiSchema}
+          onSubmit={onSubmit}
+      />
+        ) : (
+          <div>No Schema for this tool.</div>
+        )}
+  </div>
+    );
 };
+
+export default BasicFormComponent;
