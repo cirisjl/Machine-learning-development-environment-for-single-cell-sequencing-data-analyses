@@ -14,7 +14,7 @@ const BasicFormComponent = () => {
     useEffect(() => {
      console.log(formData)
       }, [formData]);
-      
+
     const onSubmit = ({ formData }) => {
 
         console.log(formData);
@@ -30,7 +30,7 @@ const BasicFormComponent = () => {
           setCommonOptions(data);
         
           // Create the uiSchema based on commonOptions
-          const generatedUiSchema = createUISchema(data);
+          const generatedUiSchema = createUISchema(data, formData, setFormData);
           setUiSchema(generatedUiSchema);
 
         } catch (error) {

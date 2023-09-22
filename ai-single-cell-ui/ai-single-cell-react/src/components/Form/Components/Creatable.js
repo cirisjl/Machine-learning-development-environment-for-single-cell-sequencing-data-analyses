@@ -6,7 +6,7 @@ const createOption = (label) => ({
   value: label.toLowerCase().replace(/\W/g, ''),
 });
 
-function MyCreatableSelect({ fieldName, options}) {
+function MyCreatableSelect({ fieldName, options, formData, setFormData}) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState(null);
@@ -20,6 +20,16 @@ function MyCreatableSelect({ fieldName, options}) {
     filteredOptions.map((option) => createOption(option))
   );
 
+  const handleChange = (inputValue) => {
+    setValue(inputValue);
+
+    // Update the formData state with the selected option
+    setFormData({
+      ...formData,
+      [fieldName]: inputValue,
+    });
+  }
+
   const handleCreateOption = (inputValue) => {
     setIsLoading(true);
 
@@ -29,6 +39,12 @@ function MyCreatableSelect({ fieldName, options}) {
       setFilteredOptionsState((prev) => [...prev, newOption]);
       setValue(newOption);
     }, 1000);
+
+    // Update the formData state with the newly created option
+    setFormData({
+      ...formData,
+      [fieldName]: inputValue,
+    });
   };
 
   return (
@@ -36,7 +52,8 @@ function MyCreatableSelect({ fieldName, options}) {
       isClearable
       isDisabled={isLoading}
       isSearchable
-      onChange={(newValue) => setValue(newValue)}
+      onChange={handleChange}
+      // onChange={(newValue) => setValue(newValue)}
       onCreateOption={handleCreateOption}
       options={filteredOptionsState}
       value={value}
