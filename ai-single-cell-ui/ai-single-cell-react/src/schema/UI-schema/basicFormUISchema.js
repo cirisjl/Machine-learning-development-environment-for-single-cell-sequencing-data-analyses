@@ -1,4 +1,4 @@
-import MyCreatableSelect from "../../../../components/Form/Components/Creatable";
+import MyCreatableSelect from "../../components/Form/Components/Creatable";
 
   // Define the function that takes commonOptions as an argument
   const createUISchema = (commonOptions) => {
