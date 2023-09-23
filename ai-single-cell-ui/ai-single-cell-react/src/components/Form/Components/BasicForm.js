@@ -5,8 +5,6 @@ import { SERVER_URL } from '../../../constants/declarations';
 // import createUISchema from '../../../schema/UI-schema/basicFormUISchema';
 import formSchema from '../../../schema/react-json-schema/basicFormSchema.json'
 import MyCreatableSelect from '../Components/Creatable'
-import CreatableSelect from 'react-select/creatable';
-
 
 
 const BasicFormComponent = () => {
@@ -56,23 +54,13 @@ const BasicFormComponent = () => {
       fetchCommonOptions();
     }, []);
 
-    // const customWidgets = {
-    //   MyCreatableSelectWidget: (props) => (
-    //     <MyCreatableSelect
-    //       fieldName={props.fieldName}
-    //       options={props.options}
-    //       // onSelectChange={props.onChange}
-    //     />
-    //   ),
-    // };
-
     const customWidgets = {
       MyCreatableSelectWidget: (props) => (
-        <CreatableSelect
-          isClearable
-          isSearchable
-       
-    />
+        <MyCreatableSelect
+          fieldName={props.fieldName}
+          options={props.options}
+          // onSelectChange={props.onChange}
+        />
       ),
     };
     

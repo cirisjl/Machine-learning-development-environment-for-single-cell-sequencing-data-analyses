@@ -29,6 +29,7 @@ import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
 import BasicFormComponent from './Form/Components/BasicForm';
+import NewApp from './Form/Components/component2';
 
 function App() {
 
@@ -56,6 +57,8 @@ function App() {
           <Route path="myTasks"         element={<MyTasks/>}/>
           <Route path="resultfiles"         element={<ResultFiles/>}/>
           <Route path="basicForm"         element={<BasicFormComponent/>}/>
+          <Route path="new"         element={<NewApp/>}/>
+
         </Route>
       </Routes>
     </BrowserRouter>
