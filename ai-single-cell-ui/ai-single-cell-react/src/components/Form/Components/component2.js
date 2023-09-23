@@ -1,7 +1,6 @@
 import React from 'react';
-import Form from 'react-json-schema-form';
-import CreatableSelect from './CreatableSelect';
-
+import Form from 'react-jsonschema-form';
+import CreatableSelect from './component'
 const schema = {
   type: 'object',
   properties: {
