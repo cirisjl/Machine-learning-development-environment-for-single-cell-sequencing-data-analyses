@@ -18,6 +18,8 @@ const BasicFormComponent = () => {
 
       const handleSelectChange = (fieldName, selectedOption) => {
 
+        console.log("State of the form before update");
+        console.log(formData);
         // Create a new formData object with the updated field
         const updatedFormData = { ...formData, [fieldName]: selectedOption };
         console.log("Debug");
