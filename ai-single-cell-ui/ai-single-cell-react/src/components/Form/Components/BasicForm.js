@@ -54,15 +54,18 @@ const BasicFormComponent = () => {
       fetchCommonOptions();
     }, []);
 
-    const customWidgets = {
-      MyCreatableSelectWidget: (props) => (
-        <MyCreatableSelect
-          fieldName={props.fieldName}
-          options={props.options}
-          // onSelectChange={props.onChange}
-        />
-      ),
-    };
+    // const customWidgets = {
+    //   MyCreatableSelectWidget: (props) => (
+    //     <div className='common-row-wrap'>
+
+    //     <MyCreatableSelect
+    //       fieldName={props.fieldName}
+    //       options={props.options}
+    //       // onSelectChange={props.onChange}
+    //     />
+    //     </div>
+    //   ),
+    // };
     
     const uiSchema = {
       "Dataset": {
@@ -70,12 +73,12 @@ const BasicFormComponent = () => {
       },
       "Task": {
         "ui:placeholder": "Select/Create an Option",
-        // 'ui:widget': () => (
-        //   <div className='common-row-wrap'>
-        //     <MyCreatableSelect fieldName="Task" options={commonOptions}  onSelectChange={handleSelectChange} />
-        //   </div>
-        // ),
-        "ui:widget": "MyCreatableSelectWidget", // Use your custom widget here
+        'ui:widget': () => (
+          <div className='common-row-wrap'>
+            <MyCreatableSelect fieldName="Task" options={commonOptions}  onSelectChange={handleSelectChange} />
+          </div>
+        ),
+        // "ui:widget": "MyCreatableSelectWidget", // Use your custom widget here
       },
       "Downloads": {
         "ui:placeholder": "http://"
@@ -240,7 +243,7 @@ const BasicFormComponent = () => {
           formData={formData}
           onChange={({ formData }) => setFormData(formData)}
           uiSchema={uiSchema}
-          widgets={customWidgets} // Pass the custom widgets here
+          // widgets={customWidgets} // Pass the custom widgets here
           onSubmit={onSubmit}
       />
         ) : (
