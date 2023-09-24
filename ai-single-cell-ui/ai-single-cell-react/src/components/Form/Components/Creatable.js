@@ -11,6 +11,8 @@ function MyCreatableSelect({ fieldName, options, onSelectChange }) {
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState(null);
 
+  console.log("Options list");
+  console.log(options);
   const filteredOptions = options[fieldName] || [];
 
   console.log("Filtered Options");
