@@ -13,6 +13,7 @@ function MyCreatableSelect({ fieldName, options, onSelectChange }) {
 
   const filteredOptions = options[fieldName] || [];
 
+  console.log("Filtered Options");
   console.log(filteredOptions);
 
   // Initialize the options 
