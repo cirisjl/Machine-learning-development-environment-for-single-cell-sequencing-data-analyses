@@ -12,9 +12,9 @@ const BasicFormComponent = () => {
     const [commonOptions, setCommonOptions] = useState({});
     // const [uiSchema, setUiSchema] = useState(null); // Initialize uiSchema as null
 
-    useEffect(() => {
-     console.log(formData)
-      }, [formData]);
+    // useEffect(() => {
+    //  console.log(formData)
+    //   }, [formData]);
 
       const handleSelectChange = (fieldName, selectedOption) => {
 
