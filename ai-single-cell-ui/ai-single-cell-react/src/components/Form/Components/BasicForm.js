@@ -83,152 +83,152 @@ const BasicFormComponent = () => {
       "Downloads": {
         "ui:placeholder": "http://"
       },
-      "Title": {
-        "ui:placeholder": "Enter title"
-      },
-      "Author": {
-          "ui:placeholder": "Select/Create an Option",
-          'ui:widget': () => (
-            <div className='common-row-wrap'>
-              <MyCreatableSelect fieldName="Author" options={commonOptions} onSelectChange={handleSelectChange}/>
-            </div>
-          ),
-      },
-      "Reference (paper)": {
-        "ui:placeholder": "Enter Reference"
-      },
-      "Abstract": {
-        "ui:widget": "textarea"
-      },
-      "DOI": {
-        "ui:placeholder": "http://"
-      },
-      "Species": {
-          "ui:placeholder": "Select/Create an Option",
-          'ui:widget': () => (
-            <div className='common-row-wrap'>
-              <MyCreatableSelect fieldName="Species" options={commonOptions} onSelectChange={handleSelectChange}/>
-            </div>
-          ),
-      },
-      "Sample Type": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Sample Type" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Anatomical Entity": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Anatomical Entity" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Organ Part": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Organ Part" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Model Organ": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Model Organ" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Selected Cell Types": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Selected Cell Types" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
+      // "Title": {
+      //   "ui:placeholder": "Enter title"
+      // },
+      // "Author": {
+      //     "ui:placeholder": "Select/Create an Option",
+      //     'ui:widget': () => (
+      //       <div className='common-row-wrap'>
+      //         <MyCreatableSelect fieldName="Author" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //       </div>
+      //     ),
+      // },
+      // "Reference (paper)": {
+      //   "ui:placeholder": "Enter Reference"
+      // },
+      // "Abstract": {
+      //   "ui:widget": "textarea"
+      // },
+      // "DOI": {
+      //   "ui:placeholder": "http://"
+      // },
+      // "Species": {
+      //     "ui:placeholder": "Select/Create an Option",
+      //     'ui:widget': () => (
+      //       <div className='common-row-wrap'>
+      //         <MyCreatableSelect fieldName="Species" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //       </div>
+      //     ),
+      // },
+      // "Sample Type": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Sample Type" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Anatomical Entity": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Anatomical Entity" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Organ Part": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Organ Part" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Model Organ": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Model Organ" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Selected Cell Types": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Selected Cell Types" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
       
-      "Library Construction Method": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Library Construction Method" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
+      // "Library Construction Method": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Library Construction Method" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
       
-      "Nucleic Acid Source": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Nucleic Acid Source" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
+      // "Nucleic Acid Source": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Nucleic Acid Source" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
   
       
-      "Paired End": {
-        "ui:widget": "radio" // could also be "select"
-      },
+      // "Paired End": {
+      //   "ui:widget": "radio" // could also be "select"
+      // },
       
-      "Analysis Protocol": {
-        "ui:placeholder": "Enter ...",
-      },
-      "Disease Status (Specimen)": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Disease Status (Specimen)" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
+      // "Analysis Protocol": {
+      //   "ui:placeholder": "Enter ...",
+      // },
+      // "Disease Status (Specimen)": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Disease Status (Specimen)" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
       
-      "Disease Status (Donor)": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Disease Status (Donor)" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
+      // "Disease Status (Donor)": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Disease Status (Donor)" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
       
-      "Development Stage": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Development Stage" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Donor Count": {
-        "ui:placeholder": "Enter ...",
-      },
-      "Cell Count Estimate": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Cell Count Estimate" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Source": {
-        "ui:placeholder": "Select/Create an Option",
-        'ui:widget': () => (
-          <div className='common-row-wrap'>
-            <MyCreatableSelect fieldName="Source" options={commonOptions} onSelectChange={handleSelectChange}/>
-          </div>
-        ),
-      },
-      "Source Key": {
-        "ui:placeholder": "Enter ...",
-      },
-      "Submission Date": {
-        "className":"date"
-      },
+      // "Development Stage": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Development Stage" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Donor Count": {
+      //   "ui:placeholder": "Enter ...",
+      // },
+      // "Cell Count Estimate": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Cell Count Estimate" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Source": {
+      //   "ui:placeholder": "Select/Create an Option",
+      //   'ui:widget': () => (
+      //     <div className='common-row-wrap'>
+      //       <MyCreatableSelect fieldName="Source" options={commonOptions} onSelectChange={handleSelectChange}/>
+      //     </div>
+      //   ),
+      // },
+      // "Source Key": {
+      //   "ui:placeholder": "Enter ...",
+      // },
+      // "Submission Date": {
+      //   "className":"date"
+      // },
   };
 
 
