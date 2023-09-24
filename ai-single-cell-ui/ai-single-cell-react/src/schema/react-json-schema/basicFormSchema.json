@@ -12,8 +12,5 @@
       "format": "uri"
     }
   },
-  "required": [
-    "Task",
-    "Dataset",
-    "Downloads"  ]
+  "required": []
 }
