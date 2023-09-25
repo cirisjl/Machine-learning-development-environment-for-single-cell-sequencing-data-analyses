@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component , useEffect} from 'react';
 import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
@@ -56,7 +56,9 @@ class MyForm extends Component {
         'Source': []
       },
       newOptions: [],
-    };
+      message: '',
+      hasMessage: false
+    };  
   }
 
   componentDidMount() {
@@ -174,12 +176,28 @@ class MyForm extends Component {
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
         .then(response => {
           console.log('Form data submitted successfully');
+          this.setState({
+            message: 'Form data submitted successfully',
+            hasMessage: true, // Set hasMessage to true when a message is set
+          });
         })
         .catch(error => {
           console.error('Error submitting form data:', error);
         });
     }
   };
+
+    // Add this method to clear the message and set hasMessage to false
+    clearMessageAfterTimeout = () => {
+      if (this.state.hasMessage) {
+        setTimeout(() => {
+          this.setState({
+            message: '',
+            hasMessage: false,
+          });
+        }, 5000);
+      }
+    };
 
   validateForm(formData) {
     const errors = {};
@@ -229,9 +247,18 @@ class MyForm extends Component {
   }
 
   render() {
+    if (this.state.hasMessage) {
+      this.clearMessageAfterTimeout();
+    }
     const { formData, errors, isLoading, options } = this.state;
     return (
       <div className="my-form-container">
+        {hasMessage && (
+        <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p>{message}</p>
+          </div>
+        </div>)}
         <h2 className="form-title">My Form</h2>
         <form onSubmit={this.handleSubmit} className="form">
           {/* Dataset */}
