@@ -14,7 +14,21 @@ class MyForm extends Component {
       errors: {},
       isLoading: false,
       options: {
-        Task: [], // Initialize Task options as an empty array
+        Task: [], 
+        Author: [],
+        Species: [],
+        'Sample Type':[],
+        'Anatomical Entity': [],
+        'Organ Part': [],
+        'Model Organ': [],
+        'Selected Cell Types': [],
+        'Library Construction Method': [],
+        'Nucleic Acid Source': [],
+        'Disease Status (Specimen)': [],
+        'Disease Status (Donor)': [],
+        'Development Stage': [],
+        'Cell Count Estimate': [],
+        'Source': [],
       },
     };
   }
@@ -32,7 +46,20 @@ class MyForm extends Component {
 
         this.setState({
           options: {
-            Task: data.Task.map((option) => ({ value: option, label: option })),
+            Author: data.Author.map((option) => ({ value: option, label: option })),
+            Species: data.Species.map((option) => ({ value: option, label: option })),
+            'Sample Type': data['Sample Type'].map((option) => ({ value: option, label: option })),
+            'Anatomical Entity': data['Anatomical Entity'].map((option) => ({ value: option, label: option })),
+            'Organ Part': data['Organ Part'].map((option) => ({ value: option, label: option })),
+            'Model Organ': data['Model Organ'].map((option) => ({ value: option, label: option })),
+            'Selected Cell Types': data['Selected Cell Types'].map((option) => ({ value: option, label: option })),
+            'Library Construction Method': data['Library Construction Method'].map((option) => ({ value: option, label: option })),
+            'Nucleic Acid Source': data['Nucleic Acid Source'].map((option) => ({ value: option, label: option })),
+            'Disease Status (Specimen)': data['Disease Status (Specimen)'].map((option) => ({ value: option, label: option })),
+            'Disease Status (Donor)': data['Disease Status (Donor)'].map((option) => ({ value: option, label: option })),
+            'Development Stage': data['Development Stage'].map((option) => ({ value: option, label: option })),
+            'Cell Count Estimate': data['Cell Count Estimate'].map((option) => ({ value: option, label: option })),
+            'Source': data['Source'].map((option) => ({ value: option, label: option })),
           },
         });
       } else {
@@ -67,6 +94,12 @@ class MyForm extends Component {
   }
 
   handleCreateOption = (fieldName, inputValue) => {
+    this.setState((prevState) => ({
+        formData: {
+          ...prevState.formData,
+          [fieldName]: inputValue,
+        },
+    }));
     this.setState((prevState) => {
       const newOption = { value: inputValue, label: inputValue };
       const updatedOptions = { ...prevState.options };
