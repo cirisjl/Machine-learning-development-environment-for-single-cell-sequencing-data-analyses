@@ -197,7 +197,7 @@ class MyForm extends Component {
       this.setState((prevState) => {
         const newOption = { value: inputValue, label: inputValue };
         const updatedOptions = { ...prevState.options };
-        const newOptions = {...prevState.newOptions};
+        const newOptions = [...prevState.newOptions];
         updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
     
         const updatedFormData = {
