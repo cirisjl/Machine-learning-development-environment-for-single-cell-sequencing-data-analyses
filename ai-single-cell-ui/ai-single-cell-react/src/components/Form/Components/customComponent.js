@@ -191,9 +191,11 @@ class MyForm extends Component {
   }
 
   handleCreateOption = (fieldName, inputValue) => {
-    // const existingOptions = this.state.options[fieldName] || [];
-    // const optionExists = existingOptions.some((option) => option.label === inputValue);
-    // if (!optionExists) {
+
+      // Check if the option has already been created to prevent duplicate calls
+      if (!this.optionAlreadyCreated(fieldName, inputValue)) {
+        this.addNewOptionToMongoDB(fieldName, inputValue);
+      }
       this.setState((prevState) => {
         const newOption = { value: inputValue, label: inputValue };
         const updatedOptions = { ...prevState.options };
@@ -205,11 +207,11 @@ class MyForm extends Component {
           [fieldName]: inputValue,
         };
     
-        // Check if the option has already been created to prevent duplicate calls
-        if (!newOptions.some((option) => option.field === fieldName && option.name === inputValue)) {
-          // Make an API call to add the new option to MongoDB
-          this.addNewOptionToMongoDB(fieldName, inputValue);
-        }
+        // // Check if the option has already been created to prevent duplicate calls
+        // if (!newOptions.some((option) => option.field === fieldName && option.name === inputValue)) {
+        //   // Make an API call to add the new option to MongoDB
+        //   this.addNewOptionToMongoDB(fieldName, inputValue);
+        // }
 
         const updatedNewOptions = [
           ...prevState.newOptions,
@@ -222,7 +224,12 @@ class MyForm extends Component {
           newOptions: updatedNewOptions,
         };
       });
-  //  }
+  };
+
+  optionAlreadyCreated = (fieldName, inputValue) => {
+    return this.state.newOptions.some(
+      (option) => option.field === fieldName && option.name === inputValue
+    );
   };
 
   addNewOptionToMongoDB = (fieldName, optionName) => {
@@ -464,7 +471,7 @@ class MyForm extends Component {
           <div className="form-field">
             <label className="form-label">Model Organ:</label>
             <CreatableSelect
-              name="Organ Part"
+              name="Model Organ"
               value={formData['Model Organ']}
               isClearable
               isSearchable
@@ -561,9 +568,6 @@ class MyForm extends Component {
             {errors["Paired End"] && <p className="error">{errors["Paired End"]}</p>}
           </div>
 
-
-
-          
           <div className="form-field">
             <label className="form-label">Analysis Protocol:</label>
             <input
