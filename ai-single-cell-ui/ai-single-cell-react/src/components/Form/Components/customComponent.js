@@ -10,6 +10,7 @@ class MyForm extends Component {
         Dataset: '',
         Task: null,
         Downloads: '',
+        Title: '',
       },
       errors: {},
       isLoading: false,
@@ -258,6 +259,29 @@ class MyForm extends Component {
             />
             {errors.Downloads && <p className="error">{errors.Downloads}</p>}
           </div>
+
+          <div>
+            <label>Title:</label>
+            <input
+              type="text"
+              name="Title"
+              value={formData.Title}
+              onChange={this.handleChange}
+            />
+            {errors.Title && <p className="error">{errors.Title}</p>}
+          </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
           <button type="submit">Submit</button>
         </form>
