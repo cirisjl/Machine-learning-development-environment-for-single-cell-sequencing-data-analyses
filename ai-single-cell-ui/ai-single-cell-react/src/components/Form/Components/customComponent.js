@@ -180,6 +180,9 @@ class MyForm extends Component {
             message: 'Form data submitted successfully',
             hasMessage: true, // Set hasMessage to true when a message is set
           });
+          console.log("After submitting");
+          console.log(this.state.message);
+          console.log(this.state.hasMessage);
         })
         .catch(error => {
           console.error('Error submitting form data:', error);
@@ -251,6 +254,9 @@ class MyForm extends Component {
       this.clearMessageAfterTimeout();
     }
     const { formData, errors, isLoading, options, hasMessage, message } = this.state;
+    console.log("has Message and Message");
+    console.log(hasMessage);
+    console.log(message);
     return (
       <div className="my-form-container">
         {hasMessage && (
