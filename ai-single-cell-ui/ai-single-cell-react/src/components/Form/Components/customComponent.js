@@ -521,8 +521,8 @@ class MyForm extends Component {
                 <input
                   type="radio"
                   name="Paired End"
-                  value="true"
-                  checked={formData["Paired End"] === true}
+                  value= "true"
+                  checked={formData["Paired End"] === "true"}
                   onChange={this.handleChange}
                   className="form-input"
                 />
@@ -533,7 +533,7 @@ class MyForm extends Component {
                   type="radio"
                   name="Paired End"
                   value="false"
-                  checked={formData["Paired End"] === false}
+                  checked={formData["Paired End"] === "false"}
                   onChange={this.handleChange}
                   className="form-input"
                 />
