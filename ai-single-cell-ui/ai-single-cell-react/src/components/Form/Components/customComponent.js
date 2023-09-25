@@ -197,6 +197,7 @@ class MyForm extends Component {
       this.setState((prevState) => {
         const newOption = { value: inputValue, label: inputValue };
         const updatedOptions = { ...prevState.options };
+        const newOptions = {...prevState.newOptions};
         updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
     
         const updatedFormData = {
@@ -204,16 +205,16 @@ class MyForm extends Component {
           [fieldName]: inputValue,
         };
     
+        // Check if the option has already been created to prevent duplicate calls
+        if (!newOptions.some((option) => option.field === fieldName && option.name === inputValue)) {
+          // Make an API call to add the new option to MongoDB
+          this.addNewOptionToMongoDB(fieldName, inputValue);
+        }
+
         const updatedNewOptions = [
           ...prevState.newOptions,
           { field: fieldName, name: inputValue },
         ];
-    
-        // Check if the option has already been created to prevent duplicate calls
-        if (!updatedNewOptions.some((option) => option.field === fieldName && option.name === inputValue)) {
-          // Make an API call to add the new option to MongoDB
-          this.addNewOptionToMongoDB(fieldName, inputValue);
-        }
 
         return {
           options: updatedOptions,
