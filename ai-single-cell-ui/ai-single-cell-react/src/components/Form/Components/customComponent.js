@@ -3,7 +3,6 @@ import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
-import Tooltip from 'react-tooltip';
 
 class MyForm extends Component {
   constructor(props) {
@@ -65,110 +64,35 @@ class MyForm extends Component {
     this.fetchDefaultOptions();
   }
 
-  async fetchDefaultOptionsxx() {
-    try {
-      const response = await fetch(`${SERVER_URL}/mongoDB/api/options`);
-      if (response.ok) {
-        const data = await response.json();
-
-        this.setState({
-          options: {
-            Task: data.Task.map((option) => ({ value: option, label: option })),
-            Author: data.Author.map((option) => ({ value: option, label: option })),
-            Species: data.Species.map((option) => ({ value: option, label: option })),
-            'Sample Type': data['Sample Type'].map((option) => ({ value: option, label: option })),
-            'Anatomical Entity': data['Anatomical Entity'].map((option) => ({ value: option, label: option })),
-            'Organ Part': data['Organ Part'].map((option) => ({ value: option, label: option })),
-            'Model Organ': data['Model Organ'].map((option) => ({ value: option, label: option })),
-            'Selected Cell Types': data['Selected Cell Types'].map((option) => ({ value: option, label: option })),
-            'Library Construction Method': data['Library Construction Method'].map((option) => ({ value: option, label: option })),
-            'Nucleic Acid Source': data['Nucleic Acid Source'].map((option) => ({ value: option, label: option })),
-            'Disease Status (Specimen)': data['Disease Status (Specimen)'].map((option) => ({ value: option, label: option })),
-            'Disease Status (Donor)': data['Disease Status (Donor)'].map((option) => ({ value: option, label: option })),
-            'Development Stage': data['Development Stage'].map((option) => ({ value: option, label: option })),
-            'Cell Count Estimate': data['Cell Count Estimate'].map((option) => ({ value: option, label: option })),
-            'Source': data['Source'].map((option) => ({ value: option, label: option })),
-          },
-        });
-      } else {
-        console.error('Error fetching default options');
-      }
-    } catch (error) {
-      console.error('Error fetching default options:', error);
-    }
-  }
-
   async fetchDefaultOptions() {
     try {
       const response = await fetch(`${SERVER_URL}/mongoDB/api/options`);
-      if (response.ok) {
-        const data = await response.json();
-  
-        const options = {};
-  
-        // Check if each field exists in the response before mapping it
-        if (data.Task) {
-          options.Task = data.Task.map((option) => ({ value: option, label: option }));
-        }
-        if (data.Author) {
-            options.Author = data.Author.map((option) => ({ value: option, label: option }));
-        }
-  
-        if (data.Species) {
-          options.Species = data.Species.map((option) => ({ value: option, label: option }));
-        }
-  
-        if (data['Sample Type']) {
-          options['Sample Type'] = data['Sample Type'].map((option) => ({ value: option, label: option }));
-        }
-  
-        if (data['Anatomical Entity']) {
-          options['Anatomical Entity'] = data['Anatomical Entity'].map((option) => ({ value: option, label: option }));
-        }
-  
-        if (data['Organ Part']) {
-          options['Organ Part'] = data['Organ Part'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Model Organ']) {
-            options['Model Organ'] = data['Model Organ'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Selected Cell Types']) {
-            options['Selected Cell Types'] = data['Selected Cell Types'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Library Construction Method']) {
-            options['Library Construction Method'] = data['Library Construction Method'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Nucleic Acid Source']) {
-            options['Nucleic Acid Source'] = data['Nucleic Acid Source'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Disease Status (Specimen)']) {
-            options['Disease Status (Specimen)'] = data['Disease Status (Specimen)'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Disease Status (Donor)']) {
-            options['Disease Status (Donor)'] = data['Disease Status (Donor)'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Development Stage']) {
-            options['Development Stage'] = data['Development Stage'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Cell Count Estimate']) {
-            options['Cell Count Estimate'] = data['Cell Count Estimate'].map((option) => ({ value: option, label: option }));
-        }
-        if (data['Source']) {
-            options['Source'] = data['Source'].map((option) => ({ value: option, label: option }));
-        }
-  
-        // Add other fields here
-  
-        this.setState({
-          options,
-        });
-      } else {
+      if (!response.ok) {
         console.error('Error fetching default options');
+        return;
       }
+      const data = await response.json();
+  
+      const options = {};
+      const fieldNames = [
+        'Task', 'Author', 'Species', 'Sample Type', 'Anatomical Entity',
+        'Organ Part', 'Model Organ', 'Selected Cell Types', 'Library Construction Method',
+        'Nucleic Acid Source', 'Disease Status (Specimen)', 'Disease Status (Donor)',
+        'Development Stage', 'Cell Count Estimate', 'Source',
+      ];
+  
+      fieldNames.forEach(fieldName => {
+        if (data[fieldName]) {
+          options[fieldName] = data[fieldName].map(option => ({ value: option, label: option }));
+        }
+      });
+  
+      this.setState({ options });
     } catch (error) {
       console.error('Error fetching default options:', error);
     }
   }
+  
   
 
   handleChange = (e) => {
@@ -290,13 +214,8 @@ class MyForm extends Component {
               value={formData.Dataset}
               onChange={this.handleChange}
               className={`form-input ${errors.Dataset ? 'error' : ''}`}
-              data-tip={errors.Dataset || ''} // Set the data-tip attribute for tooltips
-              data-for="dataset-tooltip"
             />
             {errors.Dataset && <div className="error-tooltip">{errors.Dataset}</div>}
-            <Tooltip id="dataset-tooltip" effect="solid">
-              {errors.Dataset}
-            </Tooltip>
           </div>
 
           {/* Task (CreatableSelect) */}
