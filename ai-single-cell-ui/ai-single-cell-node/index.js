@@ -1300,38 +1300,36 @@ app.get('/mongoDB/api/options', async (req, res) => {
 
 
 
-// Connect to MongoDB to publish a new dataset metadata
-app.get('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
+app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     try {
-        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-
-        // Connect to the MongoDB server
-        await client.connect();
-
-        const db = client.db(dbName);
-        const collection = db.collection(datasetCollectionName);
-
-        const formData = req.body; // You should have a middleware to parse JSON in the request body
-        
-        collection.insertOne(formData, (err) => {
-          if (err) {
-            console.error('Error inserting form data into MongoDB:', err);
-            res.status(500).send('Error submitting form data');
-          } else {
-            res.status(200).send('Form data submitted successfully');
-          }
-        });
-
-        // Close the MongoDB connection
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+  
+      // Connect to the MongoDB server
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(datasetCollectionName);
+  
+      const formData = req.body; // This assumes you have the necessary middleware to parse JSON in the request body
+  
+      collection.insertOne(formData, (err) => {
+        if (err) {
+          console.error('Error inserting form data into MongoDB:', err);
+          res.status(500).json({ error: 'Error submitting form data' });
+        } else {
+          console.log('Form data submitted successfully');
+          res.status(200).json({ message: 'Form data submitted successfully' });
+        }
+  
+        // Close the MongoDB connection here after the operation is complete
         client.close();
-
-        // Return the options as a JSON response
-        res.status(200).json({"message" : "Document is saved"});
+      });
     } catch (err) {
-        console.error('Error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+      console.error('Error:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+  });
+  
 
 
 // Start the server
