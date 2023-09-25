@@ -176,17 +176,18 @@ class MyForm extends Component {
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
         .then(response => {
           console.log('Form data submitted successfully');
-          this.setState({
-            message: 'Form data submitted successfully',
-            hasMessage: true, // Set hasMessage to true when a message is set
-          });
-          console.log("After submitting");
-          console.log(this.state.message);
-          console.log(this.state.hasMessage);
         })
         .catch(error => {
           console.error('Error submitting form data:', error);
         });
+
+        this.setState({
+          message: 'Form data submitted successfully',
+          hasMessage: true, // Set hasMessage to true when a message is set
+        });
+        console.log("After submitting");
+        console.log(this.state.message);
+        console.log(this.state.hasMessage);
     }
   };
 
