@@ -53,7 +53,7 @@ class MyForm extends Component {
         'Cell Count Estimate': [],
         'Source': [],
       },
-    };
+    },
   }
 
   componentDidMount() {
