@@ -191,9 +191,9 @@ class MyForm extends Component {
   }
 
   handleCreateOption = (fieldName, inputValue) => {
-    const existingOptions = this.state.options[fieldName] || [];
-    const optionExists = existingOptions.some((option) => option.label === inputValue);
-    if (!optionExists) {
+    // const existingOptions = this.state.options[fieldName] || [];
+    // const optionExists = existingOptions.some((option) => option.label === inputValue);
+    // if (!optionExists) {
       this.setState((prevState) => {
         const newOption = { value: inputValue, label: inputValue };
         const updatedOptions = { ...prevState.options };
@@ -209,8 +209,11 @@ class MyForm extends Component {
           { field: fieldName, name: inputValue },
         ];
     
-        // Make an API call to add the new option to MongoDB
-        this.addNewOptionToMongoDB(fieldName, inputValue);
+        // Check if the option has already been created to prevent duplicate calls
+        if (!updatedNewOptions.some((option) => option.field === fieldName && option.name === inputValue)) {
+          // Make an API call to add the new option to MongoDB
+          this.addNewOptionToMongoDB(fieldName, inputValue);
+        }
 
         return {
           options: updatedOptions,
@@ -218,7 +221,7 @@ class MyForm extends Component {
           newOptions: updatedNewOptions,
         };
       });
-   }
+  //  }
   };
 
   addNewOptionToMongoDB = (fieldName, optionName) => {
