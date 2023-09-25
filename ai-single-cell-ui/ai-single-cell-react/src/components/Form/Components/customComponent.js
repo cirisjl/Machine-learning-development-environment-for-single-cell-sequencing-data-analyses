@@ -199,8 +199,8 @@ class MyForm extends Component {
       };
 
       return {
-        formData: updatedFormData,
         options: updatedOptions,
+        formData: updatedFormData,
       };
     });
   };
@@ -360,7 +360,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Species', inputValue)}
               options={options.Species} // Set options to the fetched options
               className="form-input"
             />
@@ -377,7 +377,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
-               onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+               onCreateOption={(inputValue) => this.handleCreateOption('Sample Type', inputValue)}
               options={options['Sample Type']} // Set options to the fetched options
               className="form-input"
             />
@@ -395,7 +395,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
               options={options['Anatomical Entity']} // Set options to the fetched options
               className="form-input"
             />
@@ -412,7 +412,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Organ Part', inputValue)}
               options={options['Organ Part']} // Set options to the fetched options
               className="form-input"
             />
@@ -429,7 +429,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Model Organ', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Model Organ', inputValue)}
               options={options['Model Organ']} // Set options to the fetched options
               className="form-input"
             />
@@ -446,7 +446,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
               options={options['Selected Cell Types']} // Set options to the fetched options
               className="form-input"
             />
@@ -465,7 +465,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Library Construction Method', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Library Construction Method', inputValue)}
               options={options['Library Construction Method']} // Set options to the fetched options
               className="form-input"
             />
@@ -483,7 +483,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Nucleic Acid Source', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Nucleic Acid Source', inputValue)}
               options={options['Nucleic Acid Source']} // Set options to the fetched options
               className="form-input"
             />
@@ -547,7 +547,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
               options={options['Disease Status (Specimen)']} // Set options to the fetched options
               className="form-input"
             />
@@ -565,7 +565,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
               options={options['Disease Status (Donor)']} // Set options to the fetched options
               className="form-input"
             />
@@ -584,7 +584,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}
               options={options['Development Stage']} // Set options to the fetched options
               className="form-input"
             />
@@ -614,7 +614,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Cell Count Estimate', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Cell Count Estimate', inputValue)}
               options={options['Cell Count Estimate']} // Set options to the fetched options
               className="form-input"
             />
@@ -631,7 +631,7 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Source', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              onCreateOption={(inputValue) => this.handleCreateOption('Source', inputValue)}
               options={options['Source']} // Set options to the fetched options
               className="form-input"
             />
