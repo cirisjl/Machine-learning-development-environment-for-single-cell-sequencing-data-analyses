@@ -222,7 +222,7 @@ class MyForm extends Component {
     }
 
     if (!formData.Species || (formData.Species && formData.Species.value === '')) {
-      errors.Task = 'Species is required';
+      errors.Species = 'Species is required';
     }
 
     if (!formData['Organ Part'] || (formData['Organ Part'] && formData['Organ Part'].value === '')) {
