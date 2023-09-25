@@ -58,4 +58,8 @@
   .submit-button:hover {
     background-color: #0056b3;
   }
+
   
+  .my-form-container .form-input:not([type=radio]):not([type=checkbox]) {
+    width: auto !important;
+  }
