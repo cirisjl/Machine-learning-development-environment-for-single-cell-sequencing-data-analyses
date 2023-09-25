@@ -289,9 +289,9 @@ class MyForm extends Component {
               name="Dataset"
               value={formData.Dataset}
               onChange={this.handleChange}
-              className="form-input"
+              className={`form-input ${errors.Dataset ? 'error' : ''}`}
             />
-            {errors.Dataset && <p className="error">{errors.Dataset}</p>}
+            {errors.Dataset && <div className="error-tooltip">{errors.Dataset}</div>}
           </div>
 
           {/* Task (CreatableSelect) */}
@@ -306,9 +306,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Task', selectedOption)} // Use handleSelectChange            
               onCreateOption={(inputValue) => this.handleCreateOption('Task', inputValue)}
               options={options.Task} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors.Task ? 'error' : ''}`}
             />
-            {errors.Task && <p className="error">{errors.Task}</p>}
+            {errors.Task && <div className="error-tooltip">{errors.Task}</div>}
           </div>
 
           {/* Downloads */}
@@ -319,9 +319,10 @@ class MyForm extends Component {
               name="Downloads"
               value={formData.Downloads}
               onChange={this.handleChange}
-              className="form-input"
+              className={`form-input ${errors.Downloads ? 'error' : ''}`}
             />
-            {errors.Downloads && <p className="error">{errors.Downloads}</p>}
+            {errors.Downloads && <div className="error-tooltip">{errors.Downloads}</div>}
+
           </div>
 
           <div className="form-field">
@@ -333,7 +334,6 @@ class MyForm extends Component {
               onChange={this.handleChange}
               className="form-input"
             />
-            {errors.Title && <p className="error">{errors.Title}</p>}
           </div>
 
           {/* Author (CreatableSelect) */}
@@ -348,9 +348,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Author', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
               options={options.Author} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors.Author ? 'error' : ''}`}
             />
-            {errors.Author && <p className="error">{errors.Author}</p>}
+            {errors.Author && <div className="error-tooltip">{errors.Author}</div>}
           </div>
 
           <div className="form-field">
@@ -362,7 +362,6 @@ class MyForm extends Component {
               onChange={this.handleChange}
               className="form-input"
             />
-            {errors['Reference (paper)'] && <p className="error">{errors['Reference (paper)']}</p>}
           </div>
 
           <div className="form-field">
@@ -373,7 +372,6 @@ class MyForm extends Component {
               onChange={this.handleChange}
               className="form-input"
             />
-            {errors.Abstract && <p className="error">{errors.Abstract}</p>}
           </div>
 
           {/* DOI */}
@@ -387,7 +385,6 @@ class MyForm extends Component {
               placeholder="http://"
               className="form-input"
             />
-            {errors.DOI && <p className="error">{errors.DOI}</p>}
           </div>
 
 
@@ -403,9 +400,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Species', inputValue)}
               options={options.Species} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors.Species ? 'error' : ''}`}
             />
-            {errors.Species && <p className="error">{errors.Species}</p>}
+            {errors.Species && <div className="error-tooltip">{errors.Species}</div>}
           </div>
 
           {/* "Sample Type" (CreatableSelect) */}
@@ -420,9 +417,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
                onCreateOption={(inputValue) => this.handleCreateOption('Sample Type', inputValue)}
               options={options['Sample Type']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Sample Type'] ? 'error' : ''}`}
             />
-            {errors['Sample Type'] && <p className="error">{errors['Sample Type']}</p>}
+            {errors['Sample Type'] && <div className="error-tooltip">{errors['Sample Type']}</div>}
           </div>
 
 
@@ -438,9 +435,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
               options={options['Anatomical Entity']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Anatomical Entity'] ? 'error' : ''}`}
             />
-            {errors['Anatomical Entity'] && <p className="error">{errors['Anatomical Entity']}</p>}
+            {errors['Anatomical Entity'] && <div className="error-tooltip">{errors['Anatomical Entity']}</div>}
           </div>
 
           {/* "Organ Part" (CreatableSelect) */}
@@ -455,9 +452,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Organ Part', inputValue)}
               options={options['Organ Part']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Organ Part'] ? 'error' : ''}`}
             />
-            {errors['Organ Part'] && <p className="error">{errors['Organ Part']}</p>}
+            {errors['Organ Part'] && <div className="error-tooltip">{errors['Organ Part']}</div>}
           </div>
 
           {/* "Model Organ" (CreatableSelect) */}
@@ -489,9 +486,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
               options={options['Selected Cell Types']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Selected Cell Types'] ? 'error' : ''}`}
             />
-            {errors['Selected Cell Types'] && <p className="error">{errors['Selected Cell Types']}</p>}
+            {errors['Selected Cell Types'] && <div className="error-tooltip">{errors['Selected Cell Types']}</div>}
           </div>
 
 
@@ -510,7 +507,6 @@ class MyForm extends Component {
               options={options['Library Construction Method']} // Set options to the fetched options
               className="form-input"
             />
-            {errors['Library Construction Method'] && <p className="error">{errors['Library Construction Method']}</p>}
           </div>
 
 
@@ -528,7 +524,6 @@ class MyForm extends Component {
               options={options['Nucleic Acid Source']} // Set options to the fetched options
               className="form-input"
             />
-            {errors['Nucleic Acid Source'] && <p className="error">{errors['Nucleic Acid Source']}</p>}
           </div>
 
 
@@ -558,7 +553,6 @@ class MyForm extends Component {
                 False
               </label>
             </div>
-            {errors["Paired End"] && <p className="error">{errors["Paired End"]}</p>}
           </div>
 
           <div className="form-field">
@@ -570,11 +564,8 @@ class MyForm extends Component {
               onChange={this.handleChange}
               className="form-input"
             />
-            {errors['Analysis Protocol'] && <p className="error">{errors['Analysis Protocol']}</p>}
           </div>
 
-
-          
           {/* "Disease Status (Specimen)" (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Disease Status (Specimen):</label>
@@ -587,9 +578,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
               options={options['Disease Status (Specimen)']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Disease Status (Specimen)'] ? 'error' : ''}`}
             />
-            {errors['Disease Status (Specimen)'] && <p className="error">{errors['Disease Status (Specimen)']}</p>}
+            {errors['Disease Status (Specimen)'] && <div className="error-tooltip">{errors['Disease Status (Specimen)']}</div>}
           </div>
 
 
@@ -605,13 +596,11 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
               options={options['Disease Status (Donor)']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Disease Status (Donor)'] ? 'error' : ''}`}
             />
-            {errors['Disease Status (Donor)'] && <p className="error">{errors['Disease Status (Donor)']}</p>}
+            {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>}
           </div>
 
-
-          
           {/* "Development Stage" (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Development Stage:</label>
@@ -626,7 +615,6 @@ class MyForm extends Component {
               options={options['Development Stage']} // Set options to the fetched options
               className="form-input"
             />
-            {errors['Development Stage'] && <p className="error">{errors['Development Stage']}</p>}
           </div>
 
           <div className="form-field">
@@ -638,7 +626,6 @@ class MyForm extends Component {
               onChange={this.handleChange}
               className="form-input"
             />
-            {errors["Donor Count"] && <p className="error">{errors["Donor Count"]}</p>}
           </div>
 
 
@@ -654,9 +641,9 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Cell Count Estimate', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Cell Count Estimate', inputValue)}
               options={options['Cell Count Estimate']} // Set options to the fetched options
-              className="form-input"
+              className={`form-input ${errors['Cell Count Estimate'] ? 'error' : ''}`}
             />
-            {errors['Cell Count Estimate'] && <p className="error">{errors['Cell Count Estimate']}</p>}
+            {errors['Cell Count Estimate'] && <div className="error-tooltip">{errors['Cell Count Estimate']}</div>}
           </div>
 
           {/* "Source" (CreatableSelect) */}
@@ -673,7 +660,6 @@ class MyForm extends Component {
               options={options['Source']} // Set options to the fetched options
               className="form-input"
             />
-            {errors['Source'] && <p className="error">{errors['Source']}</p>}
           </div>
 
           
@@ -698,9 +684,9 @@ class MyForm extends Component {
               name="Submission Date"
               value={formData["Submission Date"]}
               onChange={this.handleChange}
-              className="form-input"
+              className={`form-input ${errors['Submission Date'] ? 'error' : ''}`}
             />
-            {errors["Submission Date"] && <p className="error">{errors["Submission Date"]}</p>}
+            {errors['Submission Date'] && <div className="error-tooltip">{errors['Submission Date']}</div>}
           </div>
 
 
