@@ -1331,9 +1331,9 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   });
   
 
-  // Define a route to handle the storage of new options
-app.post('/mongoDB/api/storeNewOptions', async (req, res) => {
-    const newOptions = req.body; // An array of new options
+// Define a route to handle adding a new option to MongoDB
+app.post('/mongoDB/api/addNewOption', async (req, res) => {
+    const { field, name } = req.body;
   
     try {
       const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
@@ -1342,21 +1342,20 @@ app.post('/mongoDB/api/storeNewOptions', async (req, res) => {
       const db = client.db(dbName);
       const collection = db.collection(optionsCollectionName);
   
-      // Insert the new options into the collection
-      const insertResult = await collection.insertMany(newOptions);
+      // Insert the new option into the collection
+      const insertResult = await collection.insertOne(name);
   
       client.close();
   
       res.status(200).json({
-        message: 'New options stored successfully',
-        insertedCount: insertResult.insertedCount,
+        message: `New option "${name}" added to MongoDB for field "${field}"`,
+        insertedId: insertResult.insertedId,
       });
     } catch (error) {
-      console.error('Error storing new options:', error);
+      console.error('Error adding new option to MongoDB:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
 
 
 // Start the server

@@ -206,6 +206,9 @@ class MyForm extends Component {
         { field: fieldName, name: inputValue },
       ];
   
+      // Make an API call to add the new option to MongoDB
+      this.addNewOptionToMongoDB(fieldName, inputValue);
+
       return {
         options: updatedOptions,
         formData: updatedFormData,
@@ -215,25 +218,25 @@ class MyForm extends Component {
   };
   
 
-  storeNewOptions = async () => {
-    try {
-      const { newOptions } = this.state; // Get the new options from your component state
+  // storeNewOptions = async () => {
+  //   try {
+  //     const { newOptions } = this.state; // Get the new options from your component state
   
-      // Assuming you have a variable newOptions containing the new options
-      const response = await axios.post(`${SERVER_URL}/mongoDB/api/storeNewOptions`, { newOptions });
+  //     // Assuming you have a variable newOptions containing the new options
+  //     const response = await axios.post(`${SERVER_URL}/mongoDB/api/storeNewOptions`, { newOptions });
   
-      if (response.status === 200) {
-        console.log('New options stored successfully');
-        // If needed, you can update your component state to indicate that new options have been stored.
-      } else {
-        console.error('Error storing new options');
-        // Handle the error as needed
-      }
-    } catch (error) {
-      console.error('Error storing new options:', error);
-      // Handle the error as needed
-    }
-  };
+  //     if (response.status === 200) {
+  //       console.log('New options stored successfully');
+  //       // If needed, you can update your component state to indicate that new options have been stored.
+  //     } else {
+  //       console.error('Error storing new options');
+  //       // Handle the error as needed
+  //     }
+  //   } catch (error) {
+  //     console.error('Error storing new options:', error);
+  //     // Handle the error as needed
+  //   }
+  // };
   
 
   handleSubmit = (e) => {
@@ -249,8 +252,6 @@ class MyForm extends Component {
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
         .then(response => {
           console.log('Form data submitted successfully');
-          // Insert the new options here by making additional API requests
-          this.storeNewOptions();
         })
         .catch(error => {
           console.error('Error submitting form data:', error);
