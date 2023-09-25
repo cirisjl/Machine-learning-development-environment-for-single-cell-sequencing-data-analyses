@@ -185,9 +185,11 @@ class MyForm extends Component {
           message: 'Form data submitted successfully',
           hasMessage: true, // Set hasMessage to true when a message is set
         });
-        console.log("After submitting");
-        console.log(this.state.message);
-        console.log(this.state.hasMessage);
+    } else {
+      this.setState({
+        message: 'Please fill all the required fields to submit',
+        hasMessage: true, // Set hasMessage to true when a message is set
+      });
     }
   };
 
@@ -247,6 +249,9 @@ class MyForm extends Component {
     if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '')) {
       errors['Cell Count Estimate'] = 'Cell Count Estimate is required';
     }
+
+    const hasError = Object.keys(errors).length > 0;
+
     return errors;
   }
 
