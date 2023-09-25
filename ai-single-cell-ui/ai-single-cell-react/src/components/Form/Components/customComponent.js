@@ -13,26 +13,26 @@ class MyForm extends Component {
         Task: '',
         Downloads: '',
         Title: '',
-        Author: null,
+        Author: '',
         'Reference (paper)':'',
         Abstract: '',
         DOI: '',
-        Species: null,
-        'Sample Type': null,
-        'Anatomical Entity': null,
-        'Organ Part': null,
-        'Model Organ': null,
-        'Selected Cell Types': null,
-        'Library Construction Method': null,
-        'Nucleic Acid Source': null,
+        Species: '',
+        'Sample Type': '',
+        'Anatomical Entity': '',
+        'Organ Part': '',
+        'Model Organ': '',
+        'Selected Cell Types': '',
+        'Library Construction Method': '',
+        'Nucleic Acid Source': '',
         'Paired End': false,
         'Analysis Protocol': '',
-        'Disease Status (Specimen)': null,
-        'Disease Status (Donor)': null,
-        'Development Stage': null,
+        'Disease Status (Specimen)': '',
+        'Disease Status (Donor)': '',
+        'Development Stage': '',
         'Donor Count': 0,
         'Cell Count Estimate': 0,
-        'Source': null,
+        'Source': '',
         'Source Key': '',
         'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here     
        },
@@ -183,7 +183,6 @@ class MyForm extends Component {
 
   validateForm(formData) {
     const errors = {};
-
     if (!formData.Dataset) {
       errors.Dataset = 'Dataset is required';
     }
@@ -196,6 +195,36 @@ class MyForm extends Component {
       errors.Downloads = 'Downloads is required';
     }
 
+    if (!formData['Submission Date']) {
+      errors['Submission Date'] = 'Submission Date is required';
+    }
+
+    if (!formData.Author || (formData.Author && formData.Author.value === '')) {
+      errors.Author = 'Author is required';
+    }
+
+    if (!formData.Species || (formData.Species && formData.Species.value === '')) {
+      errors.Task = 'Species is required';
+    }
+
+    if (!formData['Organ Part'] || (formData['Organ Part'] && formData['Organ Part'].value === '')) {
+      errors['Organ Part'] = 'Organ Part is required';
+    }
+    if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
+      errors['Anatomical Entity'] = 'Anatomical Entity is required';
+    }
+    if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
+      errors['Selected Cell Types'] = 'Selected Cell Types is required';
+    }
+    if (!formData['Disease Status (Specimen)'] || (formData['Disease Status (Specimen)'] && formData['Disease Status (Specimen)'].value === '')) {
+      errors['Disease Status (Specimen)'] = 'Disease Status (Specimen) is required';
+    }
+    if (!formData['Disease Status (Donor)'] || (formData['Disease Status (Donor)'] && formData['Disease Status (Donor)'].value === '')) {
+      errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
+    }
+    if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '')) {
+      errors['Cell Count Estimate'] = 'Cell Count Estimate is required';
+    }
     return errors;
   }
 
