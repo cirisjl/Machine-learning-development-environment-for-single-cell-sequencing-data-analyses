@@ -3,7 +3,7 @@ import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
-
+import Tooltip from 'react-tooltip';
 
 class MyForm extends Component {
   constructor(props) {
@@ -290,8 +290,13 @@ class MyForm extends Component {
               value={formData.Dataset}
               onChange={this.handleChange}
               className={`form-input ${errors.Dataset ? 'error' : ''}`}
+              data-tip={errors.Dataset || ''} // Set the data-tip attribute for tooltips
+              data-for="dataset-tooltip"
             />
             {errors.Dataset && <div className="error-tooltip">{errors.Dataset}</div>}
+            <Tooltip id="dataset-tooltip" effect="solid">
+              {errors.Dataset}
+            </Tooltip>
           </div>
 
           {/* Task (CreatableSelect) */}
