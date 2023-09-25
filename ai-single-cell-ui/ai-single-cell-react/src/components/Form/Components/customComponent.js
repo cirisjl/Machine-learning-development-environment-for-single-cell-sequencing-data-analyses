@@ -203,7 +203,7 @@ class MyForm extends Component {
     
         const updatedFormData = {
           ...prevState.formData,
-          [fieldName]: inputValue,
+          [fieldName]: newOption,
         };
 
         const updatedNewOptions = [
@@ -299,7 +299,7 @@ class MyForm extends Component {
             <label className="form-label">Task:</label>
             <CreatableSelect
               name="Task"
-              value={formData.Task.value}
+              value={formData.Task}
               isClearable
               isSearchable
               isLoading={isLoading}
