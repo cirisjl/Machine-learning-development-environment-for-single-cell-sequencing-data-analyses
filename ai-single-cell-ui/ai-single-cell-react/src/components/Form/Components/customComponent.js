@@ -57,7 +57,7 @@ class MyForm extends Component {
       },
       newOptions: [],
       message: '',
-      hasMessage: false
+      hasMessage: false,
     };  
   }
 
@@ -250,7 +250,7 @@ class MyForm extends Component {
     if (this.state.hasMessage) {
       this.clearMessageAfterTimeout();
     }
-    const { formData, errors, isLoading, options } = this.state;
+    const { formData, errors, isLoading, options, hasMessage, message } = this.state;
     return (
       <div className="my-form-container">
         {hasMessage && (
