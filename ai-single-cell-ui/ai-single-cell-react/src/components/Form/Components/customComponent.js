@@ -11,7 +11,7 @@ class MyForm extends Component {
     this.state = {
       formData: {
         Dataset: '',
-        Task: null,
+        Task: '',
         Downloads: '',
         Title: '',
         Author: null,
