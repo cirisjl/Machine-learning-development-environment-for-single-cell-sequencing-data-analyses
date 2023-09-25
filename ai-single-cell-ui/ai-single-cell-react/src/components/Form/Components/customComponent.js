@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
+import axios from 'axios';
+
 
 class MyForm extends Component {
   constructor(props) {
@@ -213,6 +215,16 @@ class MyForm extends Component {
     if (Object.keys(errors).length === 0) {
       const formData = this.state.formData;
       console.log(formData);
+
+      // Assuming you have the form data in a variable named 'formData'
+      axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
+        .then(response => {
+          console.log('Form data submitted successfully');
+          // Insert the new options here by making additional API requests
+        })
+        .catch(error => {
+          console.error('Error submitting form data:', error);
+        });
     }
   };
 

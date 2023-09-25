@@ -15,7 +15,7 @@ const multer = require("multer");
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, collectionName} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
 const { MongoClient } = require('mongodb');
 
 
@@ -1267,7 +1267,7 @@ app.get('/mongoDB/api/options', async (req, res) => {
         await client.connect();
 
         const db = client.db(dbName);
-        const collection = db.collection(collectionName);
+        const collection = db.collection(optionsCollectionName);
 
         // Use the aggregation framework to group options by field
         const pipeline = [
@@ -1292,6 +1292,41 @@ app.get('/mongoDB/api/options', async (req, res) => {
 
         // Return the options as a JSON response
         res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+// Connect to MongoDB to publish a new dataset metadata
+app.get('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollectionName);
+
+        const formData = req.body; // You should have a middleware to parse JSON in the request body
+        
+        collection.insertOne(formData, (err) => {
+          if (err) {
+            console.error('Error inserting form data into MongoDB:', err);
+            res.status(500).send('Error submitting form data');
+          } else {
+            res.status(200).send('Form data submitted successfully');
+          }
+        });
+
+        // Close the MongoDB connection
+        client.close();
+
+        // Return the options as a JSON response
+        res.status(200).json({"message" : "Document is saved"});
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ error: 'Internal Server Error' });
