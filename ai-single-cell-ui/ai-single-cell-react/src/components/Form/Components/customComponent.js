@@ -33,7 +33,8 @@ class MyForm extends Component {
         'Cell Count Estimate': 0,
         'Source': null,
         'Source Key': '',
-        'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here      },
+        'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here     
+       },
       errors: {},
       isLoading: false,
       options: {
@@ -51,9 +52,9 @@ class MyForm extends Component {
         'Disease Status (Donor)': [],
         'Development Stage': [],
         'Cell Count Estimate': [],
-        'Source': [],
+        'Source': []
       },
-    },
+    };
   }
 
   componentDidMount() {
