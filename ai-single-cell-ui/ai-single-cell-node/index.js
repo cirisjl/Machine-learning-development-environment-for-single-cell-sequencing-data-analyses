@@ -1331,6 +1331,33 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   });
   
 
+  // Define a route to handle the storage of new options
+app.post('/mongoDB/api/storeNewOptions', async (req, res) => {
+    const newOptions = req.body; // An array of new options
+  
+    try {
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+  
+      // Insert the new options into the collection
+      const insertResult = await collection.insertMany(newOptions);
+  
+      client.close();
+  
+      res.status(200).json({
+        message: 'New options stored successfully',
+        insertedCount: insertResult.insertedCount,
+      });
+    } catch (error) {
+      console.error('Error storing new options:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
