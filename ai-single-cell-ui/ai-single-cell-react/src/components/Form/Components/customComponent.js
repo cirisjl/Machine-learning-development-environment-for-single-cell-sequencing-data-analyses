@@ -216,28 +216,18 @@ class MyForm extends Component {
       };
     });
   };
-  
 
-  // storeNewOptions = async () => {
-  //   try {
-  //     const { newOptions } = this.state; // Get the new options from your component state
-  
-  //     // Assuming you have a variable newOptions containing the new options
-  //     const response = await axios.post(`${SERVER_URL}/mongoDB/api/storeNewOptions`, { newOptions });
-  
-  //     if (response.status === 200) {
-  //       console.log('New options stored successfully');
-  //       // If needed, you can update your component state to indicate that new options have been stored.
-  //     } else {
-  //       console.error('Error storing new options');
-  //       // Handle the error as needed
-  //     }
-  //   } catch (error) {
-  //     console.error('Error storing new options:', error);
-  //     // Handle the error as needed
-  //   }
-  // };
-  
+  addNewOptionToMongoDB = (fieldName, optionName) => {
+    // Make a POST request to your backend to add the new option to MongoDB
+    axios
+      .post(`${SERVER_URL}/mongoDB/api/addNewOption`, { 'field':fieldName, 'name':optionName })
+      .then((response) => {
+        console.log(`New option "${optionName}" added to MongoDB for field "${fieldName}"`);
+      })
+      .catch((error) => {
+        console.error('Error adding new option to MongoDB:', error);
+      });
+  };
 
   handleSubmit = (e) => {
     e.preventDefault();
