@@ -69,12 +69,23 @@
 .error {
     border: 1px solid #ff0000; /* Red border for error fields */
   }
-  
-  /* Style for the error tooltip */
+
   .error-tooltip {
-    color: #ff0000; /* Red text color for the error message */
-    font-size: 0.8rem; /* Adjust the font size as needed */
-    margin-top: 5px; /* Spacing between the field and the error message */
-    display: block;
+    display: none;
+    position: absolute;
+    background-color: #ff6b6b;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-top: 5px;
+    z-index: 1;
   }
   
+  .form-field {
+    position: relative;
+  }
+  
+  .form-input.error:focus + .error-tooltip {
+    display: block;
+  }
