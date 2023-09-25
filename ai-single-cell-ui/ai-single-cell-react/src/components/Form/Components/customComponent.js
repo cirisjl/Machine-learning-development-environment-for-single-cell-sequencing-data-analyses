@@ -191,30 +191,34 @@ class MyForm extends Component {
   }
 
   handleCreateOption = (fieldName, inputValue) => {
-    this.setState((prevState) => {
-      const newOption = { value: inputValue, label: inputValue };
-      const updatedOptions = { ...prevState.options };
-      updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
-  
-      const updatedFormData = {
-        ...prevState.formData,
-        [fieldName]: inputValue,
-      };
-  
-      const updatedNewOptions = [
-        ...prevState.newOptions,
-        { field: fieldName, name: inputValue },
-      ];
-  
-      // Make an API call to add the new option to MongoDB
-      this.addNewOptionToMongoDB(fieldName, inputValue);
+    const existingOptions = this.state.options[fieldName] || [];
+    const optionExists = existingOptions.some((option) => option.label === inputValue);
+    if (!optionExists) {
+      this.setState((prevState) => {
+        const newOption = { value: inputValue, label: inputValue };
+        const updatedOptions = { ...prevState.options };
+        updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+    
+        const updatedFormData = {
+          ...prevState.formData,
+          [fieldName]: inputValue,
+        };
+    
+        const updatedNewOptions = [
+          ...prevState.newOptions,
+          { field: fieldName, name: inputValue },
+        ];
+    
+        // Make an API call to add the new option to MongoDB
+        this.addNewOptionToMongoDB(fieldName, inputValue);
 
-      return {
-        options: updatedOptions,
-        formData: updatedFormData,
-        newOptions: updatedNewOptions,
-      };
-    });
+        return {
+          options: updatedOptions,
+          formData: updatedFormData,
+          newOptions: updatedNewOptions,
+        };
+      });
+   }
   };
 
   addNewOptionToMongoDB = (fieldName, optionName) => {
