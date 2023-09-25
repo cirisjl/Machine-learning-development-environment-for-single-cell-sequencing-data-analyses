@@ -155,10 +155,6 @@ class MyForm extends Component {
     }));
   };
 
-  handleTaskChange = (selectedOption) => {
-    this.handleSelectChange('Task', selectedOption);
-  };
-
   handleSelectChange(fieldName, selectedOption) {
     this.setState((prevState) => ({
       formData: {
@@ -241,8 +237,7 @@ class MyForm extends Component {
               isClearable
               isSearchable
               isLoading={isLoading}
-              onChange={this.handleTaskChange}
-              onCreateOption={(inputValue) => this.handleCreateOption('Task', inputValue)}
+              onChange={(selectedOption) => this.handleSelectChange('Task', selectedOption)} // Use handleSelectChange              onCreateOption={(inputValue) => this.handleCreateOption('Task', inputValue)}
               options={options.Task} // Set options to the fetched options
             />
             {errors.Task && <p className="error">{errors.Task}</p>}
@@ -271,7 +266,20 @@ class MyForm extends Component {
             {errors.Title && <p className="error">{errors.Title}</p>}
           </div>
 
-
+          {/* Author (CreatableSelect) */}
+          <div>
+            <label>Author:</label>
+            <CreatableSelect
+              name="Author"
+              value={formData.Author}
+              isClearable
+              isSearchable
+              isLoading={isLoading}
+              onChange={(selectedOption) => this.handleSelectChange('Author', selectedOption)} // Use handleSelectChange              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
+              options={options.Author} // Set options to the fetched options
+            />
+            {errors.Author && <p className="error">{errors.Author}</p>}
+          </div>
 
 
 
