@@ -252,7 +252,7 @@ class MyForm extends Component {
 
   render() {
     if (this.state.hasMessage) {
-      this.clearMessageAfterTimeout();
+      // this.clearMessageAfterTimeout();
     }
     const { formData, errors, isLoading, options, hasMessage, message } = this.state;
     console.log("has Message and Message");
