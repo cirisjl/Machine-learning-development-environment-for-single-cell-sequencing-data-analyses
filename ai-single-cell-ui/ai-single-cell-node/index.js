@@ -19,8 +19,8 @@ const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// I
 const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
 const { MongoClient } = require('mongodb');
 
-// Import the database configuration
-require('./config/mongoDBClient');
+// // Import the database configuration
+// require('./config/mongoDBClient');
 
 
 
@@ -1263,48 +1263,48 @@ app.get('/getTasks', (req, res) => {
 });
 
 
-// // Connect to MongoDB and retrieve options
-// app.get('/mongoDB/api/options', async (req, res) => {
-//     try {
-//         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+// Connect to MongoDB and retrieve options
+app.get('/mongoDB/api/options', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
-//         // Connect to the MongoDB server
-//         await client.connect();
+        // Connect to the MongoDB server
+        await client.connect();
 
-//         const db = client.db(dbName);
-//         const collection = db.collection(optionsCollectionName);
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
 
-//         // Use the aggregation framework to group options by field
-//         const pipeline = [
-//             {
-//                 $group: {
-//                     _id: '$field',
-//                     options: { $addToSet: '$name' },
-//                 },
-//             },
-//         ];
+        // Use the aggregation framework to group options by field
+        const pipeline = [
+            {
+                $group: {
+                    _id: '$field',
+                    options: { $addToSet: '$name' },
+                },
+            },
+        ];
 
-//         const result = await collection.aggregate(pipeline).toArray();
+        const result = await collection.aggregate(pipeline).toArray();
 
-//         // Transform the result into an object with field names as keys
-//         const optionsByField = {};
-//         result.forEach((item) => {
-//             optionsByField[item._id] = item.options;
-//         });
+        // Transform the result into an object with field names as keys
+        const optionsByField = {};
+        result.forEach((item) => {
+            optionsByField[item._id] = item.options;
+        });
 
-//         // Close the MongoDB connection
-//         client.close();
+        // Close the MongoDB connection
+        client.close();
 
-//         // Return the options as a JSON response
-//         res.status(200).json(optionsByField);
-//     } catch (err) {
-//         console.error('Error:', err);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
+        // Return the options as a JSON response
+        res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
-// Include routes
-app.use('/mongoDB/api/options', require('./routes/Option'));
+// // Include routes
+// app.use('/mongoDB/api/options', require('./routes/Option'));
 
 
 
