@@ -60,6 +60,8 @@ class MyForm extends Component {
       newOptions: [],
       message: '',
       hasMessage: false,
+      isAdmin: false,
+      username: ''
     };  
   }
 
@@ -70,8 +72,23 @@ class MyForm extends Component {
       // Navigate to the login page using window.location.href
       window.location.href = '/routing';
     } else {
-      // If the token exists, fetch default options
-      this.fetchDefaultOptions();
+      // If the token exists, verify authenticity
+      isUserAuth(jwtToken).then((authData) => {
+        if (authData.isAdmin) {
+          this.setState({
+            isAdmin: authData.isAdmin ,
+            username: authData.username, // Set hasMessage to true when a message is set
+          });
+          this.fetchDefaultOptions();
+        }
+        else {
+          console.warn("Unauthorized - you must be an admin to access this page");
+          this.setState({
+            message: "Unauthorized - you must be an admin to access this page" ,
+            hasMessage: true,
+          });
+        }
+      })
     }
   }
 
@@ -163,7 +180,7 @@ class MyForm extends Component {
   addNewOptionToMongoDB = (fieldName, optionName) => {
     // Make a POST request to your backend to add the new option to MongoDB
     axios
-      .post(`${SERVER_URL}/mongoDB/api/addNewOption`, { 'field':fieldName, 'name':optionName })
+      .post(`${SERVER_URL}/mongoDB/api/addNewOption`, { 'field':fieldName, 'name':optionName, 'username': this.state.username })
       .then((response) => {
         console.log(`New option "${optionName}" added to MongoDB for field "${fieldName}"`);
       })
