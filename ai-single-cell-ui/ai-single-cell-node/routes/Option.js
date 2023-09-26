@@ -3,7 +3,7 @@ const router = express.Router();
 const Option = require('../models/Option');
 
 // Retrieve options using Mongoose
-router.get('/api/options', async (req, res) => {
+router.get('/mongoDB/api/options', async (req, res) => {
   try {
     const options = await Option.aggregate([
       {
