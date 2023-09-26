@@ -84,7 +84,6 @@ class MyForm extends Component {
         }
         else {
           console.warn("Unauthorized - you must be an admin to access this page");
-          window.location.href = '/accessDenied';
         }
       })
     }
