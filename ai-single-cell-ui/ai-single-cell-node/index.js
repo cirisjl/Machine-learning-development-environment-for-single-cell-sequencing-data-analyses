@@ -1413,7 +1413,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         // Use the aggregation framework to group options by field
         const pipeline = [
             {
-                $match: { username: req.user.username }, // Filter by the authenticated user
+                $match: { username: req.query.username }, // Filter by the authenticated user
             },
             {
                 $group: {
