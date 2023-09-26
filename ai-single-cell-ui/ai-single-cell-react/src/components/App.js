@@ -31,6 +31,7 @@ import FlaskDashboard from './MyData/dashboard';
 import BasicFormComponent from './Form/Components/BasicForm';
 import NewApp from './Form/Components/component2';
 import MyForm from './Form/Components/customComponent';
+import AccessDenied from './AccessDeniedPage';
 
 function App() {
 
@@ -60,6 +61,7 @@ function App() {
           <Route path="basicForm"         element={<BasicFormComponent/>}/>
           <Route path="new"         element={<NewApp/>}/>
           <Route path="custom"         element={<MyForm/>}/>
+          <Route path="accessDenied"         element={<AccessDenied/>}/>
 
         </Route>
       </Routes>

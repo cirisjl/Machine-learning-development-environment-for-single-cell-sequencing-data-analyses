@@ -84,6 +84,7 @@ class MyForm extends Component {
         }
         else {
           console.warn("Unauthorized - you must be an admin to access this page");
+          window.location.href = '/accessDenied';
         }
       })
     }
@@ -287,6 +288,8 @@ class MyForm extends Component {
     console.log(hasMessage);
     console.log(message);
     return (
+      <div>
+      {isAdmin && (
       <div className="my-form-container">
         {hasMessage && (
         <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
@@ -295,8 +298,7 @@ class MyForm extends Component {
           </div>
         </div>)}
 
-        {isAdmin ? (
-          <div>
+        <div>
         <h2 className="form-title">My Form</h2>
         <form onSubmit={this.handleSubmit} className="form">
           {/* Dataset */}
@@ -711,12 +713,9 @@ class MyForm extends Component {
           <button type="submit">Submit</button>
         </form>
         </div>
-        ) : (
-          // Render a message or component for non-admin users
-          <div>
-            <AccessDenied />
-          </div>
-        )}
+      </div>
+
+      )}
       </div>
     );
   }
