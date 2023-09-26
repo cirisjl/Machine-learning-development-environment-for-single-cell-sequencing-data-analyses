@@ -1366,12 +1366,13 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
 
 // Define a route to handle adding a new option to MongoDB
 app.post('/mongoDB/api/addNewOption', async (req, res) => {
-    const { field, name } = req.body;
+    const { field, name, username } = req.body;
 
     // Create the document object with the specified format
     const newOption = {
         field: field,
-        name: name
+        name: name,
+        username: username
     };  
     try {
       const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
@@ -1379,6 +1380,9 @@ app.post('/mongoDB/api/addNewOption', async (req, res) => {
   
       const db = client.db(dbName);
       const collection = db.collection(optionsCollectionName);
+      
+    // Define the unique compound index on 'field' and 'name'
+    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
   
       // Insert the new option into the collection
       const insertResult = await collection.insertOne(newOption);
