@@ -1399,6 +1399,49 @@ app.post('/mongoDB/api/addNewOption', async (req, res) => {
     }
   });
 
+// Connect to MongoDB and retrieve options
+app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Use the aggregation framework to group options by field
+        const pipeline = [
+            {
+                $match: { username: req.user.username }, // Filter by the authenticated user
+            },
+            {
+                $group: {
+                    _id: '$field',
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username' } },
+                },
+            },
+        ];
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Transform the result into an object with field names as keys
+        const optionsByField = {};
+        result.forEach((item) => {
+            optionsByField[item._id] = item.options;
+        });
+
+        // Close the MongoDB connection
+        client.close();
+
+        // Return the options as a JSON response
+        res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
