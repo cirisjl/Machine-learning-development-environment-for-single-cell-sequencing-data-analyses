@@ -32,6 +32,7 @@ import BasicFormComponent from './Form/Components/BasicForm';
 import NewApp from './Form/Components/component2';
 import MyForm from './Form/Components/customComponent';
 import AccessDenied from './AccessDeniedPage';
+import ManageOptions from './Form/Components/editablePageOptions';
 
 function App() {
 
@@ -62,6 +63,7 @@ function App() {
           <Route path="new"         element={<NewApp/>}/>
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
+          <Route path="manageOptions"         element={<ManageOptions/>}/>
 
         </Route>
       </Routes>
