@@ -5,6 +5,7 @@ import './MyForm.css';
 import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
+import AccessDenied from '../../AccessDeniedPage';
 
 class MyForm extends Component {
   constructor(props) {
@@ -714,8 +715,7 @@ class MyForm extends Component {
         ) : (
           // Render a message or component for non-admin users
           <div>
-            <p>You must be an admin to access this form.</p>
-            {/* You can add a login button or other content here for non-admin users */}
+            <AccessDenied />
           </div>
         )}
       </div>
