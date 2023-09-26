@@ -83,10 +83,7 @@ class MyForm extends Component {
         }
         else {
           console.warn("Unauthorized - you must be an admin to access this page");
-          this.setState({
-            message: "Unauthorized - you must be an admin to access this page" ,
-            hasMessage: true,
-          });
+          window.location.href = '/accessDenied';
         }
       })
     }
@@ -285,7 +282,7 @@ class MyForm extends Component {
     if (this.state.hasMessage) {
       this.clearMessageAfterTimeout();
     }
-    const { formData, errors, isLoading, options, hasMessage, message } = this.state;
+    const { formData, errors, isLoading, options, hasMessage, message, isAdmin } = this.state;
     console.log("has Message and Message");
     console.log(hasMessage);
     console.log(message);
@@ -297,6 +294,9 @@ class MyForm extends Component {
             <p>{message}</p>
           </div>
         </div>)}
+
+        {isAdmin ? (
+          <div>
         <h2 className="form-title">My Form</h2>
         <form onSubmit={this.handleSubmit} className="form">
           {/* Dataset */}
@@ -710,6 +710,14 @@ class MyForm extends Component {
 
           <button type="submit">Submit</button>
         </form>
+        </div>
+        ) : (
+          // Render a message or component for non-admin users
+          <div>
+            <p>You must be an admin to access this form.</p>
+            {/* You can add a login button or other content here for non-admin users */}
+          </div>
+        )}
       </div>
     );
   }
