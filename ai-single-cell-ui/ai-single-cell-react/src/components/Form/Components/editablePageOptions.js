@@ -1,22 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { SERVER_URL } from '../../../constants/declarations';
+import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
+import { useNavigate } from 'react-router-dom';
 
-function OptionsList() {
+function ManageOptions() {
   const [options, setOptions] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Define the API URL (update with your actual API endpoint)
-    const apiUrl = `${SERVER_URL}/mongoDB/api/addNewOption`;
 
-    // Make an API call to retrieve options
-    axios.get(apiUrl)
-      .then((response) => {
-        setOptions(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
+    let jwtToken = getCookie('jwtToken');
+    // If user is not logged In - navigate to login page
+    if (!jwtToken) {
+        navigate("/routing");
+    }
+
+    isUserAuth(jwtToken).then((authData) => {
+        if (authData.isAdmin) {
+            // Define the API URL (update with your actual API endpoint)
+            const username = authData.username;
+            const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
+
+            // Make an API call to retrieve options
+            axios.get(apiUrl)
+            .then((response) => {
+                setOptions(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
+            }
+            else {
+                console.warn("Unauthorized - you must be an admin to access this page");
+                navigate("/accessDenied");
+            }
+    }).catch((error) => console.error(error));
+
   }, []);
 
     // Function to handle option deletion
@@ -53,4 +73,4 @@ function OptionsList() {
   );
 }
 
-export default OptionsList;
+export default ManageOptions;
