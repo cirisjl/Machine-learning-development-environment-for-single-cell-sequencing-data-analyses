@@ -3,6 +3,8 @@ import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
+import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
+import { useNavigate } from 'react-router-dom';
 
 class MyForm extends Component {
   constructor(props) {
@@ -63,7 +65,14 @@ class MyForm extends Component {
 
   componentDidMount() {
     // Make an API call to get the default options for all fields
-    this.fetchDefaultOptions();
+    let jwtToken = getCookie('jwtToken');
+    if (!jwtToken) {
+      // Navigate to the login page using window.location.href
+      window.location.href = '/login';
+    } else {
+      // If the token exists, fetch default options
+      this.fetchDefaultOptions();
+    }
   }
 
   async fetchDefaultOptions() {

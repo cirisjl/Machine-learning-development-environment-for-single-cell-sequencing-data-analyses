@@ -1274,6 +1274,9 @@ app.get('/mongoDB/api/options', async (req, res) => {
         const db = client.db(dbName);
         const collection = db.collection(optionsCollectionName);
 
+         // Define the unique compound index on 'field' and 'name'
+         await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
         // Use the aggregation framework to group options by field
         const pipeline = [
             {
