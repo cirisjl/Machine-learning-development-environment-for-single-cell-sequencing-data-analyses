@@ -17,7 +17,8 @@ require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
 const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
-const { MongoClient, ObjectID } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
+
 // const Option = require('../models/Option');
 // // Import the database configuration
 // require('./config/mongoDBClient');
@@ -1456,7 +1457,7 @@ app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
       const collection = db.collection(optionsCollectionName);
   
       // Convert optionIds to MongoDB ObjectIDs
-      const objectIds = optionIds.map(id => new ObjectID(id));
+      const objectIds = optionIds.map(id => new ObjectId(id));
   
       // Delete the options with the specified ObjectIDs
       const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
