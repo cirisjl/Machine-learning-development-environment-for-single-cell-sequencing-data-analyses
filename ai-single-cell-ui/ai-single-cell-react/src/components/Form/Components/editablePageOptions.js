@@ -43,6 +43,7 @@ function ManageOptions() {
         ? [...prevSelectedOptions[field], optionId]
         : [optionId],
     }));
+    console.log(selectedOptions);
   };
 
   // Function to handle option deletion
