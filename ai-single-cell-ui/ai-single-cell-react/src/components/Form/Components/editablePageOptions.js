@@ -76,7 +76,7 @@ const handleDeleteSelectedOptions = (field) => {
         axios
           .get(updatedApiUrl)
           .then((response) => {
-            setOptions({ ...options, [field]: response.data[field] });
+            setOptions(response.data);
           })
           .catch((error) => {
             console.error('Error fetching updated options:', error);
