@@ -33,6 +33,7 @@ import NewApp from './Form/Components/component2';
 import MyForm from './Form/Components/customComponent';
 import AccessDenied from './AccessDeniedPage';
 import ManageOptions from './Form/Components/editablePageOptions';
+import PublishDataset from './publishDatasets/publishDataset';
 
 function App() {
 
@@ -64,6 +65,7 @@ function App() {
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
+          <Route path="publishDataset"         element={<PublishDataset/>}/>
 
         </Route>
       </Routes>
