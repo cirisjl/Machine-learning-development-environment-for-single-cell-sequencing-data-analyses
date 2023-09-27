@@ -28,6 +28,8 @@
   ul {
     list-style: none;
     padding: 0;
+    overflow: auto;
+    max-width: 9rem;
   }
   
   .option-item {
@@ -43,6 +45,7 @@
     border-radius: 5px;
     padding: 5px 10px;
     cursor: pointer;
+    margin-top: 1rem;
   }
   
   /* Add more styles as needed */
