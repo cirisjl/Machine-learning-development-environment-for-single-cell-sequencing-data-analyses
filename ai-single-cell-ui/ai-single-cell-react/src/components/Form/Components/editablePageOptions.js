@@ -6,45 +6,51 @@ import { useNavigate } from 'react-router-dom';
 
 function ManageOptions() {
   const [options, setOptions] = useState({});
+  const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options
   const navigate = useNavigate();
 
   useEffect(() => {
-
     let jwtToken = getCookie('jwtToken');
-    // If user is not logged In - navigate to login page
+
     if (!jwtToken) {
-        navigate("/routing");
+      navigate("/routing");
     }
 
     isUserAuth(jwtToken).then((authData) => {
-        if (authData.isAdmin) {
-            // Define the API URL (update with your actual API endpoint)
-            const username = authData.username;
-            const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
+      if (authData.isAdmin) {
+        const username = authData.username;
+        const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
 
-            // Make an API call to retrieve options
-            axios.get(apiUrl)
-            .then((response) => {
-                setOptions(response.data);
-            })
-            .catch((error) => {
-                console.error('Error fetching data:', error);
-            });
-            }
-            else {
-                console.warn("Unauthorized - you must be an admin to access this page");
-                navigate("/accessDenied");
-            }
+        axios.get(apiUrl)
+          .then((response) => {
+            setOptions(response.data);
+          })
+          .catch((error) => {
+            console.error('Error fetching data:', error);
+          });
+      } else {
+        console.warn("Unauthorized - you must be an admin to access this page");
+        navigate("/accessDenied");
+      }
     }).catch((error) => console.error(error));
-
   }, []);
 
-    // Function to handle option deletion
-    const handleDeleteOption = (optionId) => {
-        // Make an API call to delete the option
-        // You can use Axios to send a DELETE request to the server
-        // Include code to update the UI or handle any errors as needed
-      };
+  // Function to handle option selection
+  const handleSelectOption = (field, optionId) => {
+    setSelectedOptions((prevSelectedOptions) => ({
+      ...prevSelectedOptions,
+      [field]: prevSelectedOptions[field]
+        ? [...prevSelectedOptions[field], optionId]
+        : [optionId],
+    }));
+  };
+
+  // Function to handle option deletion
+  const handleDeleteSelectedOptions = (field) => {
+    // Implement the logic to delete the selected options within the specified field
+    // You can use Axios to send a DELETE request to the server
+    // Include code to update the UI or handle any errors as needed
+  };
 
   return (
     <div>
@@ -57,16 +63,19 @@ function ManageOptions() {
               <li key={option._id}>
                 {option.name}
                 {option.username === 'kbcfh' && (
-                  <button
-                    onClick={() => handleDeleteOption(option._id)}
+                  <input
+                    type="checkbox"
+                    checked={selectedOptions[field]?.includes(option._id)}
+                    onChange={() => handleSelectOption(field, option._id)}
                     style={{ marginLeft: '10px' }}
-                  >
-                    Delete
-                  </button>
+                  />
                 )}
               </li>
             ))}
           </ul>
+          <button onClick={() => handleDeleteSelectedOptions(field)}>
+            Delete Selected Options
+          </button>
         </div>
       ))}
     </div>
