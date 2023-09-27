@@ -17,7 +17,7 @@ require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
 const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectID } = require('mongodb');
 // const Option = require('../models/Option');
 // // Import the database configuration
 // require('./config/mongoDBClient');
@@ -1441,6 +1441,39 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// Define a DELETE route to delete selected options
+app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
+    try {
+      const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
+
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+      // Connect to the MongoDB server
+      await client.connect();
+
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+  
+      // Convert optionIds to MongoDB ObjectIDs
+      const objectIds = optionIds.map(id => new ObjectID(id));
+  
+      // Delete the options with the specified ObjectIDs
+      const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
+  
+      client.close();
+  
+      if (deleteResult.deletedCount > 0) {
+        res.status(200).json({ message: 'Options deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Options not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting options:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
 
 
 // Start the server

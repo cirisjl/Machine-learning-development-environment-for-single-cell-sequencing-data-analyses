@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 function ManageOptions() {
   const [options, setOptions] = useState({});
+  const [username, setUserName] = useState('');
   const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options
   const navigate = useNavigate();
 
@@ -19,6 +20,7 @@ function ManageOptions() {
     isUserAuth(jwtToken).then((authData) => {
       if (authData.isAdmin) {
         const username = authData.username;
+        setUserName(username)
         const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
 
         axios.get(apiUrl)
@@ -56,12 +58,41 @@ function ManageOptions() {
     console.log(selectedOptions);
   };
 
-  // Function to handle option deletion
-  const handleDeleteSelectedOptions = (field) => {
-    // Implement the logic to delete the selected options within the specified field
-    // You can use Axios to send a DELETE request to the server
-    // Include code to update the UI or handle any errors as needed
-  };
+// Function to handle option deletion
+const handleDeleteSelectedOptions = (field) => {
+  const selectedOptionIds = selectedOptions[field] || [];
+
+  // Check if there are selected options to delete
+  if (selectedOptionIds.length > 0) {
+    const deleteApiUrl = `${SERVER_URL}/mongoDB/api/deleteOptions`;
+
+    // Send a DELETE request with the array of selected option IDs to delete from MongoDB
+    axios
+      .delete(deleteApiUrl, { data: { optionIds: selectedOptionIds } })
+      .then((response) => {
+        // Handle success response, e.g., update the UI to reflect the deleted options
+        // After successful deletion, re-fetch the updated options and set the state
+        const updatedApiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
+        axios
+          .get(updatedApiUrl)
+          .then((response) => {
+            setOptions({ ...options, [field]: response.data[field] });
+          })
+          .catch((error) => {
+            console.error('Error fetching updated options:', error);
+          });
+      })
+      .catch((error) => {
+        console.error('Error deleting options:', error);
+      });
+
+    // Clear the selected options after deletion
+    setSelectedOptions((prevSelectedOptions) => ({
+      ...prevSelectedOptions,
+      [field]: [],
+    }));
+  }
+};
 
   return (
     <div>
@@ -73,7 +104,7 @@ function ManageOptions() {
             {options[field].map((option) => (
               <li key={option._id}>
                 {option.name}
-                {option.username === 'kbcfh' && (
+                {option.username === username && (
                   <input
                     type="checkbox"
                     checked={selectedOptions[field]?.includes(option._id)}
