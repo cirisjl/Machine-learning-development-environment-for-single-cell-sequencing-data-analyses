@@ -324,7 +324,6 @@ class MyForm extends Component {
               isSearchable
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Task', selectedOption)} // Use handleSelectChange            
-              onCreateOption={(inputValue) => this.handleCreateOption('Task', inputValue)}
               options={options.Task} // Set options to the fetched options
               className={`form-input ${errors.Task ? 'error' : ''}`}
             />
@@ -652,16 +651,12 @@ class MyForm extends Component {
           {/* "Cell Count Estimate" (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Cell Count Estimate:</label>
-            <CreatableSelect
+            <input
+              type="number"
               name="Cell Count Estimate"
               value={formData['Cell Count Estimate']}
-              isClearable
-              isSearchable
-              isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Cell Count Estimate', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Cell Count Estimate', inputValue)}
-              options={options['Cell Count Estimate']} // Set options to the fetched options
-              className={`form-input ${errors['Cell Count Estimate'] ? 'error' : ''}`}
+              onChange={this.handleChange}
+              className="form-input"
             />
             {errors['Cell Count Estimate'] && <div className="error-tooltip">{errors['Cell Count Estimate']}</div>}
           </div>
