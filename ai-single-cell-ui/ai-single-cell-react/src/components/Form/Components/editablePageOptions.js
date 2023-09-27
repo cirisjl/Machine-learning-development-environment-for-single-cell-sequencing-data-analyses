@@ -37,12 +37,22 @@ function ManageOptions() {
 
   // Function to handle option selection
   const handleSelectOption = (field, optionId) => {
-    setSelectedOptions((prevSelectedOptions) => ({
-      ...prevSelectedOptions,
-      [field]: prevSelectedOptions[field]
-        ? [...prevSelectedOptions[field], optionId]
-        : [optionId],
-    }));
+    setSelectedOptions((prevSelectedOptions) => {
+      const selected = prevSelectedOptions[field] || [];
+      if (selected.includes(optionId)) {
+        // If the option is already selected, unselect it.
+        return {
+          ...prevSelectedOptions,
+          [field]: selected.filter((id) => id !== optionId),
+        };
+      } else {
+        // If the option is not selected, select it.
+        return {
+          ...prevSelectedOptions,
+          [field]: [...selected, optionId],
+        };
+      }
+    });
     console.log(selectedOptions);
   };
 
