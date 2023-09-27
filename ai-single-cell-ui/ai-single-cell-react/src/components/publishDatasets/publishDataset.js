@@ -1,4 +1,4 @@
-import RightRail from "../components/RightNavigation/rightRail";
+import RightRail from "../RightNavigation/rightRail";
 import LeftNav from "./components/leftNav";
 
 export default function PublishDataset() {
