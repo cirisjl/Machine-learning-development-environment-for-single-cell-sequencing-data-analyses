@@ -3,6 +3,8 @@ import axios from 'axios';
 import { SERVER_URL } from '../../../constants/declarations';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
+import './ManageOptions.css'; // Import a CSS file for styles
+
 
 function ManageOptions() {
   const [options, setOptions] = useState({});
@@ -95,27 +97,26 @@ const handleDeleteSelectedOptions = (field) => {
 };
 
   return (
-    <div>
+    <div className="manage-options-container">
       <h2>Options Grouped by Field</h2>
       {Object.keys(options).map((field) => (
-        <div key={field}>
+        <div className="field-container" key={field}>
           <h3>{field}</h3>
           <ul>
             {options[field].map((option) => (
-              <li key={option._id}>
+              <li key={option._id} className="option-item">
                 {option.name}
                 {option.username === username && (
                   <input
                     type="checkbox"
                     checked={selectedOptions[field]?.includes(option._id)}
                     onChange={() => handleSelectOption(field, option._id)}
-                    style={{ marginLeft: '10px' }}
                   />
                 )}
               </li>
             ))}
           </ul>
-          <button onClick={() => handleDeleteSelectedOptions(field)}>
+          <button onClick={() => handleDeleteSelectedOptions(field)} className="delete-button">
             Delete Selected Options
           </button>
         </div>
