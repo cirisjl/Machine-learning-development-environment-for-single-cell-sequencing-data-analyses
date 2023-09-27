@@ -105,7 +105,6 @@ const handleDeleteSelectedOptions = (field) => {
           <ul>
             {options[field].map((option) => (
               <li key={option._id} className="option-item">
-                {option.name}
                 {option.username === username && (
                   <input
                     type="checkbox"
@@ -113,6 +112,7 @@ const handleDeleteSelectedOptions = (field) => {
                     onChange={() => handleSelectOption(field, option._id)}
                   />
                 )}
+               {option.name}
               </li>
             ))}
           </ul>
