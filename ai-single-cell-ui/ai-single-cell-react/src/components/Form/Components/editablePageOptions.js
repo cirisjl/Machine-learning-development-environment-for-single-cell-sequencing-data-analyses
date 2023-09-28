@@ -173,22 +173,24 @@ const handleAddOption = () => {
             <div className="overlay">
               <div className="add-option-dialog">
                 <h3>Add Task Option</h3>
-                <label>
-                  Value:
-                  <input
-                    type="text"
-                    value={newOptionValue}
-                    onChange={(e) => setNewOptionValue(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Abbreviation:
-                  <input
-                    type="text"
-                    value={newOptionAbbreviation}
-                    onChange={(e) => setNewOptionAbbreviation(e.target.value)}
-                  />
-                </label>
+                <div className="input-row">>
+                  <label>
+                    Value:
+                    <input
+                      type="text"
+                      value={newOptionValue}
+                      onChange={(e) => setNewOptionValue(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Abbreviation:
+                    <input
+                      type="text"
+                      value={newOptionAbbreviation}
+                      onChange={(e) => setNewOptionAbbreviation(e.target.value)}
+                    />
+                  </label>
+                </div>
                 <button onClick={handleAddOption} className="add-button">
                   Save
                 </button>
