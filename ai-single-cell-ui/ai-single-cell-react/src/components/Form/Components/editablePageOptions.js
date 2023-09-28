@@ -167,10 +167,8 @@ const handleAddOption = () => {
               + Add
             </button>
           )}
-        </div>
-      ))}
 
-    {/* Add New Task Option Dialog */}
+             {/* Add New Task Option Dialog */}
     {isAddOptionDialogOpen && (
         <div className="add-option-dialog">
           <h3>Add New Task Option</h3>
@@ -198,6 +196,8 @@ const handleAddOption = () => {
           </button>
         </div>
       )}
+        </div>
+      ))}
     </div>
   );
 }
