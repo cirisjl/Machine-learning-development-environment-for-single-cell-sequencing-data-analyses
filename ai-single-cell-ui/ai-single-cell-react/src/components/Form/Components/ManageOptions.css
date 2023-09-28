@@ -48,5 +48,25 @@
     margin-top: 1rem;
   }
   
-  /* Add more styles as needed */
-  
+/* Add styles for the "add" button next to the "delete" button */
+.add-button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Add styles for the "Add New Task Option" dialog */
+.add-option-dialog {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 10px 0;
+  background-color: #f9f9f9;
+}
+
+.cancel-button {
+  background-color: #ccc;
+}
