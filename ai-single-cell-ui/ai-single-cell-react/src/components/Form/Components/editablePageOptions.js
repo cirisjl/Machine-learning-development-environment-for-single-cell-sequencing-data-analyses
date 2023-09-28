@@ -172,9 +172,9 @@ const handleAddOption = () => {
           {isAddOptionDialogOpen && isAdmin && field === 'Task' && (
             <div className="overlay">
               <div className="add-option-dialog">
-                <h3>Add New Task Option</h3>
+                <h3>Add Task Option</h3>
                 <label>
-                  Option Value:
+                  Value:
                   <input
                     type="text"
                     value={newOptionValue}
