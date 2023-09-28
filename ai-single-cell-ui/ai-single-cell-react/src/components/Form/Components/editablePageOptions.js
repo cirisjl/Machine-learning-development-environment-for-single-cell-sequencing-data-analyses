@@ -13,6 +13,10 @@ function ManageOptions() {
   const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options
   const navigate = useNavigate();
 
+  const [newOptionValue, setNewOptionValue] = useState(''); // New option value
+  const [newOptionAbbreviation, setNewOptionAbbreviation] = useState(''); // New option abbreviation
+  const [isAddOptionDialogOpen, setAddOptionDialogOpen] = useState(false);
+
   useEffect(() => {
     let jwtToken = getCookie('jwtToken');
 
@@ -98,6 +102,45 @@ const handleDeleteSelectedOptions = (field) => {
   }
 };
 
+// Function to add a new option (for Task field only)
+const handleAddOption = () => {
+  // Create a new option object with the provided value and abbreviation
+  const newOption = {
+    name: newOptionValue,
+    abbreviation: newOptionAbbreviation,
+    field: 'Task', // Set the field to "Task"
+  };
+
+  // Send a POST request to add the new option to MongoDB
+  const addOptionApiUrl = `${SERVER_URL}/mongoDB/api/addOption`;
+  axios
+    .post(addOptionApiUrl, newOption)
+    .then((response) => {
+      // Handle success response, e.g., update the UI to reflect the added option
+      // After successful addition, re-fetch the updated options and set the state
+      const updatedApiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
+      axios
+        .get(updatedApiUrl)
+        .then((response) => {
+          setOptions(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching updated options:', error);
+        });
+
+      // Clear the new option input fields
+      setNewOptionValue('');
+      setNewOptionAbbreviation('');
+      // Close the add option dialog
+      setAddOptionDialogOpen(false);
+    })
+    .catch((error) => {
+      console.error('Error adding option:', error);
+    });
+};
+
+
+
   return (
     <div className="manage-options-container">
       <h2>Options Grouped by Field</h2>
@@ -119,8 +162,42 @@ const handleDeleteSelectedOptions = (field) => {
           <button onClick={() => handleDeleteSelectedOptions(field)} className="delete-button">
             Delete Selected Options
           </button>
+          {isAdmin && field === 'Task' && (
+            <button onClick={() => setAddOptionDialogOpen(true)} className="add-button">
+              + Add
+            </button>
+          )}
         </div>
       ))}
+
+    {/* Add New Task Option Dialog */}
+    {isAddOptionDialogOpen && (
+        <div className="add-option-dialog">
+          <h3>Add New Task Option</h3>
+          <label>
+            Option Value:
+            <input
+              type="text"
+              value={newOptionValue}
+              onChange={(e) => setNewOptionValue(e.target.value)}
+            />
+          </label>
+          <label>
+            Abbreviation:
+            <input
+              type="text"
+              value={newOptionAbbreviation}
+              onChange={(e) => setNewOptionAbbreviation(e.target.value)}
+            />
+          </label>
+          <button onClick={handleAddOption} className="add-button">
+            Save
+          </button>
+          <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   );
 }
