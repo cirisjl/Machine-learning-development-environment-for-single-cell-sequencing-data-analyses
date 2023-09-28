@@ -170,6 +170,7 @@ const handleAddOption = () => {
 
              {/* Add New Task Option Dialog */}
           {isAddOptionDialogOpen && isAdmin && field === 'Task' && (
+            <div className="overlay">
               <div className="add-option-dialog">
                 <h3>Add New Task Option</h3>
                 <label>
@@ -194,6 +195,7 @@ const handleAddOption = () => {
                 <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
                   Cancel
                 </button>
+              </div>
               </div>
             )}
         </div>
