@@ -53,6 +53,7 @@
   background-color: #ff6347;
   color: #fff;
   border: none;
+  border-radius: 5px;
   padding: 5px 10px;
   margin: 5px;
   cursor: pointer;

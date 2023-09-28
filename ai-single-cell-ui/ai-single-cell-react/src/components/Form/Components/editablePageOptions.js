@@ -169,33 +169,33 @@ const handleAddOption = () => {
           )}
 
              {/* Add New Task Option Dialog */}
-    {isAddOptionDialogOpen && (
-        <div className="add-option-dialog">
-          <h3>Add New Task Option</h3>
-          <label>
-            Option Value:
-            <input
-              type="text"
-              value={newOptionValue}
-              onChange={(e) => setNewOptionValue(e.target.value)}
-            />
-          </label>
-          <label>
-            Abbreviation:
-            <input
-              type="text"
-              value={newOptionAbbreviation}
-              onChange={(e) => setNewOptionAbbreviation(e.target.value)}
-            />
-          </label>
-          <button onClick={handleAddOption} className="add-button">
-            Save
-          </button>
-          <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
-            Cancel
-          </button>
-        </div>
-      )}
+          {isAddOptionDialogOpen && isAdmin && field === 'Task' && (
+              <div className="add-option-dialog">
+                <h3>Add New Task Option</h3>
+                <label>
+                  Option Value:
+                  <input
+                    type="text"
+                    value={newOptionValue}
+                    onChange={(e) => setNewOptionValue(e.target.value)}
+                  />
+                </label>
+                <label>
+                  Abbreviation:
+                  <input
+                    type="text"
+                    value={newOptionAbbreviation}
+                    onChange={(e) => setNewOptionAbbreviation(e.target.value)}
+                  />
+                </label>
+                <button onClick={handleAddOption} className="add-button">
+                  Save
+                </button>
+                <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
+                  Cancel
+                </button>
+              </div>
+            )}
         </div>
       ))}
     </div>
