@@ -9,6 +9,7 @@ import './ManageOptions.css'; // Import a CSS file for styles
 function ManageOptions() {
   const [options, setOptions] = useState({});
   const [username, setUserName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options
   const navigate = useNavigate();
 
@@ -20,10 +21,11 @@ function ManageOptions() {
     }
 
     isUserAuth(jwtToken).then((authData) => {
-      if (authData.isAdmin) {
+      if (authData.isAuth) {
         const username = authData.username;
-        setUserName(username)
-        const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
+        setUserName(username);
+        setIsAdmin(authData.isAdmin);
+        const apiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}&isAdmin=${authData.isAdmin}`;
 
         axios.get(apiUrl)
           .then((response) => {
@@ -33,8 +35,8 @@ function ManageOptions() {
             console.error('Error fetching data:', error);
           });
       } else {
-        console.warn("Unauthorized - you must be an admin to access this page");
-        navigate("/accessDenied");
+        console.warn("Authentication failed - please login to continue.");
+        navigate("/routing");
       }
     }).catch((error) => console.error(error));
   }, []);
@@ -74,7 +76,7 @@ const handleDeleteSelectedOptions = (field) => {
       .then((response) => {
         // Handle success response, e.g., update the UI to reflect the deleted options
         // After successful deletion, re-fetch the updated options and set the state
-        const updatedApiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}`;
+        const updatedApiUrl = `${SERVER_URL}/mongoDB/api/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
         axios
           .get(updatedApiUrl)
           .then((response) => {
@@ -105,13 +107,11 @@ const handleDeleteSelectedOptions = (field) => {
           <ul>
             {options[field].map((option) => (
               <li key={option._id} className="option-item">
-                {option.username === username && (
                   <input
                     type="checkbox"
                     checked={selectedOptions[field]?.includes(option._id)}
                     onChange={() => handleSelectOption(field, option._id)}
                   />
-                )}
                {option.name}
               </li>
             ))}

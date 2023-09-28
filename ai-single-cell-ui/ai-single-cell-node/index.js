@@ -1411,11 +1411,15 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         const db = client.db(dbName);
         const collection = db.collection(optionsCollectionName);
 
-        // Use the aggregation framework to group options by field
+        const username = req.query.username;
+        const isAdmin = req.query.isAdmin;
+
+        // Define the match stage of the aggregation pipeline
+        const matchStage = isAdmin ? {} : { username: username };
+
+        // Aggregation pipeline stages
         const pipeline = [
-            {
-                $match: { username: req.query.username }, // Filter by the authenticated user
-            },
+            { $match: matchStage },
             {
                 $group: {
                     _id: '$field',
