@@ -173,7 +173,7 @@ const handleAddOption = () => {
             <div className="overlay">
               <div className="add-option-dialog">
                 <h3>Add Task Option</h3>
-                <div className="input-row">>
+                <div className="input-row">
                   <label>
                     Value:
                     <input
