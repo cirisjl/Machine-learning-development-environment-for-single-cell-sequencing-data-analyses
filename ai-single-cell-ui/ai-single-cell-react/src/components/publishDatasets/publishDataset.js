@@ -5,15 +5,23 @@ import React, { useState } from 'react';
 
 export default function PublishDataset() {
 
+    const [taskStatus, setTaskStatus] = useState({
+        1: false, // Task 1 is initially not completed
+        2: false,
+        3: false,
+        // Add other tasks here
+      });
+    
+
     const [activeTask, setActiveTask] = useState(1); // Initialize with the first task
 
     return(
         <div className="page-container">
             <div className="left-nav">
-                <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} />
+            <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} />
             </div>
             <div className="main-content">
-                <MiddleContent activeTask={activeTask} />
+                <MiddleContent activeTask={activeTask} setTaskStatus={setTaskStatus} />
             </div>
             <div className="right-rail">
                 <RightRail />
