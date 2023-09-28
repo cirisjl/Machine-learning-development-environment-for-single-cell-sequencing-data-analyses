@@ -1415,7 +1415,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         const isAdmin = req.query.isAdmin;
 
         // Define the match stage of the aggregation pipeline
-        const matchStage = isAdmin ? {} : { username: username };
+        const matchStage = isAdmin=== 'true' ? {} : { username: username };
 
         console.log(isAdmin);
         console.log(matchStage);
