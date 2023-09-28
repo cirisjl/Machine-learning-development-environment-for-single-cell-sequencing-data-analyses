@@ -19,6 +19,5 @@ function UploadDataTaskComponent({ setTaskStatus }) {
     </div>
   );
 }
-}
 
 export default UploadDataTaskComponent;
