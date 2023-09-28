@@ -91,7 +91,7 @@
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: 400px;
+  width: 30%;
   text-align: center;
 }
 
@@ -106,7 +106,7 @@
 }
 
 .add-option-dialog input {
-  width: 100%;
+  margin-left: 1rem;
   padding: 8px;
   margin-top: 5px;
   border: 1px solid #ccc;
@@ -114,13 +114,14 @@
 }
 
 .add-option-dialog .add-button {
-  background-color: #4CAF50;
+  background-color: #f44336;
   color: white;
   border: none;
   padding: 10px 15px;
   margin: 10px 5px;
   cursor: pointer;
   font-size: 14px;
+  margin-top: 1.5rem;
 }
 
 .add-option-dialog .cancel-button {
@@ -130,6 +131,7 @@
   padding: 10px 15px;
   margin: 10px 5px;
   cursor: pointer;
+  margin-top: 1.5rem;
   font-size: 14px;
 }
 
