@@ -323,6 +323,7 @@ class MyForm extends Component {
               isClearable
               isSearchable
               isLoading={isLoading}
+              isCreatable={false} // Set isCreatable to false to prevent creating new options
               onChange={(selectedOption) => this.handleSelectChange('Task', selectedOption)} // Use handleSelectChange            
               options={options.Task} // Set options to the fetched options
               className={`form-input ${errors.Task ? 'error' : ''}`}
