@@ -137,30 +137,3 @@
   border-radius: 5px;
 }
 
-/* Add styles for the input row (Value and Abbreviation labels) */
-.input-row {
-  display: flex;
-  flex-direction: column;
-}
-
-.input-row label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.input-row label::before {
-  content: attr(data-label);
-  flex: 1;
-}
-
-.input-row input {
-  flex: 2;
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
