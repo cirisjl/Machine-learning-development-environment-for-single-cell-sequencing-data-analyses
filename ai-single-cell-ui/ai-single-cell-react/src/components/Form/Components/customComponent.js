@@ -1,5 +1,5 @@
 import React, { Component , useEffect} from 'react';
-import CreatableSelect from 'react-select/creatable';
+import {CreatableSelect, Select} from 'react-select';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
@@ -317,7 +317,7 @@ class MyForm extends Component {
           {/* Task (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Task:</label>
-            <CreatableSelect
+            <Select
               name="Task"
               value={formData.Task}
               isClearable
