@@ -140,69 +140,74 @@ const handleAddOption = () => {
     });
 };
 
-
-
-  return (
-    <div className="manage-options-container">
-      <h2>Options Grouped by Field</h2>
-      {Object.keys(options).map((field) => (
-        <div className="field-container" key={field}>
-          <h3>{field}</h3>
-          <ul>
-            {options[field].map((option) => (
-              <li key={option._id} className="option-item">
-                  <input
-                    type="checkbox"
-                    checked={selectedOptions[field]?.includes(option._id)}
-                    onChange={() => handleSelectOption(field, option._id)}
-                  />
-               {option.name}
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => handleDeleteSelectedOptions(field)} className="delete-button">
-            Delete Selected Options
+return (
+  <div className="manage-options-container">
+    <h2>Options Grouped by Field</h2>
+    {Object.keys(options).map((field) => (
+      <div className="field-container" key={field}>
+        <h3>{field}</h3>
+        <ul>
+          {options[field].map((option) => (
+            <li key={option._id} className="option-item">
+              <input
+                type="checkbox"
+                checked={selectedOptions[field]?.includes(option._id)}
+                onChange={() => handleSelectOption(field, option._id)}
+              />
+              {/* Display the option name along with the abbreviation if available */}
+              {option.abbreviation ? (
+                <span>
+                  {option.name} - {option.abbreviation}
+                </span>
+              ) : (
+                <span>{option.name}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => handleDeleteSelectedOptions(field)} className="delete-button">
+          Delete Selected Options
+        </button>
+        {isAdmin && field === 'Task' && (
+          <button onClick={() => setAddOptionDialogOpen(true)} className="add-button">
+            + Add
           </button>
-          {isAdmin && field === 'Task' && (
-            <button onClick={() => setAddOptionDialogOpen(true)} className="add-button">
-              + Add
-            </button>
-          )}
+        )}
 
-             {/* Add New Task Option Dialog */}
-          {isAddOptionDialogOpen && isAdmin && field === 'Task' && (
-            <div className="overlay">
-              <div className="add-option-dialog">
-                <h3>Add Task Option</h3>
-                  <label>
-                    Value:
-                    <input
-                      type="text"
-                      value={newOptionValue}
-                      onChange={(e) => setNewOptionValue(e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Abbreviation:
-                    <input
-                      type="text"
-                      value={newOptionAbbreviation}
-                      onChange={(e) => setNewOptionAbbreviation(e.target.value)}
-                    />
-                  </label>
-                <button onClick={handleAddOption} className="add-button">
-                  Save
-                </button>
-                <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
-                  Cancel
-                </button>
-              </div>
+        {/* Add New Task Option Dialog */}
+        {isAddOptionDialogOpen && isAdmin && field === 'Task' && (
+          <div className="overlay">
+            <div className="add-option-dialog">
+              <h3>Add Task Option</h3>
+              <label>
+                Value:
+                <input
+                  type="text"
+                  value={newOptionValue}
+                  onChange={(e) => setNewOptionValue(e.target.value)}
+                />
+              </label>
+              <label>
+                Abbreviation:
+                <input
+                  type="text"
+                  value={newOptionAbbreviation}
+                  onChange={(e) => setNewOptionAbbreviation(e.target.value)}
+                />
+              </label>
+              <button onClick={handleAddOption} className="add-button">
+                Save
+              </button>
+              <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
+                Cancel
+              </button>
             </div>
-            )}
-        </div>
-      ))}
-    </div>
-  );
-}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+);
+
 
 export default ManageOptions;
