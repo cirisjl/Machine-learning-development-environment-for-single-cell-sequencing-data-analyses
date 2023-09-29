@@ -208,6 +208,7 @@ return (
     ))}
   </div>
 );
+}
 
 
 export default ManageOptions;
