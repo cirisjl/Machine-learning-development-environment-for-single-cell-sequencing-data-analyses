@@ -109,7 +109,7 @@ class MyForm extends Component {
   
       fieldNames.forEach(fieldName => {
         if (data[fieldName]) {
-          options[fieldName] = data[fieldName].map(option => ({ value: option, label: option }));
+          options[fieldName] = data[fieldName].map(option => ({ value: option.abbreviation, label: option.name }));
         }
       });
   

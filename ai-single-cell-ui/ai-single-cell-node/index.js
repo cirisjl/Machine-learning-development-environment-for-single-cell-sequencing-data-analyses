@@ -1283,7 +1283,7 @@ app.get('/mongoDB/api/options', async (req, res) => {
             {
                 $group: {
                     _id: '$field',
-                    options: { $addToSet: '$name' },
+                    options: { $addToSet: { name: '$name', abbreviation: '$abbreviation' } },
                 },
             },
         ];
@@ -1306,33 +1306,6 @@ app.get('/mongoDB/api/options', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-// // Include routes
-// app.use('/mongoDB/api/options', require('./routes/Option'));
-
-// app.get('/mongoDB/api/options', async (req, res) => {
-//     try {
-//       const options = await Option.aggregate([
-//         {
-//           $group: {
-//             _id: '$field',
-//             options: { $addToSet: '$name' },
-//           },
-//         },
-//       ]);
-  
-//       const optionsByField = options.reduce((acc, option) => {
-//         acc[option._id] = option.options;
-//         return acc;
-//       }, {});
-  
-//       res.status(200).json(optionsByField);
-//     } catch (err) {
-//       console.error('Error:', err);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   });
-
 
 app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     try {
