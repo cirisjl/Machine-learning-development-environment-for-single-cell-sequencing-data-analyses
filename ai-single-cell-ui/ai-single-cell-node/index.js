@@ -1399,7 +1399,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
             {
                 $group: {
                     _id: '$field',
-                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username' } },
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation:'$abbreviation' } },
                 },
             },
         ];
