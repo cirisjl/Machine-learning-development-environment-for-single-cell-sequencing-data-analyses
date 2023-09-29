@@ -190,7 +190,6 @@ const handleAddOption = () => {
                       onChange={(e) => setNewOptionAbbreviation(e.target.value)}
                     />
                   </label>
-                </div>
                 <button onClick={handleAddOption} className="add-button">
                   Save
                 </button>
@@ -198,6 +197,7 @@ const handleAddOption = () => {
                   Cancel
                 </button>
               </div>
+            </div>
             )}
         </div>
       ))}
