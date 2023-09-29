@@ -1483,6 +1483,42 @@ app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
   });
   
 
+// Define a route to handle adding a new option for Task field to MongoDB
+app.post('/mongoDB/api/addTaskOption', async (req, res) => {
+    const { field, name, username, abbreviation } = req.body;
+
+    // Create the document object with the specified format
+    const newOption = {
+        field: field,
+        name: name,
+        username: username,
+        abbreviation: abbreviation
+    };  
+    try {
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+      
+    // Define the unique compound index on 'field' and 'name'
+    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+  
+      // Insert the new option into the collection
+      const insertResult = await collection.insertOne(newOption);
+  
+      client.close();
+  
+      res.status(200).json({
+        message: `New option "${name}" added to MongoDB for field "${field}"`,
+        insertedId: insertResult.insertedId,
+      });
+    } catch (error) {
+      console.error('Error adding new option to MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;

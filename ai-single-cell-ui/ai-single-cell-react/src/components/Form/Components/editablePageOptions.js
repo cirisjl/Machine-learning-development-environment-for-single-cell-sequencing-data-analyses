@@ -109,10 +109,11 @@ const handleAddOption = () => {
     name: newOptionValue,
     abbreviation: newOptionAbbreviation,
     field: 'Task', // Set the field to "Task"
+    username: 'default'
   };
 
   // Send a POST request to add the new option to MongoDB
-  const addOptionApiUrl = `${SERVER_URL}/mongoDB/api/addOption`;
+  const addOptionApiUrl = `${SERVER_URL}/mongoDB/api/addTaskOption`;
   axios
     .post(addOptionApiUrl, newOption)
     .then((response) => {
@@ -173,7 +174,6 @@ const handleAddOption = () => {
             <div className="overlay">
               <div className="add-option-dialog">
                 <h3>Add Task Option</h3>
-                <div className="input-row">
                   <label>
                     Value:
                     <input
@@ -197,7 +197,6 @@ const handleAddOption = () => {
                 <button onClick={() => setAddOptionDialogOpen(false)} className="cancel-button">
                   Cancel
                 </button>
-              </div>
               </div>
             )}
         </div>
