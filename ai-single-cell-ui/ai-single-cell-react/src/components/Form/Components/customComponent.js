@@ -1,5 +1,6 @@
 import React, { Component , useEffect} from 'react';
-import {CreatableSelect, Select} from 'react-select';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import { SERVER_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
