@@ -11,7 +11,7 @@ from string import ascii_letters
 import csv
 
 
-def load_anndata(path, dataset=None, show_error=True):
+def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is optional and only for Seurat object
 
     # path = os.path.abspath(path)
     adata = None
@@ -58,27 +58,31 @@ def load_anndata(path, dataset=None, show_error=True):
         elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
         elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
-            try:
-                current_file = os.path.abspath(__file__)
-                # Construct the relative path to the desired file
-                relative_path = os.path.join(os.path.dirname(current_file), 'convert_to_anndata.Rmd')
-
-                # Get the absolute path of the desired file
-                operation_path = os.path.abspath(relative_path)
-                report_path = os.path.join(os.path.dirname(path), "file_conversion_report.html")
-                adata_path = os.path.splitext(path)[0] + '.h5ad'
-
-                s = subprocess.call(["R -e \"rmarkdown::render('" + operation_path + "', params=list(path='" + str(path) + "'), output_file='" + report_path + "')\""], shell = True)
-                print(s)
-
-                if os.path.exists(adata_path):
-                    adata = sc.read_h5ad(adata_path)
-
-            except Exception as e:
-                print("Object format conversion is failed")
-                if show_error: print(e)
+            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay=assay)
+            if os.path.exists(adata_path):
+                adata = sc.read_h5ad(adata_path)
 
     return adata
+
+
+# Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
+def convert_seurat_sce_to_anndata(path, assay='RNA'):
+    import rpy2.robjects as robjects
+    robjects.r.source("../tools/formating/formating.R")
+    assay_names = None
+    adata_path = None
+
+    if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
+        try:
+            results = robjects.r.convert_seurat_sce_to_anndata(path, assay=assay)
+            adata_path = list(results[2])[0]
+            assay_names = list(results[2])[0]
+        except Exception as e:
+            print("Object format conversion is failed")
+            print(e)
+
+    return adata_path, assay_names
+
 
 def anndata_to_csv(adata, output_path, layer = None):
     counts = None

@@ -1,5 +1,6 @@
 from typing import List
 from celery import shared_task
+from tools.formating.formating import *
 from tools.run_qc import run_qc
 from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
@@ -9,9 +10,16 @@ from tools.run_evaluation import run_evaluation
 
 @shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_qc_task')
+def convert_to_anndata_task(self, path):
+    task_id = self.request.id
+    adata_path, assay_names = convert_seurat_sce_to_anndata(task_id, path)
+    return adata_path, assay_names
+
+@shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+             name='tools:create_qc_task')
 def create_qc_task(self, dataset, input, userID, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
     task_id = self.request.id
-    results = run_qc(task_id,dataset, input,userID, output, methods, show_error = True)
+    results = run_qc(task_id,dataset, input, userID, output, methods, show_error = True)
     return results
 
 
