@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ReviewTaskComponent({ setTaskStatus }) {
+function QualityControlTaskComponent({ setTaskStatus }) {
   const handleTask1Completion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
@@ -15,9 +15,9 @@ function ReviewTaskComponent({ setTaskStatus }) {
   return (
     <div>
       {/* Task 1 content here */}
-      <button onClick={handleTask1Completion}>ReviewTaskComponent button</button>
+      <button onClick={handleTask1Completion}>QualityControlTaskComponent button</button>
     </div>
   );
 }
 
-export default ReviewTaskComponent;
+export default QualityControlTaskComponent;
