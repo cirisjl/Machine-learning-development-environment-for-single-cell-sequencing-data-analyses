@@ -23,7 +23,7 @@ function LeftNav({ activeTask, setActiveTask, taskStatus }) {
   };
 
   return (
-    <nav>
+    <nav className='benchmarks-left-nav'>
       <ul>
         {tasks.map((task) => (
           <li key={task.id} className={task.id === activeTask ? 'active' : ''}>
