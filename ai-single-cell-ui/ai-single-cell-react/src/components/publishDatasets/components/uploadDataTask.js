@@ -15,7 +15,7 @@ function UploadDataTaskComponent({ setTaskStatus }) {
   return (
     <div>
       {/* Task 1 content here */}
-      <button onClick={handleTask1Completion}>Complete Task 1</button>
+      <button onClick={handleTask1Completion}>UploadDataTaskComponent button</button>
     </div>
   );
 }
