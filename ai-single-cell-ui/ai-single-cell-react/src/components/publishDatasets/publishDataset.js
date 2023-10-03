@@ -9,6 +9,10 @@ export default function PublishDataset() {
         1: false, // Task 1 is initially not completed
         2: false,
         3: false,
+        4: false,
+        5: false,
+        6: false,
+        7: false
         // Add other tasks here
       });
     

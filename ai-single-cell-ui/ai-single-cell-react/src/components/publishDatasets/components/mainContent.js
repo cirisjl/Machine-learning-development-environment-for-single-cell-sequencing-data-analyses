@@ -4,12 +4,12 @@ import ValidationTaskComponent from './validationTask';
 import GetMetaDataComponent from './getMetadataTask';
 import ReviewTaskComponent from './reviewTask';
 
-function MiddleContent({ activeTask }) {
+function MiddleContent({ activeTask, setTaskStatus }) {
   const taskComponents = {
-    1: <UploadDataTaskComponent />,
-    2: <ValidationTaskComponent />,
-    3: <GetMetaDataComponent />,
-    4: <ReviewTaskComponent />,
+    1: <UploadDataTaskComponent setTaskStatus={setTaskStatus} />,
+    2: <ValidationTaskComponent setTaskStatus={setTaskStatus} />,
+    3: <GetMetaDataComponent setTaskStatus={setTaskStatus} />,
+    4: <ReviewTaskComponent setTaskStatus={setTaskStatus} />,
     // Add other task components here
   };
 
