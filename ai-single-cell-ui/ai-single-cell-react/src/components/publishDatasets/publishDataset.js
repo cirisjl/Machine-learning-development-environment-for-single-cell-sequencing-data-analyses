@@ -2,6 +2,7 @@ import RightRail from "../RightNavigation/rightRail";
 import LeftNav from "./components/leftNav";
 import MiddleContent from "./components/mainContent";
 import React, { useState } from 'react';
+import './publicDatasets.css'; // Import a CSS file for styles
 
 export default function PublishDataset() {
 

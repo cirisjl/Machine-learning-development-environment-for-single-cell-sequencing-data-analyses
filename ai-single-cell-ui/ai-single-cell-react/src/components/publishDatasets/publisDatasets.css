@@ -1,0 +1,18 @@
+.benchmarks-left-nav ul {
+    margin-top: 20%;
+}
+
+.benchmarks-left-nav li {
+    padding: 11px 0px;
+    padding-left: 40px;
+    word-break: break-word;
+    cursor: pointer;
+}
+
+.benchmarks-left-nav li:hover {
+    background-color: #f0f0f0;
+}
+
+.benchmarks-left-nav li.active {
+    background-color: #f0f0f0;
+}
