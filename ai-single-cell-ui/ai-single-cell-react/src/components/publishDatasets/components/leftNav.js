@@ -2,9 +2,13 @@ import React from 'react';
 
 function LeftNav({ activeTask, setActiveTask, taskStatus }) {
   const tasks = [
-    { id: 1, name: 'Upload File', completed: taskStatus[1] },
-    { id: 2, name: 'Validate File', completed: taskStatus[2] },
-    { id: 3, name: 'Run APIs', completed: taskStatus[3] },
+    { id: 1, name: 'Upload', completed: taskStatus[1] },
+    { id: 2, name: 'Validation', completed: taskStatus[2] },
+    { id: 3, name: 'QC', completed: taskStatus[3] },
+    { id: 4, name: 'Metadata', completed: taskStatus[4] },
+    { id: 5, name: 'Task Builder', completed: taskStatus[5] },
+    { id: 6, name: 'Benchmarks', completed: taskStatus[6] },
+    { id: 7, name: 'Review', completed: taskStatus[7] },
     // Add other tasks here
   ];
 
