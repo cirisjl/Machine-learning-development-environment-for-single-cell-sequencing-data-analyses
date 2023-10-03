@@ -45,6 +45,7 @@ function App() {
           <Route path="updates"      element={<Updates/>} />
           <Route path="competitions" element={<Competitions/>}/>
           <Route path="benchmarks"   element={<Benchmarks/>}/>
+          <Route path="benchmarks/uploads"   element={<PublishDataset/>}/>
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
           <Route path="mydata/upload-data"       element={<UploadData/>}></Route>
@@ -65,7 +66,7 @@ function App() {
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
-          <Route path="publishDataset"         element={<PublishDataset/>}/>
+          {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>
       </Routes>
