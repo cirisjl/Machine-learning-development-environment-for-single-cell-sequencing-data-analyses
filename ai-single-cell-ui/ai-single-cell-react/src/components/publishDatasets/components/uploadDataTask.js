@@ -1,4 +1,5 @@
 import React from 'react';
+import UppyUploader from '../../MyData/uppy';
 
 function UploadDataTaskComponent({ setTaskStatus }) {
   const handleTask1Completion = () => {
@@ -13,9 +14,26 @@ function UploadDataTaskComponent({ setTaskStatus }) {
   };
 
   return (
-    <div>
-      {/* Task 1 content here */}
-      <button onClick={handleTask1Completion}>UploadDataTaskComponent button</button>
+    <div className='upload-task'>
+      <div class="separator heading">
+          <div class="stripe"></div>
+          <h2 class="h-sm font-weight-bold">Input</h2>
+          <div class="stripe"></div>
+      </div>
+      <div className='uppy-uploader-component'>
+        <span>Choose your file*</span>
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true}/>
+      </div>
+      <div class="separator heading">
+          <div class="stripe"></div>
+          <h2 class="h-sm font-weight-bold">Parameters</h2>
+          <div class="stripe"></div>
+      </div>
+      <div class="form-group field field-string">
+        <label class="control-label" for="root_title">Title<span class="required">*</span></label>
+        <input class="form-control" id="root_title" label="Title" required="" placeholder="" type="text" value="" fdprocessedid="jwyrb9"></input>
+      </div>
+      <button type="submit" class="btn btn-info" onClick={handleTask1Completion}>Next</button>
     </div>
   );
 }

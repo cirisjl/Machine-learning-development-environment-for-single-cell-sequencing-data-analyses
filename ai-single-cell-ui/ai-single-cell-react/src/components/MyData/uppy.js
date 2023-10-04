@@ -5,6 +5,7 @@ import { Dashboard } from '@uppy/react'
 import GoogleDrive from '@uppy/google-drive'
 import OneDrive from '@uppy/onedrive'
 import Dropbox from '@uppy/dropbox'
+// import Url from '@uppy/url';
 import "@uppy/dashboard/dist/style.css"
 import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
@@ -13,7 +14,7 @@ import "@uppy/drag-drop/dist/style.css"
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 export default function UppyUploader(props) {
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -58,6 +59,10 @@ export default function UppyUploader(props) {
     uppy.use(Dropbox, {
         companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
     });
+    // uppy.use(Url, {
+    //     id: 'uppyLink',
+    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    // });
     uppy.use(XHRUpload, {
         endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
         formData: true,
@@ -67,7 +72,7 @@ export default function UppyUploader(props) {
         console.log('Upload destination:', file.meta.destination);
         uppy.upload();
     });
-    if (isUppyModalOpen)
+    if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
             <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox']} />
             <button style={{
@@ -85,6 +90,12 @@ export default function UppyUploader(props) {
             </button>
         </div>
         )
+
+        if(toPublishDataset) {
+            return (<div className='uppy-comp'>
+                <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox']} />
+            </div>)
+        }
 }
 
 
