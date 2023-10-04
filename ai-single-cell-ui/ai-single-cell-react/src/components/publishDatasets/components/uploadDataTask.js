@@ -1,7 +1,13 @@
 import React from 'react';
 import UppyUploader from '../../MyData/uppy';
+import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 
 function UploadDataTaskComponent({ setTaskStatus }) {
+
+  let jwtToken = getCookie('jwtToken');
+
+  let pwd = "tempStorage/";
+
   const handleTask1Completion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
@@ -22,7 +28,7 @@ function UploadDataTaskComponent({ setTaskStatus }) {
       </div>
       <div className='uppy-uploader-component'>
         <span>Choose your file*</span>
-        <UppyUploader toPublishDataset={true} isUppyModalOpen={true}/>
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {false}/>
       </div>
       <div class="separator heading">
           <div class="stripe"></div>
@@ -33,7 +39,9 @@ function UploadDataTaskComponent({ setTaskStatus }) {
         <label class="control-label" for="root_title">Title<span class="required">*</span></label>
         <input class="form-control" id="root_title" label="Title" required="" placeholder="" type="text" value="" fdprocessedid="jwyrb9"></input>
       </div>
-      <button type="submit" class="btn btn-info" onClick={handleTask1Completion}>Next</button>
+      <div className='next-upon-success'>
+        <button type="submit" class="btn btn-info" onClick={handleTask1Completion}>Next</button>
+      </div>
     </div>
   );
 }
