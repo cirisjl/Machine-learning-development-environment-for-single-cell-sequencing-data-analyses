@@ -16,3 +16,19 @@
 .benchmarks-left-nav li.active {
     background-color: #f0f0f0;
 }
+
+.upload-task .uppy-comp {
+    margin: 2% 15%;
+}
+
+.upload-task {
+    padding: 3%;
+}
+
+.uppy-uploader-component {
+    margin-top: 3%;
+}
+
+.uppy-uploader-component span{
+    margin-left: 2rem;
+}

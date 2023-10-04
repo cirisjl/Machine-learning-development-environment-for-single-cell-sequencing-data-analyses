@@ -1342,7 +1342,7 @@ Updates Page */
     background-color: #0069d9;
     border-color: #0062cc;
   }
-  .common-class-tools-and-workflows .separator {
+  .common-class-tools-and-workflows .separator, .upload-task .separator{
     align-items: center;
     display: grid;
     grid-template-columns: 1rem auto 1fr;
@@ -1350,13 +1350,13 @@ Updates Page */
     gap: 1rem;
   }
 
-  .common-class-tools-and-workflows .separator .stripe {
+  .common-class-tools-and-workflows .separator .stripe, .upload-task .separator .stripe {
     background-color: rgb(222, 226, 230);
     display: block;
     height: 1px;
 }
 
-.common-class-tools-and-workflows .h-sm {
+.common-class-tools-and-workflows .h-sm, .upload-task .h-sm {
   line-height: 1.2;
   font-weight: 700;
   font-size: 1.0625rem;
