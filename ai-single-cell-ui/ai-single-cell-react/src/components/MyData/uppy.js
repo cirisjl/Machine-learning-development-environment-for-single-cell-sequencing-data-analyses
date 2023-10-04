@@ -5,7 +5,7 @@ import { Dashboard } from '@uppy/react'
 import GoogleDrive from '@uppy/google-drive'
 import OneDrive from '@uppy/onedrive'
 import Dropbox from '@uppy/dropbox'
-// import Url from '@uppy/url';
+import Url from '@uppy/url';
 import "@uppy/dashboard/dist/style.css"
 import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
@@ -59,10 +59,9 @@ export default function UppyUploader(props) {
     uppy.use(Dropbox, {
         companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
     });
-    // uppy.use(Url, {
-    //     id: 'uppyLink',
-    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-    // });
+    uppy.use(Url, {
+        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    });
     uppy.use(XHRUpload, {
         endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
         formData: true,
@@ -74,7 +73,7 @@ export default function UppyUploader(props) {
     });
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
-            <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox']} />
+            <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
             <button style={{
                 top: `${dimensions.height * 0.5 + 245}px`,
                 left: `${dimensions.width * 0.5 + 330}px`,
@@ -93,7 +92,7 @@ export default function UppyUploader(props) {
 
         if(toPublishDataset) {
             return (<div className='uppy-comp'>
-                <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox']} />
+                <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
             </div>)
         }
 }
