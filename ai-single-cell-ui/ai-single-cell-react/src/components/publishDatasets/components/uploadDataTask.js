@@ -28,7 +28,7 @@ function UploadDataTaskComponent({ setTaskStatus }) {
       </div>
       <div className='uppy-uploader-component'>
         <span>Choose your file*</span>
-        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {false}/>
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {true}/>
       </div>
       <div class="separator heading">
           <div class="stripe"></div>
