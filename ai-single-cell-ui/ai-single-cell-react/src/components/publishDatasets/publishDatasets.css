@@ -36,3 +36,11 @@
 .upload-task .uppy-Dashboard {
     height: 23rem;
 }
+
+.next-upon-success button{
+    float: right;
+    cursor: pointer;
+}
+.next-upon-success button{
+    margin-top: 5px;
+}
