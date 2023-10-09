@@ -28,7 +28,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }));
   };
 
-  const handleTask1Completion = () => {
+  const handleTask1Completion = async () => {
     // Validate file upload and title input
     if (taskData.upload.files === undefined || taskData.upload.files.length === 0) {
       setFileError('Please upload a file.');
@@ -54,7 +54,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         
         try {
         // Move the uploaded files from tempStorage to the new directory
-        moveFilesToNewDirectory(newDirectoryPath); 
+        await moveFilesToNewDirectory(newDirectoryPath); 
 
         setTaskStatus((prevTaskStatus) => ({
           ...prevTaskStatus,

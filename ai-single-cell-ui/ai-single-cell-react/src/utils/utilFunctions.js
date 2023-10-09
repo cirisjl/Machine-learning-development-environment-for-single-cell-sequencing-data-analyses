@@ -113,5 +113,6 @@ export function moveFilesToNewDirectory(newDirectoryPath) {
     .catch((error) => {
       // Handle errors if the API call fails.
       console.error('Error moving files', error);
+      throw error; // Re-throw the error so it can be caught in the calling code
     });
 }

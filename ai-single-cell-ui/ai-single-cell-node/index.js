@@ -1495,8 +1495,8 @@ app.post('/mongoDB/api/addTaskOption', async (req, res) => {
 
   //API to move files from one folder to another
   app.post('/api/move-files', (req, res) => {
-    const { newDirectoryPath, authToken } = req.body;
-    const username = getUserFromToken(authToken);
+    const { newDirectoryPath, jwtToken } = req.body;
+    const username = getUserFromToken(jwtToken);
     let destinationPath = ""
     if(username) {
         destinationPath = `${storageDir}/${username}/${newDirectoryPath}`;
