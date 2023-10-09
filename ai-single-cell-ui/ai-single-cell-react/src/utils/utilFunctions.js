@@ -1,4 +1,6 @@
 import {LOGIN_API_URL, SERVER_URL} from '../constants/declarations'
+import axios from 'axios';
+
 
 // Get the value of a cookie with a given name
 export function getCookie(name) {
@@ -99,4 +101,17 @@ export function createUniqueFolderName(title) {
   const folderName = `${sanitizedTitle}_${timestamp}`;
 
   return folderName;
+}
+
+export function moveFilesToNewDirectory(newDirectoryPath) {
+  let jwtToken = getCookie('jwtToken');
+  axios
+    .post('/api/move-files', { newDirectoryPath, jwtToken })
+    .then((response) => {
+      console.log('Files moved successfully');
+    })
+    .catch((error) => {
+      // Handle errors if the API call fails.
+      console.error('Error moving files', error);
+    });
 }

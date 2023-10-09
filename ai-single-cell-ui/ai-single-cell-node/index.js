@@ -1493,6 +1493,33 @@ app.post('/mongoDB/api/addTaskOption', async (req, res) => {
   });
 
 
+  //API to move files from one folder to another
+  app.post('/api/move-files', (req, res) => {
+    const { newDirectoryPath, authToken } = req.body;
+    const username = getUserFromToken(authToken);
+    let destinationPath = ""
+    if(username) {
+        destinationPath = `${storageDir}/${username}/${newDirectoryPath}`;
+    }
+    let sourcePath = `${storageDir}/tempStorage`;
+
+    if (!fs.existsSync(destinationPath)) {
+      fs.mkdirSync(destinationPath, { recursive: true });
+    }
+  
+    const files = fs.readdirSync(sourcePath);
+  
+    files.forEach((filename) => {
+      const sourcePathFile = path.join(sourcePath, filename);
+      const destinationPathFile = path.join(destinationPath, filename);
+      
+      fs.renameSync(sourcePathFile, destinationPathFile);
+    });
+  
+    res.sendStatus(200);
+  });
+
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
