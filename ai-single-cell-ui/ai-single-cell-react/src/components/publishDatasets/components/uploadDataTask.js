@@ -43,7 +43,8 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }
 
     // If both file and title are provided, continue to the next step
-    if ((taskData.upload.files !== undefined && taskData.upload.files.length !== 0 ) && !taskData.upload.title) {
+    if ((taskData.upload.files !== undefined && taskData.upload.files.length !== 0 ) && taskData.upload.title !== undefined) {
+
         setTaskStatus((prevTaskStatus) => ({
           ...prevTaskStatus,
           1: true, // Mark Task 1 as completed
@@ -60,6 +61,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
       //The current task is finished, so make the next task active
       setActiveTask(2);
+      console.log("Inside if block hurray");
       
     }
     console.log(taskData);
