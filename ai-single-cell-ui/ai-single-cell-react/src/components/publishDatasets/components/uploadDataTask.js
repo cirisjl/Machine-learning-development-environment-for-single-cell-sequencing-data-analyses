@@ -49,8 +49,10 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
        
         // Create a new directory with the title name
         const newDirectoryName = createUniqueFolderName(taskData.upload.title);
-        const newDirectoryPath = `projects/${newDirectoryName}`;
 
+        let newDirectoryPath = `projects/${newDirectoryName}`;
+        
+        try {
         // Move the uploaded files from tempStorage to the new directory
         moveFilesToNewDirectory(newDirectoryPath); 
 
@@ -65,11 +67,17 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         upload: {
           ...prevTaskData.upload,
           status: 'completed',
+          newDirectoryPath: newDirectoryPath
         },
       }));
 
       //The current task is finished, so make the next task active
-      setActiveTask(2);      
+      setActiveTask(2);     
+      
+      } catch (error) {
+        console.error('Error moving files:', error);
+        // Handle the error as needed (e.g., display an error message to the user)
+      }
     }
     console.log(taskData);
   };
