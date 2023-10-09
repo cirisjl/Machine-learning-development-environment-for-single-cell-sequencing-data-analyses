@@ -85,3 +85,18 @@ export async function getStorageDetails(jwtToken) {
   }
 }
 
+
+export function createUniqueFolderName(title) {
+  // Sanitize the title by removing spaces and special characters
+  const sanitizedTitle = title
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^a-zA-Z0-9-]/g, '') // Remove special characters and non-alphanumeric characters
+
+  // Generate a unique identifier (timestamp)
+  const timestamp = Date.now();
+
+  // Combine the sanitized title and timestamp to create a unique folder name
+  const folderName = `${sanitizedTitle}_${timestamp}`;
+
+  return folderName;
+}

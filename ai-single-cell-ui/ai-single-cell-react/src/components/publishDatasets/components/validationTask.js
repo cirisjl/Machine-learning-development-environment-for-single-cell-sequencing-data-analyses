@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ValidationTaskComponent({ setTaskStatus }) {
+function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
@@ -10,12 +10,20 @@ function ValidationTaskComponent({ setTaskStatus }) {
       ...prevTaskStatus,
       2: true, // Mark Task 1 as completed
     }));
+    //The current task is finished, so make the next task active
+    setActiveTask(3);
   };
 
   return (
     <div>
       {/* Task 1 content here */}
       <button onClick={handleTaskCompletion}>ValidationTaskComponent</button>
+      <div className='previous'>
+        <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
+      </div>
+      <div className='next-upon-success'>
+        <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
+      </div>
     </div>
   );
 }

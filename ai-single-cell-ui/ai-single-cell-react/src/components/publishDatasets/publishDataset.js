@@ -18,15 +18,25 @@ export default function PublishDataset() {
       });
     
 
+      const [taskData, setTaskData] = useState({
+        upload: {},
+        validation: {},
+        quality_control: {},
+        metadata: {},
+        task_builder: {},
+        benchmarks: {},
+        Review: {}
+      });
+
     const [activeTask, setActiveTask] = useState(1); // Initialize with the first task
 
     return(
         <div className="page-container">
             <div className="left-nav">
-            <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} />
+            <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} taskData={taskData} setTaskData={setTaskData} />
             </div>
             <div className="main-content">
-                <MiddleContent activeTask={activeTask} setTaskStatus={setTaskStatus} />
+                <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus}/>
             </div>
             <div className="right-rail">
                 <RightRail />

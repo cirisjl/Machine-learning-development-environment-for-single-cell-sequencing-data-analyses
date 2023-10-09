@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ReviewTaskComponent({ setTaskStatus }) {
+function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTask, activeTask}) {
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
@@ -16,6 +16,14 @@ function ReviewTaskComponent({ setTaskStatus }) {
     <div>
       {/* Task 1 content here */}
       <button onClick={handleTaskCompletion}>ReviewTaskComponent button</button>
+
+      <div className='previous'>
+        <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
+      </div>
+
+      <div className='submit-upon-success'>
+        <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Submit</button>
+      </div>
     </div>
   );
 }
