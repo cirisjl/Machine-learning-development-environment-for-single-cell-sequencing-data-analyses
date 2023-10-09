@@ -43,7 +43,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }
 
     // If both file and title are provided, continue to the next step
-    if (fileError === '' && titleError === '') {
+    if ((taskData.upload.files !== undefined && taskData.upload.files.length !== 0 ) && !taskData.upload.title) {
         setTaskStatus((prevTaskStatus) => ({
           ...prevTaskStatus,
           1: true, // Mark Task 1 as completed
@@ -74,7 +74,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       </div>
       <div className='uppy-uploader-component'>
         <span>Choose your file*</span>
-        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {false} setFileError={setFileError} setTaskData = {setTaskData}/>
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {true} setFileError={setFileError} setTaskData = {setTaskData}/>
         {taskData.upload.files && 
           <div className="uploaded-files">
             <h3 className="file-list-heading">Uploaded Files:</h3>
