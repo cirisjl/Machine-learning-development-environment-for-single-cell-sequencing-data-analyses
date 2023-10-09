@@ -106,7 +106,7 @@ export function createUniqueFolderName(title) {
 export function moveFilesToNewDirectory(newDirectoryPath) {
   let jwtToken = getCookie('jwtToken');
   axios
-    .post('/api/move-files', { newDirectoryPath, jwtToken })
+    .post(`${SERVER_URL}/api/move-files`, { newDirectoryPath, jwtToken })
     .then((response) => {
       console.log('Files moved successfully');
     })
