@@ -14,7 +14,7 @@ import "@uppy/drag-drop/dist/style.css"
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 export default function UppyUploader(props) {
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError ,setTaskData } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -67,10 +67,22 @@ export default function UppyUploader(props) {
         formData: true,
         fieldName: 'files'
     });
-    uppy.on('file-added', (file) => {
-        console.log('Upload destination:', file.meta.destination);
-        uppy.upload();
+
+    uppy.on('upload-success', (file, response) => {
+        // Access the filename of the successfully uploaded file
+        setFileError('');
+        const filename = file.name;
+      
+        setTaskData((prevTaskData) => ({
+                    ...prevTaskData,
+                    upload: {
+                        ...prevTaskData.upload,
+                        files: [...(prevTaskData.upload.files || []), file.name],
+                    },
+        }));
+        console.log('Successfully uploaded file name:', filename);
     });
+      
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
             <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />

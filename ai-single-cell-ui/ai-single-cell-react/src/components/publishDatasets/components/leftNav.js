@@ -1,6 +1,6 @@
 import React from 'react';
 
-function LeftNav({ activeTask, setActiveTask, taskStatus }) {
+function LeftNav({ activeTask, setActiveTask, taskStatus, taskData, setTaskData }) {
   const tasks = [
     { id: 1, name: 'Upload', completed: taskStatus[1] },
     { id: 2, name: 'Validation', completed: taskStatus[2] },
@@ -26,7 +26,11 @@ function LeftNav({ activeTask, setActiveTask, taskStatus }) {
     <nav className='benchmarks-left-nav'>
       <ul>
         {tasks.map((task) => (
-          <li key={task.id} className={task.id === activeTask ? 'active' : ''}>
+          <li key={task.id}
+          className={`${
+            task.id === activeTask ? 'active' : ''
+          } ${task.completed ? 'completed' : 'disable-click'}`}
+          >
             <a
               href="#"
               onClick={() => handleTaskClick(task)}

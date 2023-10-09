@@ -6,15 +6,23 @@
     padding: 11px 0px;
     padding-left: 40px;
     word-break: break-word;
-    cursor: pointer;
+    cursor: not-allowed;
+    color: #ccc;
 }
 
-.benchmarks-left-nav li:hover {
-    background-color: #f0f0f0;
+.benchmarks-left-nav a {
+    cursor: not-allowed;
 }
 
-.benchmarks-left-nav li.active {
-    background-color: #f0f0f0;
+.benchmarks-left-nav li.active, .benchmarks-left-nav li.active a {
+    cursor: pointer; 
+    background-color: hsl(0, 0%, 90%) !important;
+    color: #000;
+}
+
+.benchmarks-left-nav li.completed, .benchmarks-left-nav li.completed a {
+    cursor: pointer; 
+    color: #000;
 }
 
 .upload-task .uppy-comp {
@@ -44,3 +52,32 @@
 .next-upon-success button{
     margin-top: 5px;
 }
+
+.upload-task .uploaded-files {
+    margin-left: 2rem;
+    margin-top: 20px;
+}
+
+.upload-task .file-list-heading {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .upload-task .file-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .upload-task .file-list-item {
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .upload-task .file-list-item:hover {
+    color: #007bff; /* Change the color on hover */
+  }
+  
