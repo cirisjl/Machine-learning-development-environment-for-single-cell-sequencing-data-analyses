@@ -15,8 +15,8 @@ async def convert_to_anndata_task_async(request_data: PathRequest):
     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
     """
     path = request_data.path
-    task = convert_to_anndata_task.apply_async(path)
-    return JSONResponse({"task_id": task.id})
+    results = convert_to_anndata_task(path)
+    return JSONResponse({"adata_path": results.adata_path, "assay_names": results.assay_names})
 
 
 @router.post("/qc")
