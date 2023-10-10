@@ -68,7 +68,7 @@ def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is o
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
     import rpy2.robjects as robjects
-    robjects.r.source("../tools/formating/formating.R")
+    robjects.r.source("../formating/formating.R")
     assay_names = None
     adata_path = None
 
