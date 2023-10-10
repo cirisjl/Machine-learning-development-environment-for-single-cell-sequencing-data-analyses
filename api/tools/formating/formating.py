@@ -70,9 +70,16 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     import rpy2.robjects as ro
     # robjects.r.source("formating.R")
 
-    # Load the R script file
-    r_source_path = 'formatting.R'
-    with open(r_source_path, 'r') as r_source_file:
+    # Get the absolute path of the current file
+    current_file = os.path.abspath(__file__)
+
+    # Construct the relative path to the desired file
+    relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
+
+    # Get the absolute path of the desired file
+    r_path = os.path.abspath(relative_path)
+
+    with open(r_path, 'r') as r_source_file:
         r_source = r_source_file.read()
 
     # Evaluate the R script in the R environment
