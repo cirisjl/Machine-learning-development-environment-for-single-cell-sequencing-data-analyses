@@ -62,7 +62,14 @@ CORS(flask_app)
 datasets = []
 datasetMap = {}
 default_title = None
+annData = None
 
+def getannData():
+    return annData
+
+def setAnnData(adata):
+    global annData 
+    annData = adata
 
 # Function to parse h5ad files and extract metadata from all groups
 def parse_h5ad(adata, file_path):
@@ -454,8 +461,8 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             }
             subset_genes = adata.var_names[:10]
             if invalidadata is not None:
-                invalid_subset_genes = invalidadata.var_names[:]  # Select the first 10 genes
-                invalid_subset_matrix = invalidadata.X[:, :]  # Convert to dense matrix
+                invalid_subset_genes = invalidadata.var_names[:10]  # Select the first 10 genes
+                invalid_subset_matrix = invalidadata.X[:10, :]  # Convert to dense matrix
                 expression_invalid_table = html.Div(
                     [
                         html.H3("Invalid Subset of Gene Expression Matrix (Table):", style={"margin-top": "20px"}),
@@ -465,9 +472,9 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                                                      invalid_subset_genes],
                             data=[
                                 {"Cells": cell, **{gene: value for gene, value in zip(invalid_subset_genes, row)}}
-                                for cell, row in zip(invalidadata.obs_names[:], invalid_subset_matrix)
+                                for cell, row in zip(invalidadata.obs_names[:10], invalid_subset_matrix)
                             ],
-                            style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                            style_table={"overflow": "auto", "padding": "10px",
                                          "textAlign": "center"},
                             style_header={"fontWeight": "bold", "word-break": "break-word"},
                             style_cell={
@@ -475,6 +482,9 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                 'whiteSpace': 'normal',
                                 'height': 'auto',
                                 'textAlign': 'center',
+                                 'minWidth': 95, 
+                                # 'maxWidth': 200, 
+                                'width': 95 # Center-align the text in the cells
                             },
                             fixed_rows={"headers": True, "data": 0}
                         )
@@ -488,7 +498,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         html.H3("Select Rows to Remove:", style={"margin-top": "20px"}),
                         dcc.Checklist(
                             id="row-checklist",
-                            options=[{"label": cell, "value": cell} for cell in invalidadata.obs_names[:]],
+                            options=[{"label": cell, "value": cell} for cell in invalidadata.obs_names[:10]],
                             value=[],
                             className="checklist"
                         )
@@ -560,14 +570,17 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     {"Cells": cell, **{gene: value for gene, value in zip(subset_genes, row)}}
                     for cell, row in zip(adata.obs_names[:10], subset_matrix)
                 ],
-                style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                style_table={"overflow": "auto", "padding": "10px",
                              "textAlign": "center"},
                 style_header={"fontWeight": "bold", "word-break": "break-word"},
                 style_cell={
                     'padding': '10px',  # Add padding to the cells
                     'whiteSpace': 'normal',  # Allow wrapping of cell contents
                     'height': 'auto',  # Set cell height to auto to accommodate wrapped contents
-                    'textAlign': 'center',  # Center-align the text in the cells
+                    'textAlign': 'center', 
+                     'minWidth': 95, 
+                    #  'maxWidth': 200, 
+                     'width': 95 # Center-align the text in the cells
                 },
                 fixed_rows={"headers": True, "data": 0}
             )
@@ -588,10 +601,10 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 value=available_assays[0] if available_assays else None
             )
 
-            # Serialize and store the adata
-            adata_df = create_dataframe(adata)
-            adata_pickle = adata_df.to_json(date_format='iso', orient='split')
-            adata_df = None
+            # # Serialize and store the adata
+            # adata_df = create_dataframe(adata)
+            # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            setAnnData(adata)
             adata_pickle = None
 
             try:
@@ -692,10 +705,12 @@ def update_selected_columns_output(selected_columns):
 )
 def update_and_download_dataset(n_clicks, selected_rows, selected_columns, dataset, adata_pickle):
     if n_clicks is not None and n_clicks > 0:
-        adata_df = pd.read_json(adata_pickle, orient='split')
+        # adata_df = pd.read_json(adata_pickle, orient='split')
         print("before update and download")
         # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # adata = sc.AnnData(adata_df)
+
+        adata = getannData()
         print(adata)
         print(adata.X)
         matrix_type = adata.X.dtype
@@ -728,10 +743,10 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         file_path = datasetMap[dataset]
         file_name = file_path.split("/")
         fileparts = file_name[len(file_name)-1].split(".")
-        filename = fileparts[0] + "_corrected.h5ad"
-
+        filename = fileparts[0] + "_user_corrected.h5ad"
+       
         # Generate a new file name for the filtered dataset
-        filtered_file_name = filename
+        filtered_file_name = os.path.join(os.path.dirname(file_path), filename)
 
         print(adata.X)
         print("after update and download3")
@@ -741,7 +756,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
 
         print("Matrix type:", matrix_type)
         # Save the filtered dataset to a file
+        flask_app.logger.info("Writing annData object to a new file")
+        flask_app.logger.info(filtered_file_name)
+
         adata.write_h5ad(filtered_file_name)
+        flask_app.logger.info("Done writing annData object to a new file")
         print("after update and download4")
 
         # Generate the download link for the filtered dataset file
@@ -751,8 +770,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         update_status = html.Span("Dataset updated and file created successfully!", className="success-message")
         print(update_status)
         # Serialize and store the adata
-        adata_df = create_dataframe(adata)
-        adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+        # adata_df = create_dataframe(adata)
+        # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+
+        setAnnData(adata)
+        adata_pickle = None
 
         return update_status, download_link, adata_pickle
 
@@ -773,10 +795,11 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
 def update_dataset_content(update_status, dataset, updatedData):
     if update_status is not None and update_status != "":
 
-        adata_df = pd.read_json(updatedData, orient='split')
+        # adata_df = pd.read_json(updatedData, orient='split')
 
-        # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # # Convert adata_df to AnnData object
+        # adata = sc.AnnData(adata_df)
+        adata = getannData()
 
         try:
             dataset_info = f"Dataset Name: {dataset}"
@@ -805,7 +828,7 @@ def update_dataset_content(update_status, dataset, updatedData):
                     {"Cells": cell, **{gene: value for gene, value in zip(subset_genes, row)}}
                     for cell, row in zip(adata.obs_names[:10], subset_matrix)
                 ],
-                style_table={"overflowX": "scroll", "overflowY": "scroll", "padding": "10px",
+                style_table={"overflow": "auto", "padding": "10px",
                              "textAlign": "center"},
                 style_header={"fontWeight": "bold", "word-break": "break-word"},
                 style_cell={
@@ -813,6 +836,9 @@ def update_dataset_content(update_status, dataset, updatedData):
                     'whiteSpace': 'normal',  # Allow wrapping of cell contents
                     'height': 'auto',  # Set cell height to auto to accommodate wrapped contents
                     'textAlign': 'center',  # Center-align the text in the cells
+                     'minWidth': 95, 
+                    #  'maxWidth': 200, 
+                     'width': 95 # Center-align the text in the cells
                 },
                 fixed_rows={"headers": True, "data": 0}
             )
@@ -834,8 +860,11 @@ def update_dataset_content(update_status, dataset, updatedData):
             )
 
             # Serialize and store the adata
-            adata_df = create_dataframe(adata)
-            adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            # adata_df = create_dataframe(adata)
+            # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
+            setAnnData(adata)
+
+            adata_pickle = None
 
             return dataset_info, [
                 html.H3("Metadata:", style={"margin-top": "20px"}),
@@ -892,10 +921,12 @@ def update_dataset_content(update_status, dataset, updatedData):
 )
 def toggle_edit_update_buttons(n_clicks, data):
     if n_clicks > 0:
-        adata_df = pd.read_json(data, orient='split')
+        # adata_df = pd.read_json(data, orient='split')
 
-        # Convert adata_df to AnnData object
-        adata = sc.AnnData(adata_df)
+        # # Convert adata_df to AnnData object
+        # adata = sc.AnnData(adata_df)
+
+        adata = getannData()
 
         # Create checkboxes for rows and columns
         row_checkboxes = html.Div(

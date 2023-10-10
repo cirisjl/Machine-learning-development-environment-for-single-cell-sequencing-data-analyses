@@ -1,4 +1,6 @@
 import {LOGIN_API_URL, SERVER_URL} from '../constants/declarations'
+import axios from 'axios';
+
 
 // Get the value of a cookie with a given name
 export function getCookie(name) {
@@ -85,3 +87,32 @@ export async function getStorageDetails(jwtToken) {
   }
 }
 
+
+export function createUniqueFolderName(title) {
+  // Sanitize the title by removing spaces and special characters
+  const sanitizedTitle = title
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^a-zA-Z0-9-]/g, '') // Remove special characters and non-alphanumeric characters
+
+  // Generate a unique identifier (timestamp)
+  const timestamp = Date.now();
+
+  // Combine the sanitized title and timestamp to create a unique folder name
+  const folderName = `${sanitizedTitle}_${timestamp}`;
+
+  return folderName;
+}
+
+export function moveFilesToNewDirectory(newDirectoryPath) {
+  let jwtToken = getCookie('jwtToken');
+  axios
+    .post(`${SERVER_URL}/api/move-files`, { newDirectoryPath, jwtToken })
+    .then((response) => {
+      console.log('Files moved successfully');
+    })
+    .catch((error) => {
+      // Handle errors if the API call fails.
+      console.error('Error moving files', error);
+      throw error; // Re-throw the error so it can be caught in the calling code
+    });
+}

@@ -141,6 +141,7 @@ export default function RootLayout() {
 
                                         <ul className="ul-suboptions">
                                             <li><NavLink to="benchmarks/overview">Overview</NavLink></li>
+                                            <li><NavLink to="benchmarks/uploads">Uploads</NavLink></li>
                                             <li><NavLink to="benchmarks/clustering">Clustering</NavLink></li>
                                             <li><NavLink to="benchmarks/imputation">Imputation</NavLink></li>
                                             <li><NavLink to="benchmarks/maker-gene-identification">Marker Gene Identification</NavLink></li>
