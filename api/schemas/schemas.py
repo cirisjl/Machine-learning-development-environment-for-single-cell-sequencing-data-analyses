@@ -44,3 +44,5 @@ class IntegrationDataset(BaseModel):
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
    
+class PathRequest(BaseModel):
+    path: str

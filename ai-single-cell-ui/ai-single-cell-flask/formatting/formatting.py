@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import scanpy as sc
+from detect_delimiter import detect
 import gzip
 
 def detect_delimiter(file_path):
@@ -12,18 +13,55 @@ def detect_delimiter(file_path):
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
     
+def convert_gz_to_txt(gz_file_path, txt_file_path):
+  with gzip.open(gz_file_path, 'rb') as f_in:
+    with open(txt_file_path, 'w') as f_out:
+      f_out.write(f_in.read().decode())
+    
+def detect_delim(path):
+    # look at the first ten thousand bytes to guess the character encoding
+    with open(path, 'rb') as file:
+        rawdata = file.read(10000)
+        rawdata = rawdata.decode('utf-8')
+        delimiter = detect(rawdata, whitelist=[' ', ',', ';', ':', '|', '\t'])
+        return delimiter
+    
     
 def read_text_replace_invalid(file_path, delimiter):
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    if file_path.endswith(".gz"):
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+    else:
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    
     df = df.apply(pd.to_numeric, errors='coerce')
     return sc.AnnData(df)
 
 
 def read_text(file_path):
+    # file_path = '/usr/src/app/storage/kbcfh/GZ Dataset/GSE50244_Genes_counts_TMM_NormLength_atLeastMAF5_expressed.txt.gz'
     if file_path.endswith(".gz"):
-        with gzip.open(file_path, 'rt') as file:
-            df = pd.read_csv(file, on_bad_lines='skip', index_col=0)        
-            return sc.AnnData(df)
+        # with gzip.open(file_path, 'rb') as file:
+        #     compressed_data = file.read()
+       
+        # decompressed_data = gzip.decompress(compressed_data)
+        # # Get the base name of the file without extension
+        
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+
+        # Write the decompressed data to a plain .txt file
+        # with open(new_file_path, 'wb') as txt_file:
+        #     txt_file.write(decompressed_data)
+
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
     else:
         delimiter = detect_delimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
@@ -35,6 +73,14 @@ def load_annData(path, replace_invalid=False):
     # path = os.path.abspath(path)
     adata = None
     print(path)
+
+    #Check for the corrected / updated file by the user. If the file exits then show the contents of the updated file.
+    file_name = path.split("/")
+    fileparts = file_name[len(file_name)-1].split(".")
+    filename = fileparts[0] + "_user_corrected.h5ad"
+    updated_filename = os.path.join(os.path.dirname(path), filename)
+    if os.path.exists(updated_filename):
+        path = updated_filename
 
     # if (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
     #         os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv"))) 
@@ -81,10 +127,7 @@ def load_annData(path, replace_invalid=False):
                 adata = sc.read_text(path, delimiter=detect_delimiter(path))      
         elif path.endswith(".txt.gz"):
             if replace_invalid:
-                with gzip.open(path, 'rt') as file:
-                    df = pd.read_csv(file, on_bad_lines='skip', index_col=0)
-                    df = df.apply(pd.to_numeric, errors='coerce')
-                    adata = sc.AnnData(df)
+                adata = read_text_replace_invalid(path, "/t")
             else:
                 adata = sc.read_text(path)      
         elif path.endswith(".gz"):
@@ -156,11 +199,19 @@ def load_annData(path, replace_invalid=False):
 
 
 def load_invalid_adata(file_path, replace_nan):
-    delimiter = detect_delimiter(file_path)
-    df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
-    if replace_nan == "yes":
-        df = df.apply(pd.to_numeric, errors='coerce')
+    if file_path.endswith(".gz"):
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+    else:
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+
     invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
     invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
     invalid_df = df.loc[invalid_rows, invalid_columns]
+
     return sc.AnnData(invalid_df)

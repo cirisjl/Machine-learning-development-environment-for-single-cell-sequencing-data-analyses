@@ -13,6 +13,17 @@ const util = require('util');
 const stat = util.promisify(fs.stat);
 const multer = require("multer");
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
+require('dotenv').config();
+
+const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
+const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
+const { MongoClient, ObjectId } = require('mongodb');
+
+// const Option = require('../models/Option');
+// // Import the database configuration
+// require('./config/mongoDBClient');
+
+
 
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
@@ -1251,6 +1262,264 @@ app.get('/getTasks', (req, res) => {
         });
     });
 });
+
+
+// Connect to MongoDB and retrieve options
+app.get('/mongoDB/api/options', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+         // Define the unique compound index on 'field' and 'name'
+         await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+        // Use the aggregation framework to group options by field
+        const pipeline = [
+            {
+                $group: {
+                    _id: '$field',
+                    options: { $addToSet: { name: '$name', abbreviation: '$abbreviation' } },
+                },
+            },
+        ];
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Transform the result into an object with field names as keys
+        const optionsByField = {};
+        result.forEach((item) => {
+            optionsByField[item._id] = item.options;
+        });
+
+        // Close the MongoDB connection
+        client.close();
+
+        // Return the options as a JSON response
+        res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
+    try {
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+  
+      // Connect to the MongoDB server
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(datasetCollectionName);
+  
+      const formData = req.body; // This assumes you have the necessary middleware to parse JSON in the request body
+  
+      collection.insertOne(formData, (err) => {
+        if (err) {
+          console.error('Error inserting form data into MongoDB:', err);
+          res.status(500).json({ error: 'Error submitting form data' });
+        } else {
+          console.log('Form data submitted successfully');
+          res.status(200).json({ message: 'Form data submitted successfully' });
+        }
+  
+        // Close the MongoDB connection here after the operation is complete
+        client.close();
+      });
+    } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+
+// Define a route to handle adding a new option to MongoDB
+app.post('/mongoDB/api/addNewOption', async (req, res) => {
+    const { field, name, username } = req.body;
+
+    // Create the document object with the specified format
+    const newOption = {
+        field: field,
+        name: name,
+        username: username
+    };  
+    try {
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+      
+    // Define the unique compound index on 'field' and 'name'
+    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+  
+      // Insert the new option into the collection
+      const insertResult = await collection.insertOne(newOption);
+  
+      client.close();
+  
+      res.status(200).json({
+        message: `New option "${name}" added to MongoDB for field "${field}"`,
+        insertedId: insertResult.insertedId,
+      });
+    } catch (error) {
+      console.error('Error adding new option to MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+// Connect to MongoDB and retrieve options
+app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
+    try {
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        const username = req.query.username;
+        const isAdmin = req.query.isAdmin;
+
+        // Define the match stage of the aggregation pipeline
+        const matchStage = isAdmin=== 'true' ? {} : { username: username };
+
+        console.log(isAdmin);
+        console.log(matchStage);
+
+        // Aggregation pipeline stages
+        const pipeline = [
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: '$field',
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation:'$abbreviation' } },
+                },
+            },
+        ];
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Transform the result into an object with field names as keys
+        const optionsByField = {};
+        result.forEach((item) => {
+            optionsByField[item._id] = item.options;
+        });
+
+        // Close the MongoDB connection
+        client.close();
+
+        // Return the options as a JSON response
+        res.status(200).json(optionsByField);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Define a DELETE route to delete selected options
+app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
+    try {
+      const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
+
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+      // Connect to the MongoDB server
+      await client.connect();
+
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+  
+      // Convert optionIds to MongoDB ObjectIDs
+      const objectIds = optionIds.map(id => new ObjectId(id));
+  
+      // Delete the options with the specified ObjectIDs
+      const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
+  
+      client.close();
+  
+      if (deleteResult.deletedCount > 0) {
+        res.status(200).json({ message: 'Options deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Options not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting options:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+
+// Define a route to handle adding a new option for Task field to MongoDB
+app.post('/mongoDB/api/addTaskOption', async (req, res) => {
+    const { field, name, username, abbreviation } = req.body;
+
+    // Create the document object with the specified format
+    const newOption = {
+        field: field,
+        name: name,
+        username: username,
+        abbreviation: abbreviation
+    };  
+    try {
+      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(optionsCollectionName);
+      
+    // Define the unique compound index on 'field' and 'name'
+    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+  
+      // Insert the new option into the collection
+      const insertResult = await collection.insertOne(newOption);
+  
+      client.close();
+  
+      res.status(200).json({
+        message: `New option "${name}" added to MongoDB for field "${field}"`,
+        insertedId: insertResult.insertedId,
+      });
+    } catch (error) {
+      console.error('Error adding new option to MongoDB:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+
+  //API to move files from one folder to another
+  app.post('/api/move-files', (req, res) => {
+    const { newDirectoryPath, jwtToken } = req.body;
+    const username = getUserFromToken(jwtToken);
+    let destinationPath = ""
+    if(username) {
+        destinationPath = `${storageDir}/${username}/${newDirectoryPath}`;
+    }
+    let sourcePath = `${storageDir}/tempStorage`;
+
+    if (!fs.existsSync(destinationPath)) {
+      fs.mkdirSync(destinationPath, { recursive: true });
+    }
+  
+    const files = fs.readdirSync(sourcePath);
+  
+    files.forEach((filename) => {
+      const sourcePathFile = path.join(sourcePath, filename);
+      const destinationPathFile = path.join(destinationPath, filename);
+      
+      fs.renameSync(sourcePathFile, destinationPathFile);
+    });
+  
+    res.sendStatus(200);
+  });
+
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -8,11 +8,14 @@ from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
 
 
-@shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
-             name='tools:create_qc_task')
-def convert_to_anndata_task(self, path):
-    task_id = self.request.id
-    adata_path, assay_names = convert_seurat_sce_to_anndata(task_id, path)
+
+def convert_to_anndata_task(path):
+    adata_path, assay_names = convert_seurat_sce_to_anndata(path)
+    print("Tasks")
+    print("AssayNames")
+    print(assay_names)
+    print("adata_path")
+    print(adata_path)
     return adata_path, assay_names
 
 @shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
