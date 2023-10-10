@@ -67,14 +67,26 @@ def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is o
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
-    import rpy2.robjects as robjects
-    robjects.r.source("formating.R")
+    import rpy2.robjects as ro
+    # robjects.r.source("formating.R")
+
+    # Load the R script file
+    r_source_path = os.path.join('formatting.R')
+    with open(r_source_path, 'r') as r_source_file:
+        r_source = r_source_file.read()
+
+    # Evaluate the R script in the R environment
+    ro.r(r_source)
+
+    # Access the loaded R functions
+    convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
+
     assay_names = None
     adata_path = None
 
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
         try:
-            results = robjects.r.convert_seurat_sce_to_anndata(path, assay=assay)
+            results = convert_seurat_sce_to_anndata(path, assay=assay)
             adata_path = list(results[2])[0]
             assay_names = list(results[2])[0]
         except Exception as e:
