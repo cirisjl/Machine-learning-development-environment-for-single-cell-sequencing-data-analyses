@@ -5,15 +5,16 @@ from starlette.responses import JSONResponse
 # from api import tools
 from celery_tasks.tasks import convert_to_anndata_task, create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task
 from config.celery_utils import get_task_info
-from schemas.schemas import Dataset, IntegrationDataset
+from schemas.schemas import Dataset, IntegrationDataset, PathRequest
 router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description": "Not found"}})
 
 
 @router.post("/convert_to_anndata")
-async def convert_to_anndata_task_async(path: str):
+async def convert_to_anndata_task_async(request_data: PathRequest):
     """
     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
     """
+    path = request_data.path
     task = convert_to_anndata_task.apply_async(path)
     return JSONResponse({"task_id": task.id})
 
