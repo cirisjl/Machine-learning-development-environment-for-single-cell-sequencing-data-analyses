@@ -25,8 +25,8 @@ async def convert_to_anndata_task_async(request_data: PathRequest):
     print(assay_names)
     print("adata_path")
     print(adata_path)
-    # return JSONResponse({"adata_path": adata_path, "assay_names": assay_names})
-    return JSONResponse({"message": "OK"})
+    return JSONResponse({"assay_names": assay_names, "message" : "OK"})
+    # return JSONResponse({"message": "OK"})
 
 
 @router.post("/qc")
