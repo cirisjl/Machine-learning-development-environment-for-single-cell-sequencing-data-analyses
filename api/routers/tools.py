@@ -16,6 +16,10 @@ async def convert_to_anndata_task_async(request_data: PathRequest):
     """
     path = request_data.path
     adata_path,assay_names  = convert_to_anndata_task(path)
+    if assay_names is None:
+        assay_names = []
+    if adata_path is None:
+        adata_path = "Not available"
     return JSONResponse({"adata_path": adata_path, "assay_names": assay_names})
 
 
