@@ -225,7 +225,7 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     current_file = os.path.abspath(__file__)
 
     # Construct the relative path to the desired file
-    relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
+    relative_path = os.path.join(os.path.dirname(current_file), 'formatting.R')
 
     # Get the absolute path of the desired file
     r_path = os.path.abspath(relative_path)
