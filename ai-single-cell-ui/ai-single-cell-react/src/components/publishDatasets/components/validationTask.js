@@ -58,7 +58,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
             if (
               (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
-              !seuratFiles.some((fileInfo) => fileInfo.label === file)
+              !seuratFiles.some((fileInfo) => fileInfo.label === file) && !addedFiles.includes(file)
             ) {
               setSeuratFiles((seuratFiles) => [
                 ...seuratFiles,
@@ -92,12 +92,18 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setActiveTask(3);
   };
 
-  const handleSeuratFileChange = (selectedOption) => {
-    setSelectedSeuratFile(selectedOption);
+  const handleSeuratFileChange = (target) => {
+    
+    const selectedValue = target.value;
+    const selectedLabel = target.options[target.selectedIndex].text;
+
+    const newOption = {"label": selectedLabel, "value": selectedValue};
+
+    setSelectedSeuratFile(newOption);
 
     // Fetch assay names when a Seurat file is selected
-    if (selectedOption) {
-      fetchAssayNames(selectedOption.value, selectedOption.label);
+    if (newOption) {
+      fetchAssayNames(newOption.value, newOption.label);
     }
   };
 
@@ -115,11 +121,14 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         <div>
           <div>
             <h1>Select a Seurat File</h1>
-            <Select
-              options={addedFiles}
-              value={selectedSeuratFile}
-              onChange={handleSeuratFileChange}
-            />
+            <select value={selectedSeuratFile.value} onChange={(e) => handleSeuratFileChange(e.target)}>
+                <option value="">Select a Seurat File</option>
+                {addedFiles.map((file, index) => (
+                  <option key={index} value={file.value}>
+                    {file.label}
+                  </option>
+                ))}
+              </select>
               {loading ? (
                 <div className="spinner-container">
                   <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
