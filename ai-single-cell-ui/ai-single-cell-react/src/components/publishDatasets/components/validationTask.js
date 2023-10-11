@@ -11,6 +11,9 @@ import { PropagateLoader } from 'react-spinners';
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
   const [assayNames, setAssayNames] = useState([]);
   const [selectedAssays, setSelectedAssays] = useState([]);
+  const [seuratFiles, setSeuratFiles] = useState([]); // List to store Seurat files
+  const [selectedSeuratFile, setSelectedSeuratFile] = useState(null); // Selected Seurat file
+
   // const [adataPaths, setAdataPaths] = useState({});
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [loading, setLoading] = useState(true); // Initialize loading to true
@@ -51,9 +54,16 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       .then((authData) => {
         if (authData.isAdmin) {
           let username = authData.username;
-          let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+          let newDirectoryPath = taskData.upload.newDirectoryPath;
+          let files = taskData.upload.files;
+          for (let file of files) {
+            let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
 
-          fetchAssayNames(path);
+            if (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) {
+              // Track Seurat files
+              setSeuratFiles((seuratFiles) => [...seuratFiles, { label: file, value: path }]);
+            }
+          }
         } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
@@ -64,54 +74,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       });
   }, []);
 
-  // useEffect(() => {
-  //   isUserAuth(jwtToken)
-  //     .then((authData) => {
-  //       if (authData.isAdmin) {
-  //         let username = authData.username;
-  //         let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
-  //         const fetchAssayNames = () => {
-  //           try {
-  //             fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
-  //               method: 'POST',
-  //               headers: {
-  //                 'Content-Type': 'application/json',
-  //               },
-  //               body: JSON.stringify({ path }),
-  //             })
-  //               .then((response) => {
-  //                 if (response.ok) {
-  //                   response.json()
-  //                     .then((data) => {
-  //                       setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
-  //                     })
-  //                     .catch((error) => {
-  //                       console.error('Error parsing JSON response:', error);
-  //                     });
-  //                 } else {
-  //                   console.error('Error fetching assay names:', response.status);
-  //                 }
-  //               })
-  //               .catch((error) => {
-  //                 console.error('Error making the request:', error);
-  //               });
-  //           } catch (error) {
-  //             console.error('Error fetching assay names:', error);
-  //           }
-  //         };
-  
-  //         fetchAssayNames();
-  //       } else {
-  //         console.warn("Unauthorized - you must be an admin to access this page");
-  //         navigate("/accessDenied");
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //     });
-  // }, []);
-  
-  
+
+    // When the user selects a Seurat file, fetch assay names for that file
+    useEffect(() => {
+      if (selectedSeuratFile) {
+        fetchAssayNames(selectedSeuratFile.value);
+      }
+    }, [selectedSeuratFile]);
   
 
   const handleSelectionChange = (selectedOptions) => {
@@ -142,20 +111,23 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             ) : (
               <div>
                 <div>
-                  <h1>Choose Assay Names</h1>
+                  <h1>Select a Seurat File</h1>
                   <Select
-                    isMulti
-                    options={assayNames}
-                    value={assayNames.filter((option) => selectedAssays.includes(option.value))}
-                    onChange={handleSelectionChange}
+                    options={seuratFiles}
+                    value={selectedSeuratFile}
+                    onChange={(selectedOption) => setSelectedSeuratFile(selectedOption)}
                   />
-                  <button>Fetch adata_paths</button>
-                  {/* {Object.keys(adataPaths).map((name) => (
-                    <div key={name}>
-                      <p>{name}</p>
-                      <p>{adataPaths[name]}</p>
+                  {selectedSeuratFile && (
+                    <div>
+                      <h1>Choose Assay Names</h1>
+                      <Select
+                        isMulti
+                        options={assayNames}
+                        value={assayNames.filter((option) => selectedAssays.includes(option.value))}
+                        onChange={handleSelectionChange}
+                      />
                     </div>
-                  ))} */}
+                  )}
                 </div>
                 <div className='previous'>
                   <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
