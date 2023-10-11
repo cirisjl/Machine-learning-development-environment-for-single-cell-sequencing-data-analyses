@@ -7,7 +7,7 @@ import { PropagateLoader } from 'react-spinners';
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
   const [seuratFiles, setSeuratFiles] = useState([]);
-  const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
+  const [selectedSeuratFile, setSelectedSeuratFile] = useState({});
   const [loading, setLoading] = useState(false);
   const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
   const [addedFiles, setAddedFiles] = useState([]); // Track files that have been added
