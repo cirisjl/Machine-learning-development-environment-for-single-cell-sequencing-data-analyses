@@ -16,7 +16,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   // const [adataPaths, setAdataPaths] = useState({});
   const [isFetchingData, setIsFetchingData] = useState(false);
-  const [loading, setLoading] = useState(true); // Initialize loading to true
+  const [loading, setLoading] = useState(false); // Initialize loading to true
 
   let jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   const fetchAssayNames = debounce(async (path) => {
     setIsFetchingData(true);
+    setLoading(true);
     try {
       const response = await fetch(`${FLASK_BACKEND_API}/api/convert_to_anndata`, {
         method: 'POST',
