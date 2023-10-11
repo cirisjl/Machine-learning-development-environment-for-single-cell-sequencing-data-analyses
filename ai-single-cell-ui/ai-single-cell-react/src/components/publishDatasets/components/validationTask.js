@@ -51,7 +51,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
           let files = taskData.upload.files;
-          const updatedValidation = { ...taskData.validation };
 
           for (let file of files) {
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
@@ -61,14 +60,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 ...seuratFiles,
                 { label: file, value: path, assayNames: assayNamesMap[file] || [], selectedAssays: [] },
               ]);
-
-              // Store file paths in the taskData state under validation attribute
-              updatedValidation[file] = path;
             }
           }
-
-          // Update taskData with the new validation object
-          setTaskData({ ...taskData, validation: updatedValidation });
         } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
@@ -121,7 +114,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           <div>
             <h1>Select a Seurat File</h1>
             <Select
-              options={seuratFiles}
+              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}
               value={selectedSeuratFile}
               onChange={handleSeuratFileChange}
             />
