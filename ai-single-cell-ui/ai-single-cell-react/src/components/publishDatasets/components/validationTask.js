@@ -12,6 +12,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [selectedAssays, setSelectedAssays] = useState([]);
   // const [adataPaths, setAdataPaths] = useState({});
   const [isFetchingData, setIsFetchingData] = useState(false);
+  const [loading, setLoading] = useState(true); // Initialize loading to true
 
   let jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       } else {
         console.error('Error fetching assay names:', response.status);
       }
+
+      // Once the response is received, set loading to false
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching assay names:', error);
     } finally {
@@ -129,28 +133,35 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   return (
     <div>
-      <div>
-        <h1>Choose Assay Names</h1>
-        <Select
-          isMulti
-          options={assayNames}
-          value={assayNames.filter((option) => selectedAssays.includes(option.value))}
-          onChange={handleSelectionChange}
-        />
-        <button>Fetch adata_paths</button>
-        {/* {Object.keys(adataPaths).map((name) => (
-          <div key={name}>
-            <p>{name}</p>
-            <p>{adataPaths[name]}</p>
-          </div>
-        ))} */}
-      </div>
-      <div className='previous'>
-        <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
-      </div>
-      <div className='next-upon-success'>
-        <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
-      </div>
+            {loading ? (
+              // Render the loading spinner while loading is true
+              <div className="loading-spinner">Loading...</div>
+              ) : (
+              <div>
+                <div>
+                  <h1>Choose Assay Names</h1>
+                  <Select
+                    isMulti
+                    options={assayNames}
+                    value={assayNames.filter((option) => selectedAssays.includes(option.value))}
+                    onChange={handleSelectionChange}
+                  />
+                  <button>Fetch adata_paths</button>
+                  {/* {Object.keys(adataPaths).map((name) => (
+                    <div key={name}>
+                      <p>{name}</p>
+                      <p>{adataPaths[name]}</p>
+                    </div>
+                  ))} */}
+                </div>
+                <div className='previous'>
+                  <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
+                </div>
+                <div className='next-upon-success'>
+                  <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
+                </div>
+              </div>
+          )}
     </div>
   );
 }
