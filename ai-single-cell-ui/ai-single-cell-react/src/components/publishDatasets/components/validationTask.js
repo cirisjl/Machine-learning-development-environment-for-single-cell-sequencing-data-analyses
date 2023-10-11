@@ -14,40 +14,46 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   let jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
 
-
-   
   useEffect(() => {
-    let username = ''
-
     isUserAuth(jwtToken)
-    .then((authData) => {
-      if(authData.isAdmin) {
-          username = authData.username;
-          console.log("username ::::: ");
-          console.log(username);
-      } else {
-        console.warn("Unauthorized - you must be an admin to access this page");
-        navigate("/accessDenied");
-      }
-
-    })
-    .catch((error) => {
-      console.error(error);
-    } 
-    );
+      .then((authData) => {
+        if (authData.isAdmin) {
+          let username = authData.username;
+          // Now that you have the username and confirmed admin access,
+          // you can proceed with the rest of your code.
+          let path = STORAGE + username + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+          const fetchAssayNames = async () => {
+            try {
+              const response = await fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ path }),
+              });
+              if (response.ok) {
+                const data = await response.json();
+                setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
+              } else {
+                console.error('Error fetching assay names:', response.status);
+              }
+            } catch (error) {
+              console.error('Error fetching assay names:', error);
+            }
+          };
   
-    let path = STORAGE + "/kbcfh/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
-    const fetchAssayNames = async () => {
-      try {
-        const response = await axios.post(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {path}); // Replace with your endpoint and request data.
-        setAssayNames(response.data.assay_names.map((name) => ({ label: name, value: name })));
-      } catch (error) {
-        console.error('Error fetching assay names:', error);
-      }
-    };
+          fetchAssayNames();
+        } else {
+          console.warn("Unauthorized - you must be an admin to access this page");
+          navigate("/accessDenied");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [jwtToken, taskData]);
   
-    fetchAssayNames();
-  }, []);
+  
 
   const handleSelectionChange = (selectedOptions) => {
     setSelectedAssays(selectedOptions.map((option) => option.value));
