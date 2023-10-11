@@ -23,6 +23,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     .then((authData) => {
       if(authData.isAdmin) {
           username = authData.username;
+          console.log("username ::::: ");
+          console.log(username);
       } else {
         console.warn("Unauthorized - you must be an admin to access this page");
         navigate("/accessDenied");
