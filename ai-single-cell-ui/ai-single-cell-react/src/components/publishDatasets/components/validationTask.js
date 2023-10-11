@@ -37,9 +37,11 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           .then((response) => response.json())
           .then((data) => {
             fileInfo.assayNames = data.assay_names.map((name) => ({ label: name, value: name }));
+            fileInfo.selectedAssays = [];
             return fileInfo;
           });
       });
+      
 
       const filesWithAssayNames = await Promise.all(assayNamesPromises);
       setSeuratFiles(filesWithAssayNames);
@@ -64,9 +66,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             if (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) {
               setSeuratFiles((seuratFiles) => [
                 ...seuratFiles,
-                { label: file, value: path, assayNames: [] },
+                { label: file, value: path, assayNames: [], selectedAssays: [] },
               ]);
             }
+            
           }
 
           // Fetch assay names for Seurat files
@@ -168,12 +171,11 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 <Select
                   isMulti
                   options={selectedSeuratFile.assayNames}
-                  value={selectedSeuratFile.assayNames}
+                  value={selectedSeuratFile.selectedAssays}
                   onChange={(selectedOptions) => {
-                    // Update selected assay names for the currently selected Seurat file
                     setSelectedSeuratFile((prevSeuratFile) => ({
                       ...prevSeuratFile,
-                      assayNames: selectedOptions,
+                      selectedAssays: selectedOptions,
                     }));
                   }}
                 />
