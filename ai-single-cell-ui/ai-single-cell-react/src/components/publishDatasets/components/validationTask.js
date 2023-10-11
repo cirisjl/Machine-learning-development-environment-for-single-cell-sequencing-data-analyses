@@ -4,15 +4,42 @@ import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
+import debounce from 'lodash/debounce';
 
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
   const [assayNames, setAssayNames] = useState([]);
   const [selectedAssays, setSelectedAssays] = useState([]);
   // const [adataPaths, setAdataPaths] = useState({});
+  const [isFetchingData, setIsFetchingData] = useState(false);
 
   let jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
+
+
+  const fetchAssayNames = debounce(async (path) => {
+    setIsFetchingData(true);
+    try {
+      const response = await fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ path }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
+      } else {
+        console.error('Error fetching assay names:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching assay names:', error);
+    } finally {
+      setIsFetchingData(false);
+    }
+  }, 300); // Debounce for 300 milliseconds
 
   useEffect(() => {
     isUserAuth(jwtToken)
@@ -20,37 +47,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         if (authData.isAdmin) {
           let username = authData.username;
           let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
-          const fetchAssayNames = () => {
-            try {
-              fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ path }),
-              })
-                .then((response) => {
-                  if (response.ok) {
-                    response.json()
-                      .then((data) => {
-                        setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
-                      })
-                      .catch((error) => {
-                        console.error('Error parsing JSON response:', error);
-                      });
-                  } else {
-                    console.error('Error fetching assay names:', response.status);
-                  }
-                })
-                .catch((error) => {
-                  console.error('Error making the request:', error);
-                });
-            } catch (error) {
-              console.error('Error fetching assay names:', error);
-            }
-          };
-  
-          fetchAssayNames();
+
+          fetchAssayNames(path);
         } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
@@ -60,6 +58,53 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         console.error(error);
       });
   }, []);
+
+  // useEffect(() => {
+  //   isUserAuth(jwtToken)
+  //     .then((authData) => {
+  //       if (authData.isAdmin) {
+  //         let username = authData.username;
+  //         let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+  //         const fetchAssayNames = () => {
+  //           try {
+  //             fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
+  //               method: 'POST',
+  //               headers: {
+  //                 'Content-Type': 'application/json',
+  //               },
+  //               body: JSON.stringify({ path }),
+  //             })
+  //               .then((response) => {
+  //                 if (response.ok) {
+  //                   response.json()
+  //                     .then((data) => {
+  //                       setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
+  //                     })
+  //                     .catch((error) => {
+  //                       console.error('Error parsing JSON response:', error);
+  //                     });
+  //                 } else {
+  //                   console.error('Error fetching assay names:', response.status);
+  //                 }
+  //               })
+  //               .catch((error) => {
+  //                 console.error('Error making the request:', error);
+  //               });
+  //           } catch (error) {
+  //             console.error('Error fetching assay names:', error);
+  //           }
+  //         };
+  
+  //         fetchAssayNames();
+  //       } else {
+  //         console.warn("Unauthorized - you must be an admin to access this page");
+  //         navigate("/accessDenied");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }, []);
   
   
   
