@@ -9,7 +9,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [seuratFiles, setSeuratFiles] = useState([]);
   const [selectedSeuratFile, setSelectedSeuratFile] = useState({});
   const [loading, setLoading] = useState(false);
-  const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
+  const [assayNamesMap, setAssayNamesMap] = useState(null); // Store fetched assay names
 
 
   const jwtToken = getCookie('jwtToken');
@@ -114,12 +114,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   };
 
   return (
-    <div>
-        <div>
+    <div className='validation-task'>
+        <div className='container'>
           <div>
-            <h1>Select a Seurat File</h1>
+            <h1 className="header">Select a Seurat File</h1>
             <Select
-              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}              value={selectedSeuratFile}
+              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))} value={selectedSeuratFile}
               onChange={handleSeuratFileChange}
             />
               {loading ? (
@@ -130,7 +130,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                   <div>
                     {selectedSeuratFile && (
                       <>
-                        <h1>Choose Assay Names</h1>
+                        <h1 className="header">Choose Assay Names</h1>
                         <Select
                           isMulti
                           options={assayNamesMap[selectedSeuratFile.label] || []}
@@ -143,12 +143,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
               )}
           </div>
           <div className="previous">
-            <button type="submit" className="btn btn-info" onClick={() => setActiveTask(activeTask - 1)}>
+            <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
               Previous
             </button>
           </div>
           <div className="next-upon-success">
-            <button type="submit" className="btn btn-info" onClick={handleTaskCompletion}>
+            <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
               Next
             </button>
           </div>
