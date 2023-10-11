@@ -152,3 +152,34 @@ convert_to_anndata <- function(path) {
 
     adata_path
 }
+
+
+
+# Return a list of assays if the default assay is not "RNA"
+convert_seurat_sce_to_anndata <- function(path, assay = NULL) {
+    seurat_object <- NULL
+    assay_names <- NULL
+    default_assay <- NULL
+    anndata_path <- NULL
+    suffix <- tolower(get_suffix(path))
+
+    if(suffix == "h5Seurat" || suffix == "h5seurat"){ # Seurat object
+        seurat_object <- LoadH5Seurat(path)
+        default_assay <- DefaultAssay(seurat_object)
+        assay_names <- names(seurat_object@assays)
+
+        # Return a list of assays if the default assay is not "RNA"
+        if (default_assay == 'RNA') {
+            anndata_path <- convert_to_anndata(path)
+            # anndata_path <- save_as_anndata(seurat_object, path, assay = 'RNA')
+        } else if (!is.null(assay) && (assay %in% assay_names)){
+            # anndata_path <- save_as_anndata(seurat_object, path, assay = assay)
+            anndata_path <- convert_to_anndata(path, assay = assay)
+        } 
+        seurat_object <- NULL
+    } else if (suffix == "rds") { # Single-Cell Experiment object
+        anndata_path <- convert_to_anndata(path)
+    }
+
+    list(default_assay=default_assay, assay_names=assay_names, anndata_path=anndata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
+}
