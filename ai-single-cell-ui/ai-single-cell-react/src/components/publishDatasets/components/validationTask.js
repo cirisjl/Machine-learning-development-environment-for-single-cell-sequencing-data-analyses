@@ -5,6 +5,7 @@ import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import debounce from 'lodash/debounce';
+import { PropagateLoader } from 'react-spinners';
 
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
@@ -135,8 +136,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     <div>
             {loading ? (
               // Render the loading spinner while loading is true
-              <div className="loading-spinner">Loading...</div>
-              ) : (
+              <div className="spinner-container">
+              <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
+            </div>             
+            ) : (
               <div>
                 <div>
                   <h1>Choose Assay Names</h1>
