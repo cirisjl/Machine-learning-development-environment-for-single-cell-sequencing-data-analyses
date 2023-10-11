@@ -54,11 +54,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
           for (let file of files) {
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
-
-            if (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) {
+            if (
+              (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
+              !seuratFiles.some((fileInfo) => fileInfo.label === file)
+            ) {
               setSeuratFiles((seuratFiles) => [
                 ...seuratFiles,
-                { label: file, value: path, assayNames: assayNamesMap[file] || [], selectedAssays: [] },
+                { label: file, value: path, assayNames: [], selectedAssays: [] },
               ]);
             }
           }
