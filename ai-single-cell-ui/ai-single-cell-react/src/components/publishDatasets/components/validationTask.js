@@ -19,24 +19,32 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       .then((authData) => {
         if (authData.isAdmin) {
           let username = authData.username;
-          // Now that you have the username and confirmed admin access,
-          // you can proceed with the rest of your code.
-          let path = STORAGE + "/" + username  +"/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
-          const fetchAssayNames = async () => {
+          let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+          const fetchAssayNames = () => {
             try {
-              const response = await fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
+              fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ path }),
-              });
-              if (response.ok) {
-                const data = await response.json();
-                setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
-              } else {
-                console.error('Error fetching assay names:', response.status);
-              }
+              })
+                .then((response) => {
+                  if (response.ok) {
+                    response.json()
+                      .then((data) => {
+                        setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
+                      })
+                      .catch((error) => {
+                        console.error('Error parsing JSON response:', error);
+                      });
+                  } else {
+                    console.error('Error fetching assay names:', response.status);
+                  }
+                })
+                .catch((error) => {
+                  console.error('Error making the request:', error);
+                });
             } catch (error) {
               console.error('Error fetching assay names:', error);
             }
@@ -51,7 +59,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       .catch((error) => {
         console.error(error);
       });
-  }, [jwtToken, taskData]);
+  }, []);
+  
   
   
 
