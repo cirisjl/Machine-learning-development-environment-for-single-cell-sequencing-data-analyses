@@ -27,7 +27,7 @@ async def convert_to_anndata_task_async(request_data: PathRequest):
     print(adata_path)
     assay_names_list = list(assay_names)
 
-    return JSONResponse({"assay_names": assay_names_list, "message" : "OK"})
+    return JSONResponse({"assay_names": assay_names_list,"adata_path": adata_path , "message" : "OK"})
     # return JSONResponse({"message": "OK"})
 
 
