@@ -79,6 +79,14 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       });
   }, [jwtToken, taskData, navigate]);
 
+
+  useEffect(() => {
+    console.log(addedFiles);
+    console.log(seuratFiles);
+    console.log(selectedSeuratFile);
+    console.log(assayNamesMap);
+  }, [addedFiles, seuratFiles, selectedSeuratFile, assayNamesMap]);
+
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
