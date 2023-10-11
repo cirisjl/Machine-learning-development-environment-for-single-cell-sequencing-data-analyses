@@ -7,9 +7,9 @@ import { PropagateLoader } from 'react-spinners';
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
   const [seuratFiles, setSeuratFiles] = useState([]);
-  const [selectedSeuratFile, setSelectedSeuratFile] = useState({});
+  const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [assayNamesMap, setAssayNamesMap] = useState(null); // Store fetched assay names
+  const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
 
 
   const jwtToken = getCookie('jwtToken');
