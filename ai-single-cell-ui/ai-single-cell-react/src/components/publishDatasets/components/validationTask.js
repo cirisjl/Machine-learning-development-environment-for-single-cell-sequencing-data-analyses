@@ -77,7 +77,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       .catch((error) => {
         console.error(error);
       });
-  }, []);
+  }, [jwtToken]);
 
 
   useEffect(() => {
