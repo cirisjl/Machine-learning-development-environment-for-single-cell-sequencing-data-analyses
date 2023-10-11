@@ -36,7 +36,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     } 
     );
   
-    let path = STORAGE + "/" + username + "/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+    let path = STORAGE + "/kbcfh/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
     const fetchAssayNames = async () => {
       try {
         const response = await axios.post(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {path}); // Replace with your endpoint and request data.
