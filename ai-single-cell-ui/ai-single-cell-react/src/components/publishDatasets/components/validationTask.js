@@ -10,6 +10,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
+  const [addedFiles, setAddedFiles] = useState([]); // Track files that have been added
+
 
   const jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
@@ -62,6 +64,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 ...seuratFiles,
                 { label: file, value: path, assayNames: [], selectedAssays: [] },
               ]);
+
+              // Add the file to the list of added files
+            setAddedFiles((addedFiles) => [...addedFiles, { label: file, value: path }]);
             }
           }
         } else {
@@ -107,30 +112,33 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   return (
     <div>
-      {loading ? (
-        <div className="spinner-container">
-          <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
-        </div>
-      ) : (
         <div>
           <div>
             <h1>Select a Seurat File</h1>
             <Select
-              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}
+              options={addedFiles}
               value={selectedSeuratFile}
               onChange={handleSeuratFileChange}
             />
-            {selectedSeuratFile && (
-              <>
-                <h1>Choose Assay Names</h1>
-                <Select
-                  isMulti
-                  options={assayNamesMap[selectedSeuratFile.label] || []}
-                  value={selectedSeuratFile.selectedAssays}
-                  onChange={handleAssayNamesChange}
-                />
-              </>
-            )}
+              {loading ? (
+                <div className="spinner-container">
+                  <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
+                </div>
+              ) : (
+                  <div>
+                    {selectedSeuratFile && (
+                      <>
+                        <h1>Choose Assay Names</h1>
+                        <Select
+                          isMulti
+                          options={assayNamesMap[selectedSeuratFile.label] || []}
+                          value={selectedSeuratFile.selectedAssays}
+                          onChange={handleAssayNamesChange}
+                        />
+                      </>
+                    )}
+              </div>
+              )}
           </div>
           <div className="previous">
             <button type="submit" className="btn btn-info" onClick={() => setActiveTask(activeTask - 1)}>
@@ -143,7 +151,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             </button>
           </div>
         </div>
-      )}
     </div>
   );
 }
