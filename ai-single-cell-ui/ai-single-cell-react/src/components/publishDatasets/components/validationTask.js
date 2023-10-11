@@ -21,7 +21,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           let username = authData.username;
           // Now that you have the username and confirmed admin access,
           // you can proceed with the rest of your code.
-          let path = STORAGE + username + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
+          let path = STORAGE + "/" + username  +"/" + taskData.upload.newDirectoryPath + "/" + taskData.upload.files[0];
           const fetchAssayNames = async () => {
             try {
               const response = await fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
