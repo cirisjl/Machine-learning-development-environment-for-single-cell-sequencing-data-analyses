@@ -20,7 +20,7 @@ import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 
-from formatting.formatting import load_annData, load_invalid_adata, read_text
+from formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
 from utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
@@ -39,6 +39,7 @@ load_expression_matrix = ro.globalenv['load_expression_matrix']
 load_seurat = ro.globalenv['load_seurat']
 detect_delim = ro.globalenv['detect_delim']
 load_metadata = ro.globalenv['load_metadata']
+convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
 
 load_figure_template('LUX')
 
@@ -1091,6 +1092,27 @@ def update_active_assay(selected_assay, available_assays_options):
 @flask_app.route('/')
 def base():
     return "hello"
+
+
+@flask_app.route('/api/convert_to_anndata', methods=['POST'])
+def convert_to_annData():
+    """
+        Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
+    """
+    req_data = request.get_json()
+    path = req_data['path']
+    adata_path, assay_names  = convert_seurat_sce_to_anndata(path)
+    if assay_names is None:
+        assay_names = []
+    if adata_path is None:
+        adata_path = "Not available"
+    data = {
+        "assay_names": assay_names,
+        "adata_path": adata_path,
+        "message": "OK"
+    }
+
+    return jsonify(data)
 
 
 @flask_app.route('/dashboard')

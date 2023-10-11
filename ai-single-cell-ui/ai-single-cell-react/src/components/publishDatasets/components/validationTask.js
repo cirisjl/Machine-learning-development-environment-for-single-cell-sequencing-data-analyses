@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CELERY_BACKEND_API, STORAGE } from '../../../constants/declarations';
+import { FLASK_BACKEND_API, STORAGE } from '../../../constants/declarations';
 import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const fetchAssayNames = debounce(async (path) => {
     setIsFetchingData(true);
     try {
-      const response = await fetch(`${CELERY_BACKEND_API}/tools/convert_to_anndata`, {
+      const response = await fetch(`${FLASK_BACKEND_API}/api/convert_to_anndata`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
