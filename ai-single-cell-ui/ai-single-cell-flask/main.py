@@ -39,7 +39,7 @@ load_expression_matrix = ro.globalenv['load_expression_matrix']
 load_seurat = ro.globalenv['load_seurat']
 detect_delim = ro.globalenv['detect_delim']
 load_metadata = ro.globalenv['load_metadata']
-convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
+# convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
 
 load_figure_template('LUX')
 
