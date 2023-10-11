@@ -10,7 +10,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [selectedSeuratFile, setSelectedSeuratFile] = useState({});
   const [loading, setLoading] = useState(false);
   const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
-  const [addedFiles, setAddedFiles] = useState([]); // Track files that have been added
 
 
   const jwtToken = getCookie('jwtToken');
@@ -58,15 +57,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
             if (
               (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
-              !seuratFiles.some((fileInfo) => fileInfo.label === file) && !addedFiles.includes(file)
+              !seuratFiles.some((fileInfo) => fileInfo.label === file) 
             ) {
               setSeuratFiles((seuratFiles) => [
                 ...seuratFiles,
                 { label: file, value: path, assayNames: [], selectedAssays: [] },
               ]);
-
-              // Add the file to the list of added files
-            setAddedFiles((addedFiles) => [...addedFiles, { label: file, value: path }]);
             }
           }
         } else {
@@ -81,11 +77,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
 
   useEffect(() => {
-    console.log(addedFiles);
     console.log(seuratFiles);
     console.log(selectedSeuratFile);
     console.log(assayNamesMap);
-  }, [addedFiles, seuratFiles, selectedSeuratFile, assayNamesMap]);
+  }, [seuratFiles, selectedSeuratFile, assayNamesMap]);
 
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
@@ -100,18 +95,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setActiveTask(3);
   };
 
-  const handleSeuratFileChange = (target) => {
+  const handleSeuratFileChange = (selectedOption) => {
     
-    const selectedValue = target.value;
-    const selectedLabel = target.options[target.selectedIndex].text;
+    setSelectedSeuratFile(selectedOption);
 
-    const newOption = {"label": selectedLabel, "value": selectedValue};
-
-    setSelectedSeuratFile(newOption);
-
-    // Fetch assay names when a Seurat file is selected
-    if (newOption) {
-      fetchAssayNames(newOption.value, newOption.label);
+    if (selectedOption) {
+      fetchAssayNames(selectedOption.value, selectedOption.label);
     }
   };
 
@@ -129,14 +118,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         <div>
           <div>
             <h1>Select a Seurat File</h1>
-            <select value={selectedSeuratFile.value} onChange={(e) => handleSeuratFileChange(e.target)}>
-                <option value="">Select a Seurat File</option>
-                {addedFiles.map((file, index) => (
-                  <option key={index} value={file.value}>
-                    {file.label}
-                  </option>
-                ))}
-              </select>
+            <Select
+              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}              value={selectedSeuratFile}
+              onChange={handleSeuratFileChange}
+            />
               {loading ? (
                 <div className="spinner-container">
                   <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
