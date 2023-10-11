@@ -26,22 +26,23 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setIsFetchingData(true);
     setLoading(true);
     try {
-      const response = await fetch(`${FLASK_BACKEND_API}/api/convert_to_anndata`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ path }),
+      const assayNamesPromises = seuratFiles.map((fileInfo) => {
+        return fetch(`${FLASK_BACKEND_API}/api/convert_to_anndata`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ path: fileInfo.value }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            fileInfo.assayNames = data.assay_names.map((name) => ({ label: name, value: name }));
+            return fileInfo;
+          });
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setAssayNames(data.assay_names.map((name) => ({ label: name, value: name })));
-      } else {
-        console.error('Error fetching assay names:', response.status);
-      }
-
-      // Once the response is received, set loading to false
+      const filesWithAssayNames = await Promise.all(assayNamesPromises);
+      setSeuratFiles(filesWithAssayNames);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching assay names:', error);
@@ -61,10 +62,15 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
 
             if (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) {
-              // Track Seurat files
-              setSeuratFiles((seuratFiles) => [...seuratFiles, { label: file, value: path }]);
+              setSeuratFiles((seuratFiles) => [
+                ...seuratFiles,
+                { label: file, value: path, assayNames: [] },
+              ]);
             }
           }
+
+          // Fetch assay names for Seurat files
+          fetchAssayNames();
         } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
@@ -76,12 +82,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   }, []);
 
 
-    // When the user selects a Seurat file, fetch assay names for that file
-    useEffect(() => {
-      if (selectedSeuratFile) {
-        fetchAssayNames(selectedSeuratFile.value);
-      }
-    }, [selectedSeuratFile]);
+    // // When the user selects a Seurat file, fetch assay names for that file
+    // useEffect(() => {
+    //   if (selectedSeuratFile) {
+    //     fetchAssayNames(selectedSeuratFile.value);
+    //   }
+    // }, [selectedSeuratFile]);
   
 
   const handleSelectionChange = (selectedOptions) => {
@@ -102,42 +108,86 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setActiveTask(3);
   };
 
+  // return (
+  //   <div>
+  //           {loading ? (
+  //             // Render the loading spinner while loading is true
+  //             <div className="spinner-container">
+  //             <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
+  //           </div>             
+  //           ) : (
+  //             <div>
+  //               <div>
+  //                 <h1>Select a Seurat File</h1>
+  //                 <Select
+  //                   options={seuratFiles}
+  //                   value={selectedSeuratFile}
+  //                   onChange={(selectedOption) => setSelectedSeuratFile(selectedOption)}
+  //                 />
+  //                 {selectedSeuratFile && (
+  //                   <div>
+  //                     <h1>Choose Assay Names</h1>
+  //                     <Select
+  //                       isMulti
+  //                       options={assayNames}
+  //                       value={assayNames.filter((option) => selectedAssays.includes(option.value))}
+  //                       onChange={handleSelectionChange}
+  //                     />
+  //                   </div>
+  //                 )}
+  //               </div>
+  //               <div className='previous'>
+  //                 <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
+  //               </div>
+  //               <div className='next-upon-success'>
+  //                 <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
+  //               </div>
+  //             </div>
+  //         )}
+  //   </div>
+  // );
+
   return (
     <div>
-            {loading ? (
-              // Render the loading spinner while loading is true
-              <div className="spinner-container">
-              <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
-            </div>             
-            ) : (
-              <div>
-                <div>
-                  <h1>Select a Seurat File</h1>
-                  <Select
-                    options={seuratFiles}
-                    value={selectedSeuratFile}
-                    onChange={(selectedOption) => setSelectedSeuratFile(selectedOption)}
-                  />
-                  {selectedSeuratFile && (
-                    <div>
-                      <h1>Choose Assay Names</h1>
-                      <Select
-                        isMulti
-                        options={assayNames}
-                        value={assayNames.filter((option) => selectedAssays.includes(option.value))}
-                        onChange={handleSelectionChange}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className='previous'>
-                  <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
-                </div>
-                <div className='next-upon-success'>
-                  <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
-                </div>
-              </div>
-          )}
+      {loading ? (
+        <div className="spinner-container">
+          <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
+        </div>
+      ) : (
+        <div>
+          <div>
+            <h1>Select a Seurat File</h1>
+            <Select
+              options={seuratFiles}
+              value={selectedSeuratFile}
+              onChange={(selectedOption) => setSelectedSeuratFile(selectedOption)}
+            />
+            {selectedSeuratFile && (
+              <>
+                <h1>Choose Assay Names</h1>
+                <Select
+                  isMulti
+                  options={selectedSeuratFile.assayNames}
+                  value={selectedSeuratFile.assayNames}
+                  onChange={(selectedOptions) => {
+                    // Update selected assay names for the currently selected Seurat file
+                    setSelectedSeuratFile((prevSeuratFile) => ({
+                      ...prevSeuratFile,
+                      assayNames: selectedOptions,
+                    }));
+                  }}
+                />
+              </>
+            )}
+          </div>
+          <div className='previous'>
+            <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
+          </div>
+          <div className='next-upon-success'>
+            <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Next</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
