@@ -724,7 +724,7 @@ class MyForm extends Component {
               </button>
             </div>
             <div className="next-upon-success">
-              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+              <button type="submit" className="btn btn-info button">
                 Next
               </button>
             </div>
