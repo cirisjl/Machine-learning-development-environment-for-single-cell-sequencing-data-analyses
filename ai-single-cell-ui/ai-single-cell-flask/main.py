@@ -1115,26 +1115,31 @@ def convert_to_annData():
     return jsonify(data)
 
 
-# Define an endpoint to receive the data
-@flask_app.route('/api/convert_sce_to_annData', methods=['POST'])
+@app.route('/api/convert_sce_to_annData', methods=['POST'])
 def receive_data():
     try:
         data = request.json  # Assuming you are sending data as JSON in the request body
         if not data or not isinstance(data, list):
             return jsonify({'error': 'Invalid data format'}), 400
 
+        response_data = []  # List to store response for each entry
+
         # Iterate through each entry in the data
         for entry in data:
-            file_details = entry.get('fileDetails')
-            assay_name = entry.get('assayName')
+            path = entry.get('fileDetails')
+            assay = entry.get('assayName')
 
-            if file_details and assay_name:
-                # Process the data for this entry
-                # Perform actions with the absolute_path and assay_name
-                # For example, print or return them
-                print(f'File Details: {file_details}, Assay Name: {assay_name}')
+            if path and assay:
+                adata_path = convert_seurat_sce_to_anndata(path, assay)
+                
+                # Add this entry to the response data
+                response_data.append({
+                    'path': path,
+                    'assay': assay,
+                    'adata_path': adata_path
+                })
 
-        return jsonify({'message': 'Data processed successfully'})
+        return jsonify({'data': response_data, 'message': 'Data processed successfully'})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
