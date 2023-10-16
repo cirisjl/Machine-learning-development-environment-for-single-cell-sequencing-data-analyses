@@ -7,12 +7,17 @@ import { PropagateLoader } from 'react-spinners';
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
    const [loading, setLoading] = useState(false);
-
- 
-  // const [seuratFiles, setSeuratFiles] = useState([]);
-  // const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
-  // const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
-
+  // Ensure default values for validation data
+  if (!taskData.validation) {
+    setTaskData({
+      ...taskData,
+      validation: {
+        seuratFiles: [],
+        selectedSeuratFile: null,
+        assayNamesMap: {},
+      }
+    });
+  }
 
   const jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
