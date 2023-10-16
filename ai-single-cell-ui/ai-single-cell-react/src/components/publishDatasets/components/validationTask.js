@@ -104,6 +104,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         });
       }
     });
+
+    console.log("Data to send")
+    console.log(dataToSend);
   
     try {
       // Send the data to the backend API

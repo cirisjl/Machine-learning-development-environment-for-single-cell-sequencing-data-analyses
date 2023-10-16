@@ -1130,7 +1130,7 @@ def receive_data():
             assay = entry.get('assayName')
 
             if path and assay:
-                adata_path = convert_seurat_sce_to_anndata(path, assay)
+                adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
                 
                 # Add this entry to the response data
                 response_data.append({
