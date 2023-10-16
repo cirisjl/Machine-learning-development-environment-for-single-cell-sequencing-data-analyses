@@ -85,10 +85,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
 
   useEffect(() => {
-    console.log(taskData.validation.seuratFiles);
-    console.log(taskData.validation.selectedSeuratFile);
-    console.log(taskData.validation.assayNamesMap);
-  }, [taskData.validation.seuratFiles, taskData.validation.selectedSeuratFile, taskData.validation.assayNamesMap]);
+    console.log(taskData);
+  }, [taskData]);
 
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
