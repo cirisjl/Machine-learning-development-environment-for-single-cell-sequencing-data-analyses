@@ -245,7 +245,7 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
         try:
             results = convert_seurat_sce_to_anndata(path, assay=assay)
-            adata_path = (results.rx2('anndata_path'))
+            adata_path = str(results.rx2('anndata_path'))
             assay_names = list(results[1])
         except Exception as e:
             print("Object format conversion is failed")
