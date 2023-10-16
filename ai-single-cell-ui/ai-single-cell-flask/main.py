@@ -1115,7 +1115,7 @@ def convert_to_annData():
     return jsonify(data)
 
 
-@app.route('/api/convert_sce_to_annData', methods=['POST'])
+@flask_app.route('/api/convert_sce_to_annData', methods=['POST'])
 def receive_data():
     try:
         data = request.json  # Assuming you are sending data as JSON in the request body
