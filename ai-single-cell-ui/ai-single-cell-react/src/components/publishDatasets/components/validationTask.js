@@ -110,7 +110,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       const index = updatedSeuratFiles.findIndex((file) => file.value === selectedSeuratFile.value);
       updatedSeuratFiles[index].selectedAssays = selectedOptions;
       setSeuratFiles(updatedSeuratFiles);
-    }
+    } 
   };
 
   return (
@@ -134,7 +134,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                         <Select
                           isMulti
                           options={assayNamesMap[selectedSeuratFile.label] || []}
-                          value={selectedSeuratFile.selectedAssays}
+                          value={seuratFiles[seuratFiles.findIndex((file) => file.value === selectedSeuratFile.value)].selectedAssays}
                           onChange={handleAssayNamesChange}
                         />
                       </>
