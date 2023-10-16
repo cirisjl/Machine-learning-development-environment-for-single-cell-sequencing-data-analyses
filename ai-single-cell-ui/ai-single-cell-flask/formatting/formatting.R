@@ -138,18 +138,21 @@ detect_delim <- function(path, nchar = 1e3) {
   # readChar() will error on non-character data 
 }
 
-convert_to_anndata <- function(path) {
+convert_to_anndata <- function(path, assay = 'RNA') {
     adata_path <- NULL
     suffix <- tolower(get_suffix(path))
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        adata_path <- Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
+        if(assay != 'RNA') {
+            DefaultAssay(seurat_object) <- assay
+            SaveH5Seurat(seurat_object, filename = path, overwrite = TRUE, verbose = FALSE)
+        }
+        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds"){
         seurat_object <- load_seurat(path)
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
     } 
-
     adata_path
 }
 
