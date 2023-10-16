@@ -6,17 +6,19 @@ import Select from 'react-select';
 import { PropagateLoader } from 'react-spinners';
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
-  const [seuratFiles, setSeuratFiles] = useState([]);
-  const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
+   const [loading, setLoading] = useState(false);
+
+ 
+  // const [seuratFiles, setSeuratFiles] = useState([]);
+  // const [selectedSeuratFile, setSelectedSeuratFile] = useState(null);
+  // const [assayNamesMap, setAssayNamesMap] = useState({}); // Store fetched assay names
 
 
   const jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
 
   const fetchAssayNames = async (path, file) => {
-    if (!assayNamesMap[file]) {
+    if (!taskData.validation.assayNamesMap[file]) {
       setLoading(true);
 
       try {
@@ -30,9 +32,15 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
         if (response.ok) {
           const data = await response.json();
-          setAssayNamesMap((prevMap) => ({
-            ...prevMap,
-            [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            validation: {
+              ...prevTaskData.validation,
+              assayNamesMap: {
+                ...prevTaskData.validation.assayNamesMap,
+                [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+              },
+            },
           }));
         } else {
           console.error('Error fetching assay names:', response.status);
@@ -57,12 +65,18 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
             if (
               (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
-              !seuratFiles.some((fileInfo) => fileInfo.label === file) 
+              !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.label === file)
             ) {
-              setSeuratFiles((seuratFiles) => [
-                ...seuratFiles,
-                { label: file, value: path, assayNames: [], selectedAssays: [] },
-              ]);
+              setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                validation: {
+                  ...prevTaskData.validation,
+                  seuratFiles: [
+                    ...prevTaskData.validation.seuratFiles,
+                    { label: file, value: path, assayNames: [], selectedAssays: [] },
+                  ],
+                },
+              }));
             }
           }
         } else {
@@ -77,10 +91,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
 
   useEffect(() => {
-    console.log(seuratFiles);
-    console.log(selectedSeuratFile);
-    console.log(assayNamesMap);
-  }, [seuratFiles, selectedSeuratFile, assayNamesMap]);
+    console.log(taskData.validation.seuratFiles);
+    console.log(taskData.validation.selectedSeuratFile);
+    console.log(taskData.validation.assayNamesMap);
+  }, [taskData.validation.seuratFiles, taskData.validation.selectedSeuratFile, taskData.validation.assayNamesMap]);
 
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
@@ -97,7 +111,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   const handleSeuratFileChange = (selectedOption) => {
     
-    setSelectedSeuratFile(selectedOption);
+    setTaskData((prevTaskData) => ({
+      ...prevTaskData,
+      validation: {
+        ...prevTaskData.validation,
+        selectedSeuratFile: selectedOption,
+      },
+    }));
 
     if (selectedOption) {
       fetchAssayNames(selectedOption.value, selectedOption.label);
@@ -105,12 +125,17 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   };
 
   const handleAssayNamesChange = (selectedOptions) => {
-    if (selectedSeuratFile) {
-      const updatedSeuratFiles = [...seuratFiles];
-      const index = updatedSeuratFiles.findIndex((file) => file.value === selectedSeuratFile.value);
+    if (taskData.validation.selectedSeuratFile) {
+      const updatedSeuratFiles = [...taskData.validation.seuratFiles];
+      const index = updatedSeuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value);
       updatedSeuratFiles[index].selectedAssays = selectedOptions;
-      setSeuratFiles(updatedSeuratFiles);
-    } 
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        validation: {
+          ...prevTaskData.validation,
+          seuratFiles: updatedSeuratFiles,
+        },
+      }));    } 
   };
 
   return (
@@ -119,8 +144,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           <div>
             <h1 className="header">Select a Seurat File</h1>
             <Select
-              options={seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))} value={selectedSeuratFile}
-              onChange={handleSeuratFileChange}
+            options={taskData.validation.seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))} value={taskData.validation.selectedSeuratFile}
+            onChange={handleSeuratFileChange}
             />
               {loading ? (
                 <div className="spinner-container">
@@ -128,13 +153,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 </div>
               ) : (
                   <div>
-                    {selectedSeuratFile && (
+                    {taskData.validation.selectedSeuratFile && (
                       <>
                         <h1 className="header">Choose Assay Names</h1>
                         <Select
                           isMulti
-                          options={assayNamesMap[selectedSeuratFile.label] || []}
-                          value={seuratFiles[seuratFiles.findIndex((file) => file.value === selectedSeuratFile.value)].selectedAssays}
+                          options={taskData.validation.assayNamesMap[taskData.validation.selectedSeuratFile.label] || []}
+                          value={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)].selectedAssays}
                           onChange={handleAssayNamesChange}
                         />
                       </>
