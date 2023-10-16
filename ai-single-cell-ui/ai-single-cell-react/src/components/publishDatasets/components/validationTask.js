@@ -88,18 +88,55 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     console.log(taskData);
   }, [taskData]);
 
-  const handleTaskCompletion = () => {
-    // Perform the necessary actions for completing Task 1
-    // For example, submit a form, validate input, etc.
-
-    // After Task 1 is successfully completed, update the task status
-    setTaskStatus((prevTaskStatus) => ({
-      ...prevTaskStatus,
-      2: true, // Mark Task 1 as completed
-    }));
-    // The current task is finished, so make the next task active
-    setActiveTask(3);
+  const handleTaskCompletion = async () => {
+    // Prepare the data to send to the backend
+    const dataToSend = [];
+  
+    taskData.validation.seuratFiles.forEach((file) => {
+      // Check if any assays are selected for this file
+      if (file.selectedAssays && file.selectedAssays.length > 0) {
+        file.selectedAssays.forEach((assay) => {
+          // Create an entry with the complete file details and assay name
+          dataToSend.push({
+            fileDetails: file.value,
+            assayName: assay.value,
+          });
+        });
+      }
+    });
+  
+    try {
+      // Send the data to the backend API
+      const response = await fetch(`${FLASK_BACKEND_API}/api/convert_sce_to_annData`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      });
+  
+      if (response.ok) {
+        // Handle the response from the API
+        const responseData = await response.json();
+        // Optionally, you can perform actions based on the response
+        console.log('API response:', responseData);
+  
+        // After the API call is complete, you can update the task status
+        setTaskStatus((prevTaskStatus) => ({
+          ...prevTaskStatus,
+          2: true, // Mark Task 3 as completed (or update it to the appropriate task)
+        }));
+  
+        // The current task is finished, so make the next task active
+        setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+      } else {
+        console.error('Error making API call:', response.status);
+      }
+    } catch (error) {
+      console.error('Error making API call:', error);
+    }
   };
+  
 
   const handleSeuratFileChange = (selectedOption) => {
     
