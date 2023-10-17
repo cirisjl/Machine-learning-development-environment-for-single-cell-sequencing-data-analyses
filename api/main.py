@@ -46,7 +46,7 @@ async def add_process_time_header(request, call_next):
     return response
 
 # Define the main API endpoint
-@app.get("/")
+@app.get("/index")
 def index():
     return "Hello"
 
