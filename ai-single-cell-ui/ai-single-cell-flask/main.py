@@ -1132,6 +1132,10 @@ def receive_data():
             if path and assay:
                 adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
                 
+                # Check if the string is not empty and not None
+                if adata_path and adata_path != None:
+                    adata_path = adata_path.lstrip('[1] ').rstrip('\n')
+
                 # Add this entry to the response data
                 response_data.append({
                     'path': path,
