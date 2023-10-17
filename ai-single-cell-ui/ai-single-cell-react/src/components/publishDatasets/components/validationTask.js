@@ -3,10 +3,12 @@ import { FLASK_BACKEND_API, STORAGE } from '../../../constants/declarations';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import { PropagateLoader } from 'react-spinners';
+import { PropagateLoader, RingLoader } from 'react-spinners';
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
    const [loading, setLoading] = useState(false);
+   const [validationLoading, setValidationLoading] = useState(false);
+
 
   const jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
@@ -89,6 +91,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   }, [taskData]);
 
   const handleTaskCompletion = async () => {
+
+    // set Validation loading to true.
+    setValidationLoading(true);
+
     // Prepare the data to send to the backend
     const dataToSend = [];
   
@@ -119,11 +125,34 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       });
   
       if (response.ok) {
-        // Handle the response from the API
-        const responseData = await response.json();
-        // Optionally, you can perform actions based on the response
-        console.log('API response:', responseData);
-  
+      // Handle the response from the API
+      const responseData = await response.json();
+
+      if (responseData && responseData.data && responseData.data.length > 0) {
+        // Create a mapping of fileDetails to the response data
+        const newFileMappings = {};
+
+        responseData.data.forEach((entry) => {
+          const fileDetails = entry.path; // Use the appropriate property
+
+          newFileMappings[fileDetails] = {
+            adata_path: entry.adata_path,
+            assay: entry.assay,
+            // Add other properties as needed
+          };
+        });
+
+        // Update the fileMappings state
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          validation: {
+            ...prevTaskData.validation,
+            fileMappings: {
+              ...prevTaskData.validation.fileMappings,
+              ...newFileMappings,
+            },
+          },
+        }));
         // After the API call is complete, you can update the task status
         setTaskStatus((prevTaskStatus) => ({
           ...prevTaskStatus,
@@ -132,10 +161,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   
         // The current task is finished, so make the next task active
         setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+        setValidationLoading(false);
       } else {
+        setValidationLoading(false);
         console.error('Error making API call:', response.status);
       }
-    } catch (error) {
+    }
+  } catch (error) {
       console.error('Error making API call:', error);
     }
   };
@@ -172,6 +204,11 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   return (
     <div className='validation-task'>
+      { validationLoading ? (
+        <div className="spinner-container">
+          <RingLoader color={'#36D7B7'} loading={validationLoading} size={150} />
+        </div>
+      ) : (
         <div className='container'>
           <div>
             <h1 className="header">Select a Seurat File</h1>
@@ -212,6 +249,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             </div>
           </div>
         </div>
+        )}
     </div>
   );
 }

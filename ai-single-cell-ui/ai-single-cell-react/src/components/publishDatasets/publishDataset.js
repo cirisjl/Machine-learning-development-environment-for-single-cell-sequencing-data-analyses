@@ -24,6 +24,7 @@ export default function PublishDataset() {
             seuratFiles: [],
             selectedSeuratFile: null,
             assayNamesMap: {},
+            fileMappings:{}
           },
         quality_control: {},
         metadata: {},
