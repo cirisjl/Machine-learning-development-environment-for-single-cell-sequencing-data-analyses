@@ -8,7 +8,6 @@ from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
 
 
-
 def convert_to_anndata_task(path):
     adata_path, assay_names = convert_seurat_sce_to_anndata(path)
     print("Tasks")

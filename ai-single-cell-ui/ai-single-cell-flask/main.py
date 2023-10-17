@@ -20,7 +20,7 @@ import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 
-from formatting.formatting import load_annData, load_invalid_adata, read_text
+from formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
 from utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
@@ -39,6 +39,7 @@ load_expression_matrix = ro.globalenv['load_expression_matrix']
 load_seurat = ro.globalenv['load_seurat']
 detect_delim = ro.globalenv['detect_delim']
 load_metadata = ro.globalenv['load_metadata']
+# convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
 
 load_figure_template('LUX')
 
@@ -1092,6 +1093,61 @@ def update_active_assay(selected_assay, available_assays_options):
 def base():
     return "hello"
 
+
+@flask_app.route('/api/convert_to_anndata', methods=['POST'])
+def convert_to_annData():
+    """
+        Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
+    """
+    req_data = request.get_json()
+    path = req_data['path']
+    adata_path, assay_names  = convert_seurat_sce_to_anndata(path)
+    if assay_names is None:
+        assay_names = []
+    if adata_path is None:
+        adata_path = "Not available"
+    data = {
+        "assay_names": assay_names,
+        "adata_path": adata_path,
+        "message": "OK"
+    }
+
+    return jsonify(data)
+
+
+@flask_app.route('/api/convert_sce_to_annData', methods=['POST'])
+def receive_data():
+    try:
+        data = request.json  # Assuming you are sending data as JSON in the request body
+        if not data or not isinstance(data, list):
+            return jsonify({'error': 'Invalid data format'}), 400
+
+        response_data = []  # List to store response for each entry
+
+        # Iterate through each entry in the data
+        for entry in data:
+            path = entry.get('fileDetails')
+            assay = entry.get('assayName')
+
+            if path and assay:
+                adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
+                
+                # Check if the string is not empty and not None
+                if adata_path and adata_path != None:
+                    adata_path = adata_path.lstrip('[1] ').rstrip('\n')
+
+                # Add this entry to the response data
+                response_data.append({
+                    'path': path,
+                    'assay': assay,
+                    'adata_path': adata_path
+                })
+
+        return jsonify({'data': response_data, 'message': 'Data processed successfully'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 
 @flask_app.route('/dashboard')
 def dashboard():

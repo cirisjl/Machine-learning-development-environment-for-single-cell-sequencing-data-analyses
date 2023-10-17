@@ -17,13 +17,18 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
       {/* Task 1 content here */}
       <button onClick={handleTaskCompletion}>ReviewTaskComponent button</button>
 
-      <div className='previous'>
-        <button type="submit" class="btn btn-info" onClick={() => setActiveTask(activeTask - 1)} >Previous</button>
-      </div>
-
-      <div className='submit-upon-success'>
-        <button type="submit" class="btn btn-info" onClick={handleTaskCompletion} >Submit</button>
-      </div>
+      <div className='navigation-buttons'>
+            <div className="previous">
+              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                Previous
+              </button>
+            </div>
+            <div className="next-upon-success">
+              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                Next
+              </button>
+            </div>
+          </div>
     </div>
   );
 }

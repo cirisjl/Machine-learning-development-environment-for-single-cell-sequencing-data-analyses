@@ -115,7 +115,7 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         {titleError && <div className="error-message">{titleError}</div>}
       </div>
       <div className='next-upon-success'>
-        <button type="submit" class="btn btn-info" onClick={handleTask1Completion}>Next</button>
+        <button type="submit" class="btn btn-info button" onClick={handleTask1Completion}>Next</button>
       </div>
     </div>
   );
