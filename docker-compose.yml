@@ -283,21 +283,21 @@ services:
     networks:
       - oscb-network
 
-  oscb_flask:
-    build:
-      context: ./ai-single-cell-ui/ai-single-cell-flask
-      dockerfile: Dockerfile
-    container_name: oscb_flask_container
-    image: oscb_flask
-    restart: always
-    ports:
-      - "5003:5003"
-    networks:
-      - oscb-network
-    env_file:
-      - .env
-    volumes:
-      - user_storage:/usr/src/app/storage/
+  # oscb_flask:
+  #   build:
+  #     context: ./ai-single-cell-ui/ai-single-cell-flask
+  #     dockerfile: Dockerfile
+  #   container_name: oscb_flask_container
+  #   image: oscb_flask
+  #   restart: always
+  #   ports:
+  #     - "5003:5003"
+  #   networks:
+  #     - oscb-network
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - user_storage:/usr/src/app/storage/
 
 networks:
   oscb-network:
