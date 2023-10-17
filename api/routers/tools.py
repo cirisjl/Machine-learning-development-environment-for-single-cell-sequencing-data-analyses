@@ -20,16 +20,13 @@ async def convert_to_anndata_task_async(request_data: PathRequest):
         assay_names = []
     if adata_path is None:
         adata_path = "Not available"
-    print("router")
-    print("AssayNames")
-    print(assay_names)
-    print("adata_path")
-    print(adata_path)
-    assay_names_list = list(assay_names)
+    # print("router")
+    # print("AssayNames")
+    # print(assay_names)
+    # print("adata_path")
+    # print(adata_path)
 
-    return JSONResponse({"assay_names": assay_names_list, "message" : "OK"})
-    # return JSONResponse({"message": "OK"})
-
+    return JSONResponse({"assay_names": assay_names,"adata_path": adata_path , "message" : "OK"})
 
 @router.post("/qc")
 async def create_qc_task_async(ds: Dataset):

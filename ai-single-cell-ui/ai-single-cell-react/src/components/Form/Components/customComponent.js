@@ -190,6 +190,8 @@ class MyForm extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
+    const { setTaskStatus, setTaskData, setActiveTask} = this.props;
+
     const errors = this.validateForm(this.state.formData);
     this.setState({ errors });
 
@@ -197,7 +199,6 @@ class MyForm extends Component {
       const formData = this.state.formData;
       console.log(formData);
 
-      // Assuming you have the form data in a variable named 'formData'
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
         .then(response => {
           console.log('Form data submitted successfully');
@@ -210,6 +211,15 @@ class MyForm extends Component {
           message: 'Form data submitted successfully',
           hasMessage: true, // Set hasMessage to true when a message is set
         });
+
+        // After Task 1 is successfully completed, update the task status
+      setTaskStatus((prevTaskStatus) => ({
+        ...prevTaskStatus,
+        4: true, // Mark Task 1 as completed
+      }));
+
+      //The current task is finished, so make the next task active
+      setActiveTask(5);
     } else {
       this.setState({
         message: 'Please fill all the required fields to submit',
@@ -285,9 +295,10 @@ class MyForm extends Component {
       this.clearMessageAfterTimeout();
     }
     const { formData, errors, isLoading, options, hasMessage, message, isAdmin } = this.state;
-    console.log("has Message and Message");
-    console.log(hasMessage);
-    console.log(message);
+
+    const {setActiveTask, activeTask } = this.props;
+
+
     return (
       <div>
       {isAdmin && (
@@ -706,8 +717,19 @@ class MyForm extends Component {
             {errors['Submission Date'] && <div className="error-tooltip">{errors['Submission Date']}</div>}
           </div>
 
+          <div className='navigation-buttons'>
+            <div className="previous">
+              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                Previous
+              </button>
+            </div>
+            <div className="next-upon-success">
+              <button type="submit" className="btn btn-info button">
+                Next
+              </button>
+            </div>
+          </div>
 
-          <button type="submit">Submit</button>
         </form>
         </div>
       </div>
