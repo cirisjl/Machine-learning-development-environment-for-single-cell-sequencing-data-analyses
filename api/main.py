@@ -7,6 +7,8 @@ import asyncio
 from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.wsgi import WSGIMiddleware
+from dash_app.dashboard import app as dashboard1
 
 
 def create_app() -> FastAPI:
@@ -21,6 +23,9 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+# Mount the Dash app as a sub-application in the FastAPI server
+app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
 celery = app.celery_app
 
 app.add_middleware(
@@ -39,6 +44,11 @@ async def add_process_time_header(request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
+
+# Define the main API endpoint
+@app.get("/")
+def index():
+    return "Hello"
 
 
 @app.websocket("/taskStatus/{taskIdsCommaSeparated}")
