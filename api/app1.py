@@ -1,5 +1,5 @@
 from rpy2.robjects.packages import importr
-from .constants import USER_STORAGE_PATH, DATASETS_API
+from constants import USER_STORAGE_PATH, DATASETS_API
 import rpy2.robjects as ro
 import dash
 from dash import html, dcc, ctx
