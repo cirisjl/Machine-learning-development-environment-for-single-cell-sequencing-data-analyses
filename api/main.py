@@ -29,7 +29,7 @@ app = create_app()
 
 # Define the route with query parameters
 @app.get("/dashboard")
-async def dashboard(
+def dashboard(
    authToken: str = Query(..., title="Authentication Token"),
     username: str = Query(..., title="Username"),
     title: str = Query(..., title="Title")
@@ -50,7 +50,7 @@ async def dashboard(
     dash_app.layout = get_dash_layout(authToken, username, title)
 
     # Return the Dash app as an ASGI application directly
-    return await dash_app.index()
+    return dash_app.index()
 
 
 celery = app.celery_app
