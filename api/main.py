@@ -8,7 +8,7 @@ from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
-from dash_app.dashboard import app as dashboard1
+# from dash_app.dashboard import app as dashboard1
 from app2 import app as dashboard2
 
 
