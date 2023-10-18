@@ -23,6 +23,12 @@ from .utils.util import is_valid_query_param, create_dataframe
 pandas2ri.activate()
 import os
 
+# Get the directory of the current file
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the path to the R script file relative to the current file's directory
+r_source_path = os.path.join(current_file_dir, 'formatting', 'formatting.R')
+
 # Load the R script file
 r_source_path = os.path.join('formatting', 'formatting.R')
 with open(r_source_path, 'r') as r_source_file:
