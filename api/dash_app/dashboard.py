@@ -55,7 +55,7 @@ db = client["aisinglecell"]
 metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
-app = dash.Dash(__name__, requests_pathname_prefix='/dashboard1/',  external_stylesheets=[dbc.themes.LUX])
+app = dash.Dash(__name__, requests_pathname_prefix='/dashboard/',  external_stylesheets=[dbc.themes.LUX])
 
 # Initialize the variables
 datasets = []
