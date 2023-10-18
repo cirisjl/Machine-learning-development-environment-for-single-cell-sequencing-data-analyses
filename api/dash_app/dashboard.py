@@ -214,7 +214,7 @@ def layout(authToken=None, username= None, title=None):
             )
 
 
-# app.layout = get_dash_layout(authToken=None, username=None, title=None)
+app.layout = layout(authToken=None, username=None, title=None)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 
 # # Get the dataset names and file paths from the directory
@@ -1076,5 +1076,5 @@ def update_active_assay(selected_assay, available_assays_options):
         return None
 
 
-# if __name__ == "__main__":
-#     app.run_server(debug=True)
+if __name__ == "__main__":
+    app.run_server(debug=True)
