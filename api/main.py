@@ -50,7 +50,7 @@ async def dashboard(
     dash_app.layout = get_dash_layout(authToken, username, title)
 
     # Return the Dash app as an ASGI application directly
-    return await app.index()
+    return await dash_app.index()
 
 
 celery = app.celery_app
