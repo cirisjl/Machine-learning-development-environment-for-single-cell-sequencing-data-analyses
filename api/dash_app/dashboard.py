@@ -214,7 +214,7 @@ def layout(authToken=None, username= None, title=None):
             )
 
 
-app.layout = get_dash_layout(authToken=None, username=None, title=None)
+# app.layout = get_dash_layout(authToken=None, username=None, title=None)
 # Set the log level to capture INFO, WARNING, and ERROR messages
 
 # # Get the dataset names and file paths from the directory
