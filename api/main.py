@@ -3,6 +3,7 @@ import uvicorn as uvicorn
 from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
 import asyncio
+from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
 from routers import tools
@@ -49,8 +50,13 @@ def dashboard(
     # Set the Dash app layout with the query parameters
     dash_app.layout = get_dash_layout(authToken, username, title)
 
-    # Return the Dash app as an ASGI application directly
-    return dash_app.index()
+        # Get the HTML content of the Dash app
+    dash_html = dash_app.index()
+
+    return HTMLResponse(content=dash_html)
+
+    # # Return the Dash app as an ASGI application directly
+    # return dash_app.index()
 
 
 celery = app.celery_app
