@@ -8,7 +8,7 @@ from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
-# from dash_app.dashboard import app as dashboard1
+from dash_app.dashboard import app as dashboard1
 from app2 import app as dashboard2
 
 
@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
                           version="1.0.0", )
 
     current_app.celery_app = create_celery()
-    # current_app.include_router(tools.router)
+    current_app.include_router(tools.router)
     return current_app
 
 
@@ -27,6 +27,7 @@ app = create_app()
 
 # Mount the Dash app as a sub-application in the FastAPI server
 app.mount("/dashboard2", WSGIMiddleware(dashboard2.server))
+app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
 
 celery = app.celery_app
 
