@@ -9,8 +9,8 @@ from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
-from dash_app.dashboard import app as dash_app
-from dash_app.dashboard import is_valid_query_param, get_dash_layout
+from dash_app.dashboard import app as dashboard1
+# from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
@@ -26,37 +26,34 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # Mount the Dash app as a sub-application in the FastAPI server
-# app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
+app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
 
-# Define the route with query parameters
-@app.get("/dashboard")
-def dashboard(
-   authToken: str = Query(..., title="Authentication Token"),
-    username: str = Query(..., title="Username"),
-    title: str = Query(..., title="Title")
-):
-    # Use the authToken, username, and title as needed
-    if title is not None:
-        default_title = title
+# # Define the route with query parameters
+# @app.get("/dashboard")
+# def dashboard(
+#    authToken: str = Query(..., title="Authentication Token"),
+#     username: str = Query(..., title="Username"),
+#     title: str = Query(..., title="Title")
+# ):
+#     # Use the authToken, username, and title as needed
+#     if title is not None:
+#         default_title = title
 
-    print("From FastAPI")
-    print(authToken)
-    print(username)
-    print(title)
+#     print("From FastAPI")
+#     print(authToken)
+#     print(username)
+#     print(title)
 
-    if authToken is None or not is_valid_query_param(authToken):
-        return "Authentication Failed. Please login to continue"
+#     if authToken is None or not is_valid_query_param(authToken):
+#         return "Authentication Failed. Please login to continue"
 
-    # Set the Dash app layout with the query parameters
-    dash_app.layout = get_dash_layout(authToken, username, title)
+#     # Set the Dash app layout with the query parameters
+#     dash_app.layout = get_dash_layout(authToken, username, title)
 
-        # Get the HTML content of the Dash app
-    dash_html = dash_app.index()
+#         # Get the HTML content of the Dash app
+#     dash_html = dash_app.index()
 
-    return HTMLResponse(content=dash_html)
-
-    # # Return the Dash app as an ASGI application directly
-    # return dash_app.index()
+#     return HTMLResponse(content=dash_html)
 
 
 celery = app.celery_app
