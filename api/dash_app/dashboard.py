@@ -139,9 +139,9 @@ def layout(authToken=None, username= None, title=None):
         className="main-container",
         children=[
             # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
-            dcc.Input(id='authToken-container', type='hidden', value=authToken),
-            dcc.Input(id='username-container', type='hidden', value=username),
-            dcc.Input(id='title-container', type='hidden', value=title),
+            dcc.Input(id='authToken-container', value=authToken),
+            dcc.Input(id='username-container',value=username),
+            dcc.Input(id='title-container',  value=title),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
