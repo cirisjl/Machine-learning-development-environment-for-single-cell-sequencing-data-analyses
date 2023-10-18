@@ -9,7 +9,7 @@ from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard1
-from dashapp import create_dash_app
+from app2 import app as dashboard2
 
 
 def create_app() -> FastAPI:
@@ -26,7 +26,8 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # Mount the Dash app as a sub-application in the FastAPI server
-app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
+app.mount("/dashboard2", WSGIMiddleware(dashboard2.server))
+
 celery = app.celery_app
 
 app.add_middleware(
@@ -70,11 +71,6 @@ async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
 def get_status():
     return {"status": "ok"}
 
-# A bit odd, but the only way I've been able to get prefixing of the Dash app
-# to work is by allowing the Dash/Flask app to prefix itself, then mounting
-# it to root
-dash_app = create_dash_app(requests_pathname_prefix="/dash/")
-app.mount("/dash", WSGIMiddleware(dash_app.server))
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host='0.0.0.0', port=5000, reload=True)
