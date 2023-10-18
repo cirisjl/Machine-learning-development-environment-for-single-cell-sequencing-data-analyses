@@ -17,8 +17,8 @@ import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 
-from formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
-from utils.util import is_valid_query_param, create_dataframe
+from .formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
+from .utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
 import os
