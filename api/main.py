@@ -9,7 +9,7 @@ from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dash_app
-from .dash_app.dashboard import is_valid_query_param, get_dash_layout
+from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
