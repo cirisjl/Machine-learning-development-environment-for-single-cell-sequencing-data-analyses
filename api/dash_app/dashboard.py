@@ -55,7 +55,7 @@ db = client["aisinglecell"]
 metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
-app = dash.Dash(__name__, requests_pathname_prefix='/dashboard/',  external_stylesheets=[dbc.themes.LUX])
+app = dash.Dash(__name__, requests_pathname_prefix='/dashboard1/',  external_stylesheets=[dbc.themes.LUX])
 
 # Initialize the variables
 datasets = []
@@ -126,7 +126,7 @@ sidebar = html.Div(
     style=SIDEBAR_STYLE,
 )
 
-def get_dash_layout(authToken, username, title):
+def layout(authToken=None, username= None, title=None):
     return  html.Div (children = [
                 dbc.Row([
                     dbc.Col(),
