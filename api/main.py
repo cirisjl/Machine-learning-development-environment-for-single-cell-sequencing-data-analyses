@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
                           version="1.0.0", )
 
     current_app.celery_app = create_celery()
-    current_app.include_router(tools.router)
+    # current_app.include_router(tools.router)
     return current_app
 
 
