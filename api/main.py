@@ -1,6 +1,6 @@
 import time
 import uvicorn as uvicorn
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
 import asyncio
 
@@ -8,9 +8,8 @@ from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
-from dash_app.dashboard import app as dashboard1
-from app2 import app as dashboard2
-
+from dash_app.dashboard import app as dash_app
+from .dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
@@ -26,8 +25,33 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # Mount the Dash app as a sub-application in the FastAPI server
-app.mount("/dashboard2", WSGIMiddleware(dashboard2.server))
-app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
+# app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
+
+# Define the route with query parameters
+@app.get("/dashboard")
+async def dashboard(
+   authToken: str = Query(..., title="Authentication Token"),
+    username: str = Query(..., title="Username"),
+    title: str = Query(..., title="Title")
+):
+    # Use the authToken, username, and title as needed
+    if title is not None:
+        default_title = title
+
+    print("From FastAPI")
+    print(authToken)
+    print(username)
+    print(title)
+
+    if authToken is None or not is_valid_query_param(authToken):
+        return "Authentication Failed. Please login to continue"
+
+    # Set the Dash app layout with the query parameters
+    dash_app.layout = get_dash_layout(authToken, username, title)
+
+    # Return the Dash app as an ASGI application directly
+    return await app.index()
+
 
 celery = app.celery_app
 
