@@ -30,7 +30,6 @@ current_file_dir = os.path.dirname(os.path.abspath(__file__))
 r_source_path = os.path.join(current_file_dir, 'formatting', 'formatting.R')
 
 # Load the R script file
-r_source_path = os.path.join('formatting', 'formatting.R')
 with open(r_source_path, 'r') as r_source_file:
     r_source = r_source_file.read()
 
