@@ -213,6 +213,26 @@ def layout(authToken=None, username= None, title=None):
                 ]
             )
 
+# Callback to update layout based on query parameters
+@app.callback(
+    Output('authToken-container', 'value'),
+    Output('username-container', 'value'),
+    Output('title-container', 'value'),
+    Input('url', 'search')
+)
+def update_layout(search):
+    # Parse query parameters from the URL
+    query_parameters = dash.callback_context.inputs['url.search']
+
+    # Extract individual query parameters
+    authToken = query_parameters.get('authToken')
+    username = query_parameters.get('username')
+    title = query_parameters.get('title')
+
+    # You can modify these values as needed based on the query parameters
+
+    return authToken, username, title
+
 app.layout = layout
 
 # Set the log level to capture INFO, WARNING, and ERROR messages
