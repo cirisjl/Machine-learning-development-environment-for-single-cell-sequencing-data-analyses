@@ -222,8 +222,11 @@ def layout(authToken=None, username= None, title=None):
 )
 def update_layout(search):
     # Parse query parameters from the URL
+
+    print("Inside the url search")
     query_parameters = dash.callback_context.inputs['url.search']
 
+    print(query_parameters)
     # Extract individual query parameters
     authToken = query_parameters.get('authToken')
     username = query_parameters.get('username')
@@ -290,6 +293,10 @@ def get_dataset_options(authToken, username, title):
     Input('title-container', 'value'), 
 )
 def update_dataset_dropdown(authToken, username, title):
+    print("inside callback with inputs")
+    print(authToken)
+    print(username)
+    print(title)
     if authToken is not None:
         print("Inside the path")
         print("AuthToken:::")
