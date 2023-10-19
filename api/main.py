@@ -9,7 +9,7 @@ from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
-from dash_app.dashboard import app as dashboard1
+from dash_app.dashboard import app as dashboard
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 def create_app() -> FastAPI:
@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # Mount the Dash app as a sub-application in the FastAPI server
-app.mount("/dashboard1", WSGIMiddleware(dashboard1.server))
+app.mount("/dashboard", WSGIMiddleware(dashboard.server))
 
 # # Define the route with query parameters
 # @app.get("/dashboard")
