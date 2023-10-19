@@ -236,7 +236,7 @@ def update_layout(search):
 
     print(query_parameters)
     # Extract individual query parameters
-    authToken = query_parameters.get('authToken', [''])[0]
+    authToken = query_parameters.get('?authToken', [''])[0]
     username = query_parameters.get('username', [''])[0]
     title = query_parameters.get('title', [''])[0]
 
