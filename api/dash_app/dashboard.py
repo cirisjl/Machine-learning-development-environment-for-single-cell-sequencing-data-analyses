@@ -141,6 +141,7 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
         children=[
             # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', value=authToken),
+            dcc.Location(id='url', refresh=False),  # Add the Location component
             dcc.Input(id='username-container',value=username),
             dcc.Input(id='title-container',  value=title),
             html.Div(f'This is authToken: {authToken}.'),
