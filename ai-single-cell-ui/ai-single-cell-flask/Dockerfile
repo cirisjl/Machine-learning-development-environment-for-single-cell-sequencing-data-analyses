@@ -1,11 +1,11 @@
 FROM u15ec104/ai-single-cell:flask-base
 
 # Install pandoc for R markdown
-RUN PANDOC_PKG=pandoc-3.1.1-1-amd64.deb && \
-    cd /tmp && \
-    wget https://github.com/jgm/pandoc/releases/download/3.1.1/${PANDOC_PKG} && \
-    dpkg -i ${PANDOC_PKG} && \
-    rm /tmp/${PANDOC_PKG}
+# RUN PANDOC_PKG=pandoc-3.1.1-1-amd64.deb && \
+#     cd /tmp && \
+#     wget https://github.com/jgm/pandoc/releases/download/3.1.1/${PANDOC_PKG} && \
+#     dpkg -i ${PANDOC_PKG} && \
+#     rm /tmp/${PANDOC_PKG}
 
 WORKDIR /usr/src/app
 

@@ -69,18 +69,20 @@ export default function UppyUploader(props) {
     });
 
     uppy.on('upload-success', (file, response) => {
-        // Access the filename of the successfully uploaded file
-        setFileError('');
-        const filename = file.name;
-      
-        setTaskData((prevTaskData) => ({
-                    ...prevTaskData,
-                    upload: {
-                        ...prevTaskData.upload,
-                        files: [...(prevTaskData.upload.files || []), file.name],
-                    },
-        }));
-        console.log('Successfully uploaded file name:', filename);
+        if(toPublishDataset) {
+            // Access the filename of the successfully uploaded file
+            setFileError('');
+            const filename = file.name;
+        
+            setTaskData((prevTaskData) => ({
+                        ...prevTaskData,
+                        upload: {
+                            ...prevTaskData.upload,
+                            files: [...(prevTaskData.upload.files || []), file.name],
+                        },
+            }));
+            console.log('Successfully uploaded file name:', filename);
+        }
     });
       
     if (isUppyModalOpen && !toPublishDataset)
