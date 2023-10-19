@@ -56,6 +56,7 @@ metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application
 app = dash.Dash(__name__, requests_pathname_prefix='/dashboard1/',  external_stylesheets=[dbc.themes.LUX])
+dash.register_page(__name__)
 
 # Initialize the variables
 datasets = []
