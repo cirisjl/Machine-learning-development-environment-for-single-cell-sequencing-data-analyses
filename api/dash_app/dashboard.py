@@ -142,6 +142,9 @@ def layout(authToken=None, username= None, title=None):
             dcc.Input(id='authToken-container', value=authToken),
             dcc.Input(id='username-container',value=username),
             dcc.Input(id='title-container',  value=title),
+            html.Div(f'This is authToken: {authToken}.'),
+            html.Div(f'This is username: {username}.'),
+            html.Div(f'This is title: {title}.'),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
