@@ -126,7 +126,7 @@ sidebar = html.Div(
     style=SIDEBAR_STYLE,
 )
 
-def layout(authToken=None, username= None, title=None):
+def layout(authToken=None, username= None, title=None, **other_unknown_query_strings):
     return  html.Div (children = [
                 dbc.Row([
                     dbc.Col(),
