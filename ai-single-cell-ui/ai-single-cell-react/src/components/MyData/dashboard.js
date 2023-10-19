@@ -14,10 +14,7 @@ export default function FlaskDashboard (props) {
 
   // Now you can use the 'state' object to access the passed data
   const message = state.message;
-  console.log("Helo Wolrd");
-  console.log(state.title);
-  console.log(message);
-
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,7 +32,7 @@ export default function FlaskDashboard (props) {
             username: userID,
             title: state.title
         });
-    const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003/dashboard?${queryParams}`
+    const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5000/dashboard?${queryParams}`
         setFlaskURL(FLASK_BACKEND_API)
       } else {
         console.warn("Unauthorized - please login first to continue");

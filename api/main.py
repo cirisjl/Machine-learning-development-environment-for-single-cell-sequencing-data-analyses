@@ -1,13 +1,16 @@
 import time
 import uvicorn as uvicorn
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
 import asyncio
+from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
 from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.middleware.wsgi import WSGIMiddleware
+from dash_app.dashboard import app as dashboard
+# from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
@@ -21,6 +24,10 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+# Mount the Dash app as a sub-application in the FastAPI server
+app.mount("/dashboard", WSGIMiddleware(dashboard.server))
+
 celery = app.celery_app
 
 app.add_middleware(
@@ -33,7 +40,6 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
-    print('inside middleware!')
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
@@ -58,6 +64,11 @@ async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
                 results[taskId] = 'Processing'
         await websocket.send_json(results)
         await asyncio.sleep(3)
+
+
+@app.get("/status")
+def get_status():
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":

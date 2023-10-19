@@ -23,3 +23,14 @@ munkres~=1.1.4
 anndata~=0.8.0
 xlrd
 openpyxl
+
+
+Flask~=2.2.3
+dash~=2.9.1
+flask-cors==3.0.10
+flask-htmlmin
+detect-delimiter
+requests
+pymongo
+dash-bootstrap-components
+dash_bootstrap_templates
