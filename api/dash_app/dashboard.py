@@ -42,7 +42,6 @@ load_expression_matrix = ro.globalenv['load_expression_matrix']
 load_seurat = ro.globalenv['load_seurat']
 detect_delim = ro.globalenv['detect_delim']
 load_metadata = ro.globalenv['load_metadata']
-# convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
 
 load_figure_template('LUX')
 
@@ -140,14 +139,10 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
                     dbc.Col(html.Div(
         className="main-container",
         children=[
-            # html.H1("Dataset Exploration Dashboard", className="dashboard-title"),
             dcc.Input(id='authToken-container', value=authToken),
             dcc.Location(id='url', refresh=False),  # Add the Location component
             dcc.Input(id='username-container',value=username),
             dcc.Input(id='title-container',  value=title),
-            html.Div(f'This is authToken: {authToken}.'),
-            html.Div(f'This is username: {username}.'),
-            html.Div(f'This is title: {title}.'),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
@@ -191,26 +186,6 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
                 id="edit-button-container",
                 style={"display": "none"},
             ),
-            # html.Div(
-            #     className="input-container",
-            #     children=[
-            #         html.Button(
-            #             "Update Dataset",
-            #             id="update-button",
-            #             className="update-button"
-            #         ),
-            #         html.Div(id="update-status", className="update-status"),
-            #         # html.A(
-            #         #     "Download Dataset",
-            #         #     id="download-link",
-            #         #     href="",
-            #         #     download="updated_dataset.h5ad",
-            #         #     target="_blank"
-            #         # )
-            #     ],
-            #     id="update-button-container",
-            #     style={"display": "none"},
-            # ),
             dcc.Store(id='adata-storage'),
             dcc.Store(id='updated-adata-storage'),
         ]
@@ -228,10 +203,6 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
 )
 def update_layout(search):
     # Parse query parameters from the URL
-
-    print("Inside the url search")
-
-    # Parse query parameters from the URL
     query_parameters = parse_qs(search)
 
     print(query_parameters)
@@ -240,27 +211,9 @@ def update_layout(search):
     username = query_parameters.get('username', [''])[0]
     title = query_parameters.get('title', [''])[0]
 
-    print(authToken)
-    print(username)
-    print(title)
-
-    # You can modify these values as needed based on the query parameters
-
     return authToken, username, title
 
 app.layout = layout
-
-# Set the log level to capture INFO, WARNING, and ERROR messages
-
-# # Get the dataset names and file paths from the directory
-# datasets = ["Heart Neuronal Dataset", "CSV Dataset", "Text Dataset", "Tung Dataset", "Seurat Dataset"]
-
-# datasetMap = {"Heart Neuronal Dataset": "hca_heart_neuronal_raw.h5ad",
-#               "CSV Dataset": "GSE60749_RnaSeq_single_cell_NPC_TPM.csv", "Text Dataset": "updated_text_dataset.txt",
-#               "Tung Dataset": "tung.rds", "Seurat Dataset": "GSE198467_ATAC_Seurat_object_clustered_renamed.h5seurat"}
-
-
-
 
 
 def get_dataset_options(authToken, username, title):
@@ -268,7 +221,6 @@ def get_dataset_options(authToken, username, title):
     # Initialize the variables
     datasets.clear()
     datasetMap.clear()
-    # print(params)
 
     # Make the API call and fetch the dataset options from your API
     response = requests.get(DATASETS_API, params=params)
@@ -305,20 +257,12 @@ def get_dataset_options(authToken, username, title):
     State('title-container', 'value'), 
 )
 def update_dataset_dropdown(authToken, username, title):
-    print("inside callback with inputs")
-    print(authToken)
-    print(username)
-    print(title)
     if authToken is not None:
-        print("Inside the path")
-        print("AuthToken:::")
-        print(authToken)
         dataset_options = get_dataset_options(authToken, username, title)
         updated_default_value = title if title in datasets else None
         return dataset_options, updated_default_value
     else:
         # For other pages, no need to update the dropdown
-        print("Outside the path")
         return dash.no_update
 
 
