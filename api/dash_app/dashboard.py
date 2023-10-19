@@ -139,10 +139,10 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
                     dbc.Col(html.Div(
         className="main-container",
         children=[
-            dcc.Input(id='authToken-container', value=authToken),
+            dcc.Input(id='authToken-container', type='hidden', value=authToken),
             dcc.Location(id='url', refresh=False),  # Add the Location component
-            dcc.Input(id='username-container',value=username),
-            dcc.Input(id='title-container',  value=title),
+            dcc.Input(id='username-container', type='hidden',value=username),
+            dcc.Input(id='title-container', type='hidden',  value=title),
             html.Div(
                 [
                     html.P("Would you like to replace invalid values with NaN?"),
@@ -319,78 +319,6 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                 suffix = file_path.split(".")[1]
             ro.globalenv["file_path"] = file_path
 
-            # if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
-            #     srat = load_seurat(file_path)
-            #     ro.globalenv["seurat_obj"] = srat
-            #     r_metadata = load_metadata(srat)
-            #     # Access specific R variables from the returned R list
-            #     assay_names = r_metadata.rx2('assay_names')
-            #     num_genes = int(r_metadata.rx2('num_genes'))
-            #     num_cells = int(r_metadata.rx2('num_cells'))
-            #     default_assay = r_metadata.rx2["default_assay"]
-            #     dimensional_reductions = r_metadata.rx2('dimensional_reductions')
-                
-            #     seurat_obj = ro.globalenv["seurat_obj"]
-
-            #     print(type(dimensional_reductions))
-            #     if dimensional_reductions is not None:
-            #         dropdown_options = [{'label': dim, 'value': dim} for dim in dimensional_reductions]
-            #     else:
-            #         dropdown_options = []
-                
-            #     if assay_names is not None:
-            #         assay_options = [{'label': assay, 'value': assay} for assay in assay_names]
-            #     else:
-            #         assay_options = []
-
-            #     print(seurat_obj)
-            #     dataset_info = f"Dataset Name: {dataset}"
-
-            #     metadata = {
-            #         "Number of Cells": num_cells,
-            #         "Number of Genes": num_genes,
-            #     }
-            #     output = html.Div([
-            #         html.H3("Active Assay: "),
-
-            #         html.Div(default_assay[0], id='active-assay'),
-
-            #         html.H3("List of Assays"),
-
-            #         # Dropdown to select the assay
-            #         dcc.Dropdown(
-            #             id='assay-dropdown',
-            #             options=assay_options,
-            #             value=assay_names[0] if assay_names and len(assay_names) > 0 else None
-            #         ),
-            #         html.Div(id='assay-change-confirmation'),
-
-            #         # Output to display the selected assay
-            #         html.Div(id='selected-assay'),
-
-            #         html.H3("List of all the dimensional reductions calculated:"),
-
-            #         # Dropdown to select the assay
-            #         dcc.Dropdown(
-            #             id='dim-dropdown',
-            #             options=dropdown_options,
-            #             value=dimensional_reductions[0] if dimensional_reductions and len(dimensional_reductions) > 0 else None
-            #         ),
-
-            #         # Output to display the selected assay
-            #         html.Div(id='selected-dim'),
-
-            #         html.Button("Update Default Assay", id="default-assay", n_clicks=0, className="edit-button"),
-            #         html.Div(id='output-message'),
-            #     ])
-
-            #     return dataset_info, [
-            #         html.H3("Metadata:", style={"margin-top": "20px"}),
-            #         html.Table(
-            #             [html.Tr([html.Th(key), html.Td(str(value))]) for key, value in metadata.items()],
-            #             style={"margin-bottom": "20px"}
-            #         ),
-            #         output], {'display': 'none'}, None, {'display': 'none'}, None
             try:
                 adata = load_annData(file_path)
                 invalidadata = None
@@ -494,41 +422,11 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     ],
                     id="column-checkboxes",
                 )
-                #
-                # action_button = html.Div(
-                #     className="input-container",
-                #     children=[
-                #         html.Button(
-                #             "Update Dataset",
-                #             id="update-button",
-                #             className="update-button"
-                #         ),
-                #         html.Div(id="update-status", className="update-status"),
-                #         html.A(
-                #             "Download Dataset",
-                #             id="download-link",
-                #             href="",
-                #             download="updated_dataset.h5ad",
-                #             target="_blank"
-                #         )
-                #     ],
-                # )
 
             else:
                 expression_invalid_table = None
                 row_checkboxes = None
                 column_checkboxes = None
-                # action_button = html.Div(
-                #     className="input-container",
-                #     children=[
-                #         html.Button(
-                #             "Edit Dataset",
-                #             id="edit-button",
-                #             className="edit-button"
-                #         ),
-                #         html.Div(id="edit-status", className="edit-status"),
-                #     ],
-                # )
 
             data_matrix = adata.X
             print(isinstance(data_matrix, np.ndarray))
@@ -766,10 +664,6 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
 def update_dataset_content(update_status, dataset, updatedData):
     if update_status is not None and update_status != "":
 
-        # adata_df = pd.read_json(updatedData, orient='split')
-
-        # # Convert adata_df to AnnData object
-        # adata = sc.AnnData(adata_df)
         adata = getannData()
 
         try:
@@ -830,9 +724,6 @@ def update_dataset_content(update_status, dataset, updatedData):
                 value=available_assays[0] if available_assays else None
             )
 
-            # Serialize and store the adata
-            # adata_df = create_dataframe(adata)
-            # adata_pickle = adata_df.to_json(date_format='iso', orient='split')
             setAnnData(adata)
 
             adata_pickle = None
@@ -892,10 +783,6 @@ def update_dataset_content(update_status, dataset, updatedData):
 )
 def toggle_edit_update_buttons(n_clicks, data):
     if n_clicks > 0:
-        # adata_df = pd.read_json(data, orient='split')
-
-        # # Convert adata_df to AnnData object
-        # adata = sc.AnnData(adata_df)
 
         adata = getannData()
 
@@ -965,9 +852,9 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
         raise PreventUpdate
 
 
-        file_path = datasetMap[dataset]
-        file_name = file_path.split("/")
-        fileparts = file_name[len(file_name)-1].split(".")
+    file_path = datasetMap[dataset]
+    file_name = file_path.split("/")
+    fileparts = file_name[len(file_name)-1].split(".")
     # Assuming 'seurat_obj' is your Seurat object
     # Update the Seurat object to use the selected assay as the default assay
     file_path = datasetMap[dataset]

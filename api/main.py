@@ -28,34 +28,6 @@ app = create_app()
 # Mount the Dash app as a sub-application in the FastAPI server
 app.mount("/dashboard", WSGIMiddleware(dashboard.server))
 
-# # Define the route with query parameters
-# @app.get("/dashboard")
-# def dashboard(
-#    authToken: str = Query(..., title="Authentication Token"),
-#     username: str = Query(..., title="Username"),
-#     title: str = Query(..., title="Title")
-# ):
-#     # Use the authToken, username, and title as needed
-#     if title is not None:
-#         default_title = title
-
-#     print("From FastAPI")
-#     print(authToken)
-#     print(username)
-#     print(title)
-
-#     if authToken is None or not is_valid_query_param(authToken):
-#         return "Authentication Failed. Please login to continue"
-
-#     # Set the Dash app layout with the query parameters
-#     dash_app.layout = get_dash_layout(authToken, username, title)
-
-#         # Get the HTML content of the Dash app
-#     dash_html = dash_app.index()
-
-#     return HTMLResponse(content=dash_html)
-
-
 celery = app.celery_app
 
 app.add_middleware(

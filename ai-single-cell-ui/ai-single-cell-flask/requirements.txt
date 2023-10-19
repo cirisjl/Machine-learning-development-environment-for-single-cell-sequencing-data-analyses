@@ -1,13 +1,9 @@
 Flask~=2.2.3
 rpy2~=3.4.1
 numpy
-dash~=2.9.1
 flask-cors==3.0.10
 flask-htmlmin
 pandas
 scanpy
 detect-delimiter
 requests
-pymongo
-dash-bootstrap-components
-dash_bootstrap_templates
