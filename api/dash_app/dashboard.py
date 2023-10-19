@@ -16,6 +16,7 @@ import logging
 import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
+from urllib.parse import parse_qs
 
 from .formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
 from .utils.util import is_valid_query_param, create_dataframe
@@ -228,14 +229,22 @@ def layout(authToken=None, username= None, title=None, **other_unknown_query_str
 def update_layout(search):
     # Parse query parameters from the URL
 
-    print("Inside the url search")
-    query_parameters = dash.callback_context.inputs['url.search']
+    # print("Inside the url search")
+    # query_parameters = dash.callback_context.inputs['url.search']
 
-    print(query_parameters)
+    # print(query_parameters)
+    # # Extract individual query parameters
+    # authToken = query_parameters.get('authToken')
+    # username = query_parameters.get('username')
+    # title = query_parameters.get('title')
+
+        # Parse query parameters from the URL
+    query_parameters = parse_qs(search)
+
     # Extract individual query parameters
-    authToken = query_parameters.get('authToken')
-    username = query_parameters.get('username')
-    title = query_parameters.get('title')
+    authToken = query_parameters.get('authToken', [''])[0]
+    username = query_parameters.get('username', [''])[0]
+    title = query_parameters.get('title', [''])[0]
 
     # You can modify these values as needed based on the query parameters
 
