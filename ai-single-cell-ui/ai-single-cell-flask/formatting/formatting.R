@@ -15,7 +15,7 @@ get_suffix <- function(path) {
     return(parts[[1]][nparts])
 }
 
-load_expression_matrix <- function(path){
+LoadExpressionMatrix <- function(path){
     expression_matrix <- NULL
     if(file_test("-d", path)) {
         if(file.exists(file.path(path,"barcodes.tsv")) && file.exists(file.path(path,"genes.tsv")) && file.exists(file.path(path,"matrix.mtx"))){
@@ -27,7 +27,7 @@ load_expression_matrix <- function(path){
         } else if(file.exists(file.path(path,"count_matrix.mtx")) && file.exists(file.path(path,"features.tsv")) && file.exists(file.path(path,"barcodes.tsv"))){
             expression_matrix <- ReadMtx(mtx = "count_matrix.mtx", features = file.path(path,"features.tsv"), cells = file.path(path,"barcodes.tsv"))           
         } else if(file.exists(file.path(path,"molecules.txt")) && file.exists(file.path(path,"annotation.txt"))){
-            delim <- detect_delim(path)
+            delim <- DetectDelim(path)
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             expression_matrix <- as.matrix(molecules)} 
     } else{       
@@ -43,10 +43,10 @@ load_expression_matrix <- function(path){
     expression_matrix
 }
 
-load_seurat <- function(path, project = NULL){
+LoadSeurat <- function(path, project = NULL){
     seurat_object <- NULL
     suffix <- tolower(get_suffix(path))
-    print("Inside load_seurat 1")
+    print("Inside LoadSeurat 1")
 
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
         seurat_object <- LoadH5Seurat(path)
@@ -57,7 +57,7 @@ load_seurat <- function(path, project = NULL){
         sce <- readRDS(path)
         seurat_object <- as.Seurat(sce, slot = "counts", data = NULL)
     } else {
-        expression_matrix <- load_expression_matrix(path)
+        expression_matrix <- LoadExpressionMatrix(path)
         if(!is.null(expression_matrix) && !is.null(project)) {
             seurat_object <- CreateSeuratObject(counts = expression_matrix, project = project)
         } else if (!is.null(expression_matrix)){
@@ -117,7 +117,7 @@ load_metadata <- function(seurat_obj) {
 #' searching
 #'
 #' @return (character) If found, the delimiter, it not, \\r\\n
-detect_delim <- function(path, nchar = 1e3) {
+DetectDelim <- function(path, nchar = 1e3) {
   # only look for delimiter if the file exists
   if (file.exists(path)) {
     # readChar() will error on non-character data so
@@ -138,13 +138,13 @@ detect_delim <- function(path, nchar = 1e3) {
   # readChar() will error on non-character data 
 }
 
-convert_to_anndata <- function(path) {
+ConvertToAnndata <- function(path) {
     adata_path <- NULL
     suffix <- tolower(get_suffix(path))
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
         adata_path <- Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds"){
-        seurat_object <- load_seurat(path)
+        seurat_object <- LoadSeurat(path)
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)

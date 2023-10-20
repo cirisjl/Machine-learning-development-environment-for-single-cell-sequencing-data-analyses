@@ -9,8 +9,8 @@ from tools.run_evaluation import run_evaluation
 
 
 
-def convert_to_anndata_task(path):
-    adata_path, assay_names = convert_seurat_sce_to_anndata(path)
+def ConvertToAnndata_task(path):
+    adata_path, assay_names = ConvertSeuratSCEtoAnndata(path)
     print("Tasks")
     print("AssayNames")
     print(assay_names)
