@@ -3,15 +3,34 @@ import os
 import subprocess
 import numpy as np
 import pandas as pd
-# import anndata2ri
-# from rpy2.robjects import r
+import rpy2.robjects as ro
+from rpy2.robjects.packages import importr
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.conversion import localconverter
 # anndata2ri.activate()
 from detect_delimiter import detect
 from string import ascii_letters
 import csv
 
 
-def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is optional and only for Seurat object
+# Get the absolute path of the current file
+current_file = os.path.abspath(__file__)
+
+# Construct the relative path to the desired file
+# relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
+relative_path = os.path.join(os.path.dirname(current_file), '../qc/seurat_qc.R')
+
+# Get the absolute path of the desired file
+r_path = os.path.abspath(relative_path)
+
+with open(r_path, 'r') as r_source_file:
+    r_source = r_source_file.read()
+
+# Evaluate the R script in the R environment
+ro.r(r_source)
+
+
+def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True): # assay is optional and only for Seurat object
 
     # path = os.path.abspath(path)
     adata = None
@@ -34,6 +53,10 @@ def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is o
             print(detect_delimiter(path))
             # print("Inside the loadAnndata CSV 2")
             adata = sc.read_csv(path, delimiter=detect_delimiter(path))
+            if annotation_path is not None:
+                df_ann = pd.read_csv(annotation_path)
+                df_ann = df_ann.set_index('cell', drop=False)
+                adata.var = adata.var.join(df_ann)
             # print("Inside the loadAnndata CSV 3")
         elif path.endswith(".csv.gz") or path.endswith(".tsv.gz"):
             data = sc.read_csv(path)
@@ -57,54 +80,71 @@ def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is o
             adata = sc.read_text(path)
         elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
-        elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
-            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay=assay)
+        elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
+            adata_path, assay_names = ConvertSeuratSCEtoAnndata(path, assay=assay)
             if os.path.exists(adata_path):
                 adata = sc.read_h5ad(adata_path)
 
     return adata
 
 
+def get_metadata_from_seurat(path):
+    GetMetadataFromSeurat_r = ro.globalenv['GetMetadataFromSeurat']
+    default_assay = None
+    assay_names = None
+    metadata = None
+    nCells = 0
+    nGenes = 0
+    genes = None
+    cells = None
+    HVGsID = None
+    pca = None
+    tsne = None
+    umap = None
+
+    try:
+        results = list(GetMetadataFromSeurat_r(path))
+        default_assay = list(results[0])[0]
+        assay_names = list(results[1])
+        nCells = list(results[3])[0]
+        nGenes = list(results[4])[0]
+        genes  = list(results[5])
+        cells = list(results[6])
+        if results[7] != ro.rinterface.NULL:
+            HVGsID = list(results[7])
+
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            if results[2] != ro.rinterface.NULL: 
+                metadata = ro.conversion.rpy2py(results[2])
+            if results[8] != ro.rinterface.NULL:
+                pca = ro.conversion.rpy2py(results[8])
+            if results[9] != ro.rinterface.NULL:
+                tsne = ro.conversion.rpy2py(results[9])
+            if results[10] != ro.rinterface.NULL:
+                umap = ro.conversion.rpy2py(results[10])
+    except Exception as e:
+        print(e)
+
+    return default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
+
+
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
-    import rpy2.robjects as ro
-    # robjects.r.source("formating.R")
-
-    # Get the absolute path of the current file
-    current_file = os.path.abspath(__file__)
-
-    # Construct the relative path to the desired file
-    relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
-
-    # Get the absolute path of the desired file
-    r_path = os.path.abspath(relative_path)
-
-    with open(r_path, 'r') as r_source_file:
-        r_source = r_source_file.read()
-
-    # Evaluate the R script in the R environment
-    ro.r(r_source)
-
     # Access the loaded R functions
-    convert_seurat_sce_to_anndata = ro.globalenv['convert_seurat_sce_to_anndata']
+    ConvertSeuratSCEtoAnndata_r = ro.globalenv['ConvertSeuratSCEtoAnndata']
 
     assay_names = None
     adata_path = None
 
-    if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
+    if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
         try:
-            results = convert_seurat_sce_to_anndata(path, assay=assay)
-            adata_path = results[2]
-            assay_names = results[1]
+            results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
+            adata_path = list(results[2])[0]
+            assay_names = list(results[1])
         except Exception as e:
             print("Object format conversion is failed")
             print(e)
 
-    print("formatting")
-    print("AssayNames")
-    print(assay_names)
-    print("adata_path")
-    print(adata_path)
     return adata_path, assay_names
 
 
@@ -135,7 +175,7 @@ def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
 
     if os.path.exists(output):
         try:
-            adata = load_anndata(output, dataset)
+            adata = LoadAnndata(output, dataset)
             adata_path = output
         except Exception as e:
             print("File format is not supported.")
@@ -145,7 +185,7 @@ def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
         try:
             print("Inside else , read from input path")
             print(input)
-            adata = load_anndata(input, dataset)
+            adata = LoadAnndata(input, dataset)
             print(adata)
             adata_path = input
         except Exception as e:

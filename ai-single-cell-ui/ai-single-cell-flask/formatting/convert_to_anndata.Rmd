@@ -16,6 +16,6 @@ knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_
 ```{r Load data, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 source("formatting.R")
 if(is.null(params$path)) stop("Path is required.")
-adata_path <- convert_to_anndata(params$path)
+adata_path <- ConvertToAnndata(params$path)
 print(adata_path)
 ```

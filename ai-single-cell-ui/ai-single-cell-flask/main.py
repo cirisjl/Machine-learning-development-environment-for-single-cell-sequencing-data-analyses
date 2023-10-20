@@ -20,7 +20,7 @@ import pymongo
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 
-from formatting.formatting import load_annData, load_invalid_adata, read_text
+from formatting.formatting import LoadAnndata, load_invalid_adata, read_text
 from utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
@@ -35,9 +35,9 @@ with open(r_source_path, 'r') as r_source_file:
 ro.r(r_source)
 
 # Access the loaded R functions
-load_expression_matrix = ro.globalenv['load_expression_matrix']
-load_seurat = ro.globalenv['load_seurat']
-detect_delim = ro.globalenv['detect_delim']
+LoadExpressionMatrix = ro.globalenv['LoadExpressionMatrix']
+LoadSeurat = ro.globalenv['LoadSeurat']
+DetectDelim = ro.globalenv['DetectDelim']
 load_metadata = ro.globalenv['load_metadata']
 
 load_figure_template('LUX')
@@ -312,7 +312,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Update the dataset by replacing invalid values with NaN
                     file_path = datasetMap[dataset]
                     try:
-                        adata = load_annData(file_path, replace_invalid=True)
+                        adata = LoadAnndata(file_path, replace_invalid=True)
                         invalidadata = load_invalid_adata(file_path, replace_nan)
                     except Exception as error:
                         traceback.print_exc()  # Print the traceback to the console
@@ -344,7 +344,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             ro.globalenv["file_path"] = file_path
 
             # if suffix == "rds" or suffix == "h5seurat" or os.path.isdir(file_path):
-            #     srat = load_seurat(file_path)
+            #     srat = LoadSeurat(file_path)
             #     ro.globalenv["seurat_obj"] = srat
             #     r_metadata = load_metadata(srat)
             #     # Access specific R variables from the returned R list
@@ -416,7 +416,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             #         ),
             #         output], {'display': 'none'}, None, {'display': 'none'}, None
             try:
-                adata = load_annData(file_path)
+                adata = LoadAnndata(file_path)
                 invalidadata = None
             except Exception as error:
                 traceback.print_exc()  # Print the traceback to the console
@@ -1014,7 +1014,7 @@ def update_selected_assay(selected_assay_name, n_clicks, dataset, checklist_valu
     ro.globalenv["file_path"] = file_path
     ro.globalenv["selected_assay"] = selected_assay_name
     if suffix == "rds" or suffix == "h5seurat":
-        srat = load_seurat(file_path)
+        srat = LoadSeurat(file_path)
         ro.globalenv["seurat_obj"] = srat
 
         if "yes" in checklist_value:

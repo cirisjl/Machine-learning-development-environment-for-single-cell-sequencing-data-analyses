@@ -3,10 +3,10 @@ import subprocess
 import csv
 import os
 import scanpy as sc
-from detect_delimiter import detect
+from DetectDelimiter import detect
 import gzip
 
-def detect_delimiter(file_path):
+def DetectDelimiter(file_path):
     with open(file_path, 'r') as file:
         # Read the first line of the file to detect the delimiter
         first_line = file.readline()
@@ -18,7 +18,7 @@ def convert_gz_to_txt(gz_file_path, txt_file_path):
     with open(txt_file_path, 'w') as f_out:
       f_out.write(f_in.read().decode())
     
-def detect_delim(path):
+def DetectDelim(path):
     # look at the first ten thousand bytes to guess the character encoding
     with open(path, 'rb') as file:
         rawdata = file.read(10000)
@@ -63,11 +63,11 @@ def read_text(file_path):
         df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
     else:
-        delimiter = detect_delimiter(file_path)
+        delimiter = DetectDelimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
         return sc.AnnData(df)
     
-def load_annData(path, replace_invalid=False):
+def LoadAnndata(path, replace_invalid=False):
     show_error=True
     dataset = None
     # path = os.path.abspath(path)
@@ -96,9 +96,9 @@ def load_annData(path, replace_invalid=False):
             adata = sc.read_h5ad(path)
         elif path.endswith(".csv") or path.endswith(".tsv"):
             # print("Inside the loadAnndata CSV")
-            print(detect_delimiter(path))
+            print(DetectDelimiter(path))
             # print("Inside the loadAnndata CSV 2")
-            adata = sc.read_csv(path, delimiter=detect_delimiter(path))
+            adata = sc.read_csv(path, delimiter=DetectDelimiter(path))
             # print("Inside the loadAnndata CSV 3")
         elif path.endswith(".csv.gz") or path.endswith(".tsv.gz"):
             data = sc.read_csv(path)
@@ -117,14 +117,14 @@ def load_annData(path, replace_invalid=False):
         elif path.endswith(".mtx"):
             adata = sc.read_mtx(path)
         elif path.endswith(".txt") or path.endswith(".tab") or path.endswith(".data"):
-            delimiter = detect_delimiter(path)
+            delimiter = DetectDelimiter(path)
             if replace_invalid:
                 adata = read_text_replace_invalid(path, delimiter)
                 print(adata)
                 print(adata.var_names[:10])
                 print(adata.obs_names[:10])
             else:
-                adata = sc.read_text(path, delimiter=detect_delimiter(path))      
+                adata = sc.read_text(path, delimiter=DetectDelimiter(path))      
         elif path.endswith(".txt.gz"):
             if replace_invalid:
                 adata = read_text_replace_invalid(path, "/t")
@@ -136,7 +136,7 @@ def load_annData(path, replace_invalid=False):
             try:
                 current_file = os.path.abspath(__file__)
                 # Construct the relative path to the desired file
-                relative_path = os.path.join(os.path.dirname(current_file), 'convert_to_anndata.Rmd')
+                relative_path = os.path.join(os.path.dirname(current_file), 'ConvertToAnndata.Rmd')
 
                 # Get the absolute path of the desired file
                 operation_path = os.path.abspath(relative_path)
@@ -156,7 +156,7 @@ def load_annData(path, replace_invalid=False):
 
     return adata
 
-# def load_annData(file_path, replace_invalid=False):
+# def LoadAnndata(file_path, replace_invalid=False):
 #     adata = None
 #     if os.path.isdir(file_path) and os.path.exists(os.path.join(file_path, "matrix.mtx")) and os.path.exists(
 #         os.path.join(file_path, "genes.tsv")) and os.path.exists(os.path.join(file_path, "barcodes.tsv")):
@@ -169,9 +169,9 @@ def load_annData(path, replace_invalid=False):
 #             adata = sc.read_h5ad(file_path)
 #         elif suffix == ".csv" or suffix == ".tsv":
 #             print("Inside the loadAnndata CSV")
-#             print(detect_delimiter(file_path))
+#             print(DetectDelimiter(file_path))
 #             print("Inside the loadAnndata CSV 2")
-#             adata = sc.read_csv(file_path, delimiter=detect_delimiter(file_path))
+#             adata = sc.read_csv(file_path, delimiter=DetectDelimiter(file_path))
 #             print("Inside the loadAnndata CSV 3")
 #         elif suffix == ".xlsx" or suffix == ".xls":
 #             adata = sc.read_excel(file_path, 0)
@@ -184,14 +184,14 @@ def load_annData(path, replace_invalid=False):
 #         elif suffix == ".mtx":
 #             adata = sc.read_mtx(file_path)
 #         elif suffix == ".txt" or suffix == ".tab" or suffix == ".data":
-#             delimiter = detect_delimiter(file_path)
+#             delimiter = DetectDelimiter(file_path)
 #             if replace_invalid:
 #                 adata = read_text_replace_invalid(file_path, delimiter)
 #                 print(adata)
 #                 print(adata.var_names[:10])
 #                 print(adata.obs_names[:10])
 #             else:
-#                 adata = sc.read_text(file_path, delimiter=detect_delimiter(file_path))
+#                 adata = sc.read_text(file_path, delimiter=DetectDelimiter(file_path))
 #         elif suffix == ".gz":
 #             adata = sc.read_umi_tools(file_path)
 
@@ -207,7 +207,7 @@ def load_invalid_adata(file_path, replace_nan):
         convert_gz_to_txt(file_path, new_file_path)
         df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
     else:
-        delimiter = detect_delimiter(file_path)
+        delimiter = DetectDelimiter(file_path)
         df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
 
     invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
