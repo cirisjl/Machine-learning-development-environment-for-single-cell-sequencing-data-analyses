@@ -9,6 +9,7 @@ import pandas as pd
 from detect_delimiter import detect
 from string import ascii_letters
 import csv
+import gzip
 
 
 def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is optional and only for Seurat object
@@ -261,3 +262,144 @@ def list_to_string(list):
 def list_to_string_default(list):
     list = [x for x in list if isinstance(x, str)]
     return ','.join(list)
+
+
+def convert_gz_to_txt(gz_file_path, txt_file_path):
+  with gzip.open(gz_file_path, 'rb') as f_in:
+    with open(txt_file_path, 'w') as f_out:
+      f_out.write(f_in.read().decode())
+
+
+def read_text_replace_invalid(file_path, delimiter):
+    if file_path.endswith(".gz"):
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+    else:
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+    
+    df = df.apply(pd.to_numeric, errors='coerce')
+    return sc.AnnData(df)
+
+def read_text(file_path):
+    if file_path.endswith(".gz"):
+        
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
+    else:
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+        return sc.AnnData(df)
+    
+
+def load_invalid_adata(file_path, replace_nan):
+    if file_path.endswith(".gz"):
+        file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
+
+        # Create the new file path with a .txt extension
+        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        convert_gz_to_txt(file_path, new_file_path)
+        df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
+    else:
+        delimiter = detect_delimiter(file_path)
+        df = pd.read_csv(file_path, delimiter=delimiter, on_bad_lines='skip', index_col=0)
+
+    invalid_rows = df.apply(pd.to_numeric, errors='coerce').isnull().any(axis=1)
+    invalid_columns = df.columns[df.apply(pd.to_numeric, errors='coerce').isnull().any()]
+    invalid_df = df.loc[invalid_rows, invalid_columns]
+
+    return sc.AnnData(invalid_df)
+
+
+def load_annData_dash(path, replace_invalid=False):
+    show_error=True
+    dataset = None
+    # path = os.path.abspath(path)
+    adata = None
+    print(path)
+
+    #Check for the corrected / updated file by the user. If the file exits then show the contents of the updated file.
+    file_name = path.split("/")
+    fileparts = file_name[len(file_name)-1].split(".")
+    filename = fileparts[0] + "_user_corrected.h5ad"
+    updated_filename = os.path.join(os.path.dirname(path), filename)
+    if os.path.exists(updated_filename):
+        path = updated_filename
+    
+    if (os.path.isdir(path)):
+        adata = sc.read_10x_mtx(path,
+                             var_names='gene_symbols',  # use gene symbols for the variable names (variables-axis index)
+                             cache=True)  # write a cache file for faster subsequent reading
+    elif(os.path.exists(path)):
+        # suffix = os.path.splitext(path)[-1]
+        if path.endswith(".h5ad"):
+            adata = sc.read_h5ad(path)
+        elif path.endswith(".csv") or path.endswith(".tsv"):
+            # print("Inside the loadAnndata CSV")
+            print(detect_delimiter(path))
+            # print("Inside the loadAnndata CSV 2")
+            adata = sc.read_csv(path, delimiter=detect_delimiter(path))
+            # print("Inside the loadAnndata CSV 3")
+        elif path.endswith(".csv.gz") or path.endswith(".tsv.gz"):
+            data = sc.read_csv(path)
+        elif path.endswith(".xlsx") or path.endswith(".xls"):
+            adata = sc.read_excel(path, 0)
+        # elif suffix == ".h5" and "pbmc" in path:
+            # adata = sc.read_10x_h5(path)
+        elif path.endswith(".h5"):
+            try:
+                adata = sc.read_10x_h5(path)
+            except Exception as e:
+                print(e)
+                adata = sc.read_hdf(path, key=dataset)
+        elif path.endswith(".loom"):
+            adata = sc.read_loom(path)
+        elif path.endswith(".mtx"):
+            adata = sc.read_mtx(path)
+        elif path.endswith(".txt") or path.endswith(".tab") or path.endswith(".data"):
+            delimiter = detect_delimiter(path)
+            if replace_invalid:
+                adata = read_text_replace_invalid(path, delimiter)
+                print(adata)
+                print(adata.var_names[:10])
+                print(adata.obs_names[:10])
+            else:
+                adata = sc.read_text(path, delimiter=detect_delimiter(path))      
+        elif path.endswith(".txt.gz"):
+            if replace_invalid:
+                adata = read_text_replace_invalid(path, "/t")
+            else:
+                adata = sc.read_text(path)      
+        elif path.endswith(".gz"):
+            adata = sc.read_umi_tools(path)
+        elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
+            try:
+                current_file = os.path.abspath(__file__)
+                # Construct the relative path to the desired file
+                relative_path = os.path.join(os.path.dirname(current_file), 'convert_to_anndata.Rmd')
+
+                # Get the absolute path of the desired file
+                operation_path = os.path.abspath(relative_path)
+                report_path = os.path.join(os.path.dirname(path), "file_conversion_report.html")
+                adata_path = os.path.splitext(path)[0] + '.h5ad'
+                
+                if os.path.exists(adata_path):
+                    adata = sc.read_h5ad(adata_path)
+                else:
+                    s = subprocess.call(["R -e \"rmarkdown::render('" + operation_path + "', params=list(path='" + str(path) + "'), output_file='" + report_path + "')\""], shell = True)
+                    print(s)
+                    adata = sc.read_h5ad(adata_path)
+
+            except Exception as e:
+                print("Object format conversion is failed")
+                if show_error: print(e)
+
+    return adata
