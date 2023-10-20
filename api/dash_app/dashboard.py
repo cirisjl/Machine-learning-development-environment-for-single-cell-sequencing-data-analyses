@@ -19,7 +19,7 @@ from dash_bootstrap_templates import load_figure_template
 from urllib.parse import parse_qs
 
 from .formatting.formatting import convert_seurat_sce_to_anndata
-from ..tools.formating.formating import load_annData_dash, load_invalid_adata, read_text
+from tools.formating.formating import load_annData_dash, load_invalid_adata, read_text
 from .utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
