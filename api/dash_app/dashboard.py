@@ -289,7 +289,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Update the dataset by replacing invalid values with NaN
                     file_path = datasetMap[dataset]
                     try:
-                        adata = load_annData(file_path, replace_invalid=True)
+                        adata = load_annData_dash(file_path, replace_invalid=True)
                         invalidadata = load_invalid_adata(file_path, replace_nan)
                     except Exception as error:
                         traceback.print_exc()  # Print the traceback to the console
@@ -321,7 +321,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             ro.globalenv["file_path"] = file_path
 
             try:
-                adata = load_annData(file_path)
+                adata = load_annData_dash(file_path)
                 invalidadata = None
             except Exception as error:
                 traceback.print_exc()  # Print the traceback to the console
