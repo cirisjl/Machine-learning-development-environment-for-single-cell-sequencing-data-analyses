@@ -12,7 +12,7 @@ import csv
 import gzip
 
 
-def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is optional and only for Seurat object
+def load_anndata(path, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
 
     # path = os.path.abspath(path)
     adata = None
@@ -53,9 +53,16 @@ def load_anndata(path, dataset=None, assay='RNA', show_error=True): # assay is o
         elif path.endswith(".mtx"):
             adata = sc.read_mtx(path)
         elif path.endswith(".txt") or path.endswith(".tab") or path.endswith(".data"):
-            adata = sc.read_text(path, delimiter=detect_delim(path))
+            if replace_invalid:
+                delimiter = detect_delimiter(path)
+                adata = read_text_replace_invalid(path, delimiter)
+            else:
+                adata = sc.read_text(path, delimiter=detect_delim(path))
         elif path.endswith(".txt.gz"):
-            adata = sc.read_text(path)
+            if replace_invalid:
+                adata = read_text_replace_invalid(path, "/t")
+            else:
+                adata = sc.read_text(path)
         elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
         elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
@@ -95,17 +102,12 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds"):
         try:
             results = convert_seurat_sce_to_anndata(path, assay=assay)
-            adata_path = str(results[2])
+            adata_path = str(results.rx2('anndata_path'))
             assay_names = list(results[1])
         except Exception as e:
             print("Object format conversion is failed")
             print(e)
 
-    print("formatting")
-    print("AssayNames")
-    print(assay_names)
-    print("adata_path")
-    print(adata_path)
     return adata_path, assay_names
 
 
@@ -324,15 +326,6 @@ def load_annData_dash(path, replace_invalid=False):
     dataset = None
     # path = os.path.abspath(path)
     adata = None
-    print(path)
-
-    #Check for the corrected / updated file by the user. If the file exits then show the contents of the updated file.
-    file_name = path.split("/")
-    fileparts = file_name[len(file_name)-1].split(".")
-    filename = fileparts[0] + "_user_corrected.h5ad"
-    updated_filename = os.path.join(os.path.dirname(path), filename)
-    if os.path.exists(updated_filename):
-        path = updated_filename
     
     if (os.path.isdir(path)):
         adata = sc.read_10x_mtx(path,
