@@ -8,6 +8,7 @@ import { PropagateLoader, RingLoader } from 'react-spinners';
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
    const [loading, setLoading] = useState(false);
    const [validationLoading, setValidationLoading] = useState(false);
+   const [errorMessage, setErrorMessage] = useState('');
 
 
   const jwtToken = getCookie('jwtToken');
@@ -99,19 +100,30 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
           // Prepare the data to send to the backend
           const dataToSend = [];
-        
-          taskData.validation.seuratFiles.forEach((file) => {
-            // Check if any assays are selected for this file
+
+          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => {
             if (file.selectedAssays && file.selectedAssays.length > 0) {
               file.selectedAssays.forEach((assay) => {
-                // Create an entry with the complete file details and assay name
                 dataToSend.push({
                   fileDetails: file.value,
                   assayName: assay.value,
                 });
               });
+              return true; // At least one assay is selected for this file
+            } else {
+              // No assays selected for this file, check if available assays exist
+              if (file.assayNames && file.assayNames.length > 0) {
+                setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
+                return false; // Available assays exist, but none are selected
+              }
             }
+            return true; // No available assays for this file, no selection is needed
           });
+
+          if (!hasSelectedAssays) {
+            setValidationLoading(false);
+            return;
+          }
 
           console.log("Data to send")
           console.log(dataToSend);
@@ -205,7 +217,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           ...prevTaskData.validation,
           seuratFiles: updatedSeuratFiles,
         },
-      }));    } 
+      }));    
+    setErrorMessage('');
+    } 
   };
 
   return (
@@ -239,6 +253,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                         />
                       </>
                     )}
+
+                    {errorMessage && <div className="error-message">{errorMessage}</div>}
               </div>
               )}
           </div>
