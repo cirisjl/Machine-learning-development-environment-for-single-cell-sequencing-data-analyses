@@ -91,81 +91,87 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   }, [taskData]);
 
   const handleTaskCompletion = async () => {
-
-    // set Validation loading to true.
-    setValidationLoading(true);
-
-    // Prepare the data to send to the backend
-    const dataToSend = [];
-  
-    taskData.validation.seuratFiles.forEach((file) => {
-      // Check if any assays are selected for this file
-      if (file.selectedAssays && file.selectedAssays.length > 0) {
-        file.selectedAssays.forEach((assay) => {
-          // Create an entry with the complete file details and assay name
-          dataToSend.push({
-            fileDetails: file.value,
-            assayName: assay.value,
-          });
-        });
-      }
-    });
-
-    console.log("Data to send")
-    console.log(dataToSend);
-  
     try {
-      // Send the data to the backend API
-      const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_sce_to_annData`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend),
-      });
-  
-      if (response.ok) {
-      // Handle the response from the API
-      const responseData = await response.json();
+        if(taskData.validation.status !== 'completed') {
 
-      if (responseData && responseData.data && responseData.data.length > 0) {
-        // Create a mapping of fileDetails to the response data
-        const newFileMappings = {};
+          // set Validation loading to true.
+          setValidationLoading(true);
 
-        responseData.data.forEach((entry) => {
-          const fileDetails = entry.path; // Use the appropriate property
+          // Prepare the data to send to the backend
+          const dataToSend = [];
+        
+          taskData.validation.seuratFiles.forEach((file) => {
+            // Check if any assays are selected for this file
+            if (file.selectedAssays && file.selectedAssays.length > 0) {
+              file.selectedAssays.forEach((assay) => {
+                // Create an entry with the complete file details and assay name
+                dataToSend.push({
+                  fileDetails: file.value,
+                  assayName: assay.value,
+                });
+              });
+            }
+          });
 
-          newFileMappings[fileDetails] = {
-            adata_path: entry.adata_path,
-            assay: entry.assay,
-            // Add other properties as needed
-          };
-        });
-
-        // Update the fileMappings state
-        setTaskData((prevTaskData) => ({
-          ...prevTaskData,
-          validation: {
-            ...prevTaskData.validation,
-            fileMappings: {
-              ...prevTaskData.validation.fileMappings,
-              ...newFileMappings,
-            },
+          console.log("Data to send")
+          console.log(dataToSend);
+        // Send the data to the backend API
+        const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_sce_to_annData`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        }));
-        // After the API call is complete, you can update the task status
-        setTaskStatus((prevTaskStatus) => ({
-          ...prevTaskStatus,
-          2: true, // Mark Task 3 as completed (or update it to the appropriate task)
-        }));
-  
-        // The current task is finished, so make the next task active
-        setActiveTask(3); // Move to the next task (or update it to the appropriate task)
-        setValidationLoading(false);
-      } else {
-        setValidationLoading(false);
-        console.error('Error making API call:', response.status);
+          body: JSON.stringify(dataToSend),
+        });
+    
+        if (response.ok) {
+        // Handle the response from the API
+        const responseData = await response.json();
+
+        // Initialize a list to store file mappings
+        const newFileMappings = [];
+
+        if (responseData && responseData.data && responseData.data.length > 0) {
+
+          responseData.data.forEach((entry) => {
+            const fileDetails = entry.path; // Use the appropriate property
+
+            // Create an object to represent the file mapping
+            const fileMapping = {
+              fileDetails: fileDetails,
+              adata_path: entry.adata_path,
+              assay: entry.assay,
+            };
+
+            // Add the file mapping to the list
+            newFileMappings.push(fileMapping);
+          });
+
+          // Update the fileMappings state with the new list
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            validation: {
+              ...prevTaskData.validation,
+              fileMappings: newFileMappings,
+              status: 'completed'
+            },
+          }));
+          // After the API call is complete, you can update the task status
+          setTaskStatus((prevTaskStatus) => ({
+            ...prevTaskStatus,
+            2: true, // Mark Task 3 as completed (or update it to the appropriate task)
+          }));
+    
+          // The current task is finished, so make the next task active
+          setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+          setValidationLoading(false);
+        } else {
+          setValidationLoading(false);
+          console.error('Error making API call:', response.status);
+        }
       }
+    } else {
+      setActiveTask(3); // Move to the next task (or update it to the appropriate task)
     }
   } catch (error) {
       console.error('Error making API call:', error);

@@ -44,32 +44,31 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
     // If both file and title are provided, continue to the next step
     if ((taskData.upload.files !== undefined && taskData.upload.files.length !== 0 ) && taskData.upload.title !== undefined) {
-
-        //Move the uploaded files from tempStorage to the admin user project folder
-       
-        // Create a new directory with the title name
-        const newDirectoryName = createUniqueFolderName(taskData.upload.title);
-
-        let newDirectoryPath = `projects/${newDirectoryName}`;
         
         try {
-        // Move the uploaded files from tempStorage to the new directory
-        await moveFilesToNewDirectory(newDirectoryPath); 
+            if(taskData.upload.status !== 'completed') {  
+          // Create a new directory with the title name
+          const newDirectoryName = createUniqueFolderName(taskData.upload.title);
 
-        setTaskStatus((prevTaskStatus) => ({
-          ...prevTaskStatus,
-          1: true, // Mark Task 1 as completed
+          let newDirectoryPath = `projects/${newDirectoryName}`;
+          // Move the uploaded files from tempStorage to the new directory
+          await moveFilesToNewDirectory(newDirectoryPath); 
+
+          setTaskStatus((prevTaskStatus) => ({
+            ...prevTaskStatus,
+            1: true, // Mark Task 1 as completed
+          }));
+        
+          // Update the state of the task in the taskData state
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          upload: {
+            ...prevTaskData.upload,
+            status: 'completed',
+            newDirectoryPath: newDirectoryPath
+          },
         }));
-      
-        // Update the state of the task in the taskData state
-      setTaskData((prevTaskData) => ({
-        ...prevTaskData,
-        upload: {
-          ...prevTaskData.upload,
-          status: 'completed',
-          newDirectoryPath: newDirectoryPath
-        },
-      }));
+      }
 
       //The current task is finished, so make the next task active
       setActiveTask(2);     
