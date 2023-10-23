@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FLASK_BACKEND_API, STORAGE } from '../../../constants/declarations';
+import { FLASK_BACKEND_API,CELERY_BACKEND_API ,STORAGE } from '../../../constants/declarations';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
@@ -18,7 +18,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       setLoading(true);
 
       try {
-        const response = await fetch(`${FLASK_BACKEND_API}/api/convert_to_anndata`, {
+        const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_to_anndata`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   
     try {
       // Send the data to the backend API
-      const response = await fetch(`${FLASK_BACKEND_API}/api/convert_sce_to_annData`, {
+      const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_sce_to_annData`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

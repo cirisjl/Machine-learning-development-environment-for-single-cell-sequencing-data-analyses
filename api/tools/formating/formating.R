@@ -5,6 +5,7 @@ library(SingleCellExperiment)
 library(SeuratDisk)
 library(SeuratData)
 library(patchwork)
+library(Signac)
 # library(loomR)
 
 # Get suffix of the file
@@ -88,10 +89,8 @@ load_expression_matrix <- function(path) {
 load_seurat <- function(path, project = NULL) {
     seurat_object <- NULL
     suffix <- tolower(get_suffix(path))
-    print("Inside load_seurat 1")
 
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        print("Inside load_seurat")
         seurat_object <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
         Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
@@ -273,15 +272,19 @@ seurat_to_csv <- function(seurat_object, srat_path, assay = 'RNA', slot = "count
 convert_to_anndata <- function(path, assay = 'RNA') {
     adata_path <- NULL
     suffix <- tolower(get_suffix(path))
+    seurat_object <- load_seurat(path)
+    seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
         if(assay != 'RNA') {
+            seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
             DefaultAssay(seurat_object) <- assay
-            SaveH5Seurat(seurat_object, filename = path, overwrite = TRUE, verbose = FALSE)
+            SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+            adata_path <- Convert(seurat_path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+        } else {
+            adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
         }
-        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds"){
-        seurat_object <- load_seurat(path)
-        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+        seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
         SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
     } 
@@ -322,3 +325,37 @@ plot_integrated_clusters <- function (srat) {
   
   p2 + p1 + plot_layout(widths = c(3,1))
   }
+
+
+load_metadata <- function(seurat_obj) {
+    metadata <- list()  # Create an empty list to hold metadata
+    
+    # Get the Default Assay
+    metadata$default_assay <- DefaultAssay(object = seurat_obj)
+    
+    # Get the names of all assays
+    metadata$assay_names <- names(seurat_obj@assays)
+    if (is.null(metadata$assay_names)) {
+        # Return an empty array (vector)
+        metadata$assay_names <- character(0)
+    }
+    
+    # Get the dimensions of the Seurat object
+    metadata$seurat_dims <- dim(seurat_obj)
+    
+    # Get the number of genes
+    metadata$num_genes <- metadata$seurat_dims[1]
+    
+    # Get the number of cells
+    metadata$num_cells <- metadata$seurat_dims[2]
+    
+    # Get the list of dimensional reductions
+    metadata$dimensional_reductions <- names(seurat_obj@reductions)
+    if (is.null(metadata$dimensional_reductions)) {
+        # Return an empty array (vector)
+        metadata$dimensional_reductions <- character(0)
+    }
+    
+    # Return the metadata list
+    metadata
+}
