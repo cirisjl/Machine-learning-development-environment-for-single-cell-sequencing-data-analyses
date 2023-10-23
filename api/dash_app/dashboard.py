@@ -18,7 +18,7 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 from urllib.parse import parse_qs
 
-from .formatting.formatting import load_annData, load_invalid_adata, read_text, convert_seurat_sce_to_anndata
+from tools.formating.formating import load_anndata, load_invalid_adata, read_text
 from .utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
@@ -28,7 +28,7 @@ import os
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the path to the R script file relative to the current file's directory
-r_source_path = os.path.join(current_file_dir, 'formatting', 'formatting.R')
+r_source_path = os.path.join(current_file_dir, '..', 'tools', 'formating', 'formating.R')
 
 # Load the R script file
 with open(r_source_path, 'r') as r_source_file:
@@ -288,7 +288,16 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                     # Update the dataset by replacing invalid values with NaN
                     file_path = datasetMap[dataset]
                     try:
-                        adata = load_annData(file_path, replace_invalid=True)
+                        file_name = file_path.split("/")
+                        if len(file_name) > 1:
+                            fileparts = file_name[len(file_name)-1].split(".")
+                            if fileparts:  # Check if fileparts is not empty
+                                filename = fileparts[0] + "_user_corrected.h5ad"
+                                updated_filename = os.path.join(os.path.dirname(file_path), filename)
+                                if os.path.exists(updated_filename):
+                                    file_path = updated_filename
+
+                        adata = load_anndata(file_path, replace_invalid=True, isDashboard = True)
                         invalidadata = load_invalid_adata(file_path, replace_nan)
                     except Exception as error:
                         traceback.print_exc()  # Print the traceback to the console
@@ -320,7 +329,16 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
             ro.globalenv["file_path"] = file_path
 
             try:
-                adata = load_annData(file_path)
+                file_name = file_path.split("/")
+                if len(file_name) > 1:
+                    fileparts = file_name[len(file_name)-1].split(".")
+                    if fileparts:  # Check if fileparts is not empty
+                        filename = fileparts[0] + "_user_corrected.h5ad"
+                        updated_filename = os.path.join(os.path.dirname(file_path), filename)
+                        if os.path.exists(updated_filename):
+                            file_path = updated_filename
+
+                adata = load_anndata(file_path, isDashboard = True)
                 invalidadata = None
             except Exception as error:
                 traceback.print_exc()  # Print the traceback to the console
