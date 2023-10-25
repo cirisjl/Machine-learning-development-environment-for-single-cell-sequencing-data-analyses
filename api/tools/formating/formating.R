@@ -364,7 +364,7 @@ PlotIntegratedClusters <- function (srat) {
   }
 
 
-load_metadata <- function(seurat_obj) {
+LoadMetadata <- function(seurat_obj) {
     metadata <- list()  # Create an empty list to hold metadata
     
     # Get the Default Assay

@@ -9,14 +9,14 @@ from tools.run_evaluation import run_evaluation
 
 
 
-def ConvertToAnndata_task(path):
-    adata_path, assay_names = ConvertSeuratSCEtoAnndata(path)
-    print("Tasks")
-    print("AssayNames")
-    print(assay_names)
-    print("adata_path")
-    print(adata_path)
-    return adata_path, assay_names
+# def ConvertToAnndata_task(path):
+#     adata_path, assay_names = ConvertSeuratSCEtoAnndata(path)
+#     print("Tasks")
+#     print("AssayNames")
+#     print(assay_names)
+#     print("adata_path")
+#     print(adata_path)
+#     return adata_path, assay_names
 
 @shared_task(bind=True,autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_qc_task')

@@ -14,24 +14,24 @@ import csv
 import gzip
 
 
-# Get the absolute path of the current file
-current_file = os.path.abspath(__file__)
+# # Get the absolute path of the current file
+# current_file = os.path.abspath(__file__)
 
-# Construct the relative path to the desired file
-# relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
-relative_path = os.path.join(os.path.dirname(current_file), '../qc/seurat_qc.R')
+# # Construct the relative path to the desired file
+# # relative_path = os.path.join(os.path.dirname(current_file), 'formating.R')
+# relative_path = os.path.join(os.path.dirname(current_file), '../qc/seurat_qc.R')
 
-# Get the absolute path of the desired file
-r_path = os.path.abspath(relative_path)
+# # Get the absolute path of the desired file
+# r_path = os.path.abspath(relative_path)
 
-with open(r_path, 'r') as r_source_file:
-    r_source = r_source_file.read()
+# with open(r_path, 'r') as r_source_file:
+#     r_source = r_source_file.read()
 
-# Evaluate the R script in the R environment
-ro.r(r_source)
+# # Evaluate the R script in the R environment
+# ro.r(r_source)
 
 
-def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
+def LoadAnndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
 
     # path = os.path.abspath(path)
     adata = None
@@ -137,7 +137,7 @@ def get_metadata_from_seurat(path):
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
-def convert_seurat_sce_to_anndata(path, assay='RNA'):
+def ConvertSeuratSCEtoAnndata(path, assay='RNA'):
     # Access the loaded R functions
     ConvertSeuratSCEtoAnndata_r = ro.globalenv['ConvertSeuratSCEtoAnndata']
 
