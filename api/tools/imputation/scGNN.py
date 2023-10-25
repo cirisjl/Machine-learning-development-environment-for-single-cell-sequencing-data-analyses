@@ -54,7 +54,7 @@ parser.add_argument('--load_LTMG', type=str, default=None,
                     help='Not needed if using benchmark')
 
 # Seurat related
-parser.add_argument('--load_seurat_object', type=str, default=None, 
+parser.add_argument('--LoadSeurat_object', type=str, default=None, 
                     help='(str, default None) If not None, will load the csv generated from the SeuratObject specified in this file path')
 # Rdata related
 parser.add_argument('--load_rdata', type=str, default=None, 
@@ -196,7 +196,7 @@ def scGNN_imputation(csv_path, layers, genes):
     dataloader_kwargs = {'num_workers': 1, 'pin_memory': True} if torch.cuda.is_available() else {}
     tik = time()
     torch.manual_seed() = 1
-    adata = load_anndata(path)
+    adata = LoadAnndata(path)
     print( f"Using device: {param['device']}" )
     
     # Load and preprocess data

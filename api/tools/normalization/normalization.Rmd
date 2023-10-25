@@ -33,7 +33,7 @@ srat <- NULL
 # Check if output file already exists
 if(file.exists(params$output)){
   srat <- tryCatch(
-    load_seurat(params$output),
+    LoadSeurat(params$output),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -41,7 +41,7 @@ if(file.exists(params$output)){
   )
 }else{
   srat <- tryCatch(
-    load_seurat(params$input),
+    LoadSeurat(params$input),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -364,7 +364,7 @@ if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% method
       if(!"Pearson_residuals" %in% names(x = srat)){
         library(reticulate)
         source_python("./scanpy_r.py")
-        adata <- load_anndata(adata.path)
+        adata <- LoadAnndata(adata.path)
         tryCatch(
           {
             adata <- py_to_r_ifneedbe(normalize_pearson_residuals(r_to_py(adata, convert = FALSE))) 

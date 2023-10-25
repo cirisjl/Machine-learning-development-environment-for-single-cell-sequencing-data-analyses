@@ -42,7 +42,7 @@ source("../formating/formating.R")
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
-  srats.list[[datasets[i]]] <- load_seurat(inputs[i], project = datasets[i])
+  srats.list[[datasets[i]]] <- LoadSeurat(inputs[i], project = datasets[i])
   srats.list[[datasets[i]]]@meta.data$orig.ident <- datasets[i]
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
@@ -123,7 +123,7 @@ if("HARMONY" %in% methods) {
   srat.harmony <- SetIdent(srat.harmony,value = "seurat_clusters")
   DimPlot(srat.harmony,label = T) + NoLegend()
 
-  plot_integrated_clusters(srat.harmony)
+  PlotIntegratedClusters(srat.harmony)
 
   SaveH5Seurat(srat.harmony, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for Harmony integration is saved successfully.")
@@ -154,7 +154,7 @@ if("LIGER" %in% methods) {
   srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
   DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
 
-  plot_integrated_clusters(srat.liger)
+  PlotIntegratedClusters(srat.liger)
 
   SaveH5Seurat(srat.liger, filename = params$output_folder, overwrite = TRUE, verbose = FALSE)
   print("Seurat object for LIGER integration is saved successfully.")
