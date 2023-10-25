@@ -218,8 +218,11 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
         if(!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
             DefaultAssay(srat) <- assay
             SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
+            seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
+            adata_path <- Convert(seurat_path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+        } else {
+            adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
         }
-        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds" || suffix == "robj"){
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
