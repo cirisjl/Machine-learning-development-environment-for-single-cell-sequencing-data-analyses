@@ -29,7 +29,7 @@ source("../formating/formating.R")
 if(is.null(params$input_path)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
-sce <- load_sce(params$input_path)
+sce <- LoadSCE(params$input_path)
 if(is.null(sce)) stop("The file format is not supported.")
 altExp(sce, "ERCC") <- sce[grep("^ERCC-", rownames(sce)), ]
 sce <- sce[grep("^ERCC-", rownames(sce), invert=T), ]

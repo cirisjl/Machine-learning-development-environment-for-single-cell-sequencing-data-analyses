@@ -30,7 +30,7 @@ if(is.null(params$input)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 # Set altExp to contain ERCC, removing ERCC features from the main object
 srat <- tryCatch(
-    load_seurat(params$input, project=params$dataset),
+    LoadSeurat(params$input, project=params$dataset),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
