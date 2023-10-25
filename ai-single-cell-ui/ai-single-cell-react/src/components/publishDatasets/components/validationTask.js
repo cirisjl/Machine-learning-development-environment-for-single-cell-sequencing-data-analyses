@@ -95,9 +95,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     try {
         if(taskData.validation.status !== 'completed') {
 
-          // set Validation loading to true.
-          setValidationLoading(true);
-
           // Prepare the data to send to the backend
           const dataToSend = [];
 
@@ -124,6 +121,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             setValidationLoading(false);
             return;
           }
+
+          // set Validation loading to true.
+          setValidationLoading(true);
 
           console.log("Data to send")
           console.log(dataToSend);
