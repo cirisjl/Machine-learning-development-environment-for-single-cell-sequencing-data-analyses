@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
 from schemas.schemas import ConversionRequest, ConversionResponse
-from tools.formating.formating import convert_seurat_sce_to_anndata
+from tools.formating.formating import ConvertSeuratSCEtoAnndata
 from typing import List
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
@@ -13,7 +13,7 @@ async def convert_to_annData(request_data: ConversionRequest):
     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
     """
     try:
-        adata_path, assay_names = convert_seurat_sce_to_anndata(request_data.path)
+        adata_path, assay_names = ConvertSeuratSCEtoAnndata(request_data.path)
 
         if assay_names is None:
             assay_names = []
@@ -34,7 +34,7 @@ async def receive_data(data: List[dict]):
         assay = entry.get('assayName')
 
         if path and assay:
-            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
+            adata_path, assay_names = ConvertSeuratSCEtoAnndata(path, assay)
 
             if adata_path and adata_path != None:
                 adata_path = adata_path.lstrip('[1] ').rstrip('\n')

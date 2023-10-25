@@ -18,7 +18,7 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 from urllib.parse import parse_qs
 
-from tools.formating.formating import load_anndata, load_invalid_adata, read_text
+from tools.formating.formating import LoadAnndata, load_invalid_adata, read_text
 from .utils.util import is_valid_query_param, create_dataframe
 
 pandas2ri.activate()
@@ -38,10 +38,10 @@ with open(r_source_path, 'r') as r_source_file:
 ro.r(r_source)
 
 # Access the loaded R functions
-load_expression_matrix = ro.globalenv['load_expression_matrix']
-load_seurat = ro.globalenv['load_seurat']
-detect_delim = ro.globalenv['detect_delim']
-load_metadata = ro.globalenv['load_metadata']
+load_expression_matrix = ro.globalenv['LoadExpressionMatrix']
+load_seurat = ro.globalenv['LoadSeurat']
+detect_delim = ro.globalenv['DetectDelim']
+load_metadata = ro.globalenv['LoadMetadata']
 
 load_figure_template('LUX')
 
@@ -297,7 +297,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                                 if os.path.exists(updated_filename):
                                     file_path = updated_filename
 
-                        adata = load_anndata(file_path, replace_invalid=True, isDashboard = True)
+                        adata = LoadAnndata(file_path, replace_invalid=True, isDashboard = True)
                         invalidadata = load_invalid_adata(file_path, replace_nan)
                     except Exception as error:
                         traceback.print_exc()  # Print the traceback to the console
@@ -338,7 +338,7 @@ def handle_continue_button(n_clicks, dataset, replace_nan):
                         if os.path.exists(updated_filename):
                             file_path = updated_filename
 
-                adata = load_anndata(file_path, isDashboard = True)
+                adata = LoadAnndata(file_path, isDashboard = True)
                 invalidadata = None
             except Exception as error:
                 traceback.print_exc()  # Print the traceback to the console
