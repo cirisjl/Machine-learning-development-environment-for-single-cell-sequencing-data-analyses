@@ -25,7 +25,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
 
     
     if "SCANPY" in methods or "DROPKICK" in methods:
-        adata = load_anndata(input)
+        adata = LoadAnndata(input)
 
         if adata is None:
             print("File format is not supported.")

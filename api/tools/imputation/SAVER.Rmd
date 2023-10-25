@@ -29,7 +29,7 @@ adata <- NULL
 # Check if output file already exists
 if(file.exists(params$output)){
   adata <- tryCatch(
-    load_anndata(params$output),
+    LoadAnndata(params$output),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -37,7 +37,7 @@ if(file.exists(params$output)){
   )
 }else{
   adata <- tryCatch(
-    load_anndata(params$input),
+    LoadAnndata(params$input),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)

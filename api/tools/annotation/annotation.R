@@ -26,7 +26,7 @@ option_list <- list(
 args <- parse_args(OptionParser(option_list=option_list))
 
 # Set altExp to contain ERCC, removing ERCC features from the main object
-sce <- load_sce(args$i)
+sce <- LoadSCE(args$i)
 altExp(sce,"ERCC") <- sce[grep("^ERCC-",rownames(sce)), ]
 sce <- sce[grep("^ERCC-",rownames(sce),invert = T), ]
 
