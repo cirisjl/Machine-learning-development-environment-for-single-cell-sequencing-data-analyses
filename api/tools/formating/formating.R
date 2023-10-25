@@ -9,7 +9,7 @@ library(Signac)
 # library(loomR)
 
 # Get suffix of the file
-get_suffix <- function(path) {
+GetSuffix <- function(path) {
     filename <- basename(path)
     parts <- strsplit(filename,".",fixed = TRUE)
     nparts <- length(parts[[1]])
@@ -17,9 +17,9 @@ get_suffix <- function(path) {
 }
 
 # Read csv/xlsx/h5ad/hdf5/h5/loom/mtx/txt/tab/data/gz file to create AnnData object
-load_anndata <- function(path) {
+LoadAnndata <- function(path) {
     adata <- NULL
-    suffix <- tolower(get_suffix(path))
+    suffix <- tolower(GetSuffix(path))
     if(suffix == "csv"){
         adata <- read_csv(path)
     } else if(suffix == "xlsx"){
@@ -35,30 +35,30 @@ load_anndata <- function(path) {
      else if(suffix == "mtx"){
         adata <- read_mtx(path)
     } else if(suffix == "txt" || suffix == "tab" || suffix == "data"){
-        delim <- detect_delim(path)
+        delim <- DetectDelim(path)
         adata <- read_text(path, delimiter = delim)
     } else if(suffix == "gz"){
         adata <- read_umi_tools(path)
     } else if(suffix == "h5Seurat" || suffix == "h5seurat"){
         Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
         adata <- read_h5ad(adata_path)
-    } else if(suffix == "rds"){
-        seurat_object <- load_seurat(path)
+    } else if(suffix == "rds" || suffix == "robj"){
+        srat <- LoadSeurat(path)
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
-        SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
+        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
         Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
         adata <- read_h5ad(adata_path)    } 
     # else if(suffix == "loom"){
-    #     seurat_object <- load_seurat(path)
-    #     SaveH5Seurat(seurat_object, overwrite = TRUE)
+    #     srat <- LoadSeurat(path)
+    #     SaveH5Seurat(srat, overwrite = TRUE)
     #     Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad")
     #     ad <- read_h5ad(paste0(tools::file_path_sans_ext(path), ".h5ad"))
     # } 
     py_to_r_ifneedbe(adata)
 }
 
-load_expression_matrix <- function(path) {
+LoadExpressionMatrix <- function(path) {
     expression_matrix <- NULL
     if(file_test("-d", path)) {
         if(file.exists(file.path(path,"barcodes.tsv")) && file.exists(file.path(path,"genes.tsv")) && file.exists(file.path(path,"matrix.mtx"))){
@@ -70,11 +70,11 @@ load_expression_matrix <- function(path) {
         } else if(file.exists(file.path(path,"count_matrix.mtx")) && file.exists(file.path(path,"features.tsv")) && file.exists(file.path(path,"barcodes.tsv"))){
             expression_matrix <- ReadMtx(mtx = "count_matrix.mtx", features = file.path(path,"features.tsv"), cells = file.path(path,"barcodes.tsv"))           
         } else if(file.exists(file.path(path,"molecules.txt")) && file.exists(file.path(path,"annotation.txt"))){
-            delim <- detect_delim(path)
+            delim <- DetectDelim(path)
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             expression_matrix <- as.matrix(molecules)} 
     } else{       
-        suffix <- tolower(get_suffix(path))
+        suffix <- tolower(GetSuffix(path))
         if(suffix == "h5"){
             expression_matrix  <- Read10X_h5(path, use.names = T)
             if('Gene Expression' %in% names(expression_matrix)) expression_matrix <- expression_matrix$`Gene Expression`
@@ -86,134 +86,193 @@ load_expression_matrix <- function(path) {
     expression_matrix
 }
 
-load_seurat <- function(path, project = NULL) {
-    seurat_object <- NULL
-    suffix <- tolower(get_suffix(path))
+LoadSeurat <- function(path, project = NULL) {
+    srat <- NULL
+    suffix <- tolower(GetSuffix(path))
 
     if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        seurat_object <- LoadH5Seurat(path)
+        print("Inside LoadSeurat")
+        srat <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
         Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
-        seurat_object <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
+        srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
     } else if(suffix == "rds"){
-        sce <- readRDS(path)
-        seurat_object <- as.Seurat(sce, slot = "counts", data = NULL)
+        robj <- readRDS(path)
+        if(class(robj) == 'Seurat'){
+            srat <- CreateSeuratObject(counts=robj[['RNA']]@counts, meta.data=robj@meta.data, project = Project(robj))
+        } else if(class(robj) == 'SingleCellExperiment'){
+            # srat <- as.Seurat(sce, slot = "counts", data = NULL)
+            srat <- as.Seurat(robj, slot = "counts")
+        }
+        rm(robj)
+    } else if(suffix == "robj"){
+        srat_v2 <- get(load(path))
+        if(class(srat_v2) == 'seurat'){
+        srat_v3 <- UpdateSeuratObject(srat_v2)
+        srat <- CreateSeuratObject(counts=srat_v3[['RNA']]@counts, meta.data=srat_v3@meta.data, project = Project(srat_v3))
+        rm(srat_v3)
+        }
+        rm(srat_v2)
     } else {
-        expression_matrix <- load_expression_matrix(path)
+        expression_matrix <- LoadExpressionMatrix(path)
         if(!is.null(expression_matrix) && !is.null(project)) {
-            seurat_object <- CreateSeuratObject(counts = expression_matrix, project = project)
+            srat <- CreateSeuratObject(counts = expression_matrix, project = project)
         } else if (!is.null(expression_matrix)){
-            seurat_object <- CreateSeuratObject(counts = expression_matrix)
+            srat <- CreateSeuratObject(counts = expression_matrix)
         }
         rm(expression_matrix) # Erase expression_matrix from memory to save RAM
     }
     # else if(suffix == "loom"){
     #     loom <- connect(filename = path, mode = "r")
-    #     seurat_object <- as.Seurat(loom)
+    #     srat <- as.Seurat(loom)
     # }
-    seurat_object
+    gc()
+    srat
 }
 
-load_sce <- function(path) {
+
+LoadSCE <- function(path) {
     sce <- NULL
     if(file_test("-d", path)){
-        print("Inside load_seurat 3")
+        print("Inside LoadSeurat 3")
         if(file.exists(file.path(path,"molecules.txt")) && file.exists(file.path(path,"annotation.txt"))){
-            delim <- detect_delim(path)
+            delim <- DetectDelim(path)
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             annotation <- read.delim(file.path(path,"annotation.txt"), sep = delim, stringsAsFactors = T)
             sce <- SingleCellExperiment(assays = list(counts = as.matrix(molecules)), colData = annotation)
         } else{
-            print("Inside load_seurat 4")
-            seurat_object <- load_seurat(path)
-            if(!is.null(seurat_object)){
-                sce <- as.SingleCellExperiment(seurat_object)
-                rm(seurat_object) # Erase expression_matrix from memory to save RAM
+            print("Inside LoadSeurat 4")
+            srat <- LoadSeurat(path)
+            if(!is.null(srat)){
+                sce <- as.SingleCellExperiment(srat)
+                rm(srat) # Erase expression_matrix from memory to save RAM
             }
         }
     } else{
-        print("Inside load_seurat 5")
-        suffix <- tolower(get_suffix(path))
+        print("Inside LoadSeurat 5")
+        suffix <- tolower(GetSuffix(path))
         if(suffix == "rds"){
             sce <- readRDS(path)
-            print("Inside load_seurat 6")
+            print("Inside LoadSeurat 6")
         } else{
-            print("Inside load_seurat 7")
-            seurat_object <- load_seurat(path)
-            if(!is.null(seurat_object)){
-                sce <- as.SingleCellExperiment(seurat_object)
-                rm(seurat_object) # Erase expression_matrix from memory to save RAM
+            print("Inside LoadSeurat 7")
+            srat <- LoadSeurat(path)
+            if(!is.null(srat)){
+                sce <- as.SingleCellExperiment(srat)
+                rm(srat) # Erase expression_matrix from memory to save RAM
             }
         }
     }
     sce
 }
 
-# Return a list of assays if the default assay is not "RNA"
-get_assays_from_seurat <- function(path) {
-    seurat_object <- NULL
+
+# Return metadata and a list of assays if the default assay is not "RNA"
+GetMetadataFromSeurat <- function(path, assay='RNA') {
+    srat <- LoadSeurat(path)
+    default_assay <- NULL
     assay_names <- NULL
-    suffix <- tolower(get_suffix(path))
+    metadata <- NULL
+    HVGsID <- NULL
+    nGenes <- 0
+    nCells <- 0
+    genes <- NULL
+    cells <- NULL
+    pca <- NULL
+    tsne <- NULL
+    umap <- NULL
+    # suffix <- tolower(GetSuffix(path))
 
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        seurat_object <- LoadH5Seurat(path)
-        assay_names <- 'RNA'
+    if(!is.null(srat)){
+        assay_names <- names(srat@assays)
+        if(assay != 'RNA' && assay %in% assay_names) DefaultAssay(srat) <- assay
+        default_assay <- DefaultAssay(srat)
+        metadata <- srat@meta.data
+        nCells <- ncol(srat)
+        nGenes <- nrow(srat)
+        genes <- rownames(srat)
+        cells <- Cells(srat)
+        HVGsID <- srat[[assay]]@var.features
+        if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
+        if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
+        if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
     }
-
-    if (DefaultAssay(seurat_object) != 'RNA') {
-        assay_names <- names(seurat_object@assays)
-    }
-    assay_names
+    srat <- NULL
+    
+    list(default_assay=default_assay, assay_names=assay_names, metadata=metadata, nCells=nCells, nGenes=nGenes, genes=genes, cells=cells, HVGsID=HVGsID, pca=pca, tsne=tsne, umap=umap)
 }
 
+
 # Return a list of assays if the default assay is not "RNA"
-convert_seurat_sce_to_anndata <- function(path, assay = NULL) {
-    seurat_object <- NULL
+ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     assay_names <- NULL
     default_assay <- NULL
     anndata_path <- NULL
-    suffix <- tolower(get_suffix(path))
+    suffix <- tolower(GetSuffix(path))
 
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){ # Seurat object
-        seurat_object <- LoadH5Seurat(path)
-        default_assay <- DefaultAssay(seurat_object)
-        assay_names <- names(seurat_object@assays)
+    srat <- LoadSeurat(path)
+    default_assay <- DefaultAssay(srat)
+    assay_names <- names(srat@assays)
 
-        # Return a list of assays if the default assay is not "RNA"
-        if (default_assay == 'RNA') {
-            anndata_path <- convert_to_anndata(path)
-            # anndata_path <- save_as_anndata(seurat_object, path, assay = 'RNA')
-        } else if (!is.null(assay) && (assay %in% assay_names)){
-            # anndata_path <- save_as_anndata(seurat_object, path, assay = assay)
-            anndata_path <- convert_to_anndata(path, assay = assay)
-        } 
-        seurat_object <- NULL
-    } else if (suffix == "rds") { # Single-Cell Experiment object
-        anndata_path <- convert_to_anndata(path)
+    if(suffix == "h5Seurat" || suffix == "h5seurat"){
+        if(!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
+            DefaultAssay(srat) <- assay
+            SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
+        }
+        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+    } else if(suffix == "rds" || suffix == "robj"){
+        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
     }
+    srat <- NULL
 
     list(default_assay=default_assay, assay_names=assay_names, anndata_path=anndata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
 }
 
 
-# save_as_anndata <- function(seurat_object, path, assay = 'RNA'){
+ConvertToAnndata <- function(path, assay = 'RNA') {
+    adata_path <- NULL
+    suffix <- tolower(GetSuffix(path))
+    srat <- LoadSeurat(path)
+    seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
+    if(suffix == "h5Seurat" || suffix == "h5seurat"){
+        if(assay != 'RNA') {
+            DefaultAssay(srat) <- assay
+            SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+            adata_path <- Convert(seurat_path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+        } else {
+            adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+        }
+    } else if(suffix == "rds"){
+        srat <- LoadSeurat(path)
+        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    } 
+    adata_path
+}
+
+
+
+# save_as_anndata <- function(srat, path, assay = 'RNA'){
 #     anndata_path <- gsub("h5seurat", "h5ad", path, ignore.case = TRUE)
-#     DefaultAssay(seurat_object) <- assay
+#     DefaultAssay(srat) <- assay
 #     srat = DietSeurat(
-#         seurat_object,
+#         srat,
 #         counts = TRUE, # so, raw counts save to adata.layers['counts']
 #         data = TRUE, # so, log1p counts save to adata.X when scale.data = False, else adata.layers['data']
 #         scale.data = FALSE, # if only scaled highly variable gene, the export to h5ad would fail. set to false
-#         features = rownames(seurat_object), # export all genes, not just top highly variable genes
+#         features = rownames(srat), # export all genes, not just top highly variable genes
 #         assays = assay,
 #         dimreducs = c("pca","umap"),
 #         graphs = c("RNA_nn", "RNA_snn"), # to RNA_nn -> distances, RNA_snn -> connectivities
 #         misc = TRUE
 #         )
-#     if(!MuDataSeurat::WriteH5AD(seurat_object, anndata_path, assay=assay)){
+#     if(!MuDataSeurat::WriteH5AD(srat, anndata_path, assay=assay)){
 #         anndata_path <- NULL
 #     }
-#     seurat_object <- NULL
+#     srat <- NULL
 #     anndata_path
 # }
 
@@ -228,7 +287,7 @@ convert_seurat_sce_to_anndata <- function(path, assay = NULL) {
 #' searching
 #'
 #' @return (character) If found, the delimiter, it not, \\r\\n
-detect_delim <- function(path, nchar = 1e3) {
+DetectDelim <- function(path, nchar = 1e3) {
   # only look for delimiter if the file exists
   if (file.exists(path)) {
     # readChar() will error on non-character data so
@@ -257,11 +316,11 @@ py_to_r_ifneedbe <- function(x) {
     }
 }
 
-seurat_to_csv <- function(seurat_object, srat_path, assay = 'RNA', slot = "counts"){
+SeuratToCSV <- function(srat, srat_path, assay = 'RNA', slot = "counts"){
     if(assay != 'RNA') slot ="data"
     csv_path <- gsub(".h5Seurat", paste("_", assay, ".csv", sep = ""), srat_path)
     if(!file.exists(csv_path)){
-        write.table(as.matrix(GetAssayData(object = seurat_object, assay = assay, slot = slot)), 
+        write.table(as.matrix(GetAssayData(object = srat, assay = assay, slot = slot)), 
         csv_path, sep = ',', row.names = T, col.names = T, quote = F)
     } else{
         print("CSV file already exists.")
@@ -269,30 +328,8 @@ seurat_to_csv <- function(seurat_object, srat_path, assay = 'RNA', slot = "count
     csv_path
 }
 
-convert_to_anndata <- function(path, assay = 'RNA') {
-    adata_path <- NULL
-    suffix <- tolower(get_suffix(path))
-    seurat_object <- load_seurat(path)
-    seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        if(assay != 'RNA') {
-            seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
-            DefaultAssay(seurat_object) <- assay
-            SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
-            adata_path <- Convert(seurat_path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
-        } else {
-            adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
-        }
-    } else if(suffix == "rds"){
-        seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
-        SaveH5Seurat(seurat_object, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
-        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-    } 
-    adata_path
-}
 
-
-plot_integrated_clusters <- function (srat) { 
+PlotIntegratedClusters <- function (srat) { 
   ## take an integrated Seurat object, plot distributions over orig.ident
   library(Seurat)
   library(patchwork)
