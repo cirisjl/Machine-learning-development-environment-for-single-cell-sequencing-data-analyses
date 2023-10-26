@@ -117,6 +117,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           });
           console.log(" hasSelectedAssays");
           console.log(hasSelectedAssays);
+          console.log(errorMessage);
 
           if (!hasSelectedAssays) {
             setValidationLoading(false);
