@@ -29,16 +29,34 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
         if (response.ok) {
           const data = await response.json();
-          setTaskData((prevTaskData) => ({
-            ...prevTaskData,
-            validation: {
-              ...prevTaskData.validation,
-              assayNamesMap: {
-                ...prevTaskData.validation.assayNamesMap,
-                [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+
+
+          if (data.assay_names.length === 0) {
+            // Remove the file from seuratFiles
+            const updatedSeuratFiles = taskData.validation.seuratFiles.filter((fileInfo) => fileInfo.label !== file);
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                fileMappings: [
+                  ...prevTaskData.validation.fileMappings,
+                  { fileDetails: path },
+                ],
+                seuratFiles: updatedSeuratFiles,
               },
-            },
-          }));
+            }));
+          } else {   
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                assayNamesMap: {
+                  ...prevTaskData.validation.assayNamesMap,
+                  [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+                },
+              },
+            }));
+          }
         } else {
           console.error('Error fetching assay names:', response.status);
         }
@@ -74,6 +92,22 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                   ],
                 },
               }));
+            } else {
+
+              let fileDetails = {
+                fileDetails: path, // Add the fileDetails property
+              };
+                // Add the fileDetails directly to the fileMappings
+                setTaskData((prevTaskData) => ({
+                  ...prevTaskData,
+                  validation: {
+                    ...prevTaskData.validation,
+                    fileMappings: [
+                      ...prevTaskData.validation.fileMappings,
+                      fileDetails,
+                    ],
+                  },
+                }));
             }
           }
         } else {
@@ -104,11 +138,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
             return;
           }
-          
-          
-          console.log(" hasSelectedAssays");
-          console.log(hasSelectedAssays);
-          console.log(errorMessage);
 
           // set Validation loading to true.
           setValidationLoading(true);
