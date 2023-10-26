@@ -117,6 +117,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             return true; // No available assays for this file, no selection is needed
           });
 
+          console.log(" hasSelectedAssays");
+          console.log(hasSelectedAssays);
+
           if (!hasSelectedAssays) {
             setValidationLoading(false);
             return;
@@ -254,10 +257,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       </>
                     )}
 
-                    {errorMessage && <div className="error-message">{errorMessage}</div>}
               </div>
               )}
           </div>
+
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
+
           <div className='navigation-buttons'>
             <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
