@@ -98,7 +98,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           // Prepare the data to send to the backend
           const dataToSend = [];
 
-          const hasSelectedAssays = taskData.validation.seuratFiles.forEach((file) => {
+          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => {
             if (file.assayNames && file.assayNames.length > 0) {
               if (file.selectedAssays && file.selectedAssays.length > 0) {
                 file.selectedAssays.forEach((assay) => {
