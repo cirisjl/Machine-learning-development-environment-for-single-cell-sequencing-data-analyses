@@ -102,6 +102,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
           if (!hasSelectedAssays) {
             setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
+            return;
           }
           
           
