@@ -100,21 +100,14 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
           const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => {
             if (file.assayNames && file.assayNames.length > 0) {
-              if (file.selectedAssays && file.selectedAssays.length > 0) {
-                file.selectedAssays.forEach((assay) => {
-                  dataToSend.push({
-                    fileDetails: file.value,
-                    assayName: assay.value,
-                  });
-                });
-                return true; // At least one assay is selected for this file
-              } else {
+              if (!file.selectedAssays || file.selectedAssays.length === 0) {
                 setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
                 return false; // Available assays exist, but none are selected
               }
             }
             return true; // No available assays for this file, no selection is needed
           });
+          
           console.log(" hasSelectedAssays");
           console.log(hasSelectedAssays);
           console.log(errorMessage);
