@@ -98,24 +98,16 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           // Prepare the data to send to the backend
           const dataToSend = [];
 
-          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => {
-            if (file.assayNames && file.assayNames.length > 0) {
-              if (!file.selectedAssays || file.selectedAssays.length === 0) {
-                setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
-                return false; // Available assays exist, but none are selected
-              }
-            }
-            return true; // No available assays for this file, no selection is needed
-          });
+          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => file.selectedAssays && file.selectedAssays.length > 0);
+
+          if (!hasSelectedAssays) {
+            setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
+          }
+          
           
           console.log(" hasSelectedAssays");
           console.log(hasSelectedAssays);
           console.log(errorMessage);
-
-          if (!hasSelectedAssays) {
-            setValidationLoading(false);
-            return;
-          }
 
           // set Validation loading to true.
           setValidationLoading(true);
