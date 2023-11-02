@@ -107,7 +107,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
                 // Iterate over the results array and process the data
             results.forEach(result => {
-              if (result.file. === "H5Seurat or RDS") {
 
             });
           })
