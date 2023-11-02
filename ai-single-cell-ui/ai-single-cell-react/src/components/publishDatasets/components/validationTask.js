@@ -8,6 +8,7 @@ import { PropagateLoader, RingLoader } from 'react-spinners';
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
    const [loading, setLoading] = useState(false);
    const [validationLoading, setValidationLoading] = useState(false);
+   const [errorMessage, setErrorMessage] = useState('');
 
 
   const jwtToken = getCookie('jwtToken');
@@ -28,16 +29,34 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
         if (response.ok) {
           const data = await response.json();
-          setTaskData((prevTaskData) => ({
-            ...prevTaskData,
-            validation: {
-              ...prevTaskData.validation,
-              assayNamesMap: {
-                ...prevTaskData.validation.assayNamesMap,
-                [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+
+
+          if (data.assay_names.length === 0) {
+            // Remove the file from seuratFiles
+            const updatedSeuratFiles = taskData.validation.seuratFiles.filter((fileInfo) => fileInfo.label !== file);
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                fileMappings: [
+                  ...prevTaskData.validation.fileMappings,
+                  { fileDetails: path },
+                ],
+                seuratFiles: updatedSeuratFiles,
               },
-            },
-          }));
+            }));
+          } else {   
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                assayNamesMap: {
+                  ...prevTaskData.validation.assayNamesMap,
+                  [file]: data.assay_names.map((name) => ({ label: name, value: name })),
+                },
+              },
+            }));
+          }
         } else {
           console.error('Error fetching assay names:', response.status);
         }
@@ -49,41 +68,106 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }
   };
 
+
   useEffect(() => {
     isUserAuth(jwtToken)
-      .then((authData) => {
-        if (authData.isAdmin) {
+    .then((authData) => {
+      if(authData.isAdmin) {
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
           let files = taskData.upload.files;
 
-          for (let file of files) {
+          let inputFiles = [];
+          for(let file of files) {
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
-            if (
-              (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
-              !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.label === file)
-            ) {
-              setTaskData((prevTaskData) => ({
-                ...prevTaskData,
-                validation: {
-                  ...prevTaskData.validation,
-                  seuratFiles: [
-                    ...prevTaskData.validation.seuratFiles,
-                    { label: file, value: path, assayNames: [], selectedAssays: [] },
-                  ],
-                },
-              }));
-            }
+            inputFiles.push(path);
           }
-        } else {
-          console.warn("Unauthorized - you must be an admin to access this page");
-          navigate("/accessDenied");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            validation: {
+              ...prevTaskData.validation,
+              inputFiles: inputFiles
+            },
+          }));
+
+          // Make a backend API call to load either annData object or seurat object.
+          const requestData = {
+            inputFiles: inputFiles,
+          };
+
+          // Make the API call
+          axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
+          .then(response => {
+
+            // Handle the response from the server
+            const results = response.data;
+            // Handle the response from the server
+            console.log('API Response:', response.data);
+
+                // Iterate over the results array and process the data
+            results.forEach(result => {
+
+            });
+          })
+          .catch(error => {
+            console.error('API Error:', error.response);
+            console.error('Error Detail:', error.response.data.detail);
+          });
+      }
+    })
   }, [jwtToken]);
+  // useEffect(() => {
+  //   isUserAuth(jwtToken)
+  //     .then((authData) => {
+  //       if (authData.isAdmin) {
+  //         let username = authData.username;
+  //         let newDirectoryPath = taskData.upload.newDirectoryPath;
+  //         let files = taskData.upload.files;
+
+  //         for (let file of files) {
+  //           let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
+  //           if (
+  //             (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
+  //             !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.label === file)
+  //           ) {
+  //             setTaskData((prevTaskData) => ({
+  //               ...prevTaskData,
+  //               validation: {
+  //                 ...prevTaskData.validation,
+  //                 seuratFiles: [
+  //                   ...prevTaskData.validation.seuratFiles,
+  //                   { label: file, value: path, assayNames: [], selectedAssays: [] },
+  //                 ],
+  //               },
+  //             }));
+  //           } else {
+
+  //             let fileDetails = {
+  //               fileDetails: path, // Add the fileDetails property
+  //             };
+  //               // Add the fileDetails directly to the fileMappings
+  //               setTaskData((prevTaskData) => ({
+  //                 ...prevTaskData,
+  //                 validation: {
+  //                   ...prevTaskData.validation,
+  //                   fileMappings: [
+  //                     ...prevTaskData.validation.fileMappings,
+  //                     fileDetails,
+  //                   ],
+  //                 },
+  //               }));
+  //           }
+  //         }
+  //       } else {
+  //         console.warn("Unauthorized - you must be an admin to access this page");
+  //         navigate("/accessDenied");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }, [jwtToken]);
 
 
   useEffect(() => {
@@ -91,81 +175,81 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   }, [taskData]);
 
   const handleTaskCompletion = async () => {
-
-    // set Validation loading to true.
-    setValidationLoading(true);
-
-    // Prepare the data to send to the backend
-    const dataToSend = [];
-  
-    taskData.validation.seuratFiles.forEach((file) => {
-      // Check if any assays are selected for this file
-      if (file.selectedAssays && file.selectedAssays.length > 0) {
-        file.selectedAssays.forEach((assay) => {
-          // Create an entry with the complete file details and assay name
-          dataToSend.push({
-            fileDetails: file.value,
-            assayName: assay.value,
-          });
-        });
-      }
-    });
-
-    console.log("Data to send")
-    console.log(dataToSend);
-  
     try {
-      // Send the data to the backend API
-      const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_sce_to_annData`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend),
-      });
-  
-      if (response.ok) {
-      // Handle the response from the API
-      const responseData = await response.json();
+        if(taskData.validation.status !== 'completed') {
 
-      if (responseData && responseData.data && responseData.data.length > 0) {
-        // Create a mapping of fileDetails to the response data
-        const newFileMappings = {};
+          // Prepare the data to send to the backend
+          const dataToSend = [];
 
-        responseData.data.forEach((entry) => {
-          const fileDetails = entry.path; // Use the appropriate property
+          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => file.selectedAssays && file.selectedAssays.length > 0);
 
-          newFileMappings[fileDetails] = {
-            adata_path: entry.adata_path,
-            assay: entry.assay,
-            // Add other properties as needed
-          };
-        });
+          if (!hasSelectedAssays) {
+            setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
+            return;
+          }
 
-        // Update the fileMappings state
-        setTaskData((prevTaskData) => ({
-          ...prevTaskData,
-          validation: {
-            ...prevTaskData.validation,
-            fileMappings: {
-              ...prevTaskData.validation.fileMappings,
-              ...newFileMappings,
-            },
+          // set Validation loading to true.
+          setValidationLoading(true);
+
+          console.log("Data to send")
+          console.log(dataToSend);
+        // Send the data to the backend API
+        const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_sce_to_annData`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        }));
-        // After the API call is complete, you can update the task status
-        setTaskStatus((prevTaskStatus) => ({
-          ...prevTaskStatus,
-          2: true, // Mark Task 3 as completed (or update it to the appropriate task)
-        }));
-  
-        // The current task is finished, so make the next task active
-        setActiveTask(3); // Move to the next task (or update it to the appropriate task)
-        setValidationLoading(false);
-      } else {
-        setValidationLoading(false);
-        console.error('Error making API call:', response.status);
+          body: JSON.stringify(dataToSend),
+        });
+    
+        if (response.ok) {
+        // Handle the response from the API
+        const responseData = await response.json();
+
+        // Initialize a list to store file mappings
+        const newFileMappings = [];
+
+        if (responseData && responseData.data && responseData.data.length > 0) {
+
+          responseData.data.forEach((entry) => {
+            const fileDetails = entry.path; // Use the appropriate property
+
+            // Create an object to represent the file mapping
+            const fileMapping = {
+              fileDetails: fileDetails,
+              adata_path: entry.adata_path,
+              assay: entry.assay,
+            };
+
+            // Add the file mapping to the list
+            newFileMappings.push(fileMapping);
+          });
+
+          // Update the fileMappings state with the new list
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            validation: {
+              ...prevTaskData.validation,
+              fileMappings: newFileMappings,
+              status: 'completed'
+            },
+          }));
+          // After the API call is complete, you can update the task status
+          setTaskStatus((prevTaskStatus) => ({
+            ...prevTaskStatus,
+            2: true, // Mark Task 3 as completed (or update it to the appropriate task)
+          }));
+    
+          // The current task is finished, so make the next task active
+          setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+          setValidationLoading(false);
+        } else {
+          setValidationLoading(false);
+          console.error('Error making API call:', response.status);
+        }
       }
+    } else {
+      setActiveTask(3); // Move to the next task (or update it to the appropriate task)
     }
   } catch (error) {
       console.error('Error making API call:', error);
@@ -174,6 +258,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   
 
   const handleSeuratFileChange = (selectedOption) => {
+
+    setErrorMessage('');
     
     setTaskData((prevTaskData) => ({
       ...prevTaskData,
@@ -199,7 +285,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           ...prevTaskData.validation,
           seuratFiles: updatedSeuratFiles,
         },
-      }));    } 
+      }));    
+    setErrorMessage('');
+    } 
   };
 
   return (
@@ -233,9 +321,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                         />
                       </>
                     )}
+
               </div>
               )}
           </div>
+
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
+
           <div className='navigation-buttons'>
             <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>

@@ -50,9 +50,11 @@ class PathRequest(BaseModel):
 # Define data models using Pydantic for request and response bodies
 class ConversionRequest(BaseModel):
     path: str
-    assay: str
 
 class ConversionResponse(BaseModel):
     assay_names: list
     adata_path: str
     message: str
+
+class InputFilesRequest(BaseModel):
+    inputFiles: list
