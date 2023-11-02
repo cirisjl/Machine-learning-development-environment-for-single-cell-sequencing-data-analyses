@@ -21,6 +21,7 @@ export default function PublishDataset() {
       const [taskData, setTaskData] = useState({
         upload: {},
         validation: {
+            inputFiles: [],
             seuratFiles: [],
             selectedSeuratFile: null,
             assayNamesMap: {},
