@@ -27,6 +27,11 @@ RunSeuratQC <- function(input_path, output_path, assay='RNA', regress_cell_cycle
     tsne <- NULL
     umap <- NULL
 
+    if (!is.null(srat)){
+        assay_names <- names(srat@assays)
+        default_assay <- DefaultAssay(srat)
+    }
+
     if (!is.null(srat) && DefaultAssay(srat)=='RNA'){
         srat[["percent.mt"]] <- PercentageFeatureSet(srat, pattern = "^MT-")
         srat <- subset(srat, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
@@ -40,8 +45,6 @@ RunSeuratQC <- function(input_path, output_path, assay='RNA', regress_cell_cycle
             RegressCellCycle(srat)
         }
 
-        assay_names <- names(srat@assays)
-        default_assay <- DefaultAssay(srat)
         metadata <- srat@meta.data
         nCells <- ncol(srat)
         nGenes <- nrow(srat)

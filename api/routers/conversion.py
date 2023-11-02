@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
-from schemas.schemas import ConversionRequest, ConversionResponse
-from tools.formating.formating import ConvertSeuratSCEtoAnndata
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest
+from tools.formating.formating import ConvertSeuratSCEtoAnndata, run_seurat_qc, LoadAnndata, change_file_extension
 from typing import List
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
@@ -46,3 +46,33 @@ async def receive_data(data: List[dict]):
             })
 
     return {'data': response_data, 'message': 'Data processed successfully'}
+
+
+@router.post('/publishDatasets/validation')
+async def process_input_files(request: InputFilesRequest):
+    input_files = request.inputFiles
+    result = []
+
+    for file in input_files:
+        try:
+            if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
+                # It's an H5Seurat or RDS file, call runQCSeurat method
+                default_assay, assay_names = run_seurat_qc(file)
+                result.append({
+                        "file": file,
+                        "format": "H5Seurat or RDS",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names
+                    })
+            else:
+                # It's a different file, call load_annData method
+                adata = LoadAnndata(file)
+                adata_path = change_file_extension(file)
+                adata.write_h5ad(adata_path)
+                result.append({"file": file, "format": "h5ad", "result": adata_path})
+        
+        except Exception as e:
+            # Handle the exception and return an error response
+            raise HTTPException(status_code=500, detail=str(e))
+
+    return result
