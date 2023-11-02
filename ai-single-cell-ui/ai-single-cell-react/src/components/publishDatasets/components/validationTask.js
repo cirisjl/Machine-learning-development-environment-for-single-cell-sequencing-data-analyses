@@ -68,57 +68,107 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }
   };
 
+
   useEffect(() => {
     isUserAuth(jwtToken)
-      .then((authData) => {
-        if (authData.isAdmin) {
+    .then((authData) => {
+      if(authData.isAdmin) {
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
           let files = taskData.upload.files;
 
-          for (let file of files) {
+          let inputFiles = [];
+          for(let file of files) {
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
-            if (
-              (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
-              !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.label === file)
-            ) {
-              setTaskData((prevTaskData) => ({
-                ...prevTaskData,
-                validation: {
-                  ...prevTaskData.validation,
-                  seuratFiles: [
-                    ...prevTaskData.validation.seuratFiles,
-                    { label: file, value: path, assayNames: [], selectedAssays: [] },
-                  ],
-                },
-              }));
-            } else {
-
-              let fileDetails = {
-                fileDetails: path, // Add the fileDetails property
-              };
-                // Add the fileDetails directly to the fileMappings
-                setTaskData((prevTaskData) => ({
-                  ...prevTaskData,
-                  validation: {
-                    ...prevTaskData.validation,
-                    fileMappings: [
-                      ...prevTaskData.validation.fileMappings,
-                      fileDetails,
-                    ],
-                  },
-                }));
-            }
+            inputFiles.push(path);
           }
-        } else {
-          console.warn("Unauthorized - you must be an admin to access this page");
-          navigate("/accessDenied");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            validation: {
+              ...prevTaskData.validation,
+              inputFiles: inputFiles
+            },
+          }));
+
+          // Make a backend API call to load either annData object or seurat object.
+          const requestData = {
+            inputFiles: inputFiles,
+          };
+
+          // Make the API call
+          axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
+          .then(response => {
+
+            // Handle the response from the server
+            const results = response.data;
+            // Handle the response from the server
+            console.log('API Response:', response.data);
+
+                // Iterate over the results array and process the data
+            results.forEach(result => {
+              if (result.file. === "H5Seurat or RDS") {
+
+            });
+          })
+          .catch(error => {
+            console.error('API Error:', error.response);
+            console.error('Error Detail:', error.response.data.detail);
+          });
+      }
+    })
   }, [jwtToken]);
+  // useEffect(() => {
+  //   isUserAuth(jwtToken)
+  //     .then((authData) => {
+  //       if (authData.isAdmin) {
+  //         let username = authData.username;
+  //         let newDirectoryPath = taskData.upload.newDirectoryPath;
+  //         let files = taskData.upload.files;
+
+  //         for (let file of files) {
+  //           let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
+  //           if (
+  //             (file.endsWith('.h5Seurat') || file.endsWith('.h5seurat') || file.endsWith('.rds')) &&
+  //             !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.label === file)
+  //           ) {
+  //             setTaskData((prevTaskData) => ({
+  //               ...prevTaskData,
+  //               validation: {
+  //                 ...prevTaskData.validation,
+  //                 seuratFiles: [
+  //                   ...prevTaskData.validation.seuratFiles,
+  //                   { label: file, value: path, assayNames: [], selectedAssays: [] },
+  //                 ],
+  //               },
+  //             }));
+  //           } else {
+
+  //             let fileDetails = {
+  //               fileDetails: path, // Add the fileDetails property
+  //             };
+  //               // Add the fileDetails directly to the fileMappings
+  //               setTaskData((prevTaskData) => ({
+  //                 ...prevTaskData,
+  //                 validation: {
+  //                   ...prevTaskData.validation,
+  //                   fileMappings: [
+  //                     ...prevTaskData.validation.fileMappings,
+  //                     fileDetails,
+  //                   ],
+  //                 },
+  //               }));
+  //           }
+  //         }
+  //       } else {
+  //         console.warn("Unauthorized - you must be an admin to access this page");
+  //         navigate("/accessDenied");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }, [jwtToken]);
 
 
   useEffect(() => {
@@ -209,6 +259,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   
 
   const handleSeuratFileChange = (selectedOption) => {
+
+    setErrorMessage('');
     
     setTaskData((prevTaskData) => ({
       ...prevTaskData,

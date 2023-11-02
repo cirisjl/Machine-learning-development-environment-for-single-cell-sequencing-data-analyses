@@ -55,3 +55,6 @@ class ConversionResponse(BaseModel):
     assay_names: list
     adata_path: str
     message: str
+
+class InputFilesRequest(BaseModel):
+    inputFiles: list
