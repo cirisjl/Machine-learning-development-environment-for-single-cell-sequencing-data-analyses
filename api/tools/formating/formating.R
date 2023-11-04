@@ -8,6 +8,45 @@ library(patchwork)
 library(Signac)
 # library(loomR)
 
+
+#' Regularise dataframe
+#'
+#' This function checks if certain columns of a dataframe is of a single value
+#' and drop them if required
+#'
+#' @param df Input data frame, usually cell metadata table (data.frame-like
+#'   object)
+#' @param drop_single_values Drop columns with only a single value (logical)
+#'
+#' @return Dataframe
+.regularise_df <- function(df, drop_single_values=FALSE, drop_na_values=TRUE) {
+  if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  if (drop_single_values) {
+    k_singular <- sapply(df, function(x) length(unique(x)) == 1)
+    if (sum(k_singular) > 0) {
+      warning(
+        paste("Dropping single category variables:"),
+        paste(colnames(df)[k_singular], collapse = ", ")
+      )
+    }
+    df <- df[, !k_singular, drop = F]
+    if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  }
+ if (drop_na_values) {
+    k_na <- sapply(df, function(x) sum(is.na(x))==length(x))
+    if (sum(k_na) > 0) {
+      warning(
+        paste("Dropping NA category variables:"),
+        paste(colnames(df)[k_na], collapse = ", ")
+      )
+    }
+    df <- df[, !k_na, drop = F]
+    if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  }
+  return(df)
+}
+
+
 # Get suffix of the file
 GetSuffix <- function(path) {
     filename <- basename(path)
@@ -106,13 +145,17 @@ LoadSeurat <- function(path, project = NULL) {
         }
         rm(robj)
     } else if(suffix == "robj"){
-        srat_v2 <- get(load(path))
-        if(class(srat_v2) == 'seurat'){
-        srat_v3 <- UpdateSeuratObject(srat_v2)
-        srat <- CreateSeuratObject(counts=srat_v3[['RNA']]@counts, meta.data=srat_v3@meta.data, project = Project(srat_v3))
-        rm(srat_v3)
+        robj <- get(load(path))
+        if(class(robj) == 'seurat'){
+            if (compareVersion(as.character(robj@version), "3.0.0") < 0){
+                srat_v3 <- UpdateSeuratObject(robj)
+                srat <- CreateSeuratObject(counts=srat_v3[['RNA']]@counts, meta.data=srat_v3@meta.data, project = Project(srat_v3))
+                rm(srat_v3)
+            } else {
+                srat <- robj
+            }           
         }
-        rm(srat_v2)
+        rm(robj)
     } else {
         expression_matrix <- LoadExpressionMatrix(path)
         if(!is.null(expression_matrix) && !is.null(project)) {
@@ -167,6 +210,27 @@ LoadSCE <- function(path) {
 }
 
 
+# LoadSeuratMetaData <- function(path, assay='RNA'){
+#     srat <- LoadSeurat(path)
+#     default_assay <- NULL
+#     assay_names <- NULL
+#     metadata <- NULL
+#     nCells <- ncol(srat)
+#     nGenes <- nrow(srat)
+#     nGenes <- 0
+#     nCells <- 0
+
+#     if(!is.null(srat)){
+#         assay_names <- names(srat@assays)
+#         if(assay != 'RNA' && assay %in% assay_names) DefaultAssay(srat) <- assay
+#         default_assay <- DefaultAssay(srat)
+#         metadata <- srat@meta.data
+#     }
+
+#     list(srat=srat, default_assay=default_assay, assay_names=assay_names, metadata=metadata)
+# }
+
+
 # Return metadata and a list of assays if the default assay is not "RNA"
 GetMetadataFromSeurat <- function(path, assay='RNA') {
     srat <- LoadSeurat(path)
@@ -218,11 +282,8 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
         if(!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
             DefaultAssay(srat) <- assay
             SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
-            seurat_path <- paste0(tools::file_path_sans_ext(path), "_", assay, ".h5seurat")
-            adata_path <- Convert(seurat_path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
-        } else {
-            adata_path <- Convert(path, dest = "h5ad", assay=default_assay, overwrite = TRUE, verbose = FALSE)
         }
+        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds" || suffix == "robj"){
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
@@ -367,7 +428,7 @@ PlotIntegratedClusters <- function (srat) {
   }
 
 
-LoadMetadata <- function(seurat_obj) {
+load_metadata <- function(seurat_obj) {
     metadata <- list()  # Create an empty list to hold metadata
     
     # Get the Default Assay
