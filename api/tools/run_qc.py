@@ -2,8 +2,8 @@ import os
 import subprocess
 import sys
 
-from tools.qc.scanpy_qc import scanpy_qc
-from tools.qc.dropkick_qc import dropkick_qc
+from tools.qc.scanpy_qc import run_scanpy_qc
+from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.scrublet_calls import predict_scrublet
 # sys.path.append('..')
 from tools.formating.formating import *
@@ -25,7 +25,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
 
     
     if "SCANPY" in methods or "DROPKICK" in methods:
-        adata = LoadAnndata(input)
+        adata = load_anndata(input)
 
         if adata is None:
             print("File format is not supported.")
@@ -34,7 +34,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
         # Scanpy QC
         if "SCANPY" in methods:
             try:
-                adata = scanpy_qc(adata)
+                adata = run_scanpy_qc(adata)
                 output_path = get_output_path(dataset, output, method='scanpy')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
@@ -46,7 +46,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
         # Dropkick QC
         if "DROPKICK" in methods:
             try:
-                adata = dropkick_qc(adata)
+                adata = run_dropkick_qc(adata)
                 output_path = get_output_path(dataset, output, method='dropkick')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
