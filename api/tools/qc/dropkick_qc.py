@@ -7,7 +7,7 @@ sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), inf
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 
-def dropkick_qc(adata):
+def run_dropkick_qc(adata):
     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
     
     # Run dropkick pipeline function
@@ -27,27 +27,35 @@ def dropkick_qc(adata):
         :].copy()
     
     # Here, we want to end up working with normalized, arcsinh-transformed counts 
-    #   where genes are scaled to unit variance and zero-centered
+    # where genes are scaled to unit variance and zero-centered
     # we also set filter=True to remove any genes with zero total counts
     # we perform a variable gene selection for 2000 HVGs before further processing
     adata_filtered= dk.recipe_dropkick(adata_filtered, X_final="arcsinh_norm", filter=True, n_hvgs=2000, verbose=True)
     sc.pp.neighbors(adata_filtered, n_neighbors=30, random_state=1, n_pcs=10)
     sc.tl.leiden(adata_filtered)
+
+    # Principal component analysis
+    sc.tl.pca(adata_filtered, svd_solver='arpack')
+    
+    # tSNE
+    sc.tl.tsne(adata_filtered)
+
+    #UMAP
     sc.tl.umap(adata_filtered, random_state=1)
 
     # plot results
-    sc.pl.umap(
-        adata_filtered,
-        color=[
-            "arcsinh_total_counts",
-            "pct_counts_mito",
-            "leiden",
-            "dropkick_label",
-            "dropkick_score",
-        ],
-        legend_fontsize="large",
-        ncols=4,
-    )
+    # sc.pl.umap(
+    #     adata_filtered,
+    #     color=[
+    #         "arcsinh_total_counts",
+    #         "pct_counts_mito",
+    #         "leiden",
+    #         "dropkick_label",
+    #         "dropkick_score",
+    #     ],
+    #     legend_fontsize="large",
+    #     ncols=4,
+    # )
 
     # Save AnnData object
     # adata_filtered.write_h5ad(output, compression = 'gzip')
