@@ -24,10 +24,11 @@ export default function PublishDataset() {
             inputFiles: [],
             seuratFiles: [],
             selectedSeuratFile: null,
-            assayNamesMap: {},
             fileMappings:{}
           },
-        quality_control: {},
+        quality_control: {
+          qc_results: []
+        },
         metadata: {},
         task_builder: {},
         benchmarks: {},
