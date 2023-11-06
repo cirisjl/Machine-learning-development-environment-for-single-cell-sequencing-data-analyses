@@ -170,7 +170,7 @@ def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
 
     if os.path.exists(output):
         try:
-            adata = LoadAnndata(output, dataset)
+            adata = load_anndata(output, dataset)
             adata_path = output
         except Exception as e:
             print("File format is not supported.")
@@ -180,7 +180,7 @@ def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
         try:
             print("Inside else , read from input path")
             print(input)
-            adata = LoadAnndata(input, dataset)
+            adata = load_anndata(input, dataset)
             print(adata)
             adata_path = input
         except Exception as e:

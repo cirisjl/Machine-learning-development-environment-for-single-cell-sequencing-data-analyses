@@ -56,5 +56,9 @@ class ConversionResponse(BaseModel):
     adata_path: str
     message: str
 
+class InputFile(BaseModel):
+    fileDetails: str
+    assay: Optional[str]
+
 class InputFilesRequest(BaseModel):
-    inputFiles: list
+    inputFiles: List[InputFile]
