@@ -242,22 +242,34 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         const responseData = await response.json();
 
         // Initialize a list to store file mappings
-        const newFileMappings = [];
+        // const newFileMappings = [];
 
         if (responseData && responseData.data && responseData.data.length > 0) {
 
           responseData.data.forEach((entry) => {
-            const fileDetails = entry.path; // Use the appropriate property
+            // const fileDetails = entry.path; // Use the appropriate property
 
-            // Create an object to represent the file mapping
-            const fileMapping = {
-              fileDetails: fileDetails,
-              adata_path: entry.adata_path,
-              assay: entry.assay,
-            };
+            // // Create an object to represent the file mapping
+            // const fileMapping = {
+            //   fileDetails: fileDetails,
+            //   adata_path: entry.adata_path,
+            //   assay: entry.assay,
+            // };
 
-            // Add the file mapping to the list
-            newFileMappings.push(fileMapping);
+            // // Add the file mapping to the list
+            // newFileMappings.push(fileMapping);
+            // Add the result directly to the qc_results array
+            setTaskData(prevTaskData => ({
+              ...prevTaskData,
+              quality_control: {
+                ...prevTaskData.quality_control,
+                qc_results: [
+                  ...prevTaskData.quality_control.qc_results,
+                  entry, // Adding the entire result
+                ],
+              },
+            }));
+
           });
 
           // Update the fileMappings state with the new list
@@ -265,7 +277,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             ...prevTaskData,
             validation: {
               ...prevTaskData.validation,
-              fileMappings: newFileMappings,
+              // fileMappings: newFileMappings,
               status: 'completed'
             },
           }));
