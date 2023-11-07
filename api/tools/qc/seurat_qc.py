@@ -24,10 +24,13 @@ def run_seurat_qc(input, save_anndata=True, assay='RNA', nFeature_min=200, nFeat
     umap = None
     adata_path = None
 
+    print("inside run seurat qc")
     output = add_qc_result_suffix(input)
 
     try:
+        print("Calling R run seurat qc")
         results = list(RunSeuratQC_r(input, output, save_anndata=ro.vectors.BoolVector([save_anndata]), assay=assay, nFeature_min=nFeature_min, nFeature_max=nFeature_max, percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, path_of_scrublet_calls=path_of_scrublet_calls, dims=ro.r.seq(1, dims), regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
+        print("completed R run seurat qc")
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]
         if results[1] != ro.rinterface.NULL:
