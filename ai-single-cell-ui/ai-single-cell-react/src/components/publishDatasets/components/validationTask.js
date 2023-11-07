@@ -145,6 +145,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
               } else {
                 let fileDetails = {
                   fileDetails: results.file,
+                  format: results.format,
                   adata_path: results.adata_path
                 };
                 // Add the fileDetails directly to the fileMappings

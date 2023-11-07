@@ -24,7 +24,7 @@ export default function PublishDataset() {
             inputFiles: [],
             seuratFiles: [],
             selectedSeuratFile: null,
-            fileMappings:{}
+            fileMappings:[]
           },
         quality_control: {
           qc_results: []
