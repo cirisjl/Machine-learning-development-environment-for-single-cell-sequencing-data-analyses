@@ -103,7 +103,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           // Assuming you have already prepared the inputFiles array
           const requestData = {
             inputFiles: inputFiles.map(file => ({
-              fileDetails: file,
+              fileDetails: file
             })),
           };
           // Make the API call

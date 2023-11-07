@@ -58,7 +58,7 @@ class ConversionResponse(BaseModel):
 
 class InputFile(BaseModel):
     fileDetails: str
-    assay: Optional[str]
+    assay: Optional[str] = None
 
 class InputFilesRequest(BaseModel):
     inputFiles: List[InputFile]
