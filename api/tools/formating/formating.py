@@ -91,7 +91,7 @@ def change_file_extension(file_path, new_extension):
     name, current_extension = os.path.splitext(base_filename)
 
     # Create the new file path with the desired extension
-    new_file_path = os.path.join(directory, f"{name}{new_extension}")
+    new_file_path = os.path.join(directory, f"{name}.{new_extension}")
 
     return new_file_path
 
