@@ -5,7 +5,7 @@ library(celldex)
 library(RColorBrewer)
 library("here")
 # source(here::here('api/tools/formating/formating.R'))
-source("../../formating/formating.R")
+# source("../../formating/formating.R")
 
 
 RunSeuratQC <- function(input, output, save_anndata=TRUE, assay='RNA', nFeature_min=200, nFeature_max=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('api/tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
