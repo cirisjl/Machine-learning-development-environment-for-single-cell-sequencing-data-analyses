@@ -83,6 +83,18 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
     return adata
 
 
+def change_file_extension(file_path, new_extension):
+    # Split the file path into directory and filename
+    directory, base_filename = os.path.split(file_path)
+
+    # Split the base filename into name and current extension
+    name, current_extension = os.path.splitext(base_filename)
+
+    # Create the new file path with the desired extension
+    new_file_path = os.path.join(directory, f"{name}{new_extension}")
+
+    return new_file_path
+
 def get_metadata_from_seurat(path):
     GetMetadataFromSeurat_r = ro.globalenv['GetMetadataFromSeurat']
     default_assay = None
