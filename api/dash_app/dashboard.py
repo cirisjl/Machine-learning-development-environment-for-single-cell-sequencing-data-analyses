@@ -41,7 +41,7 @@ ro.r(r_source)
 load_expression_matrix = ro.globalenv['LoadExpressionMatrix']
 load_seurat = ro.globalenv['LoadSeurat']
 detect_delim = ro.globalenv['DetectDelim']
-load_metadata = ro.globalenv['LoadMetadata']
+# load_metadata = ro.globalenv['LoadMetadata']
 
 load_figure_template('LUX')
 
