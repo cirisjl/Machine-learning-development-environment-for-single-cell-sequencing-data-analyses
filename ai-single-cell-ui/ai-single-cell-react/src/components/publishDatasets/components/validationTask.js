@@ -100,11 +100,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             },
           }));
 
-          // Make a backend API call to load either annData object or seurat object.
+          // Assuming you have already prepared the inputFiles array
           const requestData = {
-            inputFiles: inputFiles,
+            inputFiles: inputFiles.map(file => ({
+              fileDetails: file,
+            })),
           };
-
           // Make the API call
           axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
           .then(response => {
