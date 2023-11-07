@@ -85,7 +85,7 @@ async def process_input_files_validation(request: InputFilesRequest):
             else:
                 # It's a different file, call load_annData method
                 adata = load_anndata(file)
-                adata_path = change_file_extension(file)
+                adata_path = change_file_extension(file, 'h5ad')
                 adata.write_h5ad(adata_path)
                 result.append({"file": file, "format": "h5ad", "adata_path": adata_path})
         
