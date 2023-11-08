@@ -81,7 +81,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   useEffect(() => {
     isUserAuth(jwtToken)
     .then((authData) => {
-      if(authData.isAdmin) {
+      if(authData.isAdmin && taskData.validation.status !== 'completed') {
           setValidationLoading(true);
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
