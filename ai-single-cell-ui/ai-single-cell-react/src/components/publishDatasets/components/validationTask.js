@@ -268,11 +268,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
         console.log(response);
         console.log(responseData);
-        console.log(responseData.data);
         // Initialize a list to store file mappings
         // const newFileMappings = [];
 
-        if (responseData && responseData.data && responseData.data.length > 0) {
+        if (responseData && responseData.length > 0) {
           console.log("Inside ok response iterator")
 
 
