@@ -8,7 +8,7 @@ source(here::here('tools/formating/formating.R'))
 # source("../../formating/formating.R")
 
 
-RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, nFeature_min=200, nFeature_max=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('api/tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -63,8 +63,9 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, nFeature_min=20
 
             # print(head(srat@meta.data))
 
-            srat <- subset(srat, subset = paste0("nFeature_", default_assay) > nFeature_min & percent.mt < percent_mt_max)
-            if(nFeature_max != 0) srat <- subset(srat, subset = paste0("nFeature_", default_assay) < nFeature_max)
+            srat <- subset(srat, subset = paste0("nFeature_", default_assay) > min_genes & paste0("nCount_", default_assay) > min_UMI_count & percent.mt < percent_mt_max)
+            if(max_genes != 0) srat <- subset(srat, subset = paste0("nFeature_", default_assay) < max_genes)
+            if(max_UMI_count != 0) srat <- subset(srat, subset = paste0("nCount_", default_assay) < max_UMI_count)
             if(percent_rb_min != 0)  srat <- subset(srat, subset = percent.rb > percent_rb_min)
             srat <- subset(srat, subset = Is_doublet != 'True' | is.na(Is_doublet))
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -96,7 +97,6 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, nFeature_min=20
             if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
             if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
             if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
-
             srat@meta.data <- .regularise_df(srat@meta.data, drop_single_values=FALSE, drop_na_values=TRUE)
 
             SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
@@ -105,13 +105,14 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, nFeature_min=20
                 adata_path <- Convert(output, dest = "h5ad" , overwrite = TRUE)
                 print("AnnData object is saved successfully.")
             }
+            rm(srat)
+            gc()
         } else {
             assay_names <- names(srat@assays)
             default_assay <- DefaultAssay(srat)
         }  
     }
-    rm(srat)
-    gc()
+    
     list(default_assay=default_assay, assay_names=assay_names, metadata=metadata, nCells=nCells, nGenes=nGenes, genes=genes, cells=cells, HVGsID=HVGsID, pca=pca, tsne=tsne, umap=umap, adata_path=adata_path)
 }
 
