@@ -266,6 +266,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         // Handle the response from the API
         const responseData = await response.json();
 
+        console.log(response);
+        console.log(responseData);
+        console.log(responseData.data);
         // Initialize a list to store file mappings
         // const newFileMappings = [];
 
