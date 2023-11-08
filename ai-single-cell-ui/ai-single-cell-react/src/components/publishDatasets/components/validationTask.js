@@ -377,7 +377,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 </div>
               ) : (
                   <div>
-                    {taskData.validation.selectedSeuratFile && (
+                    {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
                       <>
                         <h1 className="header">Choose Assay Names</h1>
                         <Select
