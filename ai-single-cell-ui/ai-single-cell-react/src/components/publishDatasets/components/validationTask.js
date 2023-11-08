@@ -275,7 +275,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           console.log("Inside ok response iterator")
 
 
-          responseData.data.forEach((entry) => {
+          responseData.forEach((entry) => {
             // const fileDetails = entry.path; // Use the appropriate property
 
             // // Create an object to represent the file mapping
