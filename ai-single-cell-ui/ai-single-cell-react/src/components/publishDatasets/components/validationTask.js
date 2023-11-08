@@ -381,15 +381,21 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
               ) : ( */}
                   <div>
                     {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
-                      <>
-                        <h1 className="header">Choose Assay Names</h1>
-                        <Select
-                          isMulti
-                          options={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)]?.assayNames}
-                          value={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)]?.selectedAssays}
-                          onChange={handleAssayNamesChange}
-                        />
-                      </>
+                            <>
+                            <h1 className="header">Choose Assay Names</h1>
+                            <Select
+                              isMulti
+                              options={
+                                taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
+                                  ?.assayNames || []
+                              }
+                              value={
+                                taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
+                                  ?.selectedAssays || []
+                              }
+                              onChange={handleAssayNamesChange}
+                            />
+                          </>
                     )}
 
               </div>
