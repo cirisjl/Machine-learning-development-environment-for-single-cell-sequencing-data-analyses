@@ -171,8 +171,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             });
 
             console.log("done iterating");
+            console.log(hasAddedSeuratFiles)
 
-            if (hasAddedSeuratFiles || taskData.validation.seuratFiles.length === 0) {
+            if (!hasAddedSeuratFiles || taskData.validation.seuratFiles.length === 0) {
               console.log("done iterating if block");
 
                 // validation step is successful, move to next task as there are no seurat or rds datasets
