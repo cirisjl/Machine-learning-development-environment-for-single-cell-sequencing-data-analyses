@@ -60,9 +60,6 @@ async def process_input_files_validation(request: InputFilesRequest):
         file = input.fileDetails
         assay = input.assay
         try:
-            print("inputfiles")
-            print(input_files)
-            print(file)
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
                 default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(file, assay)
@@ -105,6 +102,9 @@ async def run_quality_control(file_mappings: List[dict]):
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
             assay = mapping.get("assay")
+            print("inputfiles")
+            print(input_path)
+            print(assay)
 
             if format == "seurat":
                 default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(input_path, assay)
@@ -126,6 +126,8 @@ async def run_quality_control(file_mappings: List[dict]):
                 })
 
             elif format == "annData":
+
+                print("in Anndata else block")
                 # Load the annData object
                 adata = load_anndata(input_path)
 
@@ -135,11 +137,15 @@ async def run_quality_control(file_mappings: List[dict]):
                 except Exception as scanpy_error:
                     scanpy_results = {"error": str(scanpy_error)}
 
+                print("scanpy completed")
+
                 # Run Dropkick QC
                 try:
                     dropkick_results = run_dropkick_qc(input_path)
                 except Exception as dropkick_error:
                     dropkick_results = {"error": str(dropkick_error)}
+
+                print("dropkick completed")
 
                 qc_results.append({
                     "inputfile": input_path,
