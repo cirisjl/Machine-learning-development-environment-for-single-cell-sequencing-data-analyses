@@ -9,7 +9,7 @@ from rpy2.robjects.conversion import localconverter
 # Defining the R script and loading the instance in Python
 ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
 
-def run_seurat_qc(input, output, save_anndata=True, assay='RNA', nFeature_min=200, nFeature_max=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=os.path.abspath(os.path.join(os.path.dirname(__file__), 'scrublet_calls.tsv')), dims=10, regress_cell_cycle=False):
+def run_seurat_qc(input, output, save_anndata=True, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=os.path.abspath(os.path.join(os.path.dirname(__file__), 'scrublet_calls.tsv')), dims=10, regress_cell_cycle=False):
     RunSeuratQC_r = ro.globalenv['RunSeuratQC']
     default_assay = None
     assay_names = None
@@ -25,11 +25,10 @@ def run_seurat_qc(input, output, save_anndata=True, assay='RNA', nFeature_min=20
     adata_path = None
 
     try:
-        results = list(RunSeuratQC_r(input, output, save_anndata=ro.vectors.BoolVector([save_anndata]), assay=assay, nFeature_min=nFeature_min, nFeature_max=nFeature_max, percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, path_of_scrublet_calls=path_of_scrublet_calls, dims=ro.r.seq(1, dims), regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
+        results = list(RunSeuratQC_r(input, output, save_anndata=ro.vectors.BoolVector([save_anndata]), assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count,  percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, path_of_scrublet_calls=path_of_scrublet_calls, dims=ro.r.seq(1, dims), regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]
-        if results[1] != ro.rinterface.NULL:
-            assay_names = list(results[1])
+        assay_names = list(results[1])
         nCells = list(results[3])[0]
         nGenes = list(results[4])[0]
         if results[5] != ro.rinterface.NULL:
