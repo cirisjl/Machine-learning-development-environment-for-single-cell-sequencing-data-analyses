@@ -262,6 +262,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         });
     
         if (response.ok) {
+          console.log("Inside ok response")
         // Handle the response from the API
         const responseData = await response.json();
 
@@ -269,6 +270,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         // const newFileMappings = [];
 
         if (responseData && responseData.data && responseData.data.length > 0) {
+          console.log("Inside ok response iterator")
+
 
           responseData.data.forEach((entry) => {
             // const fileDetails = entry.path; // Use the appropriate property
@@ -295,6 +298,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             }));
 
           });
+          console.log("Inside ok response added final")
+
 
           // Update the fileMappings state with the new list
           setTaskData((prevTaskData) => ({
