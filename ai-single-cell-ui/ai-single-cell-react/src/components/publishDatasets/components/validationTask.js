@@ -238,6 +238,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             }
           });
 
+          const requestData = {
+            "inputFiles": dataToSend
+          }
+
           const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => file.selectedAssays && file.selectedAssays.length > 0);
 
           if (!hasSelectedAssays) {
@@ -248,15 +252,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           // set Validation loading to true.
           setValidationLoading(true);
 
-          console.log("Data to send")
-          console.log(dataToSend);
         // Send the data to the backend API
         const response = await fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(dataToSend),
+          body: JSON.stringify(requestData),
         });
     
         if (response.ok) {
