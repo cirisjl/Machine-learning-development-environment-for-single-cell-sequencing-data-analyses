@@ -118,7 +118,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 // Iterate over the results array and process the data
             results.forEach(result => {
               console.log("Inside results");
-              if ((result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
+              if (result.inputfile && (result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
                 if(result.default_assay !== 'RNA') {
                   setTaskData((prevTaskData) => ({
                     ...prevTaskData,
@@ -131,7 +131,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                     },
                   }));
                   console.log("Inside results if");
-                } else if(result.default_assay === 'RNA') {
+                } else if(result.default_assay && result.default_assay === 'RNA') {
                   // Add the result directly to the qc_results array
                   setTaskData(prevTaskData => ({
                     ...prevTaskData,
