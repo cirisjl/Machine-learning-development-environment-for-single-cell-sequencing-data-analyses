@@ -4,22 +4,13 @@ import sys
 import subprocess
 import numpy as np
 import pandas as pd
-import rpy2.robjects as ro
-from rpy2.robjects.packages import importr
-from rpy2.robjects import pandas2ri
-from rpy2.robjects.conversion import localconverter
-# anndata2ri.activate()
 from detect_delimiter import detect
 from string import ascii_letters
 import csv
 import gzip
 
-# Defining the R script and loading the instance in Python
-ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
-
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
-
     # path = os.path.abspath(path)
     adata = None
     print(path)
@@ -96,6 +87,13 @@ def change_file_extension(file_path, new_extension):
     return new_file_path
 
 def get_metadata_from_seurat(path):
+    import rpy2.robjects as ro
+    from rpy2.robjects.packages import importr
+    from rpy2.robjects import pandas2ri
+    from rpy2.robjects.conversion import localconverter
+
+    # Defining the R script and loading the instance in Python
+    ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
     GetMetadataFromSeurat_r = ro.globalenv['GetMetadataFromSeurat']
     default_assay = None
     assay_names = None
@@ -135,8 +133,39 @@ def get_metadata_from_seurat(path):
     return default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
+def get_metadata_from_anndata(adata):
+    layers = None
+    cell_metadata = None
+    nCells = 0
+    nGenes = 0
+    genes = None
+    cells = None
+    gene_metadata = None
+    embeddings = None
+
+    if adata is not None and isinstance(adata, AnnData):
+        layers = list(adata.layers.keys())
+        cell_metadata = adata.obs # pandas dataframe
+        nCells = adata.n_obs # Number of cells
+        nGenes = adata.n_vars # Number of genes
+        genes = adata.var_names.to_list() # Cell IDs
+        cells = adata.obs_names.to_list() # Gene IDs
+        gene_metadata = adata.var # pandas dataframe
+        embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        
+    return layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings
+
+
+
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
+    import rpy2.robjects as ro
+    from rpy2.robjects.packages import importr
+    from rpy2.robjects import pandas2ri
+    from rpy2.robjects.conversion import localconverter
+
+    # Defining the R script and loading the instance in Python
+    ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
     # Access the loaded R functions
     ConvertSeuratSCEtoAnndata_r = ro.globalenv['ConvertSeuratSCEtoAnndata']
 
