@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { CELERY_BACKEND_API} from '../../../constants/declarations';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
@@ -13,7 +14,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
         const runQualityControl = async () => {
           try {
             // Make an API call to run quality control
-            const response = await axios.post('/convert/publishDatasets/run/quality_control', taskData.validation.fileMappings);
+            const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
 
             const qualityControlResults = response.data.qc_results;
           
@@ -43,7 +44,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   useEffect(() => {
     console.log(taskData);
   }, [taskData]);
-  
+
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.

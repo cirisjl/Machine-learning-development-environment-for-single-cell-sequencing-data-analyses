@@ -125,7 +125,7 @@ async def run_quality_control(file_mappings: List[dict]):
                     "adata_path": adata_path
                 })
 
-            elif format == "annData":
+            elif format == "h5ad":
 
                 print("in Anndata else block")
                 # Load the annData object
