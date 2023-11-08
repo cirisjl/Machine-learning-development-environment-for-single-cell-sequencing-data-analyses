@@ -232,7 +232,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 // Create an entry with the complete file details and assay name
                 dataToSend.push({
                   fileDetails: file.value,
-                  assayName: assay.value,
+                  assay: assay.value,
                 });
               });
             }
