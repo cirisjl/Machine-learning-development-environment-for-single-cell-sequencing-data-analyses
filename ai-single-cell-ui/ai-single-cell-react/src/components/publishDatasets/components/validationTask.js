@@ -23,61 +23,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     return filename;
   }
 
-  // const fetchAssayNames = async (path, file) => {
-  //   if (!taskData.validation.assayNamesMap[file]) {
-  //     setLoading(true);
-
-  //     try {
-  //       const response = await fetch(`${CELERY_BACKEND_API}/convert/api/convert_to_anndata`, {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({ path }),
-  //       });
-
-  //       if (response.ok) {
-  //         const data = await response.json();
-
-
-  //         if (data.assay_names.length === 0) {
-  //           // Remove the file from seuratFiles
-  //           const updatedSeuratFiles = taskData.validation.seuratFiles.filter((fileInfo) => fileInfo.label !== file);
-  //           setTaskData((prevTaskData) => ({
-  //             ...prevTaskData,
-  //             validation: {
-  //               ...prevTaskData.validation,
-  //               fileMappings: [
-  //                 ...prevTaskData.validation.fileMappings,
-  //                 { fileDetails: path },
-  //               ],
-  //               seuratFiles: updatedSeuratFiles,
-  //             },
-  //           }));
-  //         } else {   
-  //           setTaskData((prevTaskData) => ({
-  //             ...prevTaskData,
-  //             validation: {
-  //               ...prevTaskData.validation,
-  //               assayNamesMap: {
-  //                 ...prevTaskData.validation.assayNamesMap,
-  //                 [file]: data.assay_names.map((name) => ({ label: name, value: name })),
-  //               },
-  //             },
-  //           }));
-  //         }
-  //       } else {
-  //         console.error('Error fetching assay names:', response.status);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching assay names:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-  // };
-
-
   useEffect(() => {
     isUserAuth(jwtToken)
     .then((authData) => {
@@ -119,7 +64,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
                 // Iterate over the results array and process the data
             results.forEach(result => {
-              console.log("Inside results");
               if (result.inputfile && (result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
                 if(result.default_assay !== 'RNA') {
                   hasAddedSeuratFiles = true; // Update the flag
@@ -133,7 +77,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       ],
                     },
                   }));
-                  console.log("Inside results if");
                 } else if(result.default_assay && result.default_assay === 'RNA') {
                   // Add the result directly to the qc_results array
                   setTaskData(prevTaskData => ({
@@ -376,62 +319,55 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   return (
     <div className='validation-task'>
-      { validationLoading ? (
+      {validationLoading ? (
         <div className="spinner-container">
-          <ScaleLoader color="#36d7b7" loading={validationLoading}/>
-          {/* <RingLoader color={'#36D7B7'} loading={validationLoading} size={150} /> */}
+          <ScaleLoader color="#36d7b7" loading={validationLoading} />
         </div>
       ) : (
-        <div className='container'>
-          <div>
-            <h1 className="header">Select a Seurat File</h1>
-            <Select
-            options={taskData.validation.seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))} value={taskData.validation.selectedSeuratFile}
-            onChange={handleSeuratFileChange}
-            />
-              {/* {loading ? (
-                <div className="spinner-container">
-                  <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
-                </div>
-              ) : ( */}
-                  <div>
-                    {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
-                            <>
-                            <h1 className="header">Choose Assay Names</h1>
-                            <Select
-                              isMulti
-                              options={transformAssayNames(taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)?.assayNames || [])}
-                              value={
-                                taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
-                                  ?.selectedAssays || []
-                              }
-                              onChange={handleAssayNamesChange}
-                            />
-                          </>
-                    )}
-
+        taskData.validation.seuratFiles.length > 0 ? (
+          <div className='container'>
+            <div>
+              <h1 className="header">Select a Seurat File</h1>
+              <Select
+                options={taskData.validation.seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}
+                value={taskData.validation.selectedSeuratFile}
+                onChange={handleSeuratFileChange}
+              />
+              <div>
+                {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
+                  <>
+                    <h1 className="header">Choose Assay Names</h1>
+                    <Select
+                      isMulti
+                      options={transformAssayNames(taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)?.assayNames || [])}
+                      value={
+                        taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
+                          ?.selectedAssays || []
+                      }
+                      onChange={handleAssayNamesChange}
+                    />
+                  </>
+                )}
               </div>
-              {/* )} */}
-          </div>
-
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
-
-          <div className='navigation-buttons'>
-            <div className="previous">
-              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                Previous
-              </button>
             </div>
-            <div className="next-upon-success">
-              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                Next
-              </button>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            <div className='navigation-buttons'>
+              <div className="previous">
+                <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                  Previous
+                </button>
+              </div>
+              <div className="next-upon-success">
+                <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                  Next
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        )}
+        ) : null
+      )}
     </div>
-  );
+  );  
 }
 
 export default ValidationTaskComponent;
