@@ -324,7 +324,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       console.error('Error making API call:', error);
     }
   };
-  
+
+  function transformAssayNames(assayNames) {
+    return assayNames.map(name => ({
+      label: name,
+      value: name,
+    }));
+  }  
 
   const handleSeuratFileChange = (selectedOption) => {
 
@@ -385,10 +391,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                             <h1 className="header">Choose Assay Names</h1>
                             <Select
                               isMulti
-                              options={
-                                taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
-                                  ?.assayNames || []
-                              }
+                              options={transformAssayNames(taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)?.assayNames || [])}
                               value={
                                 taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
                                   ?.selectedAssays || []
