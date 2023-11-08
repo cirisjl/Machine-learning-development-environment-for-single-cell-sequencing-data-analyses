@@ -3,7 +3,7 @@ import { FLASK_BACKEND_API,CELERY_BACKEND_API ,STORAGE } from '../../../constant
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import { PropagateLoader, RingLoader } from 'react-spinners';
+import { PropagateLoader, RingLoader, ScaleLoader } from 'react-spinners';
 import axios from 'axios';
 
 
@@ -82,6 +82,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     isUserAuth(jwtToken)
     .then((authData) => {
       if(authData.isAdmin) {
+          setValidationLoading(true);
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
           let files = taskData.upload.files;
@@ -193,6 +194,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 // The current task is finished, so make the next task active
                 setActiveTask(3); // Move to the next task (or update it to the appropriate task)
             }
+            setValidationLoading(false);
 
             console.log("end of validation");
 
@@ -361,7 +363,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     <div className='validation-task'>
       { validationLoading ? (
         <div className="spinner-container">
-          <RingLoader color={'#36D7B7'} loading={validationLoading} size={150} />
+          <ScaleLoader color="#36d7b7" loading={validationLoading}/>
+          {/* <RingLoader color={'#36D7B7'} loading={validationLoading} size={150} /> */}
         </div>
       ) : (
         <div className='container'>
@@ -371,11 +374,11 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             options={taskData.validation.seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))} value={taskData.validation.selectedSeuratFile}
             onChange={handleSeuratFileChange}
             />
-              {loading ? (
+              {/* {loading ? (
                 <div className="spinner-container">
                   <PropagateLoader color={'#36D7B7'} loading={loading} size={15} />
                 </div>
-              ) : (
+              ) : ( */}
                   <div>
                     {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
                       <>
@@ -390,7 +393,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                     )}
 
               </div>
-              )}
+              {/* )} */}
           </div>
 
           {errorMessage && <div className="error-message">{errorMessage}</div>}
