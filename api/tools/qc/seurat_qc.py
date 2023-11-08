@@ -33,8 +33,7 @@ def run_seurat_qc(input, save_anndata=True, assay='RNA', nFeature_min=200, nFeat
         print("completed R run seurat qc")
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]
-        if results[1] != ro.rinterface.NULL:
-            assay_names = list(results[1])
+        assay_names = list(results[1])
         nCells = list(results[3])[0]
         nGenes = list(results[4])[0]
         if results[5] != ro.rinterface.NULL:
