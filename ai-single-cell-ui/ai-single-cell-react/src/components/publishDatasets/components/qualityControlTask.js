@@ -40,6 +40,9 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
     }
   }, []); // Empty dependency array ensures this effect runs only once when the component mounts
 
+  useEffect(() => {
+    console.log(taskData);
+  }, [taskData]);
   
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
