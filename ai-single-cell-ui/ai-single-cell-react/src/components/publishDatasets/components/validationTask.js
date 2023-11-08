@@ -91,6 +91,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
             inputFiles.push(path);
           }
+          let hasAddedSeuratFiles = false; // Flag to track if seuratFiles have been added
 
           setTaskData((prevTaskData) => ({
             ...prevTaskData,
@@ -120,6 +121,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
               console.log("Inside results");
               if (result.inputfile && (result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
                 if(result.default_assay !== 'RNA') {
+                  hasAddedSeuratFiles = true; // Update the flag
                   setTaskData((prevTaskData) => ({
                     ...prevTaskData,
                     validation: {
@@ -170,7 +172,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
             console.log("done iterating");
 
-            if(taskData.validation.seuratFiles.length === 0) {
+            if (hasAddedSeuratFiles || taskData.validation.seuratFiles.length === 0) {
               console.log("done iterating if block");
 
                 // validation step is successful, move to next task as there are no seurat or rds datasets
