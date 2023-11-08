@@ -24,6 +24,9 @@ def run_seurat_qc(input, save_anndata=True, assay='RNA', nFeature_min=200, nFeat
     umap = None
     adata_path = None
 
+    if assay is None:
+        assay = 'RNA'
+
     print("inside run seurat qc")
     print(assay)
     output = add_qc_result_suffix(input)
