@@ -117,7 +117,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
                 // Iterate over the results array and process the data
             results.forEach(result => {
-              if ((result.file.endsWith('.h5Seurat') || result.file.endsWith('.h5seurat') || result.file.endsWith('.rds') || result.file.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.file)) {
+              if ((result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
                 if(result.default_assay !== 'RNA') {
                   setTaskData((prevTaskData) => ({
                     ...prevTaskData,
@@ -125,7 +125,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       ...prevTaskData.validation,
                       seuratFiles: [
                         ...prevTaskData.validation.seuratFiles,
-                        { label: extractFilename(result.file), value: result.file, assayNames: result.assay_names, selectedAssays: [] },
+                        { label: extractFilename(result.inputfile), value: result.inputfile, assayNames: result.assay_names, selectedAssays: [] },
                       ],
                     },
                   }));
@@ -144,7 +144,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 }
               } else {
                 let fileDetails = {
-                  fileDetails: result.file,
+                  fileDetails: result.inputfile,
                   format: result.format,
                   adata_path: result.adata_path
                 };

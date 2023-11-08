@@ -89,7 +89,7 @@ async def process_input_files_validation(request: InputFilesRequest):
                 adata = load_anndata(file)
                 adata_path = change_file_extension(file, 'h5ad')
                 adata.write_h5ad(adata_path)
-                result.append({"file": file, "format": "h5ad", "adata_path": adata_path})
+                result.append({"inputfile": file, "format": "h5ad", "adata_path": adata_path})
         
         except Exception as e:
             # Handle the exception and return an error response
