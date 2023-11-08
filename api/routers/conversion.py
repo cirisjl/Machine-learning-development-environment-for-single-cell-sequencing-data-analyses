@@ -139,11 +139,11 @@ async def run_quality_control(file_mappings: List[dict]):
 
                 print("scanpy completed")
 
-                # Run Dropkick QC
-                try:
-                    dropkick_results = run_dropkick_qc(input_path)
-                except Exception as dropkick_error:
-                    dropkick_results = {"error": str(dropkick_error)}
+                # # Run Dropkick QC
+                # try:
+                #     dropkick_results = run_dropkick_qc(input_path)
+                # except Exception as dropkick_error:
+                #     dropkick_results = {"error": str(dropkick_error)}
 
                 print("dropkick completed")
 
@@ -151,7 +151,7 @@ async def run_quality_control(file_mappings: List[dict]):
                     "inputfile": input_path,
                     "format": "annData",
                     "scanpy_results": scanpy_results,
-                    "dropkick_results": dropkick_results,
+                    # "dropkick_results": dropkick_results,
                 })
 
     except Exception as error:
