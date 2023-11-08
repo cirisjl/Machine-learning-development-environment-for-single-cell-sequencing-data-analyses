@@ -12,7 +12,7 @@ sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cell_cycle=False):
+def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, n_neighbors=10, n_pcs=40, regress_cell_cycle=False):
         if adata is None:
             print("File format is not supported.")
             return None
@@ -45,7 +45,7 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         sc.tl.pca(adata, svd_solver='arpack')
 
         # Computing the neighborhood graph
-        sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40)
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
 
         # tSNE
         sc.tl.tsne(adata)
@@ -54,7 +54,7 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         sc.tl.umap(adata)
         sc.tl.leiden(adata)
         sc.tl.leiden(adata, resolution=1.5, key_added="cluster2")
-        sc.pl.umap(adata, color=['leiden','cluster2'])
+        # sc.pl.umap(adata, color=['leiden','cluster2'])
 
         # return adata, output
         return adata
