@@ -117,6 +117,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
                 // Iterate over the results array and process the data
             results.forEach(result => {
+              console.log("Inside results");
               if ((result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
                 if(result.default_assay !== 'RNA') {
                   setTaskData((prevTaskData) => ({
@@ -129,6 +130,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       ],
                     },
                   }));
+                  console.log("Inside results if");
                 } else if(result.default_assay === 'RNA') {
                   // Add the result directly to the qc_results array
                   setTaskData(prevTaskData => ({
@@ -141,6 +143,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       ],
                     },
                   }));
+                  console.log("Inside results else if");
+
                 }
               } else {
                 let fileDetails = {
@@ -159,10 +163,16 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                     ],
                   },
                 }));
+                console.log("Inside results else");
+
               }
             });
 
+            console.log("done iterating");
+
             if(taskData.validation.seuratFiles.length === 0) {
+              console.log("done iterating if block");
+
                 // validation step is successful, move to next task as there are no seurat or rds datasets
                 setTaskData((prevTaskData) => ({
                   ...prevTaskData,
@@ -180,10 +190,13 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 // The current task is finished, so make the next task active
                 setActiveTask(3); // Move to the next task (or update it to the appropriate task)
             }
+
+            console.log("end of validation");
+
           })
           .catch(error => {
             console.error('API Error:', error.response);
-            console.error('Error Detail:', error.response.data.detail);
+            // console.error('Error Detail:', error.response.data.detail);
           });
       } else {
           console.warn("Unauthorized - you must be an admin to access this page");
