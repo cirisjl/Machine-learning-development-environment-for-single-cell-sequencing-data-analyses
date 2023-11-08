@@ -59,6 +59,9 @@ async def process_input_files_validation(request: InputFilesRequest):
     for input in input_files:
         file = input.fileDetails
         assay = input.assay
+        print("inputfiles")
+        print(file)
+        print(assay)
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
