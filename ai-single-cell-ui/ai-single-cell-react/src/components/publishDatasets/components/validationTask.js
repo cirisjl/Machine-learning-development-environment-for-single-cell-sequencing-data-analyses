@@ -382,8 +382,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                         <h1 className="header">Choose Assay Names</h1>
                         <Select
                           isMulti
-                          options={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)].assayNames}
-                          value={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)].selectedAssays}
+                          options={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)]?.assayNames}
+                          value={taskData.validation.seuratFiles[taskData.validation.seuratFiles.findIndex((file) => file.value === taskData.validation.selectedSeuratFile.value)]?.selectedAssays}
                           onChange={handleAssayNamesChange}
                         />
                       </>
