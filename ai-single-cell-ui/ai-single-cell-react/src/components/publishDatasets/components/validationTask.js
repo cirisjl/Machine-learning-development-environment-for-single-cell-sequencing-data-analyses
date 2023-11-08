@@ -26,7 +26,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   useEffect(() => {
     isUserAuth(jwtToken)
     .then((authData) => {
-      if(authData.isAdmin && taskData.validation.status !== 'completed') {
+      if(authData.isAdmin) {
+        if(taskData.validation.status !== 'completed') {
           setValidationLoading(true);
           let username = authData.username;
           let newDirectoryPath = taskData.upload.newDirectoryPath;
@@ -146,6 +147,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             console.error('API Error:', error.response);
             // console.error('Error Detail:', error.response.data.detail);
           });
+        }
       } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
