@@ -93,18 +93,19 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay='RNA', nFeature_
             if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
             if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
             if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
+
+            srat@meta.data <- .regularise_df(srat@meta.data, drop_single_values=FALSE, drop_na_values=TRUE)
+
+            SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
+            print("Seurat object is saved successfully.")
+            if(save_anndata){
+                adata_path <- Convert(output, dest = "h5ad" , overwrite = TRUE)
+                print("AnnData object is saved successfully.")
+            }
         } else {
             assay_names <- names(srat@assays)
             default_assay <- DefaultAssay(srat)
         }  
-    }
-    srat@meta.data <- .regularise_df(srat@meta.data, drop_single_values=FALSE, drop_na_values=TRUE)
-
-    SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
-    print("Seurat object is saved successfully.")
-    if(save_anndata){
-        adata_path <- Convert(output, dest = "h5ad" , overwrite = TRUE)
-        print("AnnData object is saved successfully.")
     }
     rm(srat)
     gc()
