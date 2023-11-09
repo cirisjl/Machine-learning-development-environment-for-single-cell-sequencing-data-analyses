@@ -106,12 +106,12 @@ async def run_quality_control(file_mappings: List[dict]):
         for mapping in file_mappings:
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
-            assay = mapping.get("assay")
+            adata_path = mapping.get("adata_path")
             print("inputfiles")
             print(input_path)
-            print(assay)
 
             if format == "seurat":
+                
                 default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(input_path, assay)
                 qc_results.append({
                     "inputfile": input_path,
@@ -134,7 +134,7 @@ async def run_quality_control(file_mappings: List[dict]):
 
                 print("in Anndata else block")
                 # Load the annData object
-                adata = load_anndata(input_path)
+                adata = load_anndata(adata_path)
 
                 # Run Scanpy QC
                 try:
