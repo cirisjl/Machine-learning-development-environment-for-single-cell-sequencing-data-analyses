@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
 from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest
-from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension
+from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
@@ -139,6 +139,7 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
+                    layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
                 except Exception as scanpy_error:
                     scanpy_results = {"error": str(scanpy_error)}
 
@@ -155,7 +156,16 @@ async def run_quality_control(file_mappings: List[dict]):
                 qc_results.append({
                     "inputfile": input_path,
                     "format": "annData",
-                    "scanpy_results": scanpy_results,
+                    "scanpy_results": {
+                        "layers": layers,
+                        "cell_metadata":cell_metadata,
+                        "gene_metadata": gene_metadata,
+                        "nCells": nCells,
+                        "nGenes": nGenes,
+                        "genes": genes,
+                        "cells": cells,
+                        "embeddings": embeddings
+                    },
                     # "dropkick_results": dropkick_results,
                 })
 
