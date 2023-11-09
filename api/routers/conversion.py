@@ -158,16 +158,16 @@ async def run_quality_control(file_mappings: List[dict]):
                 qc_results.append({
                     "inputfile": input_path,
                     "format": "annData",
-                    "scanpy_results": {
-                        "layers": layers,
-                        "cell_metadata":cell_metadata,
-                        "gene_metadata": gene_metadata,
-                        "nCells": nCells,
-                        "nGenes": nGenes,
-                        "genes": genes,
-                        "cells": cells,
-                        "embeddings": embeddings
-                    },
+                    # "scanpy_results": {
+                    #     "layers": layers,
+                    #     "cell_metadata":cell_metadata,
+                    #     "gene_metadata": gene_metadata,
+                    #     "nCells": nCells,
+                    #     "nGenes": nGenes,
+                    #     "genes": genes,
+                    #     "cells": cells,
+                    #     "embeddings": embeddings
+                    # },
                     # "dropkick_results": dropkick_results,
                 })
 
