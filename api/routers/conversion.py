@@ -106,7 +106,7 @@ async def run_quality_control(file_mappings: List[dict]):
         for mapping in file_mappings:
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
-            adata_path = mapping.get("adata_path")
+            path = mapping.get("adata_path")
             print("inputfiles")
             print(input_path)
 
@@ -134,7 +134,7 @@ async def run_quality_control(file_mappings: List[dict]):
 
                 print("in Anndata else block")
                 # Load the annData object
-                adata = load_anndata(adata_path)
+                adata = load_anndata(path)
 
                 # Run Scanpy QC
                 try:
