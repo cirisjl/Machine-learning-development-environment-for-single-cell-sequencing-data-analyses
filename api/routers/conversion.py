@@ -139,7 +139,9 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
+                    print("Loaded annData , retieve metadata")
                     layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    print("LDone")
                 except Exception as scanpy_error:
                     scanpy_results = {"error": str(scanpy_error)}
 
