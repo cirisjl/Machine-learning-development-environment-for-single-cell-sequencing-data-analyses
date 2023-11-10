@@ -480,9 +480,9 @@ AnnotateDroplet <- function(Expression_Matrix){
 
 
 IsNormalized <- function(Expression_Matrix, min_genes){
-    if max(sExpression_Matrix) < min_genes | min(Expression_Matrix) < 0{
-        return TRUE
-    } else {
-        return FALSE
+    is_normalized <- FALSE
+    if (max(sExpression_Matrix) < min_genes | min(Expression_Matrix) < 0) {
+        is_normalized <- TRUE
     }
+    is_normalized
 }
