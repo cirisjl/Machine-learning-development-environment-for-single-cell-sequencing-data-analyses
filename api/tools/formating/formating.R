@@ -81,16 +81,18 @@ LoadAnndata <- function(path) {
         adata <- read_text(path, delimiter = delim)
     } else if(suffix == "gz"){
         adata <- read_umi_tools(path)
-    } else if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(adata_path)
-    } else if(suffix == "rds" || suffix == "robj"){
+    } else if(suffix == "h5Seurat" || suffix == "h5seurat" || suffix == "rds" || suffix == "robj"){
         srat <- LoadSeurat(path)
-        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
-        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
-        Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(adata_path)    } 
+        adata <- ConvertToAnndata(srat)
+    } 
+    # else if(suffix == "rds" || suffix == "robj"){
+    #     srat <- LoadSeurat(path)
+    #     seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+    #     SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
+    #     Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    #     adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    #     adata <- read_h5ad(adata_path)    
+    # } 
     # else if(suffix == "loom"){
     #     srat <- LoadSeurat(path)
     #     SaveH5Seurat(srat, overwrite = TRUE)
@@ -313,7 +315,6 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
             adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
         }
     } else if(suffix == "rds"){
-        srat <- LoadSeurat(path)
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
@@ -322,6 +323,55 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 }
 
 
+SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", drop_single_values=FALSE, drop_na_values=TRUE) {
+    main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
+    transfer_layers <- transfer_layers[
+        transfer_layers %in% c("data", "counts", "scale.data")
+    ]
+    transfer_layers <- transfer_layers[transfer_layers != main_layer]
+
+    if (compareVersion(as.character(obj@version), "3.0.0") < 0) {
+        obj <- Seurat::UpdateSeuratObject(object=obj)
+    }
+
+    X <- Seurat::GetAssayData(object=obj, assay=assay, layer=main_layer)
+
+    obs <- .regularise_df(obj@meta.data, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
+
+    var <- .regularise_df(Seurat::GetAssay(obj, assay=assay)@meta.features, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
+
+    obsm <- NULL
+    reductions <- names(obj@reductions)
+    if (length(reductions) > 0) {
+        obsm <- sapply(
+        reductions,
+        function(name) as.matrix(Seurat::Embeddings(obj, reduction=name)),
+        simplify = FALSE
+        )
+        names(obsm) <- paste0("X_", tolower(names(obj@reductions)))
+    }
+
+    layers <- list()
+    for (layer in transfer_layers) {
+        mat <- Seurat::GetAssayData(object=obj, assay=assay, layer=layer)
+        if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
+    }
+
+    adata <- AnnData(
+        X = Matrix::t(X),
+        obs = obs,
+        var = var,
+        obsm = obsm,
+        layers = layers
+    )
+
+    if (!is.null(out_file)) {
+        adata$write(out_file, compression = "gzip")
+        print("AnnData object is saved successfully.")
+    }
+
+    adata
+}
 
 # save_as_anndata <- function(srat, path, assay = 'RNA'){
 #     anndata_path <- gsub("h5seurat", "h5ad", path, ignore.case = TRUE)
@@ -383,6 +433,7 @@ py_to_r_ifneedbe <- function(x) {
         x
     }
 }
+
 
 SeuratToCSV <- function(srat, srat_path, assay = 'RNA', slot = "counts"){
     if(assay != 'RNA') slot ="data"
