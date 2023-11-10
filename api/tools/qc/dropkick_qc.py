@@ -3,11 +3,18 @@ import pandas as pd
 import scanpy as sc
 import sklearn
 import dropkick as dk
+from tools.formating.formating import is_normalized
 sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 def run_dropkick_qc(adata):
+    if adata is None:
+        raise ValueError("The input is None.")
+    
+    if is_normalized(adata.X, 200):
+        raise ValueError("Scanpy QC only take raw counts, not normalized data.")
+    
     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
     
     # Run dropkick pipeline function

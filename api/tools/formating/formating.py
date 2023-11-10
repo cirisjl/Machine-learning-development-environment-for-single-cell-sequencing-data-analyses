@@ -5,6 +5,7 @@ import subprocess
 import numpy as np
 import pandas as pd
 from detect_delimiter import detect
+from scipy.sparse import csr_matrix
 from string import ascii_letters
 import csv
 import gzip
@@ -406,6 +407,17 @@ def load_invalid_adata(file_path, replace_nan):
     invalid_df = df.loc[invalid_rows, invalid_columns]
 
     return sc.AnnData(invalid_df)
+
+
+def is_normalized(expression_matrix, min_genes):
+    if (isinstance(expression_matrix, csr_matrix)):
+        expression_matrix = expression_matrix.toarray()
+
+    if (isinstance(expression_matrix, np.ndarray)):
+        if np.min(expression_matrix) < 0 or np.max(expression_matrix) < min_genes:
+            return True
+        else:
+            return False
 
 
 # def load_annData_dash(path, replace_invalid=False):

@@ -7,7 +7,8 @@ warnings.filterwarnings('ignore')
 import sklearn
 import scipy
 # sys.path.append('..')
-from tools.formating.formating import *
+from scipy.stats import median_abs_deviation
+from tools.formating.formating import is_normalized
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
@@ -15,10 +16,12 @@ sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, n_neighbors=10, n_pcs=40, regress_cell_cycle=False):
         if adata is None:
-            print("File format is not supported.")
-            return None
+            raise ValueError("The input is None.")
 
-        adata.var_names_make_unique() 
+        if is_normalized(adata.X, min_genes):
+            raise ValueError("Scanpy QC only take raw counts, not normalized data.")
+        
+        adata.var_names_make_unique()
 
         # Filtering low quality reads
         sc.pp.filter_cells(adata, min_genes=min_genes)
@@ -48,19 +51,20 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, n_neighbors
 
         print(f"Number of cells after filtering of low quality cells: {adata.n_obs}")
 
-        adata=adata[adata.obs.n_genes_by_counts < 2500, :]
-        adata=adata[adata.obs.pct_counts_mt < 5, :]
+        # adata=adata[adata.obs.n_genes_by_counts < 2500, :]
+        # adata=adata[adata.obs.pct_counts_mt < 5, :]
 
         scrub = scr.Scrublet(adata.X, expected_doublet_rate = 0.076)
         adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
                                                                 min_gene_variability_pctl=85, n_prin_comps=30)
         adata.obs['predicted_doublets'].value_counts()
+        # adata=adata[adata.obs.predicted_doublets=="False", :]
 
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
         sc.pp.log1p(adata)
 
-        sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
+        sc.pp.highly_variable_genes(adata)
 
         adata=adata[:, adata.var.highly_variable] # Do the filtering
         sc.pp.regress_out(adata, ['total_counts', 'pct_counts_mt'])
