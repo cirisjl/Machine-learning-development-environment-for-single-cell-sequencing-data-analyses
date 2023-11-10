@@ -38,6 +38,10 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, 
         default_assay <- DefaultAssay(srat)
         print(default_assay)
 
+        if(IsNormalized(srat[[default_assay]]@counts)){
+            stop("Seurat QC only take raw counts, not normalized data.")
+        }
+
         # Check either the default assay of the Seurat object is "RNA" or the assay is provided by the user.
         if(default_assay=='RNA' | default_assay==assay){
             print("inside qc main")

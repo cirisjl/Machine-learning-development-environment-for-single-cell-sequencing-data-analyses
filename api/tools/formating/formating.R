@@ -477,3 +477,12 @@ AnnotateDroplet <- function(Expression_Matrix){
     doublet_class = sce$scDblFinder.class
     list(doublet_score=doublet_score, doublet_class=doublet_class)
 }
+
+
+IsNormalized <- function(Expression_Matrix, min_genes){
+    if max(sExpression_Matrix) < min_genes | min(Expression_Matrix) < 0{
+        return TRUE
+    } else {
+        return FALSE
+    }
+}
