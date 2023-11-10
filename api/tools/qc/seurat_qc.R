@@ -8,7 +8,7 @@ source(here::here('tools/formating/formating.R'))
 # source("../../formating/formating.R")
 
 
-RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, adata_path=NULL, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=1:10, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -105,9 +105,9 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, 
 
             SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             print("Seurat object is saved successfully.")
-            if(save_anndata){
-                adata_path <- Convert(output, dest = "h5ad" , overwrite = TRUE)
-                print("AnnData object is saved successfully.")
+            
+            if(!is.null(adata_path)){
+                adata <- ConvertToAnndata(srat, out_file=adata_path)
             }
             rm(srat)
             gc()
