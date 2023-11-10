@@ -27,8 +27,6 @@ def run_seurat_qc(input, save_anndata=True, assay='RNA', min_genes=200, max_gene
     if assay is None:
         assay = 'RNA'
 
-    print("inside run seurat qc")
-    print(assay)
     output = add_qc_result_suffix(input)
 
     try:

@@ -59,9 +59,7 @@ async def process_input_files_validation(request: InputFilesRequest):
     for input in input_files:
         file = input.fileDetails
         assay = input.assay
-        print("inputfiles")
-        print(file)
-        print(assay)
+
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
@@ -107,8 +105,6 @@ async def run_quality_control(file_mappings: List[dict]):
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
             path = mapping.get("adata_path")
-            print("inputfiles")
-            print(input_path)
 
             if format == "seurat":
                 
@@ -132,26 +128,24 @@ async def run_quality_control(file_mappings: List[dict]):
 
             elif format == "h5ad":
 
-                print("in Anndata else block")
                 # Load the annData object
                 adata = load_anndata(path)
 
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
-                    print("Loaded annData , retieve metadata")
                     layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
-                    print("LDone")
-                except Exception as scanpy_error:
-                    scanpy_results = {"error": str(scanpy_error)}
+                except Exception as e:
+                    print("Scanpy QC is failed")
 
                 print("scanpy completed")
 
-                # # Run Dropkick QC
-                # try:
-                #     dropkick_results = run_dropkick_qc(input_path)
-                # except Exception as dropkick_error:
-                #     dropkick_results = {"error": str(dropkick_error)}
+                # Run Dropkick QC
+                try:
+                    dropkick_results = run_dropkick_qc(input_path)
+                    layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
+                except Exception as dropkick_error:
+                     print("dropkick QC is failed")
 
                 print("dropkick completed")
 

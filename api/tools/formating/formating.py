@@ -143,8 +143,6 @@ def get_metadata_from_anndata(adata):
     gene_metadata = None
     embeddings = None
 
-    print("Inside the python metadata function")
-
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
         cell_metadata = adata.obs # pandas dataframe
