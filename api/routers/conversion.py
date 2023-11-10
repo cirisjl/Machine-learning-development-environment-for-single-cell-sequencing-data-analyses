@@ -1,7 +1,10 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
 from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest
-from tools.formating.formating import ConvertSeuratSCEtoAnndata, run_seurat_qc, LoadAnndata, change_file_extension
+from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
+from tools.qc.scanpy_qc import run_scanpy_qc
+from tools.qc.dropkick_qc import run_dropkick_qc
+from tools.qc.seurat_qc import run_seurat_qc
 from typing import List
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
@@ -13,7 +16,7 @@ async def convert_to_annData(request_data: ConversionRequest):
     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
     """
     try:
-        adata_path, assay_names = ConvertSeuratSCEtoAnndata(request_data.path)
+        adata_path, assay_names = convert_seurat_sce_to_anndata(request_data.path)
 
         if assay_names is None:
             assay_names = []
@@ -34,7 +37,7 @@ async def receive_data(data: List[dict]):
         assay = entry.get('assayName')
 
         if path and assay:
-            adata_path, assay_names = ConvertSeuratSCEtoAnndata(path, assay)
+            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
 
             if adata_path and adata_path != None:
                 adata_path = adata_path.lstrip('[1] ').rstrip('\n')
@@ -49,30 +52,126 @@ async def receive_data(data: List[dict]):
 
 
 @router.post('/publishDatasets/validation')
-async def process_input_files(request: InputFilesRequest):
+async def process_input_files_validation(request: InputFilesRequest):
     input_files = request.inputFiles
     result = []
 
-    for file in input_files:
+    for input in input_files:
+        file = input.fileDetails
+        assay = input.assay
+        print("inputfiles")
+        print(file)
+        print(assay)
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names = run_seurat_qc(file)
+                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(file, assay=assay)
+                if assay_names is None:
+                    assay_names = []
                 result.append({
-                        "file": file,
-                        "format": "H5Seurat or RDS",
+                        "inputfile": file,
+                        "format": "h5seurat",
                         "default_assay": default_assay,
-                        "assay_names": assay_names
+                        "assay_names": assay_names,
+                        "metadata": metadata,
+                        "nCells": nCells,
+                        "nGenes": nGenes,
+                        "genes": genes,
+                        "cells": cells,
+                        "HVGsID": HVGsID,
+                        "pca": pca,
+                        "tsne": tsne,
+                        "umap": umap,
+                        "adata_path": adata_path
                     })
             else:
                 # It's a different file, call load_annData method
-                adata = LoadAnndata(file)
-                adata_path = change_file_extension(file)
+                adata = load_anndata(file)
+                adata_path = change_file_extension(file, 'h5ad')
                 adata.write_h5ad(adata_path)
-                result.append({"file": file, "format": "h5ad", "result": adata_path})
+                result.append({"inputfile": file, "format": "h5ad", "adata_path": adata_path})
         
         except Exception as e:
             # Handle the exception and return an error response
             raise HTTPException(status_code=500, detail=str(e))
 
     return result
+
+
+@router.post("/publishDatasets/run/quality_control")
+async def run_quality_control(file_mappings: List[dict]):
+    qc_results = []
+
+    try:
+        for mapping in file_mappings:
+            format = mapping.get("format")
+            input_path = mapping.get("fileDetails")
+            path = mapping.get("adata_path")
+            print("inputfiles")
+            print(input_path)
+
+            if format == "seurat":
+                
+                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(input_path, assay)
+                qc_results.append({
+                    "inputfile": input_path,
+                    "format": "h5seurat",
+                    "default_assay": default_assay,
+                    "assay_names": assay_names,
+                    "metadata": metadata,
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "HVGsID": HVGsID,
+                    "pca": pca,
+                    "tsne": tsne,
+                    "umap": umap,
+                    "adata_path": adata_path
+                })
+
+            elif format == "h5ad":
+
+                print("in Anndata else block")
+                # Load the annData object
+                adata = load_anndata(path)
+
+                # Run Scanpy QC
+                try:
+                    scanpy_results = run_scanpy_qc(adata)
+                    print("Loaded annData , retieve metadata")
+                    layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    print("LDone")
+                except Exception as scanpy_error:
+                    scanpy_results = {"error": str(scanpy_error)}
+
+                print("scanpy completed")
+
+                # # Run Dropkick QC
+                # try:
+                #     dropkick_results = run_dropkick_qc(input_path)
+                # except Exception as dropkick_error:
+                #     dropkick_results = {"error": str(dropkick_error)}
+
+                print("dropkick completed")
+
+                qc_results.append({
+                    "inputfile": input_path,
+                    "format": "annData",
+                    # "scanpy_results": {
+                    #     "layers": layers,
+                    #     "cell_metadata":cell_metadata,
+                    #     "gene_metadata": gene_metadata,
+                    #     "nCells": nCells,
+                    #     "nGenes": nGenes,
+                    #     "genes": genes,
+                    #     "cells": cells,
+                    #     "embeddings": embeddings
+                    # },
+                    # "dropkick_results": dropkick_results,
+                })
+
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
+
+    return {"qc_results": qc_results}
