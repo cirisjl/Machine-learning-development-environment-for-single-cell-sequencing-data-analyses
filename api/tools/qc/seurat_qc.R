@@ -8,7 +8,7 @@ source(here::here('tools/formating/formating.R'))
 # source("../../formating/formating.R")
 
 
-RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('api/tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=1:10, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -55,19 +55,19 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, 
             if(! "percent.plat" %in% names(x = srat[[]])) srat[["percent.plat"]] <- PercentageFeatureSet(srat, pattern = "PECAM1|PF4")
 
             # Add the doublet annotation
-            doublets <- read.table(path_of_scrublet_calls, header = F, row.names = 1)
-            colnames(doublets) <- c("Doublet_score", "Is_doublet")
-            if(! "Is_doublet" %in% names(x = srat[[]])) {
-                srat <- AddMetaData(srat, doublets)
+            if(! "Doublet_class" %in% names(x = srat[[]])){
+                doublet_annnotation <- AnnotateDroplet(srat[[default_assay]]@counts)
+                srat[["doublet_score"]] <- doublet_annnotation$doublet_score
+                srat[["doublet_class"]] <- doublet_annnotation$doublet_class
             }
-
+            
             # print(head(srat@meta.data))
 
             srat <- subset(srat, subset = paste0("nFeature_", default_assay) > min_genes & paste0("nCount_", default_assay) > min_UMI_count & percent.mt < percent_mt_max)
             if(max_genes != 0) srat <- subset(srat, subset = paste0("nFeature_", default_assay) < max_genes)
             if(max_UMI_count != 0) srat <- subset(srat, subset = paste0("nCount_", default_assay) < max_UMI_count)
             if(percent_rb_min != 0)  srat <- subset(srat, subset = percent.rb > percent_rb_min)
-            srat <- subset(srat, subset = Is_doublet != 'True' | is.na(Is_doublet))
+            srat <- subset(srat, subset = Doublet_class == 'singlet')
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
             srat <- FindVariableFeatures(srat, selection.method = "vst")
             srat <- ScaleData(srat, features = rownames(srat))

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import scrublet as scr
 import warnings
 warnings.filterwarnings('ignore')
 import sklearn
@@ -19,19 +20,47 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, n_neighbors
 
         adata.var_names_make_unique() 
 
-        # Basic filtering
+        # Filtering low quality reads
         sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_cells=min_cells)
-        adata.var['mt']=adata.var_names.str.startswith('MT-')  # Annotate the group of mitochondrial genes as 'mt'
-        sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+        # mitochondrial genes
+        adata.var['mt']=adata.var_names.str.startswith('MT-')
+        # ribosomal genes
+        adata.var["ribo"] = adata.var_names.str.startswith(("RPS", "RPL"))
+        # hemoglobin genes.
+        adata.var["hb"] = adata.var_names.str.contains(("^HB[^(P)]"))
+        sc.pp.calculate_qc_metrics(adata, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True)
+
+        adata.obs["outlier"] = (
+            is_outlier(adata, "log1p_total_counts", 5)
+            | is_outlier(adata, "log1p_n_genes_by_counts", 5)
+            | is_outlier(adata, "pct_counts_in_top_20_genes", 5)
+        )
+        adata.obs.outlier.value_counts()
+
+        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
+            adata.obs["pct_counts_mt"] > 8
+        )
+        adata.obs.mt_outlier.value_counts()
+
+        print(f"Total number of cells: {adata.n_obs}")
+        adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
+
+        print(f"Number of cells after filtering of low quality cells: {adata.n_obs}")
+
         adata=adata[adata.obs.n_genes_by_counts < 2500, :]
         adata=adata[adata.obs.pct_counts_mt < 5, :]
+
+        scrub = scr.Scrublet(adata.X, expected_doublet_rate = 0.076)
+        adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
+                                                                min_gene_variability_pctl=85, n_prin_comps=30)
+        adata.obs['predicted_doublets'].value_counts()
+
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
         sc.pp.log1p(adata)
 
         sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
-
 
         adata=adata[:, adata.var.highly_variable] # Do the filtering
         sc.pp.regress_out(adata, ['total_counts', 'pct_counts_mt'])
@@ -58,6 +87,14 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, n_neighbors
 
         # return adata, output
         return adata
+
+
+def is_outlier(adata, metric: str, nmads: int):
+    M = adata.obs[metric]
+    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
+        np.median(M) + nmads * median_abs_deviation(M) < M
+    )
+    return outlier
 
 
 def regress_cell_cycle(adata):
