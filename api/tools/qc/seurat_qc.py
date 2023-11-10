@@ -9,7 +9,7 @@ from rpy2.robjects.conversion import localconverter
 # Defining the R script and loading the instance in Python
 ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
 
-def run_seurat_qc(input, output, save_anndata=True, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=os.path.abspath(os.path.join(os.path.dirname(__file__), 'scrublet_calls.tsv')), dims=10, regress_cell_cycle=False):
+def run_seurat_qc(input, save_anndata=True, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=os.path.abspath(os.path.join(os.path.dirname(__file__), 'scrublet_calls.tsv')), dims=10, regress_cell_cycle=False):
     RunSeuratQC_r = ro.globalenv['RunSeuratQC']
     default_assay = None
     assay_names = None
@@ -23,6 +23,13 @@ def run_seurat_qc(input, output, save_anndata=True, assay='RNA', min_genes=200, 
     tsne = None
     umap = None
     adata_path = None
+
+    if assay is None:
+        assay = 'RNA'
+
+    print("inside run seurat qc")
+    print(assay)
+    output = add_qc_result_suffix(input)
 
     try:
         results = list(RunSeuratQC_r(input, output, save_anndata=ro.vectors.BoolVector([save_anndata]), assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count,  percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, path_of_scrublet_calls=path_of_scrublet_calls, dims=ro.r.seq(1, dims), regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
@@ -53,3 +60,16 @@ def run_seurat_qc(input, output, save_anndata=True, assay='RNA', min_genes=200, 
         print(e)
 
     return default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path
+
+
+def add_qc_result_suffix(input_path):
+    # Split the input path into the directory, filename, and extension
+    directory, filename = os.path.split(input_path)
+    base_name, extension = os.path.splitext(filename)
+
+    # Append "_qc_result" to the base name
+    new_base_name = base_name + "_qc_result"
+
+    # Reconstruct the output path
+    output_path = os.path.join(directory, new_base_name + extension)
+    return output_path

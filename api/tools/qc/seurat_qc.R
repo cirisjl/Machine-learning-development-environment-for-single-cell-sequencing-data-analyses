@@ -4,10 +4,11 @@ library(dplyr)
 library(celldex)
 library(RColorBrewer)
 library("here")
-source(here::here('api/tools/formating/formating.R'))
+source(here::here('tools/formating/formating.R'))
+# source("../../formating/formating.R")
 
 
-RunSeuratQC <- function(input, output, save_anndata=TRUE, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('api/tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, save_anndata=TRUE, assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, path_of_scrublet_calls=here::here('api/tools/qc/scrublet_calls.tsv'), dims=1:10, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -31,12 +32,15 @@ RunSeuratQC <- function(input, output, save_anndata=TRUE, assay='RNA', min_genes
 
     if (!is.null(srat)){
         # If assay if provided by the user, then set default_assy to assay.
+        print("The value of assay")
+        print(assay)
         if(assay!='RNA') DefaultAssay(srat) <- assay
         default_assay <- DefaultAssay(srat)
         print(default_assay)
 
         # Check either the default assay of the Seurat object is "RNA" or the assay is provided by the user.
         if(default_assay=='RNA' | default_assay==assay){
+            print("inside qc main")
             DefaultAssay(srat) <- assay
             if(!paste0("nCount_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nCount_", default_assay)]] <- colSums(x = srat[[default_assay]], slot = "counts")  # nCount of the default assay
             if(!paste0("nFeature_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nFeature_", default_assay)]] <- colSums(x = GetAssayData(object = srat[[default_assay]], slot = "counts") > 0)  # nFeature of the default assay
