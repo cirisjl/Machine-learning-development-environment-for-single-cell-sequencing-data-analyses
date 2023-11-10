@@ -6,6 +6,8 @@ library(SeuratDisk)
 library(SeuratData)
 library(patchwork)
 library(Signac)
+library(scDblFinder)
+library(BiocParallel)
 # library(loomR)
 
 
@@ -54,6 +56,7 @@ GetSuffix <- function(path) {
     nparts <- length(parts[[1]])
     return(parts[[1]][nparts])
 }
+
 
 # Read csv/xlsx/h5ad/hdf5/h5/loom/mtx/txt/tab/data/gz file to create AnnData object
 LoadAnndata <- function(path) {
@@ -124,6 +127,7 @@ LoadExpressionMatrix <- function(path) {
     }
     expression_matrix
 }
+
 
 LoadSeurat <- function(path, project = NULL) {
     srat <- NULL
@@ -405,10 +409,10 @@ PlotIntegratedClusters <- function (srat) {
   count_table <- table(srat@meta.data$seurat_clusters, srat@meta.data$orig.ident)
   count_mtx   <- as.data.frame.matrix(count_table)
   count_mtx$cluster <- rownames(count_mtx)
-  melt_mtx    <- melt(count_mtx)
+  melt_mtx <- melt(count_mtx)
   melt_mtx$cluster <- as.factor(melt_mtx$cluster)
 
-  cluster_size   <- aggregate(value ~ cluster, data = melt_mtx, FUN = sum)
+  cluster_size <- aggregate(value ~ cluster, data = melt_mtx, FUN = sum)
   
   sorted_labels <- paste(sort(as.integer(levels(cluster_size$cluster)),decreasing = T))
   cluster_size$cluster <- factor(cluster_size$cluster,levels = sorted_labels)
@@ -459,4 +463,17 @@ load_metadata <- function(seurat_obj) {
     
     # Return the metadata list
     metadata
+}
+
+
+AnnotateDroplet <- function(Expression_Matrix){
+    set.seed(123)
+    sce = scDblFinder(
+        SingleCellExperiment(
+            list(counts=Expression_Matrix),
+        ) 
+    )
+    doublet_score = sce$scDblFinder.score
+    doublet_class = sce$scDblFinder.class
+    list(doublet_score=doublet_score, doublet_class=doublet_class)
 }
