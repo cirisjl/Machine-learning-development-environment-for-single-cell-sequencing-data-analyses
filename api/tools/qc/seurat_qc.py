@@ -9,7 +9,7 @@ from rpy2.robjects.conversion import localconverter
 # Defining the R script and loading the instance in Python
 ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
 
-def run_seurat_qc(input, adata_path=ro.rinterface.NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=10, regress_cell_cycle=False):
+def run_seurat_qc(input, output, adata_path=ro.rinterface.NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=10, regress_cell_cycle=False):
     RunSeuratQC_r = ro.globalenv['RunSeuratQC']
     default_assay = None
     assay_names = None
