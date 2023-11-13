@@ -1,5 +1,5 @@
 // plotConstants.js
-import * as px from 'plotly.express'; // Add this line
+import plotlyExpress from 'plotly.express'; // Add this line
 
 const PlotConstants = {
     scale: 250,
@@ -84,8 +84,8 @@ const PlotConstants = {
     "#31b600",
     "#ff94e1",
     "#1a99d3"],
-    discrete_colors_2: px.colors.qualitative.Alphabet,
-    discrete_colors_3: px.colors.qualitative.D3 + px.colors.qualitative.Set3 + px.colors.qualitative.T10 + px.colors.qualitative.Plotly + px.colors.qualitative.Alphabet,
+    discrete_colors_2: plotlyExpress.colors.qualitative.Alphabet,
+    discrete_colors_3: plotlyExpress.colors.qualitative.D3 + plotlyExpress.colors.qualitative.Set3 + plotlyExpress.colors.qualitative.T10 + plotlyExpress.colors.qualitative.Plotly + plotlyExpress.colors.qualitative.Alphabet,
   };
   
   export default PlotConstants;
