@@ -1,6 +1,6 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, AnndataMetadata
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
@@ -135,6 +135,16 @@ async def run_quality_control(file_mappings: List[dict]):
                 try:
                     scanpy_results = run_scanpy_qc(adata)
                     layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    metadata = AnndataMetadata(
+                        layers=layers,
+                        cell_metadata=cell_metadata.to_dict(),  # Convert DataFrame to dict
+                        gene_metadata=gene_metadata.to_dict(),  # Convert DataFrame to dict
+                        nCells=nCells,
+                        nGenes=nGenes,
+                        genes=genes,
+                        cells=cells,
+                        embeddings=embeddings
+                    )
                     qc_results.append({
                         "inputfile": input_path,
                         "format": "annData",
@@ -156,4 +166,4 @@ async def run_quality_control(file_mappings: List[dict]):
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
 
-    return {"qc_results": qc_results}
+    return JSONResponse(content=metadata.dict(), status_code=200)
