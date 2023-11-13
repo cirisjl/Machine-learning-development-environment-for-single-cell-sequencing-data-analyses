@@ -34,6 +34,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
           } catch (error) {
             console.error('Error running quality control:', error);
+            setLoading(false);
           }
         };
 

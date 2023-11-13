@@ -74,4 +74,4 @@ class AnndataMetadata(BaseModel):
     embeddings: list
 class CombinedQCResult(BaseModel):
     scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
-    dropkick_results: AnndataMetadata
+    # dropkick_results: AnndataMetadata
