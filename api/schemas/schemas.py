@@ -62,3 +62,13 @@ class InputFile(BaseModel):
 
 class InputFilesRequest(BaseModel):
     inputFiles: List[InputFile]
+
+class AnndataMetadata(BaseModel):
+    layers: list
+    cell_metadata: dict
+    gene_metadata: dict
+    nCells: int
+    nGenes: int
+    genes: list
+    cells: list
+    embeddings: list
