@@ -5,9 +5,11 @@ import subprocess
 import numpy as np
 import pandas as pd
 from detect_delimiter import detect
+from scipy.sparse import csr_matrix
 from string import ascii_letters
 import csv
 import gzip
+import logging
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
@@ -87,10 +89,16 @@ def change_file_extension(file_path, new_extension):
     return new_file_path
 
 def get_metadata_from_seurat(path):
+    import rpy2.rinterface_lib.callbacks as rcb
     import rpy2.robjects as ro
+    import anndata2ri
     from rpy2.robjects.packages import importr
     from rpy2.robjects import pandas2ri
     from rpy2.robjects.conversion import localconverter
+
+    rcb.logger.setLevel(logging.ERROR)
+    ro.pandas2ri.activate()
+    anndata2ri.activate()
 
     # Defining the R script and loading the instance in Python
     ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
@@ -156,13 +164,18 @@ def get_metadata_from_anndata(adata):
     return layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings
 
 
-
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
+    import rpy2.rinterface_lib.callbacks as rcb
     import rpy2.robjects as ro
+    import anndata2ri
     from rpy2.robjects.packages import importr
     from rpy2.robjects import pandas2ri
     from rpy2.robjects.conversion import localconverter
+    
+    rcb.logger.setLevel(logging.ERROR)
+    ro.pandas2ri.activate()
+    anndata2ri.activate()
 
     # Defining the R script and loading the instance in Python
     ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
@@ -392,6 +405,17 @@ def load_invalid_adata(file_path, replace_nan):
     invalid_df = df.loc[invalid_rows, invalid_columns]
 
     return sc.AnnData(invalid_df)
+
+
+def is_normalized(expression_matrix, min_genes):
+    if (isinstance(expression_matrix, csr_matrix)):
+        expression_matrix = expression_matrix.toarray()
+
+    if (isinstance(expression_matrix, np.ndarray)):
+        if np.min(expression_matrix) < 0 or np.max(expression_matrix) < min_genes:
+            return True
+        else:
+            return False
 
 
 # def load_annData_dash(path, replace_invalid=False):

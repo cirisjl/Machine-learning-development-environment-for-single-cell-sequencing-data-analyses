@@ -6,6 +6,8 @@ library(SeuratDisk)
 library(SeuratData)
 library(patchwork)
 library(Signac)
+library(scDblFinder)
+library(BiocParallel)
 # library(loomR)
 
 
@@ -55,6 +57,7 @@ GetSuffix <- function(path) {
     return(parts[[1]][nparts])
 }
 
+
 # Read csv/xlsx/h5ad/hdf5/h5/loom/mtx/txt/tab/data/gz file to create AnnData object
 LoadAnndata <- function(path) {
     adata <- NULL
@@ -78,16 +81,18 @@ LoadAnndata <- function(path) {
         adata <- read_text(path, delimiter = delim)
     } else if(suffix == "gz"){
         adata <- read_umi_tools(path)
-    } else if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        Convert(path, dest = "h5ad", overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(adata_path)
-    } else if(suffix == "rds" || suffix == "robj"){
+    } else if(suffix == "h5Seurat" || suffix == "h5seurat" || suffix == "rds" || suffix == "robj"){
         srat <- LoadSeurat(path)
-        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
-        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
-        Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        adata <- read_h5ad(adata_path)    } 
+        adata <- ConvertToAnndata(srat)
+    } 
+    # else if(suffix == "rds" || suffix == "robj"){
+    #     srat <- LoadSeurat(path)
+    #     seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+    #     SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)        
+    #     Convert(paste0(tools::file_path_sans_ext(path), ".h5Seurat"), dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    #     adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    #     adata <- read_h5ad(adata_path)    
+    # } 
     # else if(suffix == "loom"){
     #     srat <- LoadSeurat(path)
     #     SaveH5Seurat(srat, overwrite = TRUE)
@@ -124,6 +129,7 @@ LoadExpressionMatrix <- function(path) {
     }
     expression_matrix
 }
+
 
 LoadSeurat <- function(path, project = NULL) {
     srat <- NULL
@@ -309,7 +315,6 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
             adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
         }
     } else if(suffix == "rds"){
-        srat <- LoadSeurat(path)
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
@@ -318,6 +323,55 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 }
 
 
+SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", drop_single_values=FALSE, drop_na_values=TRUE) {
+    main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
+    transfer_layers <- transfer_layers[
+        transfer_layers %in% c("data", "counts", "scale.data")
+    ]
+    transfer_layers <- transfer_layers[transfer_layers != main_layer]
+
+    if (compareVersion(as.character(obj@version), "3.0.0") < 0) {
+        obj <- Seurat::UpdateSeuratObject(object=obj)
+    }
+
+    X <- Seurat::GetAssayData(object=obj, assay=assay, layer=main_layer)
+
+    obs <- .regularise_df(obj@meta.data, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
+
+    var <- .regularise_df(Seurat::GetAssay(obj, assay=assay)@meta.features, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
+
+    obsm <- NULL
+    reductions <- names(obj@reductions)
+    if (length(reductions) > 0) {
+        obsm <- sapply(
+        reductions,
+        function(name) as.matrix(Seurat::Embeddings(obj, reduction=name)),
+        simplify = FALSE
+        )
+        names(obsm) <- paste0("X_", tolower(names(obj@reductions)))
+    }
+
+    layers <- list()
+    for (layer in transfer_layers) {
+        mat <- Seurat::GetAssayData(object=obj, assay=assay, layer=layer)
+        if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
+    }
+
+    adata <- AnnData(
+        X = Matrix::t(X),
+        obs = obs,
+        var = var,
+        obsm = obsm,
+        layers = layers
+    )
+
+    if (!is.null(out_file)) {
+        adata$write(out_file, compression = "gzip")
+        print("AnnData object is saved successfully.")
+    }
+
+    adata
+}
 
 # save_as_anndata <- function(srat, path, assay = 'RNA'){
 #     anndata_path <- gsub("h5seurat", "h5ad", path, ignore.case = TRUE)
@@ -380,6 +434,7 @@ py_to_r_ifneedbe <- function(x) {
     }
 }
 
+
 SeuratToCSV <- function(srat, srat_path, assay = 'RNA', slot = "counts"){
     if(assay != 'RNA') slot ="data"
     csv_path <- gsub(".h5Seurat", paste("_", assay, ".csv", sep = ""), srat_path)
@@ -405,10 +460,10 @@ PlotIntegratedClusters <- function (srat) {
   count_table <- table(srat@meta.data$seurat_clusters, srat@meta.data$orig.ident)
   count_mtx   <- as.data.frame.matrix(count_table)
   count_mtx$cluster <- rownames(count_mtx)
-  melt_mtx    <- melt(count_mtx)
+  melt_mtx <- melt(count_mtx)
   melt_mtx$cluster <- as.factor(melt_mtx$cluster)
 
-  cluster_size   <- aggregate(value ~ cluster, data = melt_mtx, FUN = sum)
+  cluster_size <- aggregate(value ~ cluster, data = melt_mtx, FUN = sum)
   
   sorted_labels <- paste(sort(as.integer(levels(cluster_size$cluster)),decreasing = T))
   cluster_size$cluster <- factor(cluster_size$cluster,levels = sorted_labels)
@@ -459,4 +514,26 @@ load_metadata <- function(seurat_obj) {
     
     # Return the metadata list
     metadata
+}
+
+
+AnnotateDroplet <- function(Expression_Matrix){
+    set.seed(123)
+    sce = scDblFinder(
+        SingleCellExperiment(
+            list(counts=Expression_Matrix),
+        ) 
+    )
+    doublet_score = sce$scDblFinder.score
+    doublet_class = sce$scDblFinder.class
+    list(doublet_score=doublet_score, doublet_class=doublet_class)
+}
+
+
+IsNormalized <- function(Expression_Matrix, min_genes){
+    is_normalized <- FALSE
+    if (max(Expression_Matrix) < min_genes | min(Expression_Matrix) < 0) {
+        is_normalized <- TRUE
+    }
+    is_normalized
 }
