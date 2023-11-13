@@ -151,23 +151,23 @@ async def run_quality_control(file_mappings: List[dict]):
                     print(e)
 
                 # Run Dropkick QC
-                try:
-                    dropkick_results = run_dropkick_qc(adata)
-                    layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
-                    dropkick_metadata = AnndataMetadata(
-                        layers=layers,
-                        cell_metadata_obs=cell_metadata_obs.to_dict(),
-                        cell_metadata_obsm=cell_metadata_obsm.to_dict(),
-                        gene_metadata=gene_metadata.to_dict(),
-                        nCells=nCells,
-                        nGenes=nGenes,
-                        genes=genes,
-                        cells=cells,
-                        embeddings=embeddings
-                    )
-                except Exception as e:
-                    print("DropKick QC failed")
-                    print(e)
+                # try:
+                #     dropkick_results = run_dropkick_qc(adata)
+                #     layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
+                #     dropkick_metadata = AnndataMetadata(
+                #         layers=layers,
+                #         cell_metadata_obs=cell_metadata_obs.to_dict(),
+                #         cell_metadata_obsm=cell_metadata_obsm.to_dict(),
+                #         gene_metadata=gene_metadata.to_dict(),
+                #         nCells=nCells,
+                #         nGenes=nGenes,
+                #         genes=genes,
+                #         cells=cells,
+                #         embeddings=embeddings
+                #     )
+                # except Exception as e:
+                #     print("DropKick QC failed")
+                #     print(e)
 
             # Append combined metadata to qc_results
                 qc_results.append({
@@ -175,7 +175,7 @@ async def run_quality_control(file_mappings: List[dict]):
                     "format": "h5ad",
                     "combined_results": CombinedQCResult(
                         scanpy_results=scanpy_metadata,
-                        dropkick_results=dropkick_metadata
+                        # dropkick_results=dropkick_metadata
                     ).dict()
                 })
 
