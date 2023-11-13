@@ -1,11 +1,16 @@
 from starlette.responses import JSONResponse
-from fastapi import HTTPException, Body, APIRouter
+from fastapi import HTTPException, Body, APIRouter, status
 from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from typing import List
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
 
@@ -98,36 +103,13 @@ async def process_input_files_validation(request: InputFilesRequest):
 
 @router.post("/publishDatasets/run/quality_control")
 async def run_quality_control(file_mappings: List[dict]):
-    qc_results = []
-
     try:
         for mapping in file_mappings:
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
             path = mapping.get("adata_path")
 
-            if format == "seurat":
-                
-                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(input_path, assay)
-                qc_results.append({
-                    "inputfile": input_path,
-                    "format": "h5seurat",
-                    "default_assay": default_assay,
-                    "assay_names": assay_names,
-                    "metadata": metadata,
-                    "nCells": nCells,
-                    "nGenes": nGenes,
-                    "genes": genes,
-                    "cells": cells,
-                    "HVGsID": HVGsID,
-                    "pca": pca,
-                    "tsne": tsne,
-                    "umap": umap,
-                    "adata_path": adata_path
-                })
-
-            elif format == "h5ad":
-
+            if format == "h5ad":
                 # Load the annData object
                 adata = load_anndata(path)
 
@@ -135,51 +117,38 @@ async def run_quality_control(file_mappings: List[dict]):
                 try:
                     scanpy_results = run_scanpy_qc(adata)
                     layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
-                    scanpy_metadata = AnndataMetadata(
-                        layers=layers,
-                        cell_metadata_obs=cell_metadata_obs.to_dict(),
-                        cell_metadata_obsm=cell_metadata_obsm.to_dict(),
-                        gene_metadata=gene_metadata.to_dict(),
-                        nCells=nCells,
-                        nGenes=nGenes,
-                        genes=genes,
-                        cells=cells,
-                        embeddings=embeddings
-                    )
+
+                    # Return metadata in the API response
+                    return {
+                        "layers": layers,
+                        "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                        "cell_metadata_obsm": cell_metadata_obsm.to_dict(),
+                        "gene_metadata": gene_metadata.to_dict(),
+                        "nCells": nCells,
+                        "nGenes": nGenes,
+                        "genes": genes,
+                        "cells": cells,
+                        "embeddings": embeddings,
+                        "message": "Quality control completed successfully"
+                    }
+
                 except Exception as e:
-                    print("Scanpy QC failed")
-                    print(e)
-
-                # Run Dropkick QC
-                # try:
-                #     dropkick_results = run_dropkick_qc(adata)
-                #     layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
-                #     dropkick_metadata = AnndataMetadata(
-                #         layers=layers,
-                #         cell_metadata_obs=cell_metadata_obs.to_dict(),
-                #         cell_metadata_obsm=cell_metadata_obsm.to_dict(),
-                #         gene_metadata=gene_metadata.to_dict(),
-                #         nCells=nCells,
-                #         nGenes=nGenes,
-                #         genes=genes,
-                #         cells=cells,
-                #         embeddings=embeddings
-                #     )
-                # except Exception as e:
-                #     print("DropKick QC failed")
-                #     print(e)
-
-            # # Append combined metadata to qc_results
-            #     qc_results.append({
-            #         "inputfile": input_path,
-            #         "format": "h5ad",
-            #         "combined_results": CombinedQCResult(
-            #             scanpy_results=scanpy_metadata,
-            #             # dropkick_results=dropkick_metadata
-            #         ).dict()
-            #     })
+                    logger.exception("Error during Scanpy QC")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Error during Scanpy QC: {str(e)}"
+                    )
 
     except Exception as error:
-        raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
+        logger.exception(f"Error during quality control: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error during quality control: {str(error)}"
+        )
 
-    return JSONResponse(content=scanpy_metadata.dict(), status_code=200)
+    # If the function reaches this point, it means the quality control process failed
+    logger.error("Quality control process failed for unknown reasons")
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="An error occurred during quality control"
+    )
