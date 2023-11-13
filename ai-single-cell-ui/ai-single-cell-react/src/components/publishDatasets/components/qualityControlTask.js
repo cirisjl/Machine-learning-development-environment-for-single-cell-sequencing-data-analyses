@@ -2,13 +2,17 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
+import { ScaleLoader } from 'react-spinners';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
 
     // Check the fileMappings state to determine if quality control should be run
     if (taskData.validation.fileMappings.length > 0) {
+      setLoading(true);
       try {
         // Make an API call to run quality control
         const runQualityControl = async () => {
@@ -33,8 +37,10 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
         };
 
         runQualityControl();
+        setLoading(false);
       } catch (error) {
         console.error('Error checking fileMappings:', error);
+        setLoading(false);
       }
     } else {
       // No files to run quality control on
@@ -60,9 +66,13 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   };
 
   return (
-    <div>
+    <div className='quality-control-task'>
       {/* Task 1 content here */}
-      <button onClick={handleTaskCompletion}>QualityControlTaskComponent button</button>
+      {loading ? (
+        <div className="spinner-container">
+          <ScaleLoader color="#36d7b7" loading={loading} />
+        </div>
+      ) : (
       <div className='navigation-buttons'>
             <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
@@ -75,6 +85,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
               </button>
             </div>
           </div>
+      )}
     </div>
   );
 }
