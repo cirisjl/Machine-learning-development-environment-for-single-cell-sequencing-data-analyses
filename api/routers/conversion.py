@@ -135,35 +135,22 @@ async def run_quality_control(file_mappings: List[dict]):
                 try:
                     scanpy_results = run_scanpy_qc(adata)
                     layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    qc_results.append({
+                        "inputfile": input_path,
+                        "format": "annData",
+                        "scanpy_results": {
+                            "layers": layers,
+                            "cell_metadata": cell_metadata,
+                            "gene_metadata": gene_metadata,
+                            "nCells": nCells,
+                            "nGenes": nGenes,
+                            "genes": genes,
+                            "cells": cells,
+                            "embeddings": embeddings
+                        },
+                    })
                 except Exception as e:
-                    print("Scanpy QC is failed")
-
-                print("scanpy completed")
-
-                # Run Dropkick QC
-                try:
-                    dropkick_results = run_dropkick_qc(input_path)
-                    layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
-                except Exception as dropkick_error:
-                     print("dropkick QC is failed")
-
-                print("dropkick completed")
-
-                qc_results.append({
-                    "inputfile": input_path,
-                    "format": "annData",
-                    # "scanpy_results": {
-                    #     "layers": layers,
-                    #     "cell_metadata":cell_metadata,
-                    #     "gene_metadata": gene_metadata,
-                    #     "nCells": nCells,
-                    #     "nGenes": nGenes,
-                    #     "genes": genes,
-                    #     "cells": cells,
-                    #     "embeddings": embeddings
-                    # },
-                    # "dropkick_results": dropkick_results,
-                })
+                    print("Scanpy QC failed")
 
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
