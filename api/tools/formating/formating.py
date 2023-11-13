@@ -155,7 +155,7 @@ def get_metadata_from_anndata(adata):
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
-        cell_metadata_obsm = adata.obsm # pandas dataframe
+        umap_coords = pd.DataFrame(adata.obsm["X_umap"], index=adata.obs.index)
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
         genes = adata.var_names.to_list() # Cell IDs
@@ -163,7 +163,7 @@ def get_metadata_from_anndata(adata):
         gene_metadata = adata.var # pandas dataframe
         embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         
-    return layers, cell_metadata_obs,cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings
+    return layers, cell_metadata_obs,umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
