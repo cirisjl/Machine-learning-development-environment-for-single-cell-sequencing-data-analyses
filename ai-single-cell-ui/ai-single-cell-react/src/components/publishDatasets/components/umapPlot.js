@@ -22,7 +22,7 @@ function UmapPlot({ umapCoords, obs }) {
           marker: {
             size: PlotConstants.point_size_2d,
             line: { width: PlotConstants.point_line_width_2d, color: 'grey' },
-            color: `rgb(${PlotConstants.discrete_colors_3[i % PlotConstants.discrete_colors_3.length].substring(1)})`,
+            // color: `rgb(${PlotConstants.discrete_colors_3[i % PlotConstants.discrete_colors_3.length].substring(1)})`,
           },
           unselected: { marker: { opacity: PlotConstants.min_opacity } },
           selected: { marker: { opacity: PlotConstants.max_opacity } },
