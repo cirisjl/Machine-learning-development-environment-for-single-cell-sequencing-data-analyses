@@ -169,17 +169,17 @@ async def run_quality_control(file_mappings: List[dict]):
                 #     print("DropKick QC failed")
                 #     print(e)
 
-            # Append combined metadata to qc_results
-                qc_results.append({
-                    "inputfile": input_path,
-                    "format": "h5ad",
-                    "combined_results": CombinedQCResult(
-                        scanpy_results=scanpy_metadata,
-                        # dropkick_results=dropkick_metadata
-                    ).dict()
-                })
+            # # Append combined metadata to qc_results
+            #     qc_results.append({
+            #         "inputfile": input_path,
+            #         "format": "h5ad",
+            #         "combined_results": CombinedQCResult(
+            #             scanpy_results=scanpy_metadata,
+            #             # dropkick_results=dropkick_metadata
+            #         ).dict()
+            #     })
 
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
 
-    return JSONResponse(content=qc_results, status_code=200)
+    return JSONResponse(content=scanpy_metadata, status_code=200)
