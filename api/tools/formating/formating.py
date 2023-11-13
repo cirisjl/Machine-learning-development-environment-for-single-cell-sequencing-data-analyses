@@ -10,6 +10,7 @@ from string import ascii_letters
 import csv
 import gzip
 import logging
+from anndata import AnnData
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
