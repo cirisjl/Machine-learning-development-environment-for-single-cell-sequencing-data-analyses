@@ -150,7 +150,7 @@ async def run_quality_control(file_mappings: List[dict]):
                     print("Scanpy QC failed")
                     print(e)
 
-                                # Run Scanpy QC
+                # Run Dropkick QC
                 try:
                     dropkick_results = run_dropkick_qc(adata)
                     layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
