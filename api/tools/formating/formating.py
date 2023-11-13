@@ -155,7 +155,7 @@ def get_metadata_from_anndata(adata):
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
-        cell_metadata_obsm = adata.obs # pandas dataframe
+        cell_metadata_obsm = adata.obsm # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
         genes = adata.var_names.to_list() # Cell IDs
