@@ -3,10 +3,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
+import UmapPlot from './umapPlot';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
   const [loading, setLoading] = useState(false);
+  const [umapCoords, setUmapCoords] = useState(null);
+  const [obs, setObs] = useState(null);
 
   useEffect(() => {
 
@@ -20,7 +23,10 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
             // Make an API call to run quality control
             const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
 
-            const qualityControlResults = response.data.qc_results;
+            const qualityControlResults = response.data;
+
+            setUmapCoords(qualityControlResults.umap_coords);
+            setObs(qualityControlResults.cell_metadata_obs);
           
             // Update the qc_results state with the quality control results
             setTaskData((prevTaskData) => ({
@@ -74,18 +80,23 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-      <div className='navigation-buttons'>
-            <div className="previous">
-              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                Previous
-              </button>
-            </div>
-            <div className="next-upon-success">
-              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                Next
-              </button>
-            </div>
-          </div>
+      <div>
+        <div className="App">
+          <UmapPlot umapCoords={umapCoords} obs={obs} />
+        </div>
+        <div className='navigation-buttons'>
+              <div className="previous">
+                <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                  Previous
+                </button>
+              </div>
+              <div className="next-upon-success">
+                <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                  Next
+                </button>
+              </div>
+        </div>
+      </div>
       )}
     </div>
   );
