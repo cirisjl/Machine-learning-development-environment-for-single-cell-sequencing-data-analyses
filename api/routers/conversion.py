@@ -151,6 +151,7 @@ async def run_quality_control(file_mappings: List[dict]):
                     })
                 except Exception as e:
                     print("Scanpy QC failed")
+                    print(e)
 
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
