@@ -1,6 +1,6 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, AnndataMetadata
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
@@ -134,36 +134,52 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
-                    layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
-                    metadata = AnndataMetadata(
+                    layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    scanpy_metadata = AnndataMetadata(
                         layers=layers,
-                        cell_metadata=cell_metadata.to_dict(),  # Convert DataFrame to dict
-                        gene_metadata=gene_metadata.to_dict(),  # Convert DataFrame to dict
+                        cell_metadata_obs=cell_metadata_obs.to_dict(),
+                        cell_metadata_obsm=cell_metadata_obsm.to_dict(),
+                        gene_metadata=gene_metadata.to_dict(),
                         nCells=nCells,
                         nGenes=nGenes,
                         genes=genes,
                         cells=cells,
                         embeddings=embeddings
                     )
-                    qc_results.append({
-                        "inputfile": input_path,
-                        "format": "annData",
-                        "scanpy_results": {
-                            "layers": layers,
-                            "cell_metadata": cell_metadata,
-                            "gene_metadata": gene_metadata,
-                            "nCells": nCells,
-                            "nGenes": nGenes,
-                            "genes": genes,
-                            "cells": cells,
-                            "embeddings": embeddings
-                        },
-                    })
                 except Exception as e:
                     print("Scanpy QC failed")
                     print(e)
 
+                                # Run Scanpy QC
+                try:
+                    dropkick_results = run_dropkick_qc(adata)
+                    layers, cell_metadata_obs, cell_metadata_obsm, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(dropkick_results)
+                    dropkick_metadata = AnndataMetadata(
+                        layers=layers,
+                        cell_metadata_obs=cell_metadata_obs.to_dict(),
+                        cell_metadata_obsm=cell_metadata_obsm.to_dict(),
+                        gene_metadata=gene_metadata.to_dict(),
+                        nCells=nCells,
+                        nGenes=nGenes,
+                        genes=genes,
+                        cells=cells,
+                        embeddings=embeddings
+                    )
+                except Exception as e:
+                    print("DropKick QC failed")
+                    print(e)
+
+            # Append combined metadata to qc_results
+                qc_results.append({
+                    "inputfile": input_path,
+                    "format": "h5ad",
+                    "combined_results": CombinedQCResult(
+                        scanpy_results=scanpy_metadata,
+                        dropkick_results=dropkick_metadata
+                    ).dict()
+                })
+
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
 
-    return JSONResponse(content=metadata.dict(), status_code=200)
+    return JSONResponse(content=qc_results, status_code=200)
