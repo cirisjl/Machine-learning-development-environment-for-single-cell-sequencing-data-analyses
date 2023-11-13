@@ -182,4 +182,4 @@ async def run_quality_control(file_mappings: List[dict]):
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred during quality control: {str(error)}")
 
-    return JSONResponse(content=scanpy_metadata, status_code=200)
+    return JSONResponse(content=scanpy_metadata.dict(), status_code=200)
