@@ -30,6 +30,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
                 qc_results: qualityControlResults,
               },
             }));
+            setLoading(false);
 
           } catch (error) {
             console.error('Error running quality control:', error);
@@ -37,7 +38,6 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
         };
 
         runQualityControl();
-        setLoading(false);
       } catch (error) {
         console.error('Error checking fileMappings:', error);
         setLoading(false);
