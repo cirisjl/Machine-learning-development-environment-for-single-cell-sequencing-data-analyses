@@ -116,10 +116,10 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
-                    layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings = get_metadata_from_anndata(scanpy_results)
+                    layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces = get_metadata_from_anndata(scanpy_results)
 
                     # Return metadata in the API response
-                    return {
+                    metadata =  {
                         "layers": layers,
                         "cell_metadata_obs": cell_metadata_obs.to_dict(),
                         "umap_coords": umap_coords.to_dict(),
@@ -131,6 +131,8 @@ async def run_quality_control(file_mappings: List[dict]):
                         "embeddings": embeddings,
                         "message": "Quality control completed successfully"
                     }
+                    # Return UMAP traces and other metadata in the API response
+                    return JSONResponse(content={"traces": traces, "metadata": metadata, "message": "UMAP traces and metadata generated successfully"})
 
                 except Exception as e:
                     logger.exception("Error during Scanpy QC")
