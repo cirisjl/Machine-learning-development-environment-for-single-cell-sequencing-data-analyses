@@ -289,6 +289,7 @@ def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_
                 "y": b[1].tolist(),
                 "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
                 "selectedpoints": s,
+                "mode":'markers',
                 "marker": {
                     'size': point_size_2d,
                     'line': {'width': point_line_width_2d, 'color': 'grey'},
