@@ -68,7 +68,9 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(file, assay=assay)
+                default_assay, assay_names, adata_path, annData = run_seurat_qc(file, assay=assay)
+                print("API ressss")
+                print(annData)
                 if assay_names is None:
                     assay_names = []
                 result.append({
@@ -76,15 +78,6 @@ async def process_input_files_validation(request: InputFilesRequest):
                         "format": "h5seurat",
                         "default_assay": default_assay,
                         "assay_names": assay_names,
-                        "metadata": metadata,
-                        "nCells": nCells,
-                        "nGenes": nGenes,
-                        "genes": genes,
-                        "cells": cells,
-                        "HVGsID": HVGsID,
-                        "pca": pca,
-                        "tsne": tsne,
-                        "umap": umap,
                         "adata_path": adata_path
                     })
             else:

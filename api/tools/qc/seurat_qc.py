@@ -13,16 +13,8 @@ def run_seurat_qc(input, output, adata_path=ro.rinterface.NULL, assay='RNA', min
     RunSeuratQC_r = ro.globalenv['RunSeuratQC']
     default_assay = None
     assay_names = None
-    metadata = None
-    nCells = 0
-    nGenes = 0
-    genes = None
-    cells = None
-    HVGsID = None
-    pca = None
-    tsne = None
-    umap = None
     adata_path = None
+    annData = None
 
     if assay is None:
         assay = 'RNA'
@@ -34,30 +26,15 @@ def run_seurat_qc(input, output, adata_path=ro.rinterface.NULL, assay='RNA', min
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]
         assay_names = list(results[1])
-        nCells = list(results[3])[0]
-        nGenes = list(results[4])[0]
-        if results[5] != ro.rinterface.NULL:
-            genes  = list(results[5])
-        if results[6] != ro.rinterface.NULL:
-            cells = list(results[6])
-        if results[11] != ro.rinterface.NULL:
-            adata_path = list(results[11])[0]
-        if results[7] != ro.rinterface.NULL:
-            HVGsID = list(results[7])
+        adata_path = list(results[2])[0]
+        annData = ro.conversion.rpy2py(results[3])
+        print("Inside the py qc")
+        print(annData)
 
-        with localconverter(ro.default_converter + pandas2ri.converter):
-            if results[2] != ro.rinterface.NULL: 
-                metadata = ro.conversion.rpy2py(results[2])
-            if results[8] != ro.rinterface.NULL:
-                pca = ro.conversion.rpy2py(results[8])
-            if results[9] != ro.rinterface.NULL:
-                tsne = ro.conversion.rpy2py(results[9])
-            if results[10] != ro.rinterface.NULL:
-                umap = ro.conversion.rpy2py(results[10])
     except Exception as e:
         print(e)
 
-    return default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path
+    return default_assay, assay_names, adata_path, annData
 
 
 def add_qc_result_suffix(input_path):
