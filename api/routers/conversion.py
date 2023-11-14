@@ -115,8 +115,8 @@ async def run_quality_control(file_mappings: List[dict]):
 
                 # Run Scanpy QC
                 try:
-                    # scanpy_results = run_scanpy_qc(adata)
-                    layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces = get_metadata_from_anndata(adata)
+                    scanpy_results = run_scanpy_qc(adata)
+                    layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces = get_metadata_from_anndata(scanpy_results)
 
                     # Return metadata in the API response
                     metadata =  {
