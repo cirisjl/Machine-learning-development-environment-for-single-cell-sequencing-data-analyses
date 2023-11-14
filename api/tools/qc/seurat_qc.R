@@ -32,8 +32,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
     if (!is.null(srat)){
         # If assay if provided by the user, then set default_assy to assay.
-        print("The value of assay")
-        print(assay)
+
         if(assay!='RNA') DefaultAssay(srat) <- assay
         default_assay <- DefaultAssay(srat)
         print(default_assay)
@@ -44,7 +43,6 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
         # Check either the default assay of the Seurat object is "RNA" or the assay is provided by the user.
         if(default_assay=='RNA' | default_assay==assay){
-            print("inside qc main")
             DefaultAssay(srat) <- assay
             if(!paste0("nCount_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nCount_", default_assay)]] <- colSums(x = srat[[default_assay]], slot = "counts")  # nCount of the default assay
             if(!paste0("nFeature_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nFeature_", default_assay)]] <- colSums(x = GetAssayData(object = srat[[default_assay]], slot = "counts") > 0)  # nFeature of the default assay
