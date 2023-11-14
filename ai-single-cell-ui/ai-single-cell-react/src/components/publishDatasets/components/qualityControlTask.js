@@ -8,8 +8,7 @@ import UmapPlot from './umapPlot';
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
   const [loading, setLoading] = useState(false);
-  const [umapCoords, setUmapCoords] = useState(null);
-  const [obs, setObs] = useState(null);
+  const [traces, setTraces] = useState(null);
 
   useEffect(() => {
 
@@ -25,8 +24,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
             const qualityControlResults = response.data;
 
-            setUmapCoords(qualityControlResults.umap_coords);
-            setObs(qualityControlResults.cell_metadata_obs);
+            setTraces(qualityControlResults.traces);
           
             // Update the qc_results state with the quality control results
             setTaskData((prevTaskData) => ({
@@ -82,7 +80,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       ) : (
       <div>
         <div className="App">
-          <UmapPlot umapCoords={umapCoords} obs={obs} />
+        {traces && <UmapPlot traces={traces} />}
         </div>
         <div className='navigation-buttons'>
               <div className="previous">
