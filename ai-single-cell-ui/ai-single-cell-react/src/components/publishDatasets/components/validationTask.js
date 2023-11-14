@@ -90,8 +90,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                       ],
                     },
                   }));
-                  console.log("Inside results else if");
-
                 }
               } else {
                 let fileDetails = {
@@ -110,17 +108,10 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                     ],
                   },
                 }));
-                console.log("Inside results else");
-
               }
             });
 
-            console.log("done iterating");
-            console.log(hasAddedSeuratFiles)
-
             if (!hasAddedSeuratFiles) {
-              console.log("done iterating if block");
-
                 // validation step is successful, move to next task as there are no seurat or rds datasets
                 setTaskData((prevTaskData) => ({
                   ...prevTaskData,
@@ -139,13 +130,9 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 setActiveTask(3); // Move to the next task (or update it to the appropriate task)
             }
             setValidationLoading(false);
-
-            console.log("end of validation");
-
           })
           .catch(error => {
             console.error('API Error:', error.response);
-            // console.error('Error Detail:', error.response.data.detail);
           });
         }
       } else {
@@ -207,32 +194,12 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         });
     
         if (response.ok) {
-          console.log("Inside ok response")
         // Handle the response from the API
         const responseData = await response.json();
 
-        console.log(response);
-        console.log(responseData);
-        // Initialize a list to store file mappings
-        // const newFileMappings = [];
-
         if (responseData && responseData.length > 0) {
-          console.log("Inside ok response iterator")
-
-
           responseData.forEach((entry) => {
-            // const fileDetails = entry.path; // Use the appropriate property
 
-            // // Create an object to represent the file mapping
-            // const fileMapping = {
-            //   fileDetails: fileDetails,
-            //   adata_path: entry.adata_path,
-            //   assay: entry.assay,
-            // };
-
-            // // Add the file mapping to the list
-            // newFileMappings.push(fileMapping);
-            // Add the result directly to the qc_results array
             setTaskData(prevTaskData => ({
               ...prevTaskData,
               quality_control: {
@@ -245,8 +212,6 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             }));
 
           });
-          console.log("Inside ok response added final")
-
 
           // Update the fileMappings state with the new list
           setTaskData((prevTaskData) => ({

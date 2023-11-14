@@ -62,3 +62,16 @@ class InputFile(BaseModel):
 
 class InputFilesRequest(BaseModel):
     inputFiles: List[InputFile]
+
+class AnndataMetadata(BaseModel):
+    layers: list
+    cell_metadata: dict
+    gene_metadata: dict
+    nCells: int
+    nGenes: int
+    genes: list
+    cells: list
+    embeddings: list
+class CombinedQCResult(BaseModel):
+    scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
+    # dropkick_results: AnndataMetadata

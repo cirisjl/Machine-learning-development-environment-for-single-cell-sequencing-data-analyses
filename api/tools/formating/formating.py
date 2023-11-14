@@ -10,6 +10,8 @@ from string import ascii_letters
 import csv
 import gzip
 import logging
+from anndata import AnnData
+from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
@@ -150,12 +152,13 @@ def get_metadata_from_anndata(adata):
     cells = None
     gene_metadata = None
     embeddings = None
-
-    print("Inside the python metadata function")
+    traces = None
 
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
-        cell_metadata = adata.obs # pandas dataframe
+        cell_metadata_obs = adata.obs # pandas dataframe
+        umap_coords = pd.DataFrame(adata.obsm["X_umap"], index=adata.obs.index)
+        traces = generate_umap_traces(adata)
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
         genes = adata.var_names.to_list() # Cell IDs
@@ -163,8 +166,44 @@ def get_metadata_from_anndata(adata):
         gene_metadata = adata.var # pandas dataframe
         embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         
-    return layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings
+    return layers, cell_metadata_obs,umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces
 
+def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_intersection=[], n_dim=2):
+    print("[DEBUG] generating new UMAP traces")
+
+    obs = adata.obs
+    obsm = adata.obsm
+
+    coords = pd.DataFrame(obsm["X_umap"], index=obs.index)
+
+    traces = []
+    for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
+        a = obs[obs[clustering_plot_type] == val]
+        b = coords[obs[clustering_plot_type] == val]
+        s = list(range(len(a.index))) if (selected_cell_intersection in [None, []]) else []
+
+        if n_dim == 2:
+            traces.append({
+                "x": b[0].tolist(),
+                "y": b[1].tolist(),
+                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
+                "selectedpoints": s,
+                "mode":'markers',
+                "marker": {
+                    'size': point_size_2d,
+                    'line': {'width': point_line_width_2d, 'color': 'grey'},
+                    "color": discrete_colors_3[i % len(discrete_colors_3)]
+                },
+                "unselected": {
+                    "marker": {"opacity": min_opacity}
+                },
+                "selected": {
+                    "marker": {"opacity": max_opacity}
+                },
+                "name": f"Cluster {val}"
+            })
+
+    return traces
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):

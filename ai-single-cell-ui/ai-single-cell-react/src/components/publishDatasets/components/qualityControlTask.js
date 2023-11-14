@@ -2,13 +2,19 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
+import { ScaleLoader } from 'react-spinners';
+import UmapPlot from './umapPlot';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
+  const [loading, setLoading] = useState(false);
+  const [traces, setTraces] = useState(null);
+
   useEffect(() => {
 
     // Check the fileMappings state to determine if quality control should be run
     if (taskData.validation.fileMappings.length > 0) {
+      setLoading(true);
       try {
         // Make an API call to run quality control
         const runQualityControl = async () => {
@@ -16,7 +22,9 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
             // Make an API call to run quality control
             const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
 
-            const qualityControlResults = response.data.qc_results;
+            const qualityControlResults = response.data;
+
+            setTraces(qualityControlResults.traces);
           
             // Update the qc_results state with the quality control results
             setTaskData((prevTaskData) => ({
@@ -26,15 +34,18 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
                 qc_results: qualityControlResults,
               },
             }));
+            setLoading(false);
 
           } catch (error) {
             console.error('Error running quality control:', error);
+            setLoading(false);
           }
         };
 
         runQualityControl();
       } catch (error) {
         console.error('Error checking fileMappings:', error);
+        setLoading(false);
       }
     } else {
       // No files to run quality control on
@@ -60,21 +71,31 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   };
 
   return (
-    <div>
+    <div className='quality-control-task'>
       {/* Task 1 content here */}
-      <button onClick={handleTaskCompletion}>QualityControlTaskComponent button</button>
-      <div className='navigation-buttons'>
-            <div className="previous">
-              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                Previous
-              </button>
-            </div>
-            <div className="next-upon-success">
-              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                Next
-              </button>
-            </div>
-          </div>
+      {loading ? (
+        <div className="spinner-container">
+          <ScaleLoader color="#36d7b7" loading={loading} />
+        </div>
+      ) : (
+      <div>
+        <div className="App">
+        {traces && <UmapPlot traces={traces} />}
+        </div>
+        <div className='navigation-buttons'>
+              <div className="previous">
+                <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                  Previous
+                </button>
+              </div>
+              <div className="next-upon-success">
+                <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                  Next
+                </button>
+              </div>
+        </div>
+      </div>
+      )}
     </div>
   );
 }

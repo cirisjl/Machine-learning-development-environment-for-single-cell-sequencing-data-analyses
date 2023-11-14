@@ -27,8 +27,6 @@ def run_seurat_qc(input, output, adata_path=ro.rinterface.NULL, assay='RNA', min
     if assay is None:
         assay = 'RNA'
 
-    print("inside run seurat qc")
-    print(assay)
     output = add_qc_result_suffix(input)
 
     try:
