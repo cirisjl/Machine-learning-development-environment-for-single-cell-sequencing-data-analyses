@@ -11,7 +11,7 @@ import csv
 import gzip
 import logging
 from anndata import AnnData
-from plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
+from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
