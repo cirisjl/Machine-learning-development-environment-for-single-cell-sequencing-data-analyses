@@ -369,7 +369,7 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     )
 
     if (!is.null(out_file)) {
-        write(adata, out_file, compression = "gzip")
+        write(adata, out_file)
         print("AnnData object is saved successfully.")
     }
 
