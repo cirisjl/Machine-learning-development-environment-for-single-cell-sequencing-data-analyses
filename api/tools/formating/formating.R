@@ -369,7 +369,7 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     )
 
     if (!is.null(out_file)) {
-        write_h5ad(annData, out_file)
+        write_h5ad(adata, out_file)
         print("AnnData object is saved successfully.")
     }
 
