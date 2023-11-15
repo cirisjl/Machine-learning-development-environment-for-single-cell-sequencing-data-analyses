@@ -19,8 +19,6 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
     default_assay <- NULL
     assay_names <- NULL
-    adata_path <- NULL
-    annData <- NULL
 
     if (!is.null(srat)){
         # If assay if provided by the user, then set default_assy to assay.
@@ -86,11 +84,11 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
             SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             print("Seurat object is saved successfully.")
+            
+            if(!is.null(adata_path)){
+                annData <- SeuratToAnndata(srat, out_file=adata_path, assay=assay)
+            }
 
-            adata_path <- Convert(output, dest = "h5ad" , overwrite = TRUE)
-            print("AnnData object is saved successfully.")
-
-            annData <- SeuratToAnndata(srat, assay)
             rm(srat)
             gc()
         } else {
@@ -99,7 +97,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
         }  
     }
     
-    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path, annData = annData)
+    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path)
 }
 
 
