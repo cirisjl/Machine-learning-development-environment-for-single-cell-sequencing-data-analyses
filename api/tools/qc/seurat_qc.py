@@ -6,6 +6,9 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 
+# Ensure that pandas2ri is activated for automatic conversion
+pandas2ri.activate()
+
 # Defining the R script and loading the instance in Python
 ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
 
@@ -28,11 +31,11 @@ def run_seurat_qc(input, adata_path=ro.rinterface.NULL, assay='RNA', min_genes=2
         assay_names = list(results[1])
         adata_path = list(results[2])[0]
         # Check if results[3] is not None before conversion
+        print("Log before error")
         if results[3] is not None:
-            with localconverter(ro.default_converter + pandas2ri.converter):
-                annData = ro.conversion.rpy2py(results[3])
-                print("Inside the py qc")
-                print(annData)
+            annData = results[3]
+            print("Inside the py qc")
+            print(annData)
 
     except Exception as e:
         print(e)
