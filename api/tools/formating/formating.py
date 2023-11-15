@@ -168,6 +168,7 @@ def get_metadata_from_anndata(adata):
         
     return layers, cell_metadata_obs,umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces
 
+
 def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_intersection=[], n_dim=2):
     print("[DEBUG] generating new UMAP traces")
 
@@ -204,6 +205,7 @@ def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_
             })
 
     return traces
+
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
