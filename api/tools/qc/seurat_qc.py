@@ -61,5 +61,5 @@ def add_qc_result_suffix(input_path, assay):
         new_base_name = base_name + "_qc_result_" + assay
 
     # Reconstruct the output path
-    output_path = os.path.join(directory, new_base_name + '.' + extension)
+    output_path = os.path.join(directory, new_base_name + extension)
     return output_path
