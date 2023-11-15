@@ -90,6 +90,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
                 annData <- SeuratToAnndata(srat, assay=assay)
                 print("annData")
                 print(annData)
+                write_h5ad(annData, adata_path)
             }
 
             rm(srat)
