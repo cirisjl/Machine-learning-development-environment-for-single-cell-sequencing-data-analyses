@@ -27,9 +27,12 @@ def run_seurat_qc(input, adata_path=ro.rinterface.NULL, assay='RNA', min_genes=2
             default_assay = list(results[0])[0]
         assay_names = list(results[1])
         adata_path = list(results[2])[0]
-        annData = ro.conversion.rpy2py(results[3])
-        print("Inside the py qc")
-        print(annData)
+        # Check if results[3] is not None before conversion
+        if results[3] is not None:
+            with localconverter(ro.default_converter + pandas2ri.converter):
+                annData = ro.conversion.rpy2py(results[3])
+                print("Inside the py qc")
+                print(annData)
 
     except Exception as e:
         print(e)
