@@ -85,12 +85,8 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             print("Seurat object is saved successfully.")
             
-            if(!is.null(adata_path)){
-
-                annData <- SeuratToAnndata(srat, assay=assay)
-                print("annData")
-                print(annData)
-                write_h5ad(annData, adata_path)
+            if(!is.null(adata_path)){     
+                annData <- SeuratToAnndata(srat, out_file=adata_path, assay=assay)
             }
 
             rm(srat)
