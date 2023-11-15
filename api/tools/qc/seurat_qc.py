@@ -25,6 +25,10 @@ def run_seurat_qc(input, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=
     output = add_qc_result_suffix(input, assay)
     adata_path = change_file_extension(output, 'h5ad')
 
+    print("paths")
+    print(output)
+    print(adata_path)
+
     try:
         results = list(RunSeuratQC_r(input, output, adata_path=adata_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count,  percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, dims=ro.r.seq(1, dims), regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
         if results[0] != ro.rinterface.NULL:
