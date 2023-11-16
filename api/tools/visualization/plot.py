@@ -120,7 +120,7 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
     n_traces = len(features)
     
     for i in features:
-        if not i in adata.obs.columns:
+        if not i in obs.columns:
             print("[DEBUG] feature " + str(i) + " not in obs columns; skipping")
             continue
         if (show_points == False):
@@ -175,3 +175,29 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
             #height=3 * scale
         )
     })
+
+
+def plot_scatter(adata, feature1 = "n_counts", feature2 = "pct_counts_mt"):
+    obs = adata.obs
+
+    traces = []
+
+    if feature1 in obs.columns and feature2 in obs.colums:
+        traces.append({
+                "type": "scatter",
+                "x": adata.obs_vector(feature1).tolist(), 
+                "y": adata.obs_vector(feature2).tolist(), 
+                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "opacity": 0.7,
+                "box": {
+                    "visible": True
+                },
+                "meanline": {
+                    "visible": True
+                },
+                "points": "none",
+                "name": str(i)
+            })
+        
+    else:
+        print("[DEBUG] " + feature1 + " or " + feature2 + " is not in adata.obs.columns")
