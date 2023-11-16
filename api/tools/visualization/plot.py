@@ -1,12 +1,13 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.graph_objs as go
+# import dash
+# import dash_core_components as dcc
+# import dash_html_components as html
+# import plotly.graph_objs as go
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
-import scanpy as sc
+import json 
+# import scanpy as sc
 import pandas as pd
 import numpy as np
 from anndata import AnnData
@@ -14,7 +15,7 @@ from anndata import AnnData
 from tools.formating.plotConstants import *
 
 
-def plot_UMAP(adata, clustering_plot_type="cell_type", selected_cell_intersection=[], n_dim=2):
+def plot_UMAP(adata, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
 
     obs = adata.obs
@@ -32,54 +33,51 @@ def plot_UMAP(adata, clustering_plot_type="cell_type", selected_cell_intersectio
         a = obs[obs[clustering_plot_type] == val]
         b = coords[obs[clustering_plot_type] == val]
         s = []
-        if (selected_cell_intersection in [None, []]):
+        if (selected_cell_intersection in [None, [], ""]):
             s = list(range(len(a.index)))
         else:
             for c in selected_cell_intersection:
                 if (c in a.index):
                     s.append(a.index.get_loc(c))
         if (n_dim == 2):
-            traces.append(
-                go.Scattergl(
-                    x=b[0],
-                    y=b[1],
-                    text="Cell ID: " + a.index,
-                    mode='markers',
-                    selectedpoints=s,
-                    marker={
-                        'size': point_size_2d,
-                        'line': {'width': point_line_width_2d, 'color': 'grey'},
-                        "color": discrete_colors_3[i%len(discrete_colors_3)]
-                    },
-                    unselected={
-                        "marker": {"opacity": min_opacity,
-                        }
-                    },
-                    selected={
-                        "marker": {"opacity": max_opacity,
-                        }
-                    },
-                    name=("Cluster " + str(val))
-                )
-            )
+            traces.append({
+                "type": "scattergl",
+                "x": b[0].tolist(),
+                "y": b[1].tolist(),
+                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
+                "selectedpoints": s,
+                "mode":'markers',
+                "marker": {
+                    'size': point_size_2d,
+                    'line': {'width': point_line_width_2d, 'color': 'grey'},
+                    "color": discrete_colors_3[i % len(discrete_colors_3)]
+                },
+                "unselected": {
+                    "marker": {"opacity": min_opacity}
+                },
+                "selected": {
+                    "marker": {"opacity": max_opacity}
+                },
+                "name": f"Cluster {val}"
+            })
         elif (n_dim == 3):
-            traces.append(
-                go.Scatter3d(
-                    x=b[0],
-                    y=b[1],
-                    z=b[2],
-                    text="Cell ID: " + a.index,
-                    mode='markers',
-                    marker={
-                        'size': point_size_3d,
-                        'line': {'width': point_line_width_3d, 'color': 'grey'},
-                        "color": discrete_colors_3[i%len(discrete_colors_3)]
-                    },
-                    name=("Cluster " + str(val))
-                )
-            )
+            traces.append({
+                "type": "scattergl",
+                "x": b[0].tolist(),
+                "y": b[1].tolist(),
+                "z": b[2].tolist(),
+                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
+                "selectedpoints": s,
+                "mode":'markers',
+                "marker": {
+                    'size': point_size_3d,
+                    'line': {'width': point_line_width_3d, 'color': 'grey'},
+                    "color": discrete_colors_3[i % len(discrete_colors_3)]
+                },
+                "name": f"Cluster {val}"
+            })
     if (n_dim == 2):
-        return {
+        return json.dumps({
             'data': traces,
             'layout': dict(
                 xaxis={"title": "UMAP 1"},
@@ -92,9 +90,9 @@ def plot_UMAP(adata, clustering_plot_type="cell_type", selected_cell_intersectio
                 #width=4 * scale,
                 #height=3 * scale
             )
-        }
+        })
     elif (n_dim == 3):
-        return {
+        return json.dumps({
             'data': traces,
             'layout': dict(
                 xaxis={"title": "UMAP 1"},
@@ -108,68 +106,66 @@ def plot_UMAP(adata, clustering_plot_type="cell_type", selected_cell_intersectio
                 #width=4 * scale,
                 #height=3 * scale
             )
-        }
+        })
 
 
-def plot_violin(adata, selected_genes=[], show_points = "all"):
+def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_counts_rb'], show_points=False):
     var    = adata.var
     obs    = adata.obs
 
     traces = []
     
     x_pos  = 1
-    
-    if (selected_genes in [None, []]):
-        selected_genes = adata.var.index
 
-    n_traces = len(selected_genes)
+    n_traces = len(features)
     
-    for i in selected_genes:
-        if not ((i in var.index) or (i in obs)):
-            print("[DEBUG] gene " + str(i) + " not in var index; skipping")
+    for i in features:
+        if not i in adata.obs.columns:
+            print("[DEBUG] feature " + str(i) + " not in obs columns; skipping")
             continue
         if (show_points == False):
-            traces.append(
-                go.Violin(
-                    y=adata.obs_vector(i),
-                    text="Cell ID: " + obs.index,
-                    opacity=0.7,
-                    box_visible=True,
-                    meanline_visible=True,
-                    points=False,
-                    name=(str(i))
-                )
-            )
+            traces.append({
+                "type": "violin",
+                "y": adata.obs_vector(i).tolist(), 
+                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "opacity": 0.7,
+                "box": {
+                    "visible": True
+                },
+                "meanline": {
+                    "visible": True
+                },
+                "points": "none",
+                "name": str(i)
+            })
             x_pos += 1
         
         elif (show_points == "all"):
             #kernel = gaussian_kde(adata.obs_vector(i))
             jittered_x = x_pos + 0.1 * np.random.standard_normal(len(adata.obs_vector(i)))
 
-            traces.append(
-                go.Scattergl(
-                    x=jittered_x,
-                    y=adata.obs_vector(i),
-                    text="Cell ID: " + obs.index,
-                    mode="markers",
-                    opacity=0.7,
-                    marker={
-                        'size': point_size_2d,
-                    },
-                    name=(str(i)),
-                )
-            )
+            traces.append({
+                "type": "violin",
+                "x": jittered_x.tolist(),
+                "y": adata.obs_vector(i).tolist(), 
+                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "mode": "markers",
+                "opacity": 0.7,
+                "marker": {
+                    'size': point_size_2d
+                },
+                "name": str(i)
+            })
             x_pos += 1
 
-    if (traces in [[], None]):
+    if (traces in [[], None, ""]):
         print("[DEBUG] no traces added to violin plot")
-        return dash.no_update
 
-    return {
+    return json.dumps({
         'data': traces,
         'layout': dict(
-            xaxis={"title": "Gene/factor"},
-            yaxis={"title": "Expression"},
+            # xaxis={"title": "Selected metadata features"},
+            # yaxis={"title": "value"},
             margin=margin,
             legend={'x': 0, 'y': 1},
             hovermode='closest',
@@ -178,4 +174,4 @@ def plot_violin(adata, selected_genes=[], show_points = "all"):
             #width=4 * scale,
             #height=3 * scale
         )
-    }
+    })

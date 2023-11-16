@@ -105,7 +105,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             print("Seurat object is saved successfully.")
 
             if(!is.null(adata_path)){
-                adata <- ConvertToAnndata(srat, out_file=adata_path)
+                adata <- SeuratToAnndata(srat, out_file=adata_path)
             }
             rm(srat)
             gc()
