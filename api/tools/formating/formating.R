@@ -336,6 +336,13 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
 
     X <- Seurat::GetAssayData(object=obj, assay=assay, layer=main_layer)
 
+    # Change the names of metadata to AnnData naming convention
+    if(paste0("nCount_", default_assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nCount_", default_assay)] <-"n_counts"
+    if(paste0("nFeature_", default_assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nFeature_", default_assay)] <-"n_genes"
+    if("percent.mt" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.mt"] <-"pct_counts_mt"
+    if("percent.rb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.rb"] <-"pct_counts_rb"
+    if("percent.hb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.hb"] <-"pct_counts_hb"
+
     obs <- .regularise_df(obj@meta.data, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
 
     var <- .regularise_df(Seurat::GetAssay(obj, assay=assay)@meta.features, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
