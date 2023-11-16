@@ -168,7 +168,7 @@ def get_metadata_from_anndata(adata):
         
     return layers, cell_metadata_obs,umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces
 
-def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_intersection=[], n_dim=2):
+def generate_umap_traces(adata, clustering_plot_type="cluster.ids", selected_cell_intersection=[], n_dim=2):
     print("[DEBUG] generating new UMAP traces")
 
     obs = adata.obs

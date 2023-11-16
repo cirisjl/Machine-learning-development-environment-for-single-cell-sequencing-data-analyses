@@ -69,16 +69,32 @@ async def process_input_files_validation(request: InputFilesRequest):
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
                 default_assay, assay_names, adata_path, adata = run_seurat_qc(file, assay=assay)
-                print("API ressss")
-                print(adata)
+                layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces = get_metadata_from_anndata(adata)
+
+                 # Return metadata in the API response
+                metadata =  {
+                    "layers": layers,
+                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                    "umap_coords": umap_coords.to_dict(),
+                    "gene_metadata": gene_metadata.to_dict(),
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "embeddings": embeddings,
+                    "message": "Quality control completed successfully"
+                }
                 if assay_names is None:
                     assay_names = []
+                
                 result.append({
                         "inputfile": file,
                         "format": "h5seurat",
                         "default_assay": default_assay,
                         "assay_names": assay_names,
-                        "adata_path": adata_path
+                        "adata_path": adata_path,
+                        "traces": traces,
+                        "metadata": metadata
                     })
             else:
                 # It's a different file, call load_annData method
