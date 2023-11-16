@@ -240,7 +240,7 @@ def plot_highest_expr_genes(adata, n_top=30):
 
     traces = []
 
-    for i in y:
+    for i in reversed(y):
         traces.append({
                 "type": "box",
                 "x": counts_top_genes[i].tolist(), 
