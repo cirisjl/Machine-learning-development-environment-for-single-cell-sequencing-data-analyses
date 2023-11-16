@@ -80,7 +80,10 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       ) : (
       <div>
         <div className="App">
-        {traces && <UmapPlot traces={traces} />}
+        {taskData.quality_control.qc_results &&
+              taskData.quality_control.qc_results.map((result, index) => (
+                result.traces && <UmapPlot traces={result.traces} />
+        ))}
         </div>
         <div className='navigation-buttons'>
               <div className="previous">
