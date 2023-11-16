@@ -154,6 +154,7 @@ def get_metadata_from_anndata(adata):
     embeddings = None
     traces = None
 
+    print(adata)
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
