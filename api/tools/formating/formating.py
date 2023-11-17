@@ -206,6 +206,7 @@ def generate_umap_traces(adata, clustering_plot_type="cluster.ids", selected_cel
 
     return traces
 
+
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
     import rpy2.rinterface_lib.callbacks as rcb
