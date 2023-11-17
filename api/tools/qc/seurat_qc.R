@@ -19,16 +19,6 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
     default_assay <- NULL
     assay_names <- NULL
-    metadata <- NULL
-    HVGsID <- NULL
-    nGenes <- 0
-    nCells <- 0
-    genes <- NULL
-    cells <- NULL
-    pca <- NULL
-    tsne <- NULL
-    umap <- NULL
-    adata_path <- NULL
 
     if (!is.null(srat)){
         # If assay if provided by the user, then set default_assy to assay.
@@ -89,24 +79,16 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             # UMAP
             srat <- RunUMAP(srat, dims=dims)
 
+
             assay_names <- names(srat@assays)
-            metadata <- srat@meta.data
-            nCells <- ncol(srat)
-            nGenes <- nrow(srat)
-            genes <- rownames(srat)
-            cells <- Cells(srat)
-            HVGsID <- srat[[assay]]@var.features
-            if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
-            if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
-            if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
-            srat@meta.data <- .regularise_df(srat@meta.data, drop_single_values=FALSE, drop_na_values=TRUE)
 
             SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             print("Seurat object is saved successfully.")
-
-            if(!is.null(adata_path)){
-                adata <- SeuratToAnndata(srat, out_file=adata_path)
+            
+            if(!is.null(adata_path)){     
+                annData <- SeuratToAnndata(srat, out_file=adata_path, assay=assay)
             }
+
             rm(srat)
             gc()
         } else {
@@ -115,7 +97,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
         }  
     }
     
-    list(default_assay=default_assay, assay_names=assay_names, metadata=metadata, nCells=nCells, nGenes=nGenes, genes=genes, cells=cells, HVGsID=HVGsID, pca=pca, tsne=tsne, umap=umap, adata_path=adata_path)
+    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path)
 }
 
 

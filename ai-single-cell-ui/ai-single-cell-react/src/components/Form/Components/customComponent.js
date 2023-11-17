@@ -199,13 +199,22 @@ class MyForm extends Component {
       const formData = this.state.formData;
       console.log(formData);
 
-      axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
-        .then(response => {
-          console.log('Form data submitted successfully');
-        })
-        .catch(error => {
-          console.error('Error submitting form data:', error);
-        });
+      // Update the qc_results state with the quality control results
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        metadata: {
+          ...prevTaskData.metadata,
+          formData: formData,
+        },
+      }));
+
+      // axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
+      //   .then(response => {
+      //     console.log('Form data submitted successfully');
+      //   })
+      //   .catch(error => {
+      //     console.error('Error submitting form data:', error);
+      //   });
 
         this.setState({
           message: 'Form data submitted successfully',

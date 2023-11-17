@@ -68,24 +68,35 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap, adata_path = run_seurat_qc(file, assay=assay)
+                default_assay, assay_names, adata_path, adata = run_seurat_qc(file, assay=assay)
+                layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+
+                 # Return metadata in the API response
+                metadata =  {
+                    "layers": layers,
+                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                    "gene_metadata": gene_metadata.to_dict(),
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "embeddings": embeddings,
+                    "message": "Quality control completed successfully"
+                }
                 if assay_names is None:
                     assay_names = []
+                
                 result.append({
                         "inputfile": file,
                         "format": "h5seurat",
                         "default_assay": default_assay,
                         "assay_names": assay_names,
-                        "metadata": metadata,
-                        "nCells": nCells,
-                        "nGenes": nGenes,
-                        "genes": genes,
-                        "cells": cells,
-                        "HVGsID": HVGsID,
-                        "pca": pca,
-                        "tsne": tsne,
-                        "umap": umap,
-                        "adata_path": adata_path
+                        "adata_path": adata_path,
+                        "umap_plot": umap_plot,
+                        "violin_plot": violin_plot,
+                        "scatter_plot": scatter_plot,
+                        "highest_expr_genes_plot": highest_expr_genes_plot,
+                        "metadata": metadata
                     })
             else:
                 # It's a different file, call load_annData method
@@ -116,13 +127,12 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata)
-                    layers, cell_metadata_obs, umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces = get_metadata_from_anndata(scanpy_results)
+                    layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
                     # Return metadata in the API response
                     metadata =  {
                         "layers": layers,
                         "cell_metadata_obs": cell_metadata_obs.to_dict(),
-                        "umap_coords": umap_coords.to_dict(),
                         "gene_metadata": gene_metadata.to_dict(),
                         "nCells": nCells,
                         "nGenes": nGenes,
@@ -132,7 +142,7 @@ async def run_quality_control(file_mappings: List[dict]):
                         "message": "Quality control completed successfully"
                     }
                     # Return UMAP traces and other metadata in the API response
-                    return JSONResponse(content={"traces": traces, "metadata": metadata, "message": "UMAP traces and metadata generated successfully"})
+                    return JSONResponse(content={"umap_plot": umap_plot, "violin_plot": violin_plot, "scatter_plot": scatter_plot, "highest_expr_genes_plot": highest_expr_genes_plot, "metadata": metadata, "message": "UMAP traces and metadata generated successfully"})
 
                 except Exception as e:
                     logger.exception("Error during Scanpy QC")

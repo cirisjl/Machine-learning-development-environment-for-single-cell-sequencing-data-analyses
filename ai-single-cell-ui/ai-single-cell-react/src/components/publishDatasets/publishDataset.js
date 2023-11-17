@@ -29,7 +29,9 @@ export default function PublishDataset() {
         quality_control: {
           qc_results: []
         },
-        metadata: {},
+        metadata: {
+          formData:{}
+        },
         task_builder: {},
         benchmarks: {},
         Review: {}

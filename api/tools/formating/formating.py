@@ -12,6 +12,7 @@ import gzip
 import logging
 from anndata import AnnData
 from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
+from tools.visualization.plot import plot_UMAP, plot_scatter, plot_highest_expr_genes, plot_violin
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
@@ -152,24 +153,29 @@ def get_metadata_from_anndata(adata):
     cells = None
     gene_metadata = None
     embeddings = None
-    traces = None
+    umap_plot = None
+    violin_plot = None
+    scatter_plot = None
+    highest_expr_genes_plot = None
 
+    print(adata)
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
-        umap_coords = pd.DataFrame(adata.obsm["X_umap"], index=adata.obs.index)
-        traces = generate_umap_traces(adata)
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
         genes = adata.var_names.to_list() # Cell IDs
         cells = adata.obs_names.to_list() # Gene IDs
         gene_metadata = adata.var # pandas dataframe
         embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        umap_plot = plot_UMAP(adata)
+        violin_plot = plot_violin(adata)
+        scatter_plot = plot_scatter(adata)
+        highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
-    return layers, cell_metadata_obs,umap_coords, gene_metadata, nCells, nGenes, genes, cells, embeddings, traces
+    return layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
 
-
-def generate_umap_traces(adata, clustering_plot_type="cell_type", selected_cell_intersection=[], n_dim=2):
+def generate_umap_traces(adata, clustering_plot_type="cluster.ids", selected_cell_intersection=[], n_dim=2):
     print("[DEBUG] generating new UMAP traces")
 
     obs = adata.obs
