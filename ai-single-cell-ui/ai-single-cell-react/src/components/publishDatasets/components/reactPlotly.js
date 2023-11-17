@@ -6,7 +6,7 @@ function ReactPlotly({plot_data}) {
 
   useEffect(() => {
     if (plot_data) {
-      setPlotData(plot_data);
+      setPlotData(JSON.parse(plot_data));
     }
   }, [plot_data]);
 
