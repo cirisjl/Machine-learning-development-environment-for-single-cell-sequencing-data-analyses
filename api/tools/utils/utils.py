@@ -6,7 +6,7 @@ import scipy as sp
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 from anndata import AnnData
 
-AnyRandom = Union[None, int, random.RandomState]  # maybe in the future random.Generator
+AnyRandom = Union[None, int, random.RandomState]  # random.Generator
 
 
 def sc_train_test_split(
