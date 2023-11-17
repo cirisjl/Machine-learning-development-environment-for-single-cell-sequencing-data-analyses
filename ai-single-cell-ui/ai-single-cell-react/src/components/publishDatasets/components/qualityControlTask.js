@@ -3,12 +3,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
-import UmapPlot from './umapPlot';
+import ReactPlotly from './reactPlotly';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   
   const [loading, setLoading] = useState(false);
-  const [traces, setTraces] = useState(null);
 
   useEffect(() => {
 
@@ -23,8 +22,6 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
             const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
 
             const qualityControlResults = response.data;
-
-            setTraces(qualityControlResults.traces);
           
             // Update the qc_results state with the quality control results
             setTaskData((prevTaskData) => ({
@@ -80,7 +77,39 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       ) : (
       <div>
         <div className="App">
-        {traces && <UmapPlot traces={traces} />}
+        {/* {taskData.quality_control.qc_results &&
+              taskData.quality_control.qc_results.map((result, index) => (
+                result.umap_plot && <ReactPlotly plot_data={result.umap_plot} />
+        ))} */}
+        {taskData.quality_control.qc_results &&
+          taskData.quality_control.qc_results.map((result, index) => (
+            <React.Fragment key={index}>
+                  {result.umap_plot && (
+                    <>
+                      <h2>UMAP Plot</h2>
+                      <ReactPlotly plot_data={result.umap_plot} />
+                    </>
+                  )}
+                  {result.violin_plot && (
+                    <>
+                      <h2>Violin Plot</h2>
+                      <ReactPlotly plot_data={result.violin_plot} />
+                    </>
+                  )}
+                  {result.scatter_plot && (
+                    <>
+                      <h2>Scatter Plot</h2>
+                      <ReactPlotly plot_data={result.scatter_plot} />
+                    </>
+                  )}
+                  {result.highest_expr_genes_plot && (
+                    <>
+                      <h2>Highest expression Genes Plot</h2>
+                      <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+                    </>
+                  )}
+                </React.Fragment>
+        ))}
         </div>
         <div className='navigation-buttons'>
               <div className="previous">

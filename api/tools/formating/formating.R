@@ -324,6 +324,9 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 
 
 SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", drop_single_values=FALSE, drop_na_values=TRUE) {
+    
+    print("inside s to a")
+    print(out_file)
     main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
     transfer_layers <- transfer_layers[
         transfer_layers %in% c("data", "counts", "scale.data")
@@ -337,8 +340,8 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     X <- Seurat::GetAssayData(object=obj, assay=assay, layer=main_layer)
 
     # Change the names of metadata to AnnData naming convention
-    if(paste0("nCount_", default_assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nCount_", default_assay)] <-"n_counts"
-    if(paste0("nFeature_", default_assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nFeature_", default_assay)] <-"n_genes"
+    if(paste0("nCount_", assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nCount_", assay)] <-"n_counts"
+    if(paste0("nFeature_", assay) %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) ==paste0("nFeature_", assay)] <-"n_genes"
     if("percent.mt" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.mt"] <-"pct_counts_mt"
     if("percent.rb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.rb"] <-"pct_counts_rb"
     if("percent.hb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.hb"] <-"pct_counts_hb"
@@ -373,7 +376,7 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     )
 
     if (!is.null(out_file)) {
-        write_h5ad(adata, out_file, compression = "gzip")
+        write_h5ad(adata, out_file)
         print("AnnData object is saved successfully.")
     }
 
