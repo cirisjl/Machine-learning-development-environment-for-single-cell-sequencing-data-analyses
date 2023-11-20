@@ -1,5 +1,6 @@
 import React , { useState }from 'react';
 import Select from 'react-select';
+import { CELERY_BACKEND_API} from '../../../constants/declarations';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -20,7 +21,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       };
 
       // Make the API call
-      const response = await fetch('/convert/api/data-split', {
+      const response = await fetch(`${CELERY_BACKEND_API}/convert/api/data-split`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
