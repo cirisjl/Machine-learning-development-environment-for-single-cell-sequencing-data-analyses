@@ -95,16 +95,16 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
             </div>
           )}
         <br />
-          {taskData.quality_control.qc_results &&
+          {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 &&
             taskData.quality_control.qc_results
               .filter((result) => result.metadata)
-              .map((result, index) => (
+              .map((metadata, index) => (
                 <div key={index}>
                   <div>
                     <label>
                       Please Choose the Label:
                       <Select
-                        options={Object.keys(result.cell_metadata_obs).map((key) => ({
+                        options={Object.keys(metadata.cell_metadata_obs).map((key) => ({
                           label: key,
                           value: key,
                         }))}
