@@ -138,7 +138,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                           value: key,
                         }))}
                         onChange={(selectedOption) => handleLabelChange(selectedOption, index)}
-                        value={taskData.task_builder.task_labels[index]}
+                        value={taskData.task_builder.task_label[index]}
                         />
                     </label>
                   </div>
