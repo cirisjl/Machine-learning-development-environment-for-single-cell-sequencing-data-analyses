@@ -192,7 +192,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     </label>
 
                     {/* Button to perform data split */}
-                    <button onClick={handleDataSplit(index)}>Perform Data Split</button>
+                    <button onClick={() => handleDataSplit(index)}>Perform Data Split</button>
                   </div>
                 </div>
             ))}
