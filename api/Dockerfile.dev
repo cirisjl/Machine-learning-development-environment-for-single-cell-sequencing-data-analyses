@@ -136,7 +136,8 @@ RUN PANDOC_PKG=pandoc-3.1.1-1-amd64.deb && \
     rm /tmp/${PANDOC_PKG}
 
 # CPU, GPU utilities 
-RUN pip install --upgrade --no-cache psutil GPUtil
+RUN pip install --upgrade --no-cache psutil nvidia-ml-py 
+# gputil
 
 # Install hdf5
 # RUN cd /tmp && \
