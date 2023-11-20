@@ -72,6 +72,13 @@ class AnndataMetadata(BaseModel):
     genes: list
     cells: list
     embeddings: list
+
 class CombinedQCResult(BaseModel):
     scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
     # dropkick_results: AnndataMetadata
+
+class DataSplitRequest(BaseModel):
+    data: str
+    train_fraction: float
+    validation_fraction: float
+    test_fraction: float
