@@ -12,9 +12,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   const handleDataSplit = async (index) => {
     try {
+
+      const dataPath = taskData.quality_control.qc_results[index].adata_path || ''
       // User input for data split fractions
       const userData = {
-        data: taskData.quality_control.qc_results[index].metadata.cell_metadata_obs.data_path,
+        data: dataPath,
         train_fraction: trainFraction,
         validation_fraction: validationFraction,
         test_fraction: testFraction,
