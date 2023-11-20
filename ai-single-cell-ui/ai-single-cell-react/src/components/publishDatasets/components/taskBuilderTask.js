@@ -1,6 +1,7 @@
 import React , { useState }from 'react';
 import Select from 'react-select';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
+import AlertMessageComponent from './alertMessageComponent';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -8,6 +9,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [trainFraction, setTrainFraction] = useState(0.8);
   const [validationFraction, setValidationFraction] = useState(0.1);
   const [testFraction, setTestFraction] = useState(0.1);
+  const [dataSplitPerformed, setDataSplitPerformed] = useState(false);
+  const [ message, setMessage ] = useState('');
+  const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
 
 
   const handleDataSplit = async (index) => {
@@ -37,6 +41,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       if (response.ok) {
         const result = await response.json();
         console.log(result); // Handle the result as needed
+        setDataSplitPerformed(true); // Set the state to indicate data split performed
       } else {
         const error = await response.json();
         console.error(error.error); // Handle the error
@@ -47,17 +52,30 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
   const handleTaskCompletion = () => {
-    // Perform the necessary actions for completing Task 1
-    // For example, submit a form, validate input, etc.
-
-    // After Task 1 is successfully completed, update the task status
-    setTaskStatus((prevTaskStatus) => ({
-      ...prevTaskStatus,
-      5: true, // Mark Task 5 as completed
-    }));
-
-    //The current task is finished, so make the next task active
-    setActiveTask(6);
+    const isValid =
+            taskData.task_builder.task_type &&
+            taskData.task_builder.task_labels.every((label) => label) &&
+            dataSplitPerformed &&
+            taskData.quality_control.qc_results.every(
+              (result) =>
+                result.metadata &&
+                result.metadata.cell_metadata_obs &&
+                result.metadata.cell_metadata_obs.data_path
+            );
+    if(isValid) {
+        // After Task 5 is successfully completed, update the task status
+        setTaskStatus((prevTaskStatus) => ({
+          ...prevTaskStatus,
+          5: true, // Mark Task 5 as completed
+        }));
+  
+        //The current task is finished, so make the next task active
+        setActiveTask(6);
+    } else {
+      // Display an error message or throw an error
+      setMessage('Please ensure that the task type, labels, dataset split, and data are valid.');
+      setHasMessage(true);
+    }
   };
 
   const handleTaskChange = (selectedOption) => {
@@ -70,17 +88,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       },
     }));
   };
-
-  // const handleLabelChange = (selectedOption) => {
-  //   // Update the task_type in task_builder
-  //   setTaskData((prevTaskData) => ({
-  //     ...prevTaskData,
-  //     task_builder: {
-  //       ...prevTaskData.task_builder,
-  //       task_label: selectedOption,
-  //     },
-  //   }));
-  // };
 
   const handleLabelChange = (selectedOption, index) => {
     // Ensure that qc_results[index] and cell_metadata_obs are defined
@@ -113,6 +120,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   return (
     <div className='task-builder-task'>
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
       <div>
         <div className="task-section">
           <label>
@@ -195,7 +203,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     </label>
 
                     {/* Button to perform data split */}
-                    <button onClick={() => handleDataSplit(index)}>Perform Data Split</button>
+                    <button onClick={() => handleDataSplit(index)} disabled={dataSplitPerformed}>Perform Data Split</button>
                   </div>
                 </div>
             ))}

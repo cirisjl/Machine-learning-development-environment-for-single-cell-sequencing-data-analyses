@@ -8,6 +8,10 @@ from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
 from typing import List
 import logging
+from pathlib import Path
+import shutil
+import zipfile
+import tempfile
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,7 +73,7 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata = run_seurat_qc(file, assay=assay)
+                default_assay, assay_names, adata_path, adata , output= run_seurat_qc(file, assay=assay)
                 layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
                  # Return metadata in the API response
@@ -93,6 +97,7 @@ async def process_input_files_validation(request: InputFilesRequest):
                         "default_assay": default_assay,
                         "assay_names": assay_names,
                         "adata_path": adata_path,
+                        "output": output,
                         "umap_plot": umap_plot,
                         "violin_plot": violin_plot,
                         "scatter_plot": scatter_plot,
@@ -143,7 +148,7 @@ async def run_quality_control(file_mappings: List[dict]):
                         "message": "Quality control completed successfully"
                     }
                     # Return UMAP traces and other metadata in the API response
-                    return JSONResponse(content={"umap_plot": umap_plot, "violin_plot": violin_plot, "scatter_plot": scatter_plot, "highest_expr_genes_plot": highest_expr_genes_plot, "metadata": metadata, "message": "UMAP traces and metadata generated successfully"})
+                    return JSONResponse(content={"umap_plot": umap_plot, "violin_plot": violin_plot, "scatter_plot": scatter_plot, "highest_expr_genes_plot": highest_expr_genes_plot, "metadata": metadata, "message": "UMAP traces and metadata generated successfully", "adata_path": path})
 
                 except Exception as e:
                     logger.exception("Error during Scanpy QC")
@@ -170,23 +175,33 @@ async def run_quality_control(file_mappings: List[dict]):
 async def data_split(user_data: DataSplitRequest):
     try:
         # Access user data
-        data = user_data.data
+        data_filepath = user_data.data
         train_fraction = user_data.train_fraction
         validation_fraction = user_data.validation_fraction
         test_fraction = user_data.test_fraction
 
-        adata = load_anndata(data)
+        adata = load_anndata(data_filepath)
 
         train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+       
+       # Extract directory and filename from the data filepath
+        data_directory = Path(data_filepath).parent
+        data_filename = Path(data_filepath).stem
 
-        print("Train")
-        print(train)
-        print("validation")
-        print(validation)
-        print("Test")
-        print(test)
-        # Return the result or any other response
-        return {"result": "Data split successful"}
+        # Define a temporary directory to store the files
+        temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
+
+        # Write AnnData objects to files with unique filenames in the temporary directory
+        train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
+        validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
+        test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
+
+        # Compress files into a single archive in the same directory
+        shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
+
+        # Return the path to the compressed archive
+        archive_path = data_directory / f"{data_filename}_data_split.zip"
+        return {"result": "Data split successful", "archive_path": archive_path}
     except Exception as e:
         # Handle any errors
         raise HTTPException(status_code=500, detail=str(e))
