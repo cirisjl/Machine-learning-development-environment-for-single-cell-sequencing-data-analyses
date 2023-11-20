@@ -1,4 +1,5 @@
 import React from 'react';
+import Select from 'react-select';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   const handleTaskCompletion = () => {
@@ -8,17 +9,76 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // After Task 1 is successfully completed, update the task status
     setTaskStatus((prevTaskStatus) => ({
       ...prevTaskStatus,
-      5: true, // Mark Task 1 as completed
+      5: true, // Mark Task 5 as completed
     }));
 
     //The current task is finished, so make the next task active
     setActiveTask(6);
   };
 
+  const handleTaskChange = (selectedOption) => {
+    // Update the task_type in task_builder
+    setTaskData((prevTaskData) => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        task_type: selectedOption,
+      },
+    }));
+  };
+
+  const handleLabelChange = (selectedOption) => {
+    // Update the task_type in task_builder
+    setTaskData((prevTaskData) => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        task_label: selectedOption,
+      },
+    }));
+  };
+
   return (
-    <div>
+    <div className='task-builder-task'>
+      <div>
+        <label>
+          Please Choose the Task Type:
+            <Select
+              value={taskData.task_builder.task_type}
+              options={taskData.metadata.taskOptions}
+              onChange={handleTaskChange}
+          />
+        </label>
+        <br />
+          {taskData.task_builder.task_id && (
+            <div>
+              Task ID: {taskData.task_builder.task_id}
+            </div>
+          )}
+        <br />
+          {taskData.qc_results &&
+            taskData.qc_results
+              .filter((result) => result.metadata)
+              .map((result, index) => (
+                <div key={index}>
+                  <label>
+                    Please Choose the Label:
+                    <Select
+                      options={Object.keys(result.metadata).map((key) => ({
+                        label: key,
+                        value: key,
+                      }))}
+                       onChange={handleLabelChange}
+                       value={taskData.task_builder.task_label}
+                    />
+                  </label>
+
+                  <button>Perform Data Split</button>
+
+                </div>
+            ))}
+    </div>
       {/* Task 1 content here */}
-      <button onClick={handleTaskCompletion}>TaskBuilderTaskComponent button</button>
       <div className='navigation-buttons'>
             <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>

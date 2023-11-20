@@ -30,9 +30,15 @@ export default function PublishDataset() {
           qc_results: []
         },
         metadata: {
-          formData:{}
+          formData:{},
+          taskOptions: []
         },
-        task_builder: {},
+        task_builder: {
+          task_type: '',
+          task_id:'',
+          task_label: '',
+          task_data_split:[]
+        },
         benchmarks: {},
         Review: {}
       });
