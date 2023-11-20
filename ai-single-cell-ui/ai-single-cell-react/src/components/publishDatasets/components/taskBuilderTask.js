@@ -64,7 +64,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                   <label>
                     Please Choose the Label:
                     <Select
-                      options={Object.keys(result.metadata).map((key) => ({
+                      options={Object.keys(result.cell_metadata_obs).map((key) => ({
                         label: key,
                         value: key,
                       }))}
