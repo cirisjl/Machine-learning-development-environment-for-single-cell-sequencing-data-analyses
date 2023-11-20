@@ -128,4 +128,31 @@
 }
 
 
+.task-builder-task .task-section, .task-builder-task .task-id-section, .task-builder-task .metadata-section, .task-builder-task .metadata-item, .task-builder-task .split-parameters {
+  margin-bottom: 15px;
+}
+
+.task-builder-task h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.task-builder-task label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.task-builder-task input[type="range"] {
+  width: 80%;
+}
+
+.task-builder-task button {
+  background-color: #4caf50;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
   

@@ -9,11 +9,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [testFraction, setTestFraction] = useState(0.1);
 
 
-  const handleDataSplit = async () => {
+  const handleDataSplit = async (index) => {
     try {
       // User input for data split fractions
       const userData = {
-        data: taskData.qc_results[0].metadata.cell_metadata_obs.data_path,
+        data: taskData.quality_control.qc_results[index].metadata.cell_metadata_obs.data_path,
         train_fraction: trainFraction,
         validation_fraction: validationFraction,
         test_fraction: testFraction,
@@ -109,26 +109,29 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   return (
     <div className='task-builder-task'>
       <div>
-        <label>
-          Please Choose the Task Type:
-            <Select
-              value={taskData.task_builder.task_type}
-              options={taskData.metadata.taskOptions}
-              onChange={handleTaskChange}
-          />
-        </label>
-        <br />
-          {taskData.task_builder.task_id && (
-            <div>
-              Task ID: {taskData.task_builder.task_id}
-            </div>
-          )}
-        <br />
-          {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 &&
-            taskData.quality_control.qc_results
+        <div className="task-section">
+          <label>
+            Please Choose the Task Type:
+              <Select
+                value={taskData.task_builder.task_type}
+                options={taskData.metadata.taskOptions}
+                onChange={handleTaskChange}
+            />
+          </label>
+          <br />
+            {taskData.task_builder.task_id && (
+              <div className="task-id-section">
+                Task ID: {taskData.task_builder.task_id}
+              </div>
+            )}
+          <br />
+        </div>
+          {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 && (
+          <div className="metadata-section">
+            {taskData.quality_control.qc_results
               .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
               .map((metadata, index) => (
-                <div key={index}>
+                <div key={index} className="metadata-item">
                   <div>
                     <label>
                       Please Choose the Label:
@@ -143,7 +146,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     </label>
                   </div>
 
-                  <div>
+                  <div className="split-parameters">
                     <h3> Data Split Parameters</h3>
 
                     {/* Slider input for Train Fraction */}
@@ -189,12 +192,13 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     </label>
 
                     {/* Button to perform data split */}
-                    <button onClick={handleDataSplit}>Perform Data Split</button>
+                    <button onClick={handleDataSplit(index)}>Perform Data Split</button>
                   </div>
                 </div>
             ))}
     </div>
-      {/* Task 1 content here */}
+    )}
+
       <div className='navigation-buttons'>
             <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
@@ -206,8 +210,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                 Next
               </button>
             </div>
-          </div>
+      </div>
 
+    </div>
     </div>
   );
 }
