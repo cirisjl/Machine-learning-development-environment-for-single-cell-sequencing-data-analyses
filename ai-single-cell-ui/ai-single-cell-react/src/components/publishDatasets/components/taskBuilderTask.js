@@ -111,20 +111,18 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       <div>
         <div className="task-section">
           <label>
-            Please Choose the Task Type:
+            <p>Please Choose the Task Type:</p>
               <Select
                 value={taskData.task_builder.task_type}
                 options={taskData.metadata.taskOptions}
                 onChange={handleTaskChange}
             />
           </label>
-          <br />
-            {taskData.task_builder.task_id && (
-              <div className="task-id-section">
-                Task ID: {taskData.task_builder.task_id}
-              </div>
-            )}
-          <br />
+          {taskData.task_builder.task_id && (
+            <div className="task-id-section">
+              Task ID: {taskData.task_builder.task_id}
+            </div>
+          )}
         </div>
           {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 && (
           <div className="metadata-section">
@@ -134,7 +132,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                 <div key={index} className="metadata-item">
                   <div>
                     <label>
-                      Please Choose the Label:
+                      <p>Please Choose the Label:</p>
                       <Select
                         options={Object.keys(metadata.metadata.cell_metadata_obs).map((key) => ({
                           label: key,
@@ -151,7 +149,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
                     {/* Slider input for Train Fraction */}
                     <label>
-                      Train Fraction:
+                      <p>Train Fraction:</p>
                       <input
                         type="range"
                         min={0}
@@ -165,7 +163,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
                     {/* Slider input for Validation Fraction */}
                     <label>
-                      Validation Fraction:
+                     <p> Validation Fraction:</p>
                       <input
                         type="range"
                         min={0}
@@ -179,7 +177,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
                     {/* Slider input for Test Fraction */}
                     <label>
-                      Test Fraction:
+                      <p>Test Fraction:</p>
                       <input
                         type="range"
                         min={0}
