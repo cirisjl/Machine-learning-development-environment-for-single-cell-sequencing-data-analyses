@@ -42,7 +42,7 @@ def run_seurat_qc(input, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=
     except Exception as e:
         print(e)
 
-    return default_assay, assay_names, adata_path, adata
+    return default_assay, assay_names, adata_path, adata, output
 
 
 def add_qc_result_suffix(input_path, assay):
