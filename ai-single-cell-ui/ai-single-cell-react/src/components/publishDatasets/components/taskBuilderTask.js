@@ -20,6 +20,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         test_fraction: testFraction,
       };
 
+      console.log(userData);
+
       // Make the API call
       const response = await fetch(`${CELERY_BACKEND_API}/convert/api/data-split`, {
         method: 'POST',
