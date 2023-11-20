@@ -1,10 +1,11 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
+from tools.utils.utils import sc_train_val_test_split
 from typing import List
 import logging
 
@@ -164,3 +165,28 @@ async def run_quality_control(file_mappings: List[dict]):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="An error occurred during quality control"
     )
+
+@router.post("/api/data-split")
+async def data_split(user_data: DataSplitRequest):
+    try:
+        # Access user data
+        data = user_data.data
+        train_fraction = user_data.train_fraction
+        validation_fraction = user_data.validation_fraction
+        test_fraction = user_data.test_fraction
+
+        adata = load_anndata(data)
+
+        train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+
+        print("Train")
+        print(train)
+        print("validation")
+        print(validation)
+        print("Test")
+        print(test)
+        # Return the result or any other response
+        return {"result": "Data split successful"}
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))

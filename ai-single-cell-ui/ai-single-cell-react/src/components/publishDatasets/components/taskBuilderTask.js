@@ -1,7 +1,46 @@
-import React from 'react';
+import React , { useState }from 'react';
 import Select from 'react-select';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
+
+  // const [data_path, setDataPath] = useState('');
+  const [trainFraction, setTrainFraction] = useState(0.8);
+  const [validationFraction, setValidationFraction] = useState(0.1);
+  const [testFraction, setTestFraction] = useState(0.1);
+
+
+  const handleDataSplit = async () => {
+    try {
+      // User input for data split fractions
+      const userData = {
+        data: taskData.qc_results[0].metadata.cell_metadata_obs.data_path,
+        train_fraction: trainFraction,
+        validation_fraction: validationFraction,
+        test_fraction: testFraction,
+      };
+
+      // Make the API call
+      const response = await fetch('/convert/api/data-split', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      // Check if the response is successful
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result); // Handle the result as needed
+      } else {
+        const error = await response.json();
+        console.error(error.error); // Handle the error
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const handleTaskCompletion = () => {
     // Perform the necessary actions for completing Task 1
     // For example, submit a form, validate input, etc.
@@ -56,25 +95,73 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
             </div>
           )}
         <br />
-          {taskData.qc_results &&
-            taskData.qc_results
+          {taskData.quality_control.qc_results &&
+            taskData.quality_control.qc_results
               .filter((result) => result.metadata)
               .map((result, index) => (
                 <div key={index}>
-                  <label>
-                    Please Choose the Label:
-                    <Select
-                      options={Object.keys(result.cell_metadata_obs).map((key) => ({
-                        label: key,
-                        value: key,
-                      }))}
-                       onChange={handleLabelChange}
-                       value={taskData.task_builder.task_label}
-                    />
-                  </label>
+                  <div>
+                    <label>
+                      Please Choose the Label:
+                      <Select
+                        options={Object.keys(result.cell_metadata_obs).map((key) => ({
+                          label: key,
+                          value: key,
+                        }))}
+                        onChange={handleLabelChange}
+                        value={taskData.task_builder.task_label}
+                      />
+                    </label>
+                  </div>
 
-                  <button>Perform Data Split</button>
+                  <div>
+                    <h3> Data Split Parameters</h3>
 
+                    {/* Slider input for Train Fraction */}
+                    <label>
+                      Train Fraction:
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={trainFraction}
+                        onChange={(e) => setTrainFraction(parseFloat(e.target.value))}
+                      />
+                      {trainFraction}
+                    </label>
+
+                    {/* Slider input for Validation Fraction */}
+                    <label>
+                      Validation Fraction:
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={validationFraction}
+                        onChange={(e) => setValidationFraction(parseFloat(e.target.value))}
+                      />
+                      {validationFraction}
+                    </label>
+
+                    {/* Slider input for Test Fraction */}
+                    <label>
+                      Test Fraction:
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={testFraction}
+                        onChange={(e) => setTestFraction(parseFloat(e.target.value))}
+                      />
+                      {testFraction}
+                    </label>
+
+                    {/* Button to perform data split */}
+                    <button onClick={handleDataSplit}>Perform Data Split</button>
+                  </div>
                 </div>
             ))}
     </div>
