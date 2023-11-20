@@ -199,12 +199,14 @@ class MyForm extends Component {
       const formData = this.state.formData;
       console.log(formData);
 
+
       // Update the qc_results state with the quality control results
       setTaskData((prevTaskData) => ({
         ...prevTaskData,
         metadata: {
           ...prevTaskData.metadata,
           formData: formData,
+          taskOptions: this.state.options["Task"]
         },
       }));
 
