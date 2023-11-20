@@ -66,16 +66,45 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     }));
   };
 
-  const handleLabelChange = (selectedOption) => {
-    // Update the task_type in task_builder
-    setTaskData((prevTaskData) => ({
-      ...prevTaskData,
-      task_builder: {
-        ...prevTaskData.task_builder,
-        task_label: selectedOption,
-      },
-    }));
+  // const handleLabelChange = (selectedOption) => {
+  //   // Update the task_type in task_builder
+  //   setTaskData((prevTaskData) => ({
+  //     ...prevTaskData,
+  //     task_builder: {
+  //       ...prevTaskData.task_builder,
+  //       task_label: selectedOption,
+  //     },
+  //   }));
+  // };
+
+  const handleLabelChange = (selectedOption, index) => {
+    // Ensure that qc_results[index] and cell_metadata_obs are defined
+    if (
+      taskData.quality_control.qc_results[index] &&
+      taskData.quality_control.qc_results[index].metadata &&
+      taskData.quality_control.qc_results[index].metadata.cell_metadata_obs
+    ) {
+      const cellMetadataObs = taskData.quality_control.qc_results[index].metadata.cell_metadata_obs;
+  
+      // Now, you can access cell_metadata_obs and perform any actions needed
+      console.log(cellMetadataObs);
+  
+      // Update the task_label in task_builder for the specific result
+      setTaskData((prevTaskData) => {
+        const updatedLabels = [...prevTaskData.task_builder.task_labels];
+        updatedLabels[index] = selectedOption.value;
+  
+        return {
+          ...prevTaskData,
+          task_builder: {
+            ...prevTaskData.task_builder,
+            task_labels: updatedLabels,
+          },
+        };
+      });
+    }
   };
+  
 
   return (
     <div className='task-builder-task'>
@@ -97,20 +126,20 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         <br />
           {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 &&
             taskData.quality_control.qc_results
-              .filter((result) => result.metadata)
+              .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
               .map((metadata, index) => (
                 <div key={index}>
                   <div>
                     <label>
                       Please Choose the Label:
                       <Select
-                        options={Object.keys(metadata.cell_metadata_obs).map((key) => ({
+                        options={Object.keys(metadata.metadata.cell_metadata_obs).map((key) => ({
                           label: key,
                           value: key,
                         }))}
-                        onChange={handleLabelChange}
-                        value={taskData.task_builder.task_label}
-                      />
+                        onChange={(selectedOption) => handleLabelChange(selectedOption, index)}
+                        value={taskData.task_builder.task_labels[index]}
+                        />
                     </label>
                   </div>
 
