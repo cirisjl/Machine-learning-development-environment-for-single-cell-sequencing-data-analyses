@@ -36,7 +36,7 @@ export default function PublishDataset() {
         task_builder: {
           task_type: '',
           task_id:'',
-          task_label: '',
+          task_label: [],
           task_data_split:[]
         },
         benchmarks: {},
