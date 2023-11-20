@@ -11,22 +11,24 @@ import json
 import pandas as pd
 import numpy as np
 from anndata import AnnData
+from scipy.sparse import csr_matrix
 
 from tools.formating.plotConstants import *
 
 
-def plot_UMAP(adata, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP(adata, layer=None, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
 
     obs = adata.obs
     obsm = adata.obsm
+    if layer is None: layer = 'X'
 
     # validate that there is a 3D projection available if that was requested
-    if (("X_umap_3D" in obsm.keys()) and (n_dim == 3)):
-        coords = pd.DataFrame(obsm["X_umap_3D"], index=obs.index)
+    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
+        coords = pd.DataFrame(obsm[layer+"_umap_3D"], index=obs.index)
     else:
         n_dim = 2
-        coords = pd.DataFrame(obsm["X_umap"], index=obs.index)
+        coords = pd.DataFrame(obsm[layer+"_umap"], index=obs.index)
     
     traces = []
     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):

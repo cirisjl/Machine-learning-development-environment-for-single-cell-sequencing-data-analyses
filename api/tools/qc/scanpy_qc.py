@@ -9,6 +9,7 @@ import scipy
 # sys.path.append('..')
 from scipy.stats import median_abs_deviation
 from tools.formating.formating import is_normalized
+from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
@@ -17,6 +18,14 @@ sc.settings.set_figure_params(dpi=80, facecolor='white')
 def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cell_cycle=False):
         if adata is None:
             raise ValueError("The input is None.")
+        
+        if is_normalized(adata.X, min_genes):
+            if adata.raw.X is not None:
+                adata.layers["normalized_X"] = adata.X
+                adata.X = adata.raw.X
+            elif "raw_counts" in adata.layers.keys():
+                adata.layers["normalized_X"] = adata.X
+                adata.X = adata.layers['raw_counts']
 
         if is_normalized(adata.X, min_genes):
             raise ValueError("Scanpy QC only take raw counts, not normalized data.")
@@ -60,6 +69,11 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         adata.obs['predicted_doublets'].value_counts()
         # adata=adata[adata.obs.predicted_doublets=="False", :]
 
+        if adata.raw is None:
+            adata.raw = adata
+        else: 
+            adata.layers["raw_counts"] = adata.X
+        
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
         sc.pp.log1p(adata)
@@ -73,6 +87,11 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         # Regress both S score and G2M score for cell cycle
         if(regress_cell_cycle):
              adata = regress_cell_cycle(adata)
+
+        if isinstance(adata.X, np.ndarray):
+            adata.X = csr_matrix(adata.X)
+
+        adata.layers["log10k"] = adata.X
 
         # return adata, output
         return adata
@@ -115,19 +134,50 @@ def regress_cell_cycle(adata):
 
 
 def run_dimension_reduction(adata, layer=None, n_neighbors=10, n_pcs=40, resolution=1):
-    # Principal component analysis
-    sc.tl.pca(adata, layer=layer, svd_solver='arpack')
+    if layer is not None:
+        adata_temp = adata.copy()
+        adata_temp.X = adata_temp.layers[layer]
+        adata_temp = adata
 
-    # Computing the neighborhood graph
-    sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
+        # Principal component analysis
+        sc.tl.pca(adata_temp, svd_solver='arpack')
+        adata.uns['pca'] = adata_temp.uns["pca"]
+        adata.obsm[layer+'_pca'] = adata_temp.obsm["X_pca"]
 
-    # tSNE
-    sc.tl.tsne(adata)
+        # Computing the neighborhood graph
+        sc.pp.neighbors(adata_temp, n_neighbors=n_neighbors, n_pcs=n_pcs)
+        adata.uns['neighbors'] = adata_temp.uns["neighbors"]
+        adata.obsp['distances'] = adata_temp.obsp['distances']
+        adata.obsp['connectivities'] = adata_temp.obsp['connectivities']
 
-    # Clustering the neighborhood graph
-    sc.tl.umap(adata)
-    sc.tl.leiden(adata, resolution=resolution)
-    sc.tl.louvain(adata, resolution=resolution)
-    # sc.pl.umap(adata, color=['leiden','cluster2'])
+        # tSNE
+        sc.tl.tsne(adata_temp)
+        adata.uns['tsne'] = adata_temp.uns["tsne"]
+        adata.obsm[layer+'_tsne'] = adata_temp.obsm["X_tsne"]
+
+        # Clustering the neighborhood graph
+        sc.tl.umap(adata_temp)
+        adata.uns['umap'] = adata_temp.uns["umap"]
+        adata.obsm[layer+'_umap'] = adata_temp.obsm["X_umap"]
+
+        sc.tl.leiden(adata_temp, resolution=resolution)
+        adata.uns['leiden'] = adata_temp.uns["leiden"]
+        sc.tl.louvain(adata_temp, resolution=resolution)
+        adata.uns['louvain'] = adata_temp.uns["louvain"]
+        adata_temp = None
+    else:
+        # Principal component analysis
+        sc.tl.pca(adata, svd_solver='arpack')
+
+        # Computing the neighborhood graph
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
+
+        # tSNE
+        sc.tl.tsne(adata)
+
+        # Clustering the neighborhood graph
+        sc.tl.umap(adata)
+        sc.tl.leiden(adata, resolution=resolution)
+        sc.tl.louvain(adata, resolution=resolution)
 
     return adata
