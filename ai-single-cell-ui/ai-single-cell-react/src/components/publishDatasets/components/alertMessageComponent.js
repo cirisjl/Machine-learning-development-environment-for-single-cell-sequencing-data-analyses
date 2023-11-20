@@ -1,10 +1,7 @@
 import React , {useState, useEffect} from 'react';
 
-function AlertMessageComponent({ props }) {
+function AlertMessageComponent({ message, setHasMessage, setMessage }) {
 
-const message = props.message; 
-let setMessage = props.setMessage;
-let setHasMessage = props.setHasMessage;
 useEffect(() => {
     const timeoutId = setTimeout(() => {
         setMessage('');
