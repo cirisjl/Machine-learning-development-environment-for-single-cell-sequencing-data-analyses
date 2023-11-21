@@ -11,24 +11,22 @@ import json
 import pandas as pd
 import numpy as np
 from anndata import AnnData
-from scipy.sparse import csr_matrix
 
 from tools.formating.plotConstants import *
 
 
-def plot_UMAP(adata, layer=None, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP(adata, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
 
     obs = adata.obs
     obsm = adata.obsm
-    if layer is None: layer = 'X'
 
     # validate that there is a 3D projection available if that was requested
-    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
-        coords = pd.DataFrame(obsm[layer+"_umap_3D"], index=obs.index)
+    if (("X_umap_3D" in obsm.keys()) and (n_dim == 3)):
+        coords = pd.DataFrame(obsm["X_umap_3D"], index=obs.index)
     else:
         n_dim = 2
-        coords = pd.DataFrame(obsm[layer+"_umap"], index=obs.index)
+        coords = pd.DataFrame(obsm["X_umap"], index=obs.index)
     
     traces = []
     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
@@ -280,76 +278,3 @@ def plot_highest_expr_genes(adata, n_top=30):
             height=3*scale
         )
     })
-
-
-def plot_table(dataframe, n_top=5):
-    traces = []
-    cell_values = []
-    row_color = []
-    cells_align = []
-    column_width = []
-    table_width = 4*scale
-    rowOddColor = "white"
-    rowEvenColor = "#e3eaf8"
-
-    if isinstance(dataframe, pd.DataFrame):
-        if len(dataframe) > n_top:
-            dataframe = dataframe[:n_top]
-
-        n_col = dataframe.shape[1]
-        n_row = dataframe.shape[0]
-        header_values = ["<b>"+str(header)+"</b>" for header in dataframe.columns.tolist()]
-        header_values.insert(0,'')
-        cell_values.append(["<b>"+str(idx)+"</b>" for idx in dataframe.index.tolist()])
-        cells_align.append("center")
-        column_width.append(len(max(cell_values[0]))*8)
-
-        for i in range(0, n_col):
-            cell_values.append(dataframe.iloc[:, i].tolist())
-            cells_align.append("right")
-            column_width.append(len(header_values[i+1])*6)
-
-        for i in range(n_row):
-            if (i % 2) == 0:
-                row_color.append(rowEvenColor)
-            else:
-                row_color.append(rowOddColor)
-        row_color = [row_color]
-        table_width = sum(column_width)
-
-        print(cells_align)
-        print(row_color)
-        print(column_width)
-
-        traces.append({
-                "type": "table",
-                "columnwidth": column_width,
-                "header": {
-                    "values": header_values,
-                    "align": "center",
-                    "line": {"width": 0},
-                    "fill": {"color": ['#2b2d41']},
-                    "font": {"color": "white"}
-                    },
-                "cells": {
-                    "values": cell_values,
-                    "align": cells_align,
-                    "line": {"width":0},
-                    "fill": {"color": row_color}
-                    # "font": {"family": "Arial", "size": 9, "color": ["black"]}
-                    }
-            })
-    else:
-        print("[DEBUG] plot_table only takes Pandas DataFrame, no traces added to table")
-
-    return json.dumps({
-        'data': traces,
-        'layout': dict(
-            margin=margin,
-            hovermode='closest',
-            transition = {'duration': 100},
-            autosize=True,
-            showlegend=False,
-            width=table_width
-            )
-        })
