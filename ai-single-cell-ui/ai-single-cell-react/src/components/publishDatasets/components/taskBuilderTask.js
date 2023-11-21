@@ -12,6 +12,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [dataSplitPerformed, setDataSplitPerformed] = useState(false);
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [archivePath, setArchivePath] = useState('');
 
 
   const handleDataSplit = async (index) => {
@@ -41,6 +42,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       if (response.ok) {
         const result = await response.json();
         console.log(result); // Handle the result as needed
+        setArchivePath(result.archive_path); // Set the archive path
         setDataSplitPerformed(true); // Set the state to indicate data split performed
       } else {
         const error = await response.json();
@@ -54,7 +56,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const handleTaskCompletion = () => {
     const isValid =
             taskData.task_builder.task_type &&
-            taskData.task_builder.task_labels.every((label) => label) &&
+            taskData.task_builder.task_label.every((label) => label) &&
             dataSplitPerformed &&
             taskData.quality_control.qc_results.every(
               (result) =>
@@ -103,14 +105,14 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   
       // Update the task_label in task_builder for the specific result
       setTaskData((prevTaskData) => {
-        const updatedLabels = [...prevTaskData.task_builder.task_labels];
+        const updatedLabels = [...prevTaskData.task_builder.task_label];
         updatedLabels[index] = selectedOption.value;
   
         return {
           ...prevTaskData,
           task_builder: {
             ...prevTaskData.task_builder,
-            task_labels: updatedLabels,
+            task_label: updatedLabels,
           },
         };
       });
@@ -169,7 +171,10 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         max={1}
                         step={0.01}
                         value={trainFraction}
-                        onChange={(e) => setTrainFraction(parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          setTrainFraction(parseFloat(e.target.value));
+                          setDataSplitPerformed(false);
+                        }}
                       />
                       {trainFraction}
                     </label>
@@ -183,7 +188,10 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         max={1}
                         step={0.01}
                         value={validationFraction}
-                        onChange={(e) => setValidationFraction(parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          setValidationFraction(parseFloat(e.target.value));
+                          setDataSplitPerformed(false);
+                        }}
                       />
                       {validationFraction}
                     </label>
@@ -197,13 +205,19 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         max={1}
                         step={0.01}
                         value={testFraction}
-                        onChange={(e) => setTestFraction(parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          setTestFraction(parseFloat(e.target.value));
+                          setDataSplitPerformed(false);
+                        }}
                       />
                       {testFraction}
                     </label>
 
                     {/* Button to perform data split */}
                     <button onClick={() => handleDataSplit(index)} disabled={dataSplitPerformed}>Perform Data Split</button>
+
+                    {dataSplitPerformed && <p><b>Archive Path: </b>{archivePath}</p>}
+
                   </div>
                 </div>
             ))}
