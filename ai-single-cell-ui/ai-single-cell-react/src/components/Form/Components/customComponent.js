@@ -202,10 +202,11 @@ class MyForm extends Component {
       // construct ID 
       const task_abbv = formData.Task.value;
       const species = formData.Species.value;
-      const tissue = formData['Anatomical Entity'];
+      const tissue = formData['Anatomical Entity'].label;
       const cellCount = formData['Cell Count Estimate'];
-      const author = formData['Author'];
-      const year = formData['Submission Date'];
+      const author = formData['Author'].label;
+      const submissionDate = formData['Submission Date'];
+      const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
       // Check if cellCount is greater than 1000
       const useCellCount = cellCount && parseInt(cellCount) > 1000;
