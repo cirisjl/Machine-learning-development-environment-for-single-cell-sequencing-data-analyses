@@ -35,7 +35,7 @@ class Monitor(Thread):
         return self.time_points, self.cpu_usage, self.mem_usage
     
 
-    def nvidia_info():
+    def nvidia_info(self):
         # pip install nvidia-ml-py
         nvidia_dict = {
             "state": True,
@@ -71,9 +71,9 @@ class Monitor(Thread):
         return nvidia_dict
 
 
-    def gpu_mem_percent():
+    def gpu_mem_percent(self):
         mem_rate = 0.0
-        info = nvidia_info()
+        info = self.nvidia_info()
         if len(info['gpus']) > 0:
             used = info['gpus'][0]['used']
             tot = info['gpus'][0]['total']
