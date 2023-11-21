@@ -37,7 +37,14 @@ export default function PublishDataset() {
           task_type: '',
           task_id:'',
           task_label: [],
-          task_data_split:[]
+          task_data_split:[],
+          task_states: {
+            trainFraction: 0.8,
+            validationFraction: 0.1,
+            testFraction: 0.1,
+            dataSplitPerformed: false,
+            archivePath: ''
+          }
         },
         benchmarks: {},
         Review: {}
