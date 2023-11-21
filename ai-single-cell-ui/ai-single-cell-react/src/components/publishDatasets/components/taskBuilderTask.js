@@ -100,7 +100,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Update the task_label in task_builder for the specific result
     setTaskData((prevTaskData) => {
       const updatedLabels = [...prevTaskData.task_builder.task_label];
-      updatedLabels[index] = selectedOption.value;
+      updatedLabels[index] = selectedOption;
 
       return {
         ...prevTaskData,
