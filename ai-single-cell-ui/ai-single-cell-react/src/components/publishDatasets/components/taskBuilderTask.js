@@ -56,14 +56,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const handleTaskCompletion = () => {
     const isValid =
             taskData.task_builder.task_type &&
-            taskData.task_builder.task_label.every((label) => label) &&
-            dataSplitPerformed &&
-            taskData.quality_control.qc_results.every(
-              (result) =>
-                result.metadata &&
-                result.metadata.cell_metadata_obs &&
-                result.metadata.cell_metadata_obs.data_path
-            );
+            taskData.task_builder.task_label.length > 0 &&
+            dataSplitPerformed
+            
     if(isValid) {
         // After Task 5 is successfully completed, update the task status
         setTaskStatus((prevTaskStatus) => ({
