@@ -1,4 +1,4 @@
-import React , { useState }from 'react';
+import React , { useState, useEffect }from 'react';
 import Select from 'react-select';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
@@ -91,32 +91,25 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     }));
   };
 
+  useEffect(() => {
+    console.log(taskData);
+  }, [taskData]);
+
   const handleLabelChange = (selectedOption, index) => {
-    // Ensure that qc_results[index] and cell_metadata_obs are defined
-    if (
-      taskData.quality_control.qc_results[index] &&
-      taskData.quality_control.qc_results[index].metadata &&
-      taskData.quality_control.qc_results[index].metadata.cell_metadata_obs
-    ) {
-      const cellMetadataObs = taskData.quality_control.qc_results[index].metadata.cell_metadata_obs;
-  
-      // Now, you can access cell_metadata_obs and perform any actions needed
-      console.log(cellMetadataObs);
-  
-      // Update the task_label in task_builder for the specific result
-      setTaskData((prevTaskData) => {
-        const updatedLabels = [...prevTaskData.task_builder.task_label];
-        updatedLabels[index] = selectedOption.value;
-  
-        return {
-          ...prevTaskData,
-          task_builder: {
-            ...prevTaskData.task_builder,
-            task_label: updatedLabels,
-          },
-        };
-      });
-    }
+
+    // Update the task_label in task_builder for the specific result
+    setTaskData((prevTaskData) => {
+      const updatedLabels = [...prevTaskData.task_builder.task_label];
+      updatedLabels[index] = selectedOption.value;
+
+      return {
+        ...prevTaskData,
+        task_builder: {
+          ...prevTaskData.task_builder,
+          task_label: updatedLabels,
+        },
+      };
+    });
   };
   
 
