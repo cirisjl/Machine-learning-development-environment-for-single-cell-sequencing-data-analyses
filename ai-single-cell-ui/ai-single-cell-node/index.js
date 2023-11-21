@@ -718,7 +718,8 @@ app.get('/download', async (req, res) => {
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
     }
-    if(pwd.includes("publicDatasets")) {
+    
+    if(pwd && pwd.includes("publicDatasets")) {
         filePath = path.join(storageDir, fileUrl);
     } else {
         filePath = path.join(storageDir, username, fileUrl);
