@@ -11,56 +11,16 @@ import AccessDenied from '../../AccessDeniedPage';
 class MyForm extends Component {
   constructor(props) {
     super(props);
+    const {
+      taskData,
+    } = props;
+
     this.state = {
-      formData: {
-        Dataset: '',
-        Task: '',
-        Downloads: '',
-        Title: '',
-        Author: '',
-        'Reference (paper)':'',
-        Abstract: '',
-        DOI: '',
-        Species: '',
-        'Sample Type': '',
-        'Anatomical Entity': '',
-        'Organ Part': '',
-        'Model Organ': '',
-        'Selected Cell Types': '',
-        'Library Construction Method': '',
-        'Nucleic Acid Source': '',
-        'Paired End': false,
-        'Analysis Protocol': '',
-        'Disease Status (Specimen)': '',
-        'Disease Status (Donor)': '',
-        'Development Stage': '',
-        'Donor Count': 0,
-        'Cell Count Estimate': 0,
-        'Source': '',
-        'Source Key': '',
-        'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here    
-        'Id':'' 
-       },
+      formData: taskData.metadata.formData,
       errors: {},
       isLoading: false,
-      options: {
-        Task: [], 
-        Author: [],
-        Species: [],
-        'Sample Type':[],
-        'Anatomical Entity': [],
-        'Organ Part': [],
-        'Model Organ': [],
-        'Selected Cell Types': [],
-        'Library Construction Method': [],
-        'Nucleic Acid Source': [],
-        'Disease Status (Specimen)': [],
-        'Disease Status (Donor)': [],
-        'Development Stage': [],
-        'Cell Count Estimate': [],
-        'Source': []
-      },
-      newOptions: [],
+      options: taskData.metadata.options,
+      newOptions: taskData.metadata.newOptions,
       message: '',
       hasMessage: false,
       isAdmin: false,
@@ -224,7 +184,9 @@ class MyForm extends Component {
         metadata: {
           ...prevTaskData.metadata,
           formData: formData,
-          taskOptions: this.state.options["Task"]
+          taskOptions: this.state.options["Task"],
+          options: this.state.options,
+          newOptions: this.state.newOptions
         },
       }));
 
