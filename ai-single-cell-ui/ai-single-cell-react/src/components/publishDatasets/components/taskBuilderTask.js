@@ -13,10 +13,13 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [archivePath, setArchivePath] = useState('');
+  const [loading, setLoading] = useState(false);
 
 
   const handleDataSplit = async (index) => {
     try {
+
+      setLoading(true); // Set loading to true when data split is initiated
 
       const dataPath = taskData.quality_control.qc_results[index].adata_path || ''
       // User input for data split fractions
@@ -50,6 +53,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setLoading(false); // Set loading to false after data split (success or failure)
     }
   };
 
@@ -202,7 +207,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     </label>
 
                     {/* Button to perform data split */}
-                    <button onClick={() => handleDataSplit(index)} disabled={dataSplitPerformed}>Perform Data Split</button>
+                    <button onClick={() => handleDataSplit(index)} disabled={dataSplitPerformed || loading}>
+                      {loading ? 'Processing, please wait...' : 'Perform Data Split'}
+                    </button>
 
                     {dataSplitPerformed && <p><b>Archive Path: </b>{archivePath}</p>}
 
