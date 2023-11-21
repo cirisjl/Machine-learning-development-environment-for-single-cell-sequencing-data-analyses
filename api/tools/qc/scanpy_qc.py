@@ -1,14 +1,12 @@
 import numpy as np
-import pandas as pd
 import scanpy as sc
 import scrublet as scr
 import warnings
 warnings.filterwarnings('ignore')
-import sklearn
-import scipy
 # sys.path.append('..')
 from scipy.stats import median_abs_deviation
-from tools.formating.formating import is_normalized
+from tools.formating.formating import is_normalized, check_nonnegative_integers
+from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
@@ -17,8 +15,16 @@ sc.settings.set_figure_params(dpi=80, facecolor='white')
 def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cell_cycle=False):
         if adata is None:
             raise ValueError("The input is None.")
+        
+        if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
+            if adata.raw.X is not None:
+                adata.layers["normalized_X"] = adata.X.copy()
+                adata.X = adata.raw.X.copy()
+            elif "raw_counts" in adata.layers.keys():
+                adata.layers["normalized_X"] = adata.X.copy()
+                adata.X = adata.layers['raw_counts'].copy()
 
-        if is_normalized(adata.X, min_genes):
+        if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
             raise ValueError("Scanpy QC only take raw counts, not normalized data.")
         
         adata.var_names_make_unique()
@@ -54,12 +60,17 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         # adata=adata[adata.obs.n_genes_by_counts < 2500, :]
         # adata=adata[adata.obs.pct_counts_mt < 5, :]
 
+        if adata.raw is None:
+            adata.raw = adata # freeze the state in `.raw`
+        else: 
+            adata.layers["raw_counts"] = adata.X.copy() # preserve counts
+
         scrub = scr.Scrublet(adata.X, expected_doublet_rate = 0.076)
         adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
                                                                 min_gene_variability_pctl=85, n_prin_comps=30)
         adata.obs['predicted_doublets'].value_counts()
         # adata=adata[adata.obs.predicted_doublets=="False", :]
-
+        
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
         sc.pp.log1p(adata)
@@ -73,6 +84,11 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         # Regress both S score and G2M score for cell cycle
         if(regress_cell_cycle):
              adata = regress_cell_cycle(adata)
+
+        if isinstance(adata.X, np.ndarray):
+            adata.X = csr_matrix(adata.X)
+
+        adata.layers["log10k"] = adata.X.copy()
 
         # return adata, output
         return adata
@@ -110,24 +126,5 @@ def regress_cell_cycle(adata):
     adata_cc_genes = adata[:, cell_cycle_genes]
     sc.tl.pca(adata_cc_genes)
     # sc.pl.pca_scatter(adata_cc_genes, color='phase')
-
-    return adata
-
-
-def run_dimension_reduction(adata, layer=None, n_neighbors=10, n_pcs=40, resolution=1):
-    # Principal component analysis
-    sc.tl.pca(adata, layer=layer, svd_solver='arpack')
-
-    # Computing the neighborhood graph
-    sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs)
-
-    # tSNE
-    sc.tl.tsne(adata)
-
-    # Clustering the neighborhood graph
-    sc.tl.umap(adata)
-    sc.tl.leiden(adata, resolution=resolution)
-    sc.tl.louvain(adata, resolution=resolution)
-    # sc.pl.umap(adata, color=['leiden','cluster2'])
 
     return adata
