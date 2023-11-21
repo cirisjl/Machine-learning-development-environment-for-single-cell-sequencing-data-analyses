@@ -11,7 +11,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
    const [loading, setLoading] = useState(false);
    const [validationLoading, setValidationLoading] = useState(false);
    const [errorMessage, setErrorMessage] = useState('');
-
+   const [validationStatus, setValidationStatus] = useState('');
 
   const jwtToken = getCookie('jwtToken');
   const navigate = useNavigate();
@@ -134,6 +134,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           .catch(error => {
             console.error('API Error:', error.response);
           });
+        } else if(taskData.validation.seuratFiles.length === 0){
+            setValidationStatus("Dataset has been loaded and validated.")
         }
       } else {
           console.warn("Unauthorized - you must be an admin to access this page");
@@ -318,20 +320,27 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
               </div>
             </div>
             {errorMessage && <div className="error-message">{errorMessage}</div>}
-            <div className='navigation-buttons'>
-              <div className="previous">
-                <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                  Previous
-                </button>
-              </div>
-              <div className="next-upon-success">
-                <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                  Next
-                </button>
-              </div>
-            </div>
           </div>
         ) : null
+      )}
+
+      { validationStatus !== '' && (
+      <div>
+        <p>{validationStatus}</p>
+
+        <div className='navigation-buttons'>
+          <div className="previous">
+            <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+              Previous
+            </button>
+          </div>
+          <div className="next-upon-success">
+            <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
       )}
     </div>
   );  
