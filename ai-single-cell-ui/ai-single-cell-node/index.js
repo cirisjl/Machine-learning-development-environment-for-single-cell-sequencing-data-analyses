@@ -679,7 +679,7 @@ app.post('/download', async (req, res) => {
 
         for (const item of fileList) {
             let filePath = "";
-            if(pwd.includes("publicDatasets")) {
+            if(pwd && pwd.includes("publicDatasets")) {
                 filePath = path.join(storageDir, item);
             } else {
                 filePath = path.join(storageDir, username, item);
