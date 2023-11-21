@@ -29,6 +29,8 @@ class MyForm extends Component {
   }
 
   componentDidMount() {
+    const {taskData} = this.props;
+
     // Make an API call to get the default options for all fields
     let jwtToken = getCookie('jwtToken');
     if (!jwtToken) {
@@ -42,7 +44,9 @@ class MyForm extends Component {
             isAdmin: authData.isAdmin ,
             username: authData.username, // Set hasMessage to true when a message is set
           });
-          this.fetchDefaultOptions();
+          if(taskData.metadata.status !== "completed") {
+            this.fetchDefaultOptions();
+          }
         }
         else {
           console.warn("Unauthorized - you must be an admin to access this page");
@@ -178,7 +182,6 @@ class MyForm extends Component {
       console.log(formData);
 
 
-      // Update the qc_results state with the quality control results
       setTaskData((prevTaskData) => ({
         ...prevTaskData,
         metadata: {
@@ -186,7 +189,8 @@ class MyForm extends Component {
           formData: formData,
           taskOptions: this.state.options["Task"],
           options: this.state.options,
-          newOptions: this.state.newOptions
+          newOptions: this.state.newOptions,
+          status: "completed"
         },
       }));
 
