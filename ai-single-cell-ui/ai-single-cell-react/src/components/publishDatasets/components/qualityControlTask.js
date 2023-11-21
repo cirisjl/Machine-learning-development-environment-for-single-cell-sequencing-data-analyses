@@ -10,7 +10,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-
+    if(taskData.quality_control.status !== 'completed') {
     // Check the fileMappings state to determine if quality control should be run
     if (taskData.validation.fileMappings.length > 0) {
       setLoading(true);
@@ -47,6 +47,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
     } else {
       // No files to run quality control on
     }
+  }
   }, []); // Empty dependency array ensures this effect runs only once when the component mounts
 
   useEffect(() => {
@@ -54,10 +55,16 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   }, [taskData]);
 
   const handleTaskCompletion = () => {
-    // Perform the necessary actions for completing Task 1
-    // For example, submit a form, validate input, etc.
+      // Update the fileMappings state with the new list
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        quality_control: {
+          ...prevTaskData.quality_control,
+          status: 'completed'
+        },
+      }));
 
-    // After Task 1 is successfully completed, update the task status
+    // After Task 3 is successfully completed, update the task status
     setTaskStatus((prevTaskStatus) => ({
       ...prevTaskStatus,
       3: true, // Mark Task 3 as completed
