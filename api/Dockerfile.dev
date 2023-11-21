@@ -122,8 +122,8 @@ RUN Rscript -e 'devtools::install_github("BMEngineeR/scGNNLTMG")'
 RUN Rscript -e 'devtools::install_github("BatzoglouLabSU/SIMLR", ref = "master")'
 
 # Install scanpy&&dropkick&&scvi-tools
-RUN pip install --upgrade --no-cache 'scanpy[leiden]' \
-    anndata muon dropkick scvi-tools
+RUN pip install --upgrade --no-cache numpyro==0.12.1 'scanpy[leiden]' \
+    anndata muon dropkick scvi-tools pymde
 
 # Install snakemake
 # RUN pip3 install git+https://github.com/snakemake/snakemake

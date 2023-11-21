@@ -5,14 +5,27 @@ import subprocess
 import numpy as np
 import pandas as pd
 from detect_delimiter import detect
+import scipy.sparse as sp_sparse
 from scipy.sparse import csr_matrix
+from typing import Optional, Union
 from string import ascii_letters
 import csv
 import gzip
 import logging
+import h5py
+import jax
+import jax.numpy as jnp
 from anndata import AnnData
 from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
 from tools.visualization.plot import plot_UMAP, plot_scatter, plot_highest_expr_genes, plot_violin
+
+try:
+    from anndata._core.sparse_dataset import SparseDataset
+except ImportError:
+    # anndata >= 0.10.0
+    from anndata._core.sparse_dataset import (
+        BaseCompressedSparseDataset as SparseDataset,
+    )
 
 
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
@@ -465,6 +478,41 @@ def is_normalized(expression_matrix, min_genes):
             return True
         else:
             return False
+        
+
+def check_nonnegative_integers(
+    data: Union[pd.DataFrame, np.ndarray, sp_sparse.spmatrix, h5py.Dataset],
+    n_to_check: int = 20,
+):
+    """Approximately checks values of data to ensure it is count data."""
+    # for backed anndata
+    if isinstance(data, h5py.Dataset) or isinstance(data, SparseDataset):
+        data = data[:100]
+
+    if isinstance(data, np.ndarray):
+        data = data
+    elif issubclass(type(data), sp_sparse.spmatrix):
+        data = data.data
+    elif isinstance(data, pd.DataFrame):
+        data = data.to_numpy()
+    else:
+        raise TypeError("data type not understood")
+
+    ret = True
+    if len(data) != 0:
+        inds = np.random.choice(len(data), size=(n_to_check,))
+        check = jax.device_put(data.flat[inds], device=jax.devices("cpu")[0])
+        negative, non_integer = _is_not_count_val(check)
+        ret = not (negative or non_integer)
+    return ret
+
+
+@jax.jit
+def _is_not_count_val(data: jnp.ndarray):
+    negative = jnp.any(data < 0)
+    non_integer = jnp.any(data % 1 != 0)
+
+    return negative, non_integer
 
 
 # def load_annData_dash(path, replace_invalid=False):
