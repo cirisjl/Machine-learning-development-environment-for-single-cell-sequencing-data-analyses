@@ -38,7 +38,8 @@ class MyForm extends Component {
         'Cell Count Estimate': 0,
         'Source': '',
         'Source Key': '',
-        'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here     
+        'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here    
+        'Id':'' 
        },
       errors: {},
       isLoading: false,
@@ -196,7 +197,23 @@ class MyForm extends Component {
     this.setState({ errors });
 
     if (Object.keys(errors).length === 0) {
-      const formData = this.state.formData;
+      let formData = this.state.formData;
+
+      // construct ID 
+      const task_abbv = formData.Task.value;
+      const species = formData.Species.value;
+      const tissue = formData['Anatomical Entity'];
+      const cellCount = formData['Cell Count Estimate'];
+      const author = formData['Author'];
+      const year = formData['Submission Date'];
+
+      // Check if cellCount is greater than 1000
+      const useCellCount = cellCount && parseInt(cellCount) > 1000;
+
+      const constructedID = `${task_abbv}-${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${author}-${year}`;
+
+      formData.Id = constructedID;
+
       console.log(formData);
 
 
