@@ -99,8 +99,10 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=10, use_rep=None, n_p
 
         sc.tl.leiden(adata_temp, resolution=resolution)
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
+        adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
         sc.tl.louvain(adata_temp, resolution=resolution)
         adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
+        adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
         adata_temp = None
     else:
         # Principal component analysis
@@ -114,7 +116,12 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=10, use_rep=None, n_p
 
         # Clustering the neighborhood graph
         sc.tl.umap(adata)
-        sc.tl.leiden(adata, resolution=resolution)
-        sc.tl.louvain(adata, resolution=resolution)
+        leiden_key = "leiden"
+        louvain_key = "louvain"
+        if use_rep is not None:
+            leiden_key = "leiden_" + use_rep
+            louvain_key = "louvain_" + use_rep
+        sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution)
+        sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
 
     return adata
