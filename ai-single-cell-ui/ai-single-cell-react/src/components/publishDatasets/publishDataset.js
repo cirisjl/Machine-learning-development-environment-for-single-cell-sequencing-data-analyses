@@ -30,8 +30,54 @@ export default function PublishDataset() {
           qc_results: []
         },
         metadata: {
-          formData:{},
-          taskOptions: []
+          formData: {
+            Dataset: '',
+            Task: '',
+            Downloads: '',
+            Title: '',
+            Author: '',
+            'Reference (paper)':'',
+            Abstract: '',
+            DOI: '',
+            Species: '',
+            'Sample Type': '',
+            'Anatomical Entity': '',
+            'Organ Part': '',
+            'Model Organ': '',
+            'Selected Cell Types': '',
+            'Library Construction Method': '',
+            'Nucleic Acid Source': '',
+            'Paired End': false,
+            'Analysis Protocol': '',
+            'Disease Status (Specimen)': '',
+            'Disease Status (Donor)': '',
+            'Development Stage': '',
+            'Donor Count': 0,
+            'Cell Count Estimate': 0,
+            'Source': '',
+            'Source Key': '',
+            'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here    
+            'Id':'' 
+           },
+          taskOptions: [],
+          options: {
+            Task: [], 
+            Author: [],
+            Species: [],
+            'Sample Type':[],
+            'Anatomical Entity': [],
+            'Organ Part': [],
+            'Model Organ': [],
+            'Selected Cell Types': [],
+            'Library Construction Method': [],
+            'Nucleic Acid Source': [],
+            'Disease Status (Specimen)': [],
+            'Disease Status (Donor)': [],
+            'Development Stage': [],
+            'Cell Count Estimate': [],
+            'Source': []
+          },
+          newOptions: []
         },
         task_builder: {
           task_type: '',
