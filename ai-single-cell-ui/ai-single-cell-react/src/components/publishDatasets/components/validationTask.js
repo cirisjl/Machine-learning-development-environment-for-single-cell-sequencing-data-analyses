@@ -28,7 +28,7 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     .then((authData) => {
       if(authData.isAdmin) {
         console.log("Data to validate");
-        console.log(taskData.validation.seuratFiles.length === 0)
+        console.log(taskData.validation.seuratFiles.length === 0);
         if(taskData.validation.status !== 'completed') {
           setValidationLoading(true);
           let username = authData.username;

@@ -5,14 +5,15 @@ import AlertMessageComponent from './alertMessageComponent';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
-  // const [data_path, setDataPath] = useState('');
-  const [trainFraction, setTrainFraction] = useState(0.8);
-  const [validationFraction, setValidationFraction] = useState(0.1);
-  const [testFraction, setTestFraction] = useState(0.1);
-  const [dataSplitPerformed, setDataSplitPerformed] = useState(false);
+  // // const [data_path, setDataPath] = useState('');
+  // const [trainFraction, setTrainFraction] = useState(0.8);
+  // const [validationFraction, setValidationFraction] = useState(0.1);
+  // const [testFraction, setTestFraction] = useState(0.1);
+  // const [dataSplitPerformed, setDataSplitPerformed] = useState(false);
+  // const [archivePath, setArchivePath] = useState('');
+
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [archivePath, setArchivePath] = useState('');
   const [loading, setLoading] = useState(false);
 
 
@@ -25,9 +26,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       // User input for data split fractions
       const userData = {
         data: dataPath,
-        train_fraction: trainFraction,
-        validation_fraction: validationFraction,
-        test_fraction: testFraction,
+        train_fraction: taskData.task_builder.task_states.trainFraction,
+        validation_fraction: taskData.task_builder.task_states.validationFraction,
+        test_fraction: taskData.task_builder.task_states.testFraction,
       };
 
       console.log(userData);
@@ -45,8 +46,17 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       if (response.ok) {
         const result = await response.json();
         console.log(result); // Handle the result as needed
-        setArchivePath(result.archive_path); // Set the archive path
-        setDataSplitPerformed(true); // Set the state to indicate data split performed
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          task_builder: {
+            ...prevTaskData.task_builder,
+            task_states: {
+              ...prevTaskData.task_builder.task_states,
+              dataSplitPerformed: true,
+              archivePath: result.archive_path,
+            },
+          },
+        }));
       } else {
         const error = await response.json();
         console.error(error.error); // Handle the error
@@ -62,7 +72,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     const isValid =
             taskData.task_builder.task_type &&
             taskData.task_builder.task_label.length > 0 &&
-            dataSplitPerformed
+            taskData.task_builder.task_states.dataSplitPerformed
             
     if(isValid) {
         // After Task 5 is successfully completed, update the task status
@@ -163,13 +173,22 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={trainFraction}
+                        value={taskData.task_builder.task_states.trainFraction}
                         onChange={(e) => {
-                          setTrainFraction(parseFloat(e.target.value));
-                          setDataSplitPerformed(false);
+                          setTaskData((prevTaskData) => ({
+                            ...prevTaskData,
+                            task_builder: {
+                              ...prevTaskData.task_builder,
+                              task_states: {
+                                ...prevTaskData.task_builder.task_states,
+                                dataSplitPerformed: false,
+                                trainFraction: parseFloat(e.target.value),
+                              },
+                            },
+                          }));
                         }}
                       />
-                      {trainFraction}
+                      {taskData.task_builder.task_states.trainFraction}
                     </label>
 
                     {/* Slider input for Validation Fraction */}
@@ -180,13 +199,22 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={validationFraction}
+                        value={taskData.task_builder.task_states.validationFraction}
                         onChange={(e) => {
-                          setValidationFraction(parseFloat(e.target.value));
-                          setDataSplitPerformed(false);
+                          setTaskData((prevTaskData) => ({
+                            ...prevTaskData,
+                            task_builder: {
+                              ...prevTaskData.task_builder,
+                              task_states: {
+                                ...prevTaskData.task_builder.task_states,
+                                dataSplitPerformed: false,
+                                validationFraction: parseFloat(e.target.value),
+                              },
+                            },
+                          }));
                         }}
                       />
-                      {validationFraction}
+                      {taskData.task_builder.task_states.validationFraction}
                     </label>
 
                     {/* Slider input for Test Fraction */}
@@ -197,21 +225,30 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={testFraction}
+                        value={taskData.task_builder.task_states.testFraction}
                         onChange={(e) => {
-                          setTestFraction(parseFloat(e.target.value));
-                          setDataSplitPerformed(false);
+                          setTaskData((prevTaskData) => ({
+                            ...prevTaskData,
+                            task_builder: {
+                              ...prevTaskData.task_builder,
+                              task_states: {
+                                ...prevTaskData.task_builder.task_states,
+                                dataSplitPerformed: false,
+                                testFraction: parseFloat(e.target.value),
+                              },
+                            },
+                          }));
                         }}
                       />
-                      {testFraction}
+                      {taskData.task_builder.task_states.testFraction}
                     </label>
 
                     {/* Button to perform data split */}
-                    <button onClick={() => handleDataSplit(index)} disabled={dataSplitPerformed || loading}>
+                    <button onClick={() => handleDataSplit(index)} disabled={taskData.task_builder.task_states.dataSplitPerformed || loading}>
                       {loading ? 'Processing, please wait...' : 'Perform Data Split'}
                     </button>
 
-                    {dataSplitPerformed && <p><b>Archive Path: </b>{archivePath}</p>}
+                    {taskData.task_builder.task_states.dataSplitPerformed && <p><b>Archive Path: </b>{taskData.task_builder.task_states.archivePath}</p>}
 
                   </div>
                 </div>
