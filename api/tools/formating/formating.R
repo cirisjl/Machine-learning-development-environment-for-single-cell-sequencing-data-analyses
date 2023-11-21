@@ -297,7 +297,7 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     }
     srat <- NULL
 
-    list(default_assay=default_assay, assay_names=assay_names, anndata_path=anndata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
+    list(default_assay=default_assay, assay_names=assay_names, anndata_path=adata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
 }
 
 
