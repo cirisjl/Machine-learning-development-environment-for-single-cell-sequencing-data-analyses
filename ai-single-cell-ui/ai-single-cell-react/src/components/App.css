@@ -1300,7 +1300,6 @@ Updates Page */
     display: block;
     float: none;
     margin-right: 26px;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 94%;
