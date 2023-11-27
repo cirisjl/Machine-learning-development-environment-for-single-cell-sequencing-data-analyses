@@ -6,7 +6,7 @@ import scrublet as scr
 from tools.formating.formating import *
 
 def predict_scrublet(path):
-    adata = LoadAnndata(path)
+    adata = load_anndata(path)
 
     if adata is None:
         return os.path.abspath("scrublet_calls.tsv")
