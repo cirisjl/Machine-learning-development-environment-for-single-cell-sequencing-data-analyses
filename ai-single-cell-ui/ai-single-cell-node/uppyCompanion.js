@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 const companionOptions = {
   providerOptions: {
     drive: {
-      key: '586134598850-6cbp6nghnovlj1hlt5qvgg82p5ei7evm.apps.googleusercontent.com',
+      key: 'AIzaSyCymbKZeWVIDxZriSbOPLvfJchTv3Y4k0w',
       secret: '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',
     },
     dropbox: {
