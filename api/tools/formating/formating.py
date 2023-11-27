@@ -56,7 +56,7 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
                 adata.var = adata.var.join(df_ann)
             # print("Inside the loadAnndata CSV 3")
         elif path.endswith(".csv.gz") or path.endswith(".tsv.gz"):
-            data = sc.read_csv(path)
+            adata = sc.read_csv(path)
         elif path.endswith(".xlsx") or path.endswith(".xls"):
             adata = sc.read_excel(path, 0)
         # elif suffix == ".h5" and "pbmc" in path:
