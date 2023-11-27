@@ -257,9 +257,9 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
             print(results)
-            adata_path = str(results.rx2('adata_path'))
+            adata_path = list(results.rx2('adata_path'))[0]
+            assay_names = list(results.rx2('assay_names'))            
             print(adata_path)
-            assay_names = list(results[1])
             print(assay_names)
         except Exception as e:
             print("Object format conversion is failed")
