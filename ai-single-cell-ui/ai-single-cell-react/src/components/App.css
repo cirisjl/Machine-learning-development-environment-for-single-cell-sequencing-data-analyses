@@ -1244,6 +1244,10 @@ Updates Page */
     width: 80%;
   }
 
+  .datasets-input-select select {
+    overflow: auto;
+  }
+
   .common-class-tools-and-workflows input:focus,
   .common-class-tools-and-workflows select:focus,
   .common-class-tools-and-workflows textarea:focus {
