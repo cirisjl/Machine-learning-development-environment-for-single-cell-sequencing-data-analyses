@@ -279,8 +279,12 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     default_assay <- NULL
     adata_path <- NULL
     suffix <- tolower(GetSuffix(path))
+    
+    print("inside R ConvertSeuratSCEtoAnndata")
 
     srat <- LoadSeurat(path)
+
+    print("srat object is loaded")
     default_assay <- DefaultAssay(srat)
     assay_names <- names(srat@assays)
 
@@ -291,10 +295,10 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
         }
         adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
     } else if(suffix == "rds" || suffix == "robj"){
+        print("Inside else block")
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
-        print("inside R ConvertSeuratSCEtoAnndata")
         print(adata_path)
     }
     srat <- NULL
