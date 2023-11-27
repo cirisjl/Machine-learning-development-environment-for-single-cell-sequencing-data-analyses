@@ -142,10 +142,12 @@ LoadSeurat <- function(path, project = NULL) {
         Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
         srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
     } else if(suffix == "rds"){
+        print("insode if else block of rds")
         robj <- readRDS(path)
         if(class(robj) == 'Seurat'){
             srat <- CreateSeuratObject(counts=robj[['RNA']]@counts, meta.data=robj@meta.data, project = Project(robj))
         } else if(class(robj) == 'SingleCellExperiment'){
+            print("insode if else block of singlecellexperiment")
             # srat <- as.Seurat(sce, slot = "counts", data = NULL)
             srat <- as.Seurat(robj, slot = "counts")
         }
