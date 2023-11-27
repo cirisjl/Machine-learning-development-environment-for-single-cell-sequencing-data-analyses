@@ -150,6 +150,7 @@ LoadSeurat <- function(path, project = NULL) {
             print("insode if else block of singlecellexperiment")
             # srat <- as.Seurat(sce, slot = "counts", data = NULL)
             srat <- as.Seurat(robj, slot = "counts")
+            print("srat object extracted")
         }
         rm(robj)
     } else if(suffix == "robj"){
