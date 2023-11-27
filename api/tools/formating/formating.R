@@ -290,12 +290,12 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
             SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
         }
         adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
-        print("inside R ConvertSeuratSCEtoAnndata")
-        print(adata_path)
     } else if(suffix == "rds" || suffix == "robj"){
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
         adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+        print("inside R ConvertSeuratSCEtoAnndata")
+        print(adata_path)
     }
     srat <- NULL
 
