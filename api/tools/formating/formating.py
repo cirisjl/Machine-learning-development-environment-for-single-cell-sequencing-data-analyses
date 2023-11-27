@@ -257,7 +257,7 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
             print(results)
-            adata_path = list(results[2])[0]
+            adata_path = str(results.rx2('adata_path'))
             print(adata_path)
             assay_names = list(results[1])
             print(assay_names)
