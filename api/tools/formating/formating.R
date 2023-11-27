@@ -277,7 +277,7 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
 ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     assay_names <- NULL
     default_assay <- NULL
-    anndata_path <- NULL
+    adata_path <- NULL
     suffix <- tolower(GetSuffix(path))
 
     srat <- LoadSeurat(path)
@@ -290,6 +290,8 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
             SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
         }
         adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+        print("inside R ConvertSeuratSCEtoAnndata")
+        print(adata_path)
     } else if(suffix == "rds" || suffix == "robj"){
         seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
         SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
@@ -297,7 +299,7 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     }
     srat <- NULL
 
-    list(default_assay=default_assay, assay_names=assay_names, anndata_path=adata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
+    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path) # First, check if the adata_path is NULL; Second, check the assay_names
 }
 
 
