@@ -249,9 +249,14 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     assay_names = None
     adata_path = None
 
+    print("Inside convert_seurat_sce_to_anndata")
+    print(assay)
+    print(path)
+
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
+            print(results)
             adata_path = list(results[2])[0]
             assay_names = list(results[1])
         except Exception as e:
