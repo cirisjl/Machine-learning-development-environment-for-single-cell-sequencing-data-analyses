@@ -257,8 +257,8 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
             print(results)
-            adata_path = list(results.rx2('adata_path'))[0]
-            assay_names = list(results.rx2('assay_names'))            
+            adata_path = list(results['adata_path'])[0]
+            assay_names = list(results['assay_names'])          
             print(adata_path)
             print(assay_names)
         except Exception as e:
