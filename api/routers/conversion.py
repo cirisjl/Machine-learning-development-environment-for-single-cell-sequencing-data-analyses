@@ -23,14 +23,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
 
-import json
-import numpy as np
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.float32):
-            return float(obj)
-        return super(NumpyEncoder, self).default(obj)
 
 @router.post('/api/convert_to_anndata', response_model=ConversionResponse)
 async def convert_to_annData(request_data: ConversionRequest):
@@ -294,7 +286,7 @@ async def process_task_data(data: BenchmarksRequest):
 
                 results.append(result)
 
-            return jsonable_encoder(results, custom_encoder=NumpyEncoder)
+            return results
         else:
             return {"message": "Task type is not 'clustering'. No actions performed."}
 
