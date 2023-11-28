@@ -354,7 +354,7 @@ def plot_table(dataframe, n_top=5):
         })
 
 
-def plot_line(x = [], y = {}):  # y is a Dictionary: y = dict(CPU=cpu_usage, Memory=mem_usage, GPU=gpu_mem_usage)
+def plot_line(x=[], y={}):
     x = [n for n in range(len(x))]
     traces = []
 
@@ -363,43 +363,42 @@ def plot_line(x = [], y = {}):  # y is a Dictionary: y = dict(CPU=cpu_usage, Mem
             if sum(value) == 0:
                 continue
             traces.append({
-                    "type": "scatter",
-                    "x": x, 
-                    "y": value, 
-                    "name": key,
-                    "mode":'lines+markers',
-                    "line": {
-                        "dash": 'solid' if 'CPU' in key else 'dot'
-                    },
-                    "marker": {
-                        'size': point_size_2d
-                    },
-                    "connectgaps": True
-                })
+                "type": "scatter",
+                "x": x,
+                "y": value,
+                "name": key,
+                "mode": 'lines+markers',
+                "line": {
+                    "dash": 'solid' if 'CPU' in key else 'dot'
+                },
+                "marker": {
+                    'size': point_size_2d
+                },
+                "connectgaps": True
+            })
     else:
         print("[DEBUG] No data is found in y.")
 
-    if (traces in [[], None, ""]):
+    if not traces:
         print("[DEBUG] no traces added to line plot")
 
     return {
-        'data': traces,
-        'layout': dict(
-            title = 'Computing assessments',
-            xaxis = {"title": 'Time points'},
-            yaxis = {"title": 'Utilization %'},
-            margin = margin,
-            # legend={'x': 0, 'y': 1},
-            hovermode = 'closest',
-            transition = {'duration': 100},
-            autosize = True,
-            width = 4 * scale,
-            height = 3 * scale
-        )
+        'data': [trace for trace in traces],
+        'layout': {
+            'title': 'Computing assessments',
+            'xaxis': {"title": 'Time points'},
+            'yaxis': {"title": 'Utilization %'},
+            'margin': margin,
+            'hovermode': 'closest',
+            'transition': {'duration': 100},
+            'autosize': True,
+            'width': 4 * scale,
+            'height': 3 * scale
+        }
     }
 
 
-def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 'NMI'], y is a Dictionary: y = dict(scVI=[ari_score, asw_score, nmi_score])
+def plot_bar(x=[], y={}, title="Benchmarks"):
     traces = []
 
     if len(x) > 0 and len(y) > 0:
@@ -410,35 +409,33 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
             value = [float('{:.4f}'.format(i)) for i in value]
 
             traces.append({
-                    "type": "bar",
-                    "x": x, 
-                    "y": value, 
-                    "text": value,
-                    "textposition": 'auto',
-                    "name": key,
-                    "marker": {
-                        # 'size': point_size_2d,
-                        "opacity": 0.5
-                    }
-                })
+                "type": "bar",
+                "x": x,
+                "y": value,
+                "text": value,
+                "textposition": 'auto',
+                "name": key,
+                "marker": {
+                    "opacity": 0.5
+                }
+            })
     else:
         print("[DEBUG] No data is found in x or y.")
 
-    if (traces in [[], None, ""]):
+    if not traces:
         print("[DEBUG] no traces added to bar plot")
 
     return {
-        'data': traces,
-        'layout': dict(
-            title = title,
-            xaxis = {"tickangle": -45 if len(y) > 1 else 0},
-            margin = margin,
-            barmode = 'group',
-            # legend={'x': 0, 'y': 1},
-            hovermode = 'closest',
-            transition = {'duration': 100},
-            autosize = True,
-            width = 4 * scale,
-            height = 3 * scale
-        )
+        'data': [trace for trace in traces],
+        'layout': {
+            'title': title,
+            'xaxis': {"tickangle": -45 if len(y) > 1 else 0},
+            'margin': margin,
+            'barmode': 'group',
+            'hovermode': 'closest',
+            'transition': {'duration': 100},
+            'autosize': True,
+            'width': 4 * scale,
+            'height': 3 * scale
+        }
     }

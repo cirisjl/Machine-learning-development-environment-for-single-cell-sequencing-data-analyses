@@ -275,6 +275,8 @@ async def process_task_data(data: BenchmarksRequest):
                 # Call the plot_line function with an empty array for x
                 line_plot = plot_line(x=[], y=y_values)
                
+                print("Completed both bar and line plots")
+            
                 # Combine results
                 result = {
                     "adata_path": adata_path,
