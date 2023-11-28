@@ -43,7 +43,7 @@ const companionOptions = {
   },
   server: {
     host: `${HOST_URL}:3020`,
-    protocol: 'http',
+    protocol: 'https',
   },
   filePath: 'uploads',
   secret: 'some-secret',
