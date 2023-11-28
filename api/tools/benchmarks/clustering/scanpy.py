@@ -14,12 +14,12 @@ def scanpy_clustering(adata, labels, layer=None):
     adata = run_dimension_reduction(adata, layer=layer)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
 
     if layer is None: layer = "X"
     asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsp['connectivities'])
 
-    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage
+    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
 
 
 
