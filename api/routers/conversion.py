@@ -277,6 +277,8 @@ async def process_task_data(data: BenchmarksRequest):
                
                 print("Completed both bar and line plots")
             
+                print(bar_plot)
+                print(line_plot)
                 # Combine results
                 result = {
                     "adata_path": adata_path,
