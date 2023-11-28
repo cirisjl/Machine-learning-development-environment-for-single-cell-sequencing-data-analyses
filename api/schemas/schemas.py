@@ -84,5 +84,9 @@ class DataSplitRequest(BaseModel):
     test_fraction: float
 
 class TaskDataRequest(BaseModel):
+    adata_path: str
+    task_label: str
+
+class BenchmarksRequest(BaseModel):
     task_type: str
-    adata_paths: List[str]
+    data: List[TaskDataRequest]
