@@ -28,8 +28,8 @@ app.get('/', (req, res) => {
 const companionOptions = {
   providerOptions: {
     drive: {
-      key: 'AIzaSyCymbKZeWVIDxZriSbOPLvfJchTv3Y4k0w',
-      secret: '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',
+      key: '586134598850-d84ffn1i5nu7kbudv2vdvmmt26iienhv.apps.googleusercontent.com',
+      secret: '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',
     },
     dropbox: {
       key: '2ylh7cmi8fvh3wk',

@@ -82,3 +82,7 @@ class DataSplitRequest(BaseModel):
     train_fraction: float
     validation_fraction: float
     test_fraction: float
+
+class TaskDataRequest(BaseModel):
+    task_type: str
+    adata_paths: List[str]

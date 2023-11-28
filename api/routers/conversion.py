@@ -1,11 +1,13 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,TaskDataRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
+from tools.benchmarks.clustering.scvi import scvi_clustering
+from tools.benchmarks.clustering.scanpy import scanpy_clustering
 from typing import List
 import logging
 from pathlib import Path
@@ -205,3 +207,51 @@ async def data_split(user_data: DataSplitRequest):
     except Exception as e:
         # Handle any errors
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Your endpoint to handle the incoming data
+@router.post("/publishDatasets/benchmarks")
+async def process_task_data(data: TaskDataRequest):
+    try:
+        # Access the data received
+        task_type = data.task_type
+        adata_paths = data.adata_paths
+        results = []
+        for adata_path in adata_paths:
+            # Load AnnData
+            adata = load_anndata(adata_path)
+
+            # Call scanpy_clustering method
+            asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, labels)
+
+            # Call scvi_clustering method
+            asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, labels)
+
+            # Combine results
+            result = {
+                "adata_path": adata_path,
+                "scanpy_clustering": {
+                    "asw_score": asw_scanpy,
+                    "nmi_score": nmi_scanpy,
+                    "ari_score": ari_scanpy,
+                    "time_points": time_points_scanpy,
+                    "cpu_usage": cpu_usage_scanpy,
+                    "mem_usage": mem_usage_scanpy,
+                },
+                "scvi_clustering": {
+                    "asw_score": asw_scvi,
+                    "nmi_score": nmi_scvi,
+                    "ari_score": ari_scvi,
+                    "time_points": time_points_scvi,
+                    "cpu_usage": cpu_usage_scvi,
+                    "mem_usage": mem_usage_scvi,
+                },
+            }
+
+            results.append(result)
+
+        return results
+    
+    except Exception as e:
+        # Handle exceptions as needed
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
