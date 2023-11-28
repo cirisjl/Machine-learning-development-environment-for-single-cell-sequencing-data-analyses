@@ -41,11 +41,11 @@ def scvi_clustering(adata, labels):
     adata.obsm["X_mde"] = mde(adata.obsm["X_scVI"])
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
 
     asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
 
-    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage
+    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
 
 
 

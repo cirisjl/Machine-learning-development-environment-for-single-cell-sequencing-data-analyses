@@ -32,7 +32,7 @@ class Monitor(Thread):
 
     def stop(self):
         self.stopped = True
-        return self.time_points, self.cpu_usage, self.mem_usage
+        return self.time_points, self.cpu_usage, self.mem_usage, self.gpu_mem_usage
     
 
     def nvidia_info(self):
