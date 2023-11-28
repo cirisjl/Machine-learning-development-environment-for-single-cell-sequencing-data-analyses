@@ -2,7 +2,7 @@
 import torch
 import numpy as np
 import pandas as pd
-import api.tools.benchmarks.clustering.scanpy as sc
+import tools.benchmarks.clustering.scanpy as sc
 from typing import Tuple
 
 import sys
