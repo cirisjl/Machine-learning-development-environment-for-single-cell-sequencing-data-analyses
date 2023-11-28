@@ -216,6 +216,7 @@ async def process_task_data(data: TaskDataRequest):
         # Access the data received
         task_type = data.task_type
         adata_paths = data.adata_paths
+        labels = None
         results = []
         for adata_path in adata_paths:
             # Load AnnData
