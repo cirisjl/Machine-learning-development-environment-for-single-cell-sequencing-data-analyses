@@ -382,7 +382,7 @@ def plot_line(x = [], y = {}):  # y is a Dictionary: y = dict(CPU=cpu_usage, Mem
     if (traces in [[], None, ""]):
         print("[DEBUG] no traces added to line plot")
 
-    return json.dumps({
+    return {
         'data': traces,
         'layout': dict(
             title = 'Computing assessments',
@@ -396,7 +396,7 @@ def plot_line(x = [], y = {}):  # y is a Dictionary: y = dict(CPU=cpu_usage, Mem
             width = 4 * scale,
             height = 3 * scale
         )
-    })
+    }
 
 
 def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 'NMI'], y is a Dictionary: y = dict(scVI=[ari_score, asw_score, nmi_score])
@@ -427,7 +427,7 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
     if (traces in [[], None, ""]):
         print("[DEBUG] no traces added to bar plot")
 
-    return json.dumps({
+    return {
         'data': traces,
         'layout': dict(
             title = title,
@@ -441,4 +441,4 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
             width = 4 * scale,
             height = 3 * scale
         )
-    })
+    }
