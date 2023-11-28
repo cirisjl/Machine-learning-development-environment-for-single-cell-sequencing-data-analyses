@@ -7,7 +7,7 @@ RUN pip install --upgrade --no-cache \
     # louvain plotly psutil nvidia-ml-py pymde
     # gputil
 
-RUN mkdir /app
+# RUN mkdir /app
 WORKDIR /app
 COPY . .
 
