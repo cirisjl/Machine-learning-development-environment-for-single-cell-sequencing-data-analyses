@@ -173,86 +173,86 @@ async def run_quality_control(file_mappings: List[dict]):
         detail="An error occurred during quality control"
     )
 
-@router.post("/api/data-split")
-async def data_split(user_data: DataSplitRequest):
-    try:
-        # Access user data
-        data_filepath = user_data.data
-        train_fraction = user_data.train_fraction
-        validation_fraction = user_data.validation_fraction
-        test_fraction = user_data.test_fraction
+# @router.post("/api/data-split")
+# async def data_split(user_data: DataSplitRequest):
+#     try:
+#         # Access user data
+#         data_filepath = user_data.data
+#         train_fraction = user_data.train_fraction
+#         validation_fraction = user_data.validation_fraction
+#         test_fraction = user_data.test_fraction
 
-        adata = load_anndata(data_filepath)
+#         adata = load_anndata(data_filepath)
 
-        train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+#         train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
        
-       # Extract directory and filename from the data filepath
-        data_directory = Path(data_filepath).parent
-        data_filename = Path(data_filepath).stem
+#        # Extract directory and filename from the data filepath
+#         data_directory = Path(data_filepath).parent
+#         data_filename = Path(data_filepath).stem
 
-        # Define a temporary directory to store the files
-        temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
+#         # Define a temporary directory to store the files
+#         temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
 
-        # Write AnnData objects to files with unique filenames in the temporary directory
-        train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
-        validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
-        test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
+#         # Write AnnData objects to files with unique filenames in the temporary directory
+#         train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
+#         validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
+#         test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
 
-        # Compress files into a single archive in the same directory
-        shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
+#         # Compress files into a single archive in the same directory
+#         shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
 
-        # Return the path to the compressed archive
-        archive_path = data_directory / f"{data_filename}_data_split.zip"
-        return {"result": "Data split successful", "archive_path": archive_path}
-    except Exception as e:
-        # Handle any errors
-        raise HTTPException(status_code=500, detail=str(e))
+#         # Return the path to the compressed archive
+#         archive_path = data_directory / f"{data_filename}_data_split.zip"
+#         return {"result": "Data split successful", "archive_path": archive_path}
+#     except Exception as e:
+#         # Handle any errors
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Your endpoint to handle the incoming data
-@router.post("/publishDatasets/benchmarks")
-async def process_task_data(data: TaskDataRequest):
-    try:
-        # Access the data received
-        task_type = data.task_type
-        adata_paths = data.adata_paths
-        labels = None
-        results = []
-        for adata_path in adata_paths:
-            # Load AnnData
-            adata = load_anndata(adata_path)
+# # Your endpoint to handle the incoming data
+# @router.post("/publishDatasets/benchmarks")
+# async def process_task_data(data: TaskDataRequest):
+#     try:
+#         # Access the data received
+#         task_type = data.task_type
+#         adata_paths = data.adata_paths
+#         labels = None
+#         results = []
+#         for adata_path in adata_paths:
+#             # Load AnnData
+#             adata = load_anndata(adata_path)
 
-            # Call scanpy_clustering method
-            asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, labels)
+#             # Call scanpy_clustering method
+#             asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, labels)
 
-            # Call scvi_clustering method
-            asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, labels)
+#             # Call scvi_clustering method
+#             asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, labels)
 
-            # Combine results
-            result = {
-                "adata_path": adata_path,
-                "scanpy_clustering": {
-                    "asw_score": asw_scanpy,
-                    "nmi_score": nmi_scanpy,
-                    "ari_score": ari_scanpy,
-                    "time_points": time_points_scanpy,
-                    "cpu_usage": cpu_usage_scanpy,
-                    "mem_usage": mem_usage_scanpy,
-                },
-                "scvi_clustering": {
-                    "asw_score": asw_scvi,
-                    "nmi_score": nmi_scvi,
-                    "ari_score": ari_scvi,
-                    "time_points": time_points_scvi,
-                    "cpu_usage": cpu_usage_scvi,
-                    "mem_usage": mem_usage_scvi,
-                },
-            }
+#             # Combine results
+#             result = {
+#                 "adata_path": adata_path,
+#                 "scanpy_clustering": {
+#                     "asw_score": asw_scanpy,
+#                     "nmi_score": nmi_scanpy,
+#                     "ari_score": ari_scanpy,
+#                     "time_points": time_points_scanpy,
+#                     "cpu_usage": cpu_usage_scanpy,
+#                     "mem_usage": mem_usage_scanpy,
+#                 },
+#                 "scvi_clustering": {
+#                     "asw_score": asw_scvi,
+#                     "nmi_score": nmi_scvi,
+#                     "ari_score": ari_scvi,
+#                     "time_points": time_points_scvi,
+#                     "cpu_usage": cpu_usage_scvi,
+#                     "mem_usage": mem_usage_scvi,
+#                 },
+#             }
 
-            results.append(result)
+#             results.append(result)
 
-        return results
+#         return results
     
-    except Exception as e:
-        # Handle exceptions as needed
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+#     except Exception as e:
+#         # Handle exceptions as needed
+#         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
