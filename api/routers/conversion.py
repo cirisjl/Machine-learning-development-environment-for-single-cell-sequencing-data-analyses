@@ -7,8 +7,8 @@ from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
 from typing import List
-from tools.benchmarks.clustering.scanpy import scanpy_clustering
-from tools.benchmarks.clustering.scvi import scvi_clustering
+from tools.benchmarks.clustering.scanpy import clustering as scanpy_clustering
+from tools.benchmarks.clustering.scvi import clustering as scvi_clustering
 import logging
 from pathlib import Path
 import shutil
