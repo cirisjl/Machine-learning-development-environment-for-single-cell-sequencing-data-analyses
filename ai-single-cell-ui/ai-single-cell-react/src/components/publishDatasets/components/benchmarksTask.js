@@ -85,15 +85,13 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                {/* Iterate over benchmarks_results and call BenchmarksPlot */}
           {taskData.benchmarks &&
             taskData.benchmarks.benchmarks_results &&
-            taskData.benchmarks.benchmarks_results.map((result, index) => {
+            taskData.benchmarks.benchmarks_results.map((result, index) => (
               // Assuming BenchmarksPlot is a component that you want to render
-              return (
                 <BenchmarksPlots
                   barPlot={result.bar_plot}
                   linePlot={result.line_plot}
                 />
-              );
-            })}
+            ))}
             
           <div className='navigation-buttons'>
                 <div className="previous">
