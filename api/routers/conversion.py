@@ -1,14 +1,14 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,TaskDataRequest
+from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,BenchmarksRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
-# from tools.benchmarks.clustering.scvi import scvi_clustering
-# from tools.benchmarks.clustering.scanpy import scanpy_clustering
 from typing import List
+from tools.benchmarks.clustering.scanpy import scanpy_clustering
+from tools.benchmarks.clustering.scvi import scvi_clustering
 import logging
 from pathlib import Path
 import shutil
@@ -173,86 +173,91 @@ async def run_quality_control(file_mappings: List[dict]):
         detail="An error occurred during quality control"
     )
 
-# @router.post("/api/data-split")
-# async def data_split(user_data: DataSplitRequest):
-#     try:
-#         # Access user data
-#         data_filepath = user_data.data
-#         train_fraction = user_data.train_fraction
-#         validation_fraction = user_data.validation_fraction
-#         test_fraction = user_data.test_fraction
+@router.post("/api/data-split")
+async def data_split(user_data: DataSplitRequest):
+    try:
+        # Access user data
+        data_filepath = user_data.data
+        train_fraction = user_data.train_fraction
+        validation_fraction = user_data.validation_fraction
+        test_fraction = user_data.test_fraction
 
-#         adata = load_anndata(data_filepath)
+        adata = load_anndata(data_filepath)
 
-#         train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+        train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
        
-#        # Extract directory and filename from the data filepath
-#         data_directory = Path(data_filepath).parent
-#         data_filename = Path(data_filepath).stem
+       # Extract directory and filename from the data filepath
+        data_directory = Path(data_filepath).parent
+        data_filename = Path(data_filepath).stem
 
-#         # Define a temporary directory to store the files
-#         temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
+        # Define a temporary directory to store the files
+        temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
 
-#         # Write AnnData objects to files with unique filenames in the temporary directory
-#         train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
-#         validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
-#         test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
+        # Write AnnData objects to files with unique filenames in the temporary directory
+        train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
+        validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
+        test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
 
-#         # Compress files into a single archive in the same directory
-#         shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
+        # Compress files into a single archive in the same directory
+        shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
 
-#         # Return the path to the compressed archive
-#         archive_path = data_directory / f"{data_filename}_data_split.zip"
-#         return {"result": "Data split successful", "archive_path": archive_path}
-#     except Exception as e:
-#         # Handle any errors
-#         raise HTTPException(status_code=500, detail=str(e))
+        # Return the path to the compressed archive
+        archive_path = data_directory / f"{data_filename}_data_split.zip"
+        return {"result": "Data split successful", "archive_path": archive_path}
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-# # Your endpoint to handle the incoming data
-# @router.post("/publishDatasets/benchmarks")
-# async def process_task_data(data: TaskDataRequest):
-#     try:
-#         # Access the data received
-#         task_type = data.task_type
-#         adata_paths = data.adata_paths
-#         labels = None
-#         results = []
-#         for adata_path in adata_paths:
-#             # Load AnnData
-#             adata = load_anndata(adata_path)
+@router.post("/publishDatasets/benchmarks")
+async def process_task_data(data: BenchmarksRequest):
+    try:
+        # Access the data received
+        task_type = data.task_type
+        items = data.data
 
-#             # Call scanpy_clustering method
-#             asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, labels)
+        if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
+            results = []
+            for item in items:
+                adata_path = item.adata_path
+                task_label = item.task_label
 
-#             # Call scvi_clustering method
-#             asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, labels)
+                # Load AnnData
+                adata = load_anndata(adata_path)
 
-#             # Combine results
-#             result = {
-#                 "adata_path": adata_path,
-#                 "scanpy_clustering": {
-#                     "asw_score": asw_scanpy,
-#                     "nmi_score": nmi_scanpy,
-#                     "ari_score": ari_scanpy,
-#                     "time_points": time_points_scanpy,
-#                     "cpu_usage": cpu_usage_scanpy,
-#                     "mem_usage": mem_usage_scanpy,
-#                 },
-#                 "scvi_clustering": {
-#                     "asw_score": asw_scvi,
-#                     "nmi_score": nmi_scvi,
-#                     "ari_score": ari_scvi,
-#                     "time_points": time_points_scvi,
-#                     "cpu_usage": cpu_usage_scvi,
-#                     "mem_usage": mem_usage_scvi,
-#                 },
-#             }
+                # Call scanpy_clustering method
+                asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, task_label)
 
-#             results.append(result)
+                # Call scvi_clustering method
+                asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, task_label)
 
-#         return results
-    
-#     except Exception as e:
-#         # Handle exceptions as needed
-#         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+                # Combine results
+                result = {
+                    "adata_path": adata_path,
+                    "scanpy_clustering": {
+                        "asw_score": asw_scanpy,
+                        "nmi_score": nmi_scanpy,
+                        "ari_score": ari_scanpy,
+                        "time_points": time_points_scanpy,
+                        "cpu_usage": cpu_usage_scanpy,
+                        "mem_usage": mem_usage_scanpy,
+                    },
+                    "scvi_clustering": {
+                        "asw_score": asw_scvi,
+                        "nmi_score": nmi_scvi,
+                        "ari_score": ari_scvi,
+                        "time_points": time_points_scvi,
+                        "cpu_usage": cpu_usage_scvi,
+                        "mem_usage": mem_usage_scvi,
+                    },
+                }
+
+                results.append(result)
+
+            return results
+        else:
+            return {"message": "Task type is not 'clustering'. No actions performed."}
+
+    except Exception as e:
+        # Handle exceptions as needed
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

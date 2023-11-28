@@ -21,28 +21,30 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   useEffect(() => {
 
+    if (taskData.quality_control && taskData.quality_control.qc_results) {
+
       setLoading(true);
 
-      // Extract data needed for the backend API call
-      const { task_builder, validation } = taskData;
-      const { task_type } = task_builder;
-      const { fileMappings } = validation;
-      const adataPaths = fileMappings.map((fileDetails) => fileDetails.adata_path);
+      const { qc_results } = taskData.quality_control;
 
-      // Prepare data for the API call
-      const requestData = {
-        task_type,
-        adata_paths: adataPaths,
-        // Add any other data you need to send
+      // Form the post body
+      const postBody = {
+        task_type: taskData.task_builder.task_type,  // Assuming task_type is in task_builder
+        data: qc_results.map((result, index) => ({
+          adata_path: result.adata_path,
+          task_label: taskData.task_builder.task_label[index] || '',  // Assuming task_label is in task_builder
+        })),
       };
 
-      // Perform the API call
+      // Now you have the postBody ready for your API request
+      console.log('Post Body:', postBody);
+
       fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/benchmarks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(postBody),
       })
         .then((response) => {
           if (response.ok) {
@@ -60,8 +62,9 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         });
 
         setLoading(false);
+    }
 
-  }, [setTaskStatus, taskData]);
+  }, [taskData]);
 
   return (
     <div className='benchmarks-task'>
