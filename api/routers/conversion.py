@@ -278,7 +278,7 @@ async def process_task_data(data: BenchmarksRequest):
                 result = {
                     "adata_path": adata_path,
                     "scanpy_clustering": scanpy_results,
-                    "scvi_clustering": scvi_results,
+                    # "scvi_clustering": scvi_results,
                     "bar_plot": bar_plot,
                     "line_plot": line_plot
                 }
