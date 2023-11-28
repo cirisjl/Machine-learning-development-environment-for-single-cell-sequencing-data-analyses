@@ -29,10 +29,10 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
       // Form the post body
       const postBody = {
-        task_type: taskData.task_builder.task_type,  // Assuming task_type is in task_builder
+        task_type: taskData.task_builder.task_type.label,  // Assuming task_type is in task_builder
         data: qc_results.map((result, index) => ({
           adata_path: result.adata_path,
-          task_label: taskData.task_builder.task_label[index] || '',  // Assuming task_label is in task_builder
+          task_label: taskData.task_builder.task_label[index].label || '',  // Assuming task_label is in task_builder
         })),
       };
 
