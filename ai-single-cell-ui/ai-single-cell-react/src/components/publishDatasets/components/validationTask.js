@@ -3,7 +3,7 @@ import { FLASK_BACKEND_API,CELERY_BACKEND_API ,STORAGE } from '../../../constant
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import { PropagateLoader, RingLoader, ScaleLoader } from 'react-spinners';
+import {ScaleLoader } from 'react-spinners';
 import axios from 'axios';
 
 
