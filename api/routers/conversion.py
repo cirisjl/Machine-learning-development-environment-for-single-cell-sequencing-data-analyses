@@ -7,6 +7,7 @@ from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
 from typing import List
+from tools.visualization.plot import plot_bar, plot_line
 from tools.benchmarks.clustering.scanpy import clustering as scanpy_clustering
 from tools.benchmarks.clustering.scvi import clustering as scvi_clustering
 import logging
@@ -226,30 +227,60 @@ async def process_task_data(data: BenchmarksRequest):
                 adata = load_anndata(adata_path)
 
                 # Call scanpy_clustering method
-                asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy = scanpy_clustering(adata, task_label)
+                asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, task_label)
 
+                scanpy_results = {
+                    "asw_score": asw_scanpy,
+                    "nmi_score": nmi_scanpy,
+                    "ari_score": ari_scanpy,
+                    "time_points": time_points_scanpy,
+                    "cpu_usage": cpu_usage_scanpy,
+                    "mem_usage": mem_usage_scanpy,
+                    "gpu_mem_usage": gpu_mem_usage_scanpy
+                }
                 # Call scvi_clustering method
-                asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi = scvi_clustering(adata, task_label)
+                asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scanpy, gpu_mem_usage_scvi = scvi_clustering(adata, task_label)
 
+                scvi_results = {
+                    "asw_score": asw_scvi,
+                    "nmi_score": nmi_scvi,
+                    "ari_score": ari_scvi,
+                    "time_points": time_points_scvi,
+                    "cpu_usage": cpu_usage_scvi,
+                    "mem_usage": mem_usage_scvi,
+                    "gpu_mem_usage": gpu_mem_usage_scvi
+                }
+               
+               # Format x and y for the plot_bar function
+                x_values = ['ARI', 'Silhouette', 'NMI']
+                y_values = {
+                    'Scanpy': [ scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']],
+                    'scVI': [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']],
+                }
+
+                # Call the plot_bar function
+                bar_plot = plot_bar(x=x_values, y=y_values, title='Benchmarks')
+
+                # Format x and y for the plot_line function
+                y_values = {
+                    'Scanpy_CPU': scanpy_results['cpu_usage'],
+                    'Scanpy_Memory': scanpy_results['mem_usage'],
+                    'Scanpy_GPU': scanpy_results['gpu_mem_usage'],
+                    'scVI_CPU': scvi_results['cpu_usage'],
+                    'scVI_Memory': scvi_results['mem_usage'],
+                    'scVI_GPU': scvi_results['gpu_mem_usage'],
+                }
+
+                # Call the plot_line function with an empty array for x
+                line_plot = plot_line(x=[], y=y_values)
+               
                 # Combine results
                 result = {
                     "adata_path": adata_path,
-                    "scanpy_clustering": {
-                        "asw_score": asw_scanpy,
-                        "nmi_score": nmi_scanpy,
-                        "ari_score": ari_scanpy,
-                        "time_points": time_points_scanpy,
-                        "cpu_usage": cpu_usage_scanpy,
-                        "mem_usage": mem_usage_scanpy,
-                    },
-                    "scvi_clustering": {
-                        "asw_score": asw_scvi,
-                        "nmi_score": nmi_scvi,
-                        "ari_score": ari_scvi,
-                        "time_points": time_points_scvi,
-                        "cpu_usage": cpu_usage_scvi,
-                        "mem_usage": mem_usage_scvi,
-                    },
+                    "scanpy_clustering": scanpy_results,
+                    "scvi_clustering": scvi_results,
+                    "bar_plot": bar_plot,
+                    "line_plot": line_plot
                 }
 
                 results.append(result)
