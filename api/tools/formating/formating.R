@@ -146,8 +146,11 @@ LoadSeurat <- function(path, project = NULL) {
         if(class(robj) == 'Seurat'){
             srat <- CreateSeuratObject(counts=robj[['RNA']]@counts, meta.data=robj@meta.data, project = Project(robj))
         } else if(class(robj) == 'SingleCellExperiment'){
-            # srat <- as.Seurat(sce, slot = "counts", data = NULL)
-            srat <- as.Seurat(robj, slot = "counts")
+            if ('logcounts' %in% names(robj)){
+                srat <- as.Seurat(robj, slot = "counts")
+            } else {
+                srat <- as.Seurat(robj, slot = "counts", data = NULL)
+            }
         }
         rm(robj)
     } else if(suffix == "robj"){
@@ -277,27 +280,35 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
 ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
     assay_names <- NULL
     default_assay <- NULL
-    anndata_path <- NULL
+    anndata_path <- paste0(tools::file_path_sans_ext(path), ".h5ad")
     suffix <- tolower(GetSuffix(path))
 
     srat <- LoadSeurat(path)
     default_assay <- DefaultAssay(srat)
     assay_names <- names(srat@assays)
 
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){
-        if(!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
-            DefaultAssay(srat) <- assay
-            SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
-        }
-        adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
-    } else if(suffix == "rds" || suffix == "robj"){
-        seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
-        SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
-        adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    if (!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
+        DefaultAssay(srat) <- assay
+        SeuratToAnndata(srat, anndata_path, assay=assay)
     }
+    else{
+        SeuratToAnndata(srat, anndata_path)
+    }
+
+    # if(suffix == "h5Seurat" || suffix == "h5seurat"){
+    #     if(!is.null(assay) && assay %in% assay_names && assay != 'RNA') {
+    #         DefaultAssay(srat) <- assay
+    #         SaveH5Seurat(srat, filename = path, overwrite = TRUE, verbose = FALSE)
+    #     }
+    #     adata_path <- Convert(path, dest = "h5ad", assay=assay, overwrite = TRUE, verbose = FALSE)
+    # } else if(suffix == "rds" || suffix == "robj"){
+    #     seurat_path <- paste0(tools::file_path_sans_ext(path), ".h5Seurat")
+    #     SaveH5Seurat(srat, filename = seurat_path, overwrite = TRUE, verbose = FALSE)
+    #     adata_path <- Convert(seurat_path, dest = "h5ad" , overwrite = TRUE, verbose = FALSE)
+    # }
     srat <- NULL
 
-    list(default_assay=default_assay, assay_names=assay_names, anndata_path=anndata_path) # First, check if the anndata_path is NULL; Second, check the assay_names
+    list(default_assay=default_assay, assay_names=assay_names, anndata_path=anndata_path) # Check if the assay_names is NULL to verify is the function runs successfully
 }
 
 
