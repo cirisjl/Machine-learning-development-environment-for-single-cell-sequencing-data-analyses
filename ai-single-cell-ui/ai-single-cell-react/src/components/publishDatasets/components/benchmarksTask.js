@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {CELERY_BACKEND_API} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
+import BenchmarksPlots from './benchmarksPlots';
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -80,18 +81,33 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                 <ScaleLoader color="#36d7b7" loading={loading} />
               </div>
             ) : (
-      <div className='navigation-buttons'>
-            <div className="previous">
-              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                Previous
-              </button>
-            </div>
-            <div className="next-upon-success">
-              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                Next
-              </button>
-            </div>
-          </div>
+              <>
+               {/* Iterate over benchmarks_results and call BenchmarksPlot */}
+          {taskData.benchmarks &&
+            taskData.benchmarks.benchmarks_results &&
+            taskData.benchmarks.benchmarks_results.map((result, index) => {
+              // Assuming BenchmarksPlot is a component that you want to render
+              return (
+                <BenchmarksPlots
+                  barPlot={result.bar_plot}
+                  linePlot={result.line_plot}
+                />
+              );
+            })}
+            
+          <div className='navigation-buttons'>
+                <div className="previous">
+                  <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                    Previous
+                  </button>
+                </div>
+                <div className="next-upon-success">
+                  <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                    Next
+                  </button>
+                </div>
+              </div>
+          </>
         )}
     </div>
   );
