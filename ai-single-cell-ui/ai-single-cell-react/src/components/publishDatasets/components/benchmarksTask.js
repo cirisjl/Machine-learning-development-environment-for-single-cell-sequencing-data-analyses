@@ -20,24 +20,18 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   };
 
   useEffect(() => {
-
     if (taskData.quality_control && taskData.quality_control.qc_results) {
-
       setLoading(true);
 
       const { qc_results } = taskData.quality_control;
 
-      // Form the post body
       const postBody = {
-        task_type: taskData.task_builder.task_type.label,  // Assuming task_type is in task_builder
+        task_type: taskData.task_builder.task_type.label,
         data: qc_results.map((result, index) => ({
           adata_path: result.adata_path,
-          task_label: taskData.task_builder.task_label[index].label || '',  // Assuming task_label is in task_builder
+          task_label: taskData.task_builder.task_label[index].label || '',
         })),
       };
-
-      // Now you have the postBody ready for your API request
-      console.log('Post Body:', postBody);
 
       fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/benchmarks`, {
         method: 'POST',
@@ -46,25 +40,35 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         },
         body: JSON.stringify(postBody),
       })
-        .then((response) => {
-          if (response.ok) {
-            console.log('Backend API call successful');
+        .then((response) => response.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const benchmarksResults = data;
+
+            // Update the benchmarks section in taskData with the received results
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              benchmarks: {
+                benchmarks_results: benchmarksResults,
+              },
+            }));
           } else {
-            console.error('Backend API call failed');
-            setMessage('Backend API call failed');
-          setHasMessage(true);
+            console.error('Invalid response format');
+            setMessage('Invalid response format');
+            setHasMessage(true);
           }
         })
         .catch((error) => {
           console.error('Error during API call:', error);
-          setMessage('Error during API call:', error);
+          setMessage(`Error during API call: ${error}`);
           setHasMessage(true);
+        })
+        .finally(() => {
+          setLoading(false);
         });
-
-        setLoading(false);
     }
-
   }, [taskData]);
+
 
   return (
     <div className='benchmarks-task'>

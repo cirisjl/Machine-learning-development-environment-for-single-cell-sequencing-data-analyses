@@ -92,7 +92,9 @@ export default function PublishDataset() {
             archivePath: ''
           }
         },
-        benchmarks: {},
+        benchmarks: {
+          benchmarks_results: []
+        },
         Review: {}
       });
 
