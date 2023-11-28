@@ -15,15 +15,6 @@ from scipy.sparse import csr_matrix
 
 from tools.formating.plotConstants import *
 
-import json
-import numpy as np
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.float32):
-            return float(obj)
-        return super(NumpyEncoder, self).default(obj)
-
 def plot_UMAP(adata, layer=None, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
 
@@ -405,7 +396,7 @@ def plot_line(x = [], y = {}):  # y is a Dictionary: y = dict(CPU=cpu_usage, Mem
             width = 4 * scale,
             height = 3 * scale
         )
-    }, cls=NumpyEncoder)
+    })
 
 
 def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 'NMI'], y is a Dictionary: y = dict(scVI=[ari_score, asw_score, nmi_score])
@@ -416,7 +407,7 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
             if sum(value) == 0:
                 continue
 
-            value = [float('{:.4f}'.format(i)) for i in value]
+            # value = [float('{:.4f}'.format(i)) for i in value]
 
             traces.append({
                     "type": "bar",
@@ -450,4 +441,4 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
             width = 4 * scale,
             height = 3 * scale
         )
-    }, cls=NumpyEncoder)
+    })
