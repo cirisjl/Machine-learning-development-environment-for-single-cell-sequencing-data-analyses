@@ -7,7 +7,7 @@ from tools.evaluation.monitor import *
 from tools.evaluation.clustering import clustering_scores
 
 
-def scanpy_clustering(adata, labels, layer=None):
+def clustering(adata, labels, layer=None):
     # Start monitoring
     monitor = Monitor(1)
 
@@ -17,12 +17,7 @@ def scanpy_clustering(adata, labels, layer=None):
     time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
 
     if layer is None: layer = "X"
-    asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsp['connectivities'])
+    # asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsp['connectivities'])
+    asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsm[layer + '_umap'])
 
     return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
-
-
-
-
-
-

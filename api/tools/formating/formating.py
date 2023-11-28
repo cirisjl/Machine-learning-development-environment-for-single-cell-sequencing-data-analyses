@@ -87,7 +87,6 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
             adata = sc.read_umi_tools(path)
         elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
             adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay=assay)
-            print("load_anndata", adata_path)
             if os.path.exists(adata_path):
                 adata = sc.read_h5ad(adata_path)
 
@@ -254,7 +253,6 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
             results = OrderedDict(results)
-            # adata_path = str(results.rx2('anndata_path'))
             adata_path = results['anndata_path'][0]
             assay_names = results['assay_names']
         except Exception as e:
