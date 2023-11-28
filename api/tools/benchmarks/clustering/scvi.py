@@ -27,8 +27,8 @@ def clustering(adata, labels):
     monitor = Monitor(1)
 
     # Set up AnnData with scVI
-    scvi.data.setup_anndata(adata)
-    
+    scvi.setup_anndata(adata)
+
     model = scvi.model.SCVI(adata)
     model.train()
 
