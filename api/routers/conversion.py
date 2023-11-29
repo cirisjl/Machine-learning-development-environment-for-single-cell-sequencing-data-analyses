@@ -280,15 +280,15 @@ async def process_task_data(data: BenchmarksRequest):
                 # print(bar_plot)
                 # print(line_plot)
                 # Combine results
-                result = {
-                    "adata_path": adata_path,
-                    "scanpy_clustering": scanpy_results,
-                    # "scvi_clustering": scvi_results,
-                    # "bar_plot": bar_plot,
-                    # "line_plot": line_plot
-                }
+                # result = {
+                #     "adata_path": adata_path,
+                #     "scanpy_clustering": scanpy_results,
+                #     # "scvi_clustering": scvi_results,
+                #     # "bar_plot": bar_plot,
+                #     # "line_plot": line_plot
+                # }
 
-                results.append(result)
+                results.append(scanpy_results)
 
             return JSONResponse(content={"results": results})
         else:
