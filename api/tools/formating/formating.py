@@ -256,10 +256,10 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
         try:
             results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
-            results = OrderedDict(results)
-            # adata_path = str(results.rx2('anndata_path'))
-            adata_path = results['adata_path'][0]
-            assay_names = results['assay_names']
+            adata_path = list(results['adata_path'])[0]
+            assay_names = list(results['assay_names'])          
+            print(adata_path)
+            print(assay_names)
         except Exception as e:
             print("Seurat/SCE to Anndata is failed")
             print(e)
