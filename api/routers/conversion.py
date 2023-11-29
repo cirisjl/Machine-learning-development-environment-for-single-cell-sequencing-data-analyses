@@ -263,29 +263,29 @@ async def process_task_data(data: BenchmarksRequest):
                 bar_plot = plot_bar(x=x_values, y=y_values, title='Benchmarks')
 
                 # Format x and y for the plot_line function
-                # y_values = {
-                #     'Scanpy_CPU': scanpy_results['cpu_usage'],
-                #     'Scanpy_Memory': scanpy_results['mem_usage'],
-                #     'Scanpy_GPU': scanpy_results['gpu_mem_usage'],
-                #     # 'scVI_CPU': scvi_results['cpu_usage'],
-                #     # 'scVI_Memory': scvi_results['mem_usage'],
-                #     # 'scVI_GPU': scvi_results['gpu_mem_usage'],
-                # }
+                y_values = {
+                    'Scanpy_CPU': scanpy_results['cpu_usage'],
+                    'Scanpy_Memory': scanpy_results['mem_usage'],
+                    'Scanpy_GPU': scanpy_results['gpu_mem_usage'],
+                    # 'scVI_CPU': scvi_results['cpu_usage'],
+                    # 'scVI_Memory': scvi_results['mem_usage'],
+                    # 'scVI_GPU': scvi_results['gpu_mem_usage'],
+                }
 
-                # # Call the plot_line function with an empty array for x
-                # line_plot = plot_line(x=[], y=y_values)
+                # Call the plot_line function with an empty array for x
+                line_plot = plot_line(x=[], y=y_values)
                
                 print("Completed both bar and line plots")
             
                 print(bar_plot)
-                # print(line_plot)
+                print(line_plot)
                 # Combine results
                 result = {
                     # "adata_path": adata_path,
                     # "scanpy_clustering": scanpy_results,
                     # "scvi_clustering": scvi_results,
                     "bar_plot": bar_plot,
-                    # "line_plot": line_plot
+                    "line_plot": line_plot
                 }
 
                 results.append(result)
