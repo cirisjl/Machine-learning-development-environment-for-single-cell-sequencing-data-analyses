@@ -362,6 +362,9 @@ def plot_line(x=[], y={}):
         for key, value in y.items():
             if sum(value) == 0:
                 continue
+
+            value = [float('{:.4f}'.format(i)) for i in value]
+
             traces.append({
                 "type": "scatter",
                 "x": x,
