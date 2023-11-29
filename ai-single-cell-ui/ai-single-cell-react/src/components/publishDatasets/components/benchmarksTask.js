@@ -68,7 +68,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           setLoading(false);
         });
     }
-  }, [taskData]);
+  }, []);
 
 
   return (
