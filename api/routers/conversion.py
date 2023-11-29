@@ -253,14 +253,14 @@ async def process_task_data(data: BenchmarksRequest):
                 # }
                
                # Format x and y for the plot_bar function
-                # x_values = ['ARI', 'Silhouette', 'NMI']
-                # y_values = {
-                #     'Scanpy': [ scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']],
-                #     # 'scVI': [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']],
-                # }
+                x_values = ['ARI', 'Silhouette', 'NMI']
+                y_values = {
+                    'Scanpy': [ scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']],
+                    # 'scVI': [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']],
+                }
 
                 # # Call the plot_bar function
-                # bar_plot = plot_bar(x=x_values, y=y_values, title='Benchmarks')
+                bar_plot = plot_bar(x=x_values, y=y_values, title='Benchmarks')
 
                 # Format x and y for the plot_line function
                 # y_values = {
@@ -277,18 +277,18 @@ async def process_task_data(data: BenchmarksRequest):
                
                 print("Completed both bar and line plots")
             
-                # print(bar_plot)
+                print(bar_plot)
                 # print(line_plot)
                 # Combine results
-                # result = {
-                #     "adata_path": adata_path,
-                #     "scanpy_clustering": scanpy_results,
-                #     # "scvi_clustering": scvi_results,
-                #     # "bar_plot": bar_plot,
-                #     # "line_plot": line_plot
-                # }
+                result = {
+                    # "adata_path": adata_path,
+                    # "scanpy_clustering": scanpy_results,
+                    # "scvi_clustering": scvi_results,
+                    "bar_plot": bar_plot,
+                    # "line_plot": line_plot
+                }
 
-                results.append(scanpy_results)
+                results.append(result)
 
             return JSONResponse(content={"results": results})
         else:
