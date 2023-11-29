@@ -290,7 +290,7 @@ async def process_task_data(data: BenchmarksRequest):
 
                 results.append(result)
 
-            return JSONResponse(content={"results": results})
+            return results
         else:
             return {"message": "Task type is not 'clustering'. No actions performed."}
 
