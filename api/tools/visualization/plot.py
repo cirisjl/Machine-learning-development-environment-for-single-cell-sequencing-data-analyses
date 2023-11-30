@@ -408,7 +408,7 @@ def plot_bar(x = [], y = {}, title = "Benchmarks"):  # x= ['ARI', 'Silhouette', 
             if sum(value) == 0:
                 continue
 
-            value = [float('{:.4f}'.format(i)) for i in value]
+            # value = [float('{:.4f}'.format(i)) for i in value]
 
             traces.append({
                     "type": "bar",

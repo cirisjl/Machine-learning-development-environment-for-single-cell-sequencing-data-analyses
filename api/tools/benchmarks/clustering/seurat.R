@@ -10,7 +10,7 @@ source(here::here('api/tools/formating/formating.R'))
 
 clustering <- function(path, labels, dims=1:10){ # labels: column name of labels in srat@meta.data
     srat <- tryCatch(
-        LoadSeurat(input),
+        LoadSeurat(path),
         error = function(e) {
             stop("The file format is not supported.")
             print(e)
