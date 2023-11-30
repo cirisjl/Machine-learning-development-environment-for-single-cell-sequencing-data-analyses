@@ -110,7 +110,7 @@ LoadSeurat <- function(path, project = NULL) {
     } else if(suffix == "rds"){
         robj <- readRDS(path)
         if(class(robj) == 'Seurat'){
-            # srat <- CreateSeuratObject(counts=robj[['RNA']]@counts, meta.data=robj@meta.data, project = Project(robj))
+            # srat <- CreateSeuratObject(counts=robj[['RNA']]$counts, meta.data=robj@meta.data, project = Project(robj))
             srat <- robj
         } else if(class(robj) == 'SingleCellExperiment'){
             if ('logcounts' %in% names(robj)){
