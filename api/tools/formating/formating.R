@@ -650,6 +650,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   for (layer in names(adata$layers)){
     if (layer == 'scale.data') next
     srat[[layer]] <- CreateAssayObject(data = tadata$layers[layer])
+    message("Adding AnnData layers to Seurat assays")
   }
 
   DefaultAssay(srat) <- assay
@@ -686,6 +687,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
 
       for (name in names(dim.reducs)) {
         srat[[name]] <- dim.reducs[[name]]
+        message("Adding AnnData embeddings to Seurat assays")
       } 
   }
 
