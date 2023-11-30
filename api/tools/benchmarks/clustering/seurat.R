@@ -34,6 +34,8 @@ clustering <- function(path, labels, dims=1:10){ # labels: column name of labels
     srat <- RunUMAP(srat, dims=dims)
 
     umap <- Embeddings(object = srat, reduction = "umap")
+    output <- paste0(tools::file_path_sans_ext(path), ".rds")
+    saveRDS(object = srat, file = output)
 
     list(labels=as.list(srat@meta.data[labels]), labels_pred=as.list(srat@meta.data["seurat_clusters"]), umap=umap)
 }
