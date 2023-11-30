@@ -578,8 +578,12 @@ IsNormalized <- function(Expression_Matrix, min_genes){
   obs_df <- .regularise_df(obs_pd, drop_single_values=FALSE, drop_na_values=TRUE)
   colnames(obs_df) <- sub("n_counts", paste0("nCounts_", assay), colnames(obs_df))
   colnames(obs_df) <- sub("n_genes", paste0("nFeatures_", assay), colnames(obs_df))
+  if("pct_counts_mt" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_mt", "percent.mt", colnames(obs_df))
+  if("pct_counts_rb" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_rb", "percent.rb", colnames(obs_df))
+  if("pct_counts_hb" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_hb", "percent.hb", colnames(obs_df))
   return(obs_df)
 }
+
 
 #' Prepare feature metadata
 #'
@@ -598,6 +602,7 @@ IsNormalized <- function(Expression_Matrix, min_genes){
   colnames(var_df) <- sub("highly_variable", "highly.variable", colnames(var_df))
   return(var_df)
 }
+
 
 .uns2misc <- function(ad, target_uns_keys = list()) {
   uns_keys <- intersect(target_uns_keys, ad$uns_keys())
@@ -640,13 +645,51 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
     srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
     message("X -> counts")
   }
-
+  
+  # Add AnnData layers to assays
   for (layer in names(adata$layers)){
     if (layer == 'scale.data') next
     srat[[layer]] <- CreateAssayObject(data = tadata$layers[layer])
   }
 
   DefaultAssay(srat) <- assay
+
+  # Add dimension reductions
+  embed_names <- unlist(adata$obsm_keys())
+  if (length(embed_names) > 0) {
+    embeddings <- sapply(embed_names, function(x) as.matrix(adata$obsm[[x]]), simplify = FALSE, USE.NAMES = TRUE)
+    names(embeddings) <- embed_names
+      for (name in embed_names) {
+        rownames(embeddings[[name]]) <- colnames(srat[[assay]])
+      }
+
+      dim.reducs <- vector(mode = "list", length = length(embeddings))
+      for (i in seq(length(embeddings))) {
+        name <- embed_names[i]
+        embed <- embeddings[[name]]
+        key <- switch(name,
+          sub("_(.*)", "\\L\\1", sub("^X_", "", toupper(name)), perl = T),
+          "X_pca" = "PC",
+          "X_tsne" = "tSNE",
+          "X_umap" = "UMAP"
+        )
+        colnames(embed) <- paste0(key, "_", seq(ncol(embed)))
+        dim.reducs[[i]] <- Seurat::CreateDimReducObject(
+          embeddings = embed,
+          loadings = new("matrix"),
+          assay = assay,
+          stdev = numeric(0L),
+          key = paste0(key, "_")
+        )
+      }
+      names(dim.reducs) <- sub("X_", "", embed_names)
+
+      for (name in names(dim.reducs)) {
+        srat[[name]] <- dim.reducs[[name]]
+      } 
+  }
+
+  srat@misc <- .uns2misc(adata, target_uns_keys = target_uns_keys)
 
   if (!is.null(outFile)) SaveH5Seurat(srat, filename = outFile, overwrite = TRUE, verbose = FALSE)
 
