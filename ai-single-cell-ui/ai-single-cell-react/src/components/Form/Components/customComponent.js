@@ -163,25 +163,6 @@ class MyForm extends Component {
     if (Object.keys(errors).length === 0) {
       let formData = this.state.formData;
 
-      // construct ID 
-      const task_abbv = formData.Task.value;
-      const species = formData.Species.value;
-      const tissue = formData['Anatomical Entity'].label;
-      const cellCount = formData['Cell Count Estimate'];
-      const author = formData['Author'].label;
-      const submissionDate = formData['Submission Date'];
-      const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
-
-      // Check if cellCount is greater than 1000
-      const useCellCount = cellCount && parseInt(cellCount) > 1000;
-
-      const constructedID = `${task_abbv}-${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${author}-${year}`;
-
-      formData.Id = constructedID;
-
-      console.log(formData);
-
-
       setTaskData((prevTaskData) => ({
         ...prevTaskData,
         metadata: {

@@ -8,10 +8,10 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
   
   const [sectionsVisibility, setSectionsVisibility] = useState({
     inputData: true,
-    qcPlots: true,
-    metadata: true,
-    taskBuilder: true,
-    benchmarks: true,
+    qcPlots: false,
+    metadata: false,
+    taskBuilder: false,
+    benchmarks: false,
   });
 
   const toggleSectionVisibility = (section) => {
@@ -22,8 +22,54 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
   };
   
   const handleTaskCompletion = () => {
-    // Perform the necessary actions for completing Task 1
-    // For example, submit a form, validate input, etc.
+
+    let {formData} = taskData.metadata;
+
+    // populate required fields
+
+    formData.Task = taskData.task_builder.task_type
+    formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
+
+    // construct ID 
+    const task_abbv = formData.Task.value;
+    const species = formData.Species.value;
+    const tissue = formData['Anatomical Entity'].label;
+    const cellCount = formData['Cell Count Estimate'];
+    const author = formData['Author'];
+    const submissionDate = formData['Submission Date'];
+    const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
+
+    // Check if cellCount is greater than 1000
+    const useCellCount = cellCount && parseInt(cellCount) > 1000;
+
+    const constructedID = `${task_abbv}-${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${author}-${year}`;
+
+    formData.Id = constructedID;
+
+    //Add label
+    formData.Label = taskData.task_builder.task_label[0].label
+
+    //Add genes and cells
+    formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
+    formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
+
+    //Add Datasplit metadata
+    formData['Data Split'] = {
+      "trainFraction": taskData.task_builder.task_states.trainFraction,
+      "testFraction": taskData.task_builder.task_states.testFraction,
+      "validationFraction": taskData.task_builder.task_states.validationFraction,
+      "archivePath": taskData.task_builder.task_states.archivePath
+    }
+
+    formData['QC_Plots'] = {
+      "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
+      "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
+      "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
+      "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
+    }
+
+    formData.Status = "Review"
+    console.log(formData);
 
     // After Task 7 is successfully completed, update the task status
     setTaskStatus((prevTaskStatus) => ({
@@ -111,8 +157,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           <ul>
           {Object.entries(taskData.metadata.formData).map(([key, value]) => (
               <li key={key}>
-                <strong>{key}:</strong>
-                {typeof value === 'object' ? value.label : value}
+                <strong>{key}:</strong> {typeof value === 'object' ? value.label : value}
               </li>
             ))}
           </ul>
@@ -128,23 +173,25 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           </span>
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
-          <strong>Task Type:</strong> {typeof taskData.task_builder.task_type === 'object' ? taskData.task_builder.task_type.label : taskData.task_builder.task_type}
-          <strong>Task Labels:</strong>
           <ul>
-            {Array.isArray(taskData.task_builder.task_label) &&
-              taskData.task_builder.task_label.map((labelItem, index) => (
-                <li key={index}>
-                  {labelItem && typeof labelItem === 'object' && (
-                    <>
-                      {labelItem.label}
-                    </>
-                  )}
-                </li>
-              ))}
+            <li><strong>Task Type:</strong> {typeof taskData.task_builder.task_type === 'object' ? taskData.task_builder.task_type.label : taskData.task_builder.task_type}</li>
+            <li><strong>Task Labels:</strong>
+            <ul>
+              {Array.isArray(taskData.task_builder.task_label) &&
+                taskData.task_builder.task_label.map((labelItem, index) => (
+                  <li key={index}>
+                    {labelItem && typeof labelItem === 'object' && (
+                      <>
+                        {labelItem.label}
+                      </>
+                    )}
+                  </li>
+                ))}
+            </ul></li>
+            <li><strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}</li>
+            <li><strong>Validation Fraction:</strong> {taskData.task_builder.task_states.validationFraction}</li>
+            <li><strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction}</li>
           </ul>
-          <strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}
-          <strong>Validation Fraction:</strong> {taskData.task_builder.task_states.validationFraction}
-          <strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction}
         </div>
       </div>
       <div className='section'>
