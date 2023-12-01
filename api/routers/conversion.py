@@ -273,7 +273,7 @@ async def process_task_data(data: BenchmarksRequest):
                 }
 
                 # Call the plot_line function with an empty array for x
-                line_plot = plot_line(x=[], y=y_values)
+                line_plot = plot_line(x=scanpy_results['time_points'], y=y_values)
                
                 print("Completed both bar and line plots")
             
