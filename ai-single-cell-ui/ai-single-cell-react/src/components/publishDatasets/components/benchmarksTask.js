@@ -11,6 +11,16 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
 
   const handleTaskCompletion = () => {
+
+    // Update the fileMappings state with the new list
+    setTaskData((prevTaskData) => ({
+      ...prevTaskData,
+      benchmarks: {
+        ...prevTaskData.benchmarks,
+        status: 'completed'
+      },
+    }));
+
     // After Task 6 is successfully completed, update the task status
     setTaskStatus((prevTaskStatus) => ({
       ...prevTaskStatus,
@@ -21,6 +31,8 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   };
 
   useEffect(() => {
+    if(taskData.benchmarks.status !== 'completed') {
+
     if (taskData.quality_control && taskData.quality_control.qc_results) {
       setLoading(true);
 
@@ -68,6 +80,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           setLoading(false);
         });
     }
+  }
   }, []);
 
 
