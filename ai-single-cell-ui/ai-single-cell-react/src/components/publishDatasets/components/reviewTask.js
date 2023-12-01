@@ -33,15 +33,16 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
   return (
     <div className='review-task'>
-      <div className='input-data-section'>
-        {/* Add button to toggle section visibility */}
-        <button onClick={() => toggleSectionVisibility('inputData')}>Input Data</button>
 
-        {/* Render sections based on visibility state */}
-        <div style={{ display: sectionsVisibility.inputData ? 'block' : 'none' }}>
-
+      <div className='section'>
+        <div className='section-heading' onClick={() => toggleSectionVisibility('inputData')}>
+          <i className={`fas ${sectionsVisibility.inputData ? 'fa-minus' : 'fa-plus'}`}></i> Input Data
+        </div>
+        <div className='section-content' style={{ display: sectionsVisibility.inputData ? 'block' : 'none' }}>
+          {/* Content for Input Data section */}
         </div>
       </div>
+      
       <div className='qc-plots-section'>
         {/* Add button to toggle section visibility */}
         <button onClick={() => toggleSectionVisibility('qcPlots')}>Quality Control</button>
