@@ -67,7 +67,7 @@ class MyForm extends Component {
   
       const options = {};
       const fieldNames = [
-        'Task', 'Author', 'Species', 'Sample Type', 'Anatomical Entity',
+        'Task', 'Species', 'Sample Type', 'Anatomical Entity',
         'Organ Part', 'Model Organ', 'Selected Cell Types', 'Library Construction Method',
         'Nucleic Acid Source', 'Disease Status (Specimen)', 'Disease Status (Donor)',
         'Development Stage', 'Cell Count Estimate', 'Source',
@@ -241,9 +241,9 @@ class MyForm extends Component {
       errors.Dataset = 'Dataset is required';
     }
 
-    if (!formData.Task || (formData.Task && formData.Task.value === '')) {
-      errors.Task = 'Task is required';
-    }
+    // if (!formData.Task || (formData.Task && formData.Task.value === '')) {
+    //   errors.Task = 'Task is required';
+    // }
 
     if (!formData.Downloads) {
       errors.Downloads = 'Downloads is required';
@@ -253,7 +253,7 @@ class MyForm extends Component {
       errors['Submission Date'] = 'Submission Date is required';
     }
 
-    if (!formData.Author || (formData.Author && formData.Author.value === '')) {
+    if (!formData.Author) {
       errors.Author = 'Author is required';
     }
 
@@ -276,9 +276,9 @@ class MyForm extends Component {
     if (!formData['Disease Status (Donor)'] || (formData['Disease Status (Donor)'] && formData['Disease Status (Donor)'].value === '')) {
       errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
     }
-    if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '')) {
-      errors['Cell Count Estimate'] = 'Cell Count Estimate is required';
-    }
+    // if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '')) {
+    //   errors['Cell Count Estimate'] = 'Cell Count Estimate is required';
+    // }
 
     const hasError = Object.keys(errors).length > 0;
 
@@ -322,7 +322,7 @@ class MyForm extends Component {
           </div>
 
           {/* Task (CreatableSelect) */}
-          <div className="form-field">
+          {/* <div className="form-field">
             <label className="form-label">Task:</label>
             <Select
               name="Task"
@@ -336,7 +336,7 @@ class MyForm extends Component {
               className={`form-input ${errors.Task ? 'error' : ''}`}
             />
             {errors.Task && <div className="error-tooltip">{errors.Task}</div>}
-          </div>
+          </div> */}
 
           {/* Downloads */}
           <div className="form-field">
@@ -364,7 +364,7 @@ class MyForm extends Component {
           </div>
 
           {/* Author (CreatableSelect) */}
-          <div className="form-field">
+          {/* <div className="form-field">
             <label className="form-label">Author:</label>
             <CreatableSelect
               name="Author"
@@ -375,6 +375,18 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Author', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
               options={options.Author} // Set options to the fetched options
+              className={`form-input ${errors.Author ? 'error' : ''}`}
+            />
+            {errors.Author && <div className="error-tooltip">{errors.Author}</div>}
+          </div> */}
+
+          <div className="form-field">
+            <label className="form-label">Author:</label>
+            <input
+              type="text"
+              name="Author"
+              value={formData.Author}
+              onChange={this.handleChange}
               className={`form-input ${errors.Author ? 'error' : ''}`}
             />
             {errors.Author && <div className="error-tooltip">{errors.Author}</div>}
@@ -657,7 +669,7 @@ class MyForm extends Component {
 
 
           {/* "Cell Count Estimate" (CreatableSelect) */}
-          <div className="form-field">
+          {/* <div className="form-field">
             <label className="form-label">Cell Count Estimate:</label>
             <input
               type="number"
@@ -667,7 +679,7 @@ class MyForm extends Component {
               className="form-input"
             />
             {errors['Cell Count Estimate'] && <div className="error-tooltip">{errors['Cell Count Estimate']}</div>}
-          </div>
+          </div> */}
 
           {/* "Source" (CreatableSelect) */}
           <div className="form-field">

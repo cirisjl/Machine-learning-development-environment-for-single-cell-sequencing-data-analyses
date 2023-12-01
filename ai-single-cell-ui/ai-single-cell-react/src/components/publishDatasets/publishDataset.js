@@ -62,7 +62,7 @@ export default function PublishDataset() {
           taskOptions: [],
           options: {
             Task: [], 
-            Author: [],
+            Author: '',
             Species: [],
             'Sample Type':[],
             'Anatomical Entity': [],
