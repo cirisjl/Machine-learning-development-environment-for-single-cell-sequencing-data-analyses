@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ReactPlotly from './reactPlotly';
+import BenchmarksPlots from './benchmarksPlots';
 
 function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTask, activeTask}) {
   
@@ -35,7 +37,6 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
   return (
     <div className='review-task'>
-
       <div className='section'>
         <div className='section-heading' onClick={() => toggleSectionVisibility('inputData')}>
           <h3>Input Data</h3>
@@ -46,46 +47,118 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           </span>
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.inputData ? 'block' : 'none' }}>
-          <h3> Content of input section</h3>
+          <h3>List of Datasets Uploaded</h3>
+          <ul>
+            {taskData.validation.inputFiles.map((dataset, index) => (
+              <li key={index}>{dataset}</li>
+            ))}
+          </ul>
         </div>
       </div>
-      
-      <div className='qc-plots-section'>
-        {/* Add button to toggle section visibility */}
-        <button onClick={() => toggleSectionVisibility('qcPlots')}>Quality Control</button>
+      <div className='section'>
+        <div className='section-heading' onClick={() => toggleSectionVisibility('qcPlots')}>
+          <h3>Quality Control</h3>
+          <span className="category-icon">
+            <FontAwesomeIcon
+              icon={sectionsVisibility.qcPlots ? faAngleDown : faAngleRight}
+            />
+          </span>
+        </div>
+        <div className='section-content' style={{ display: sectionsVisibility.qcPlots ? 'block' : 'none' }}>
+          <p>Quality Control Plots</p>
+          {taskData.quality_control.qc_results &&
+            taskData.quality_control.qc_results.map((result, index) => (
+              <React.Fragment key={index}>
+                    {result.umap_plot && (
+                      <>
+                        <h2>UMAP Plot</h2>
+                        <ReactPlotly plot_data={result.umap_plot} />
+                      </>
+                    )}
+                    {result.violin_plot && (
+                      <>
+                        <h2>Violin Plot</h2>
+                        <ReactPlotly plot_data={result.violin_plot} />
+                      </>
+                    )}
+                    {result.scatter_plot && (
+                      <>
+                        <h2>Scatter Plot</h2>
+                        <ReactPlotly plot_data={result.scatter_plot} />
+                      </>
+                    )}
+                    {result.highest_expr_genes_plot && (
+                      <>
+                        <h2>Highest expression Genes Plot</h2>
+                        <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+                      </>
+                    )}
+                  </React.Fragment>
+          ))}
+        </div>
+      </div>
+      <div className='section'>
+        <div className='section-heading' onClick={() => toggleSectionVisibility('metadata')}>
+          <h3>Metadata</h3>
+          <span className="category-icon">
+            <FontAwesomeIcon
+              icon={sectionsVisibility.metadata ? faAngleDown : faAngleRight}
+            />
+          </span>
+        </div>
+        <div className='section-content' style={{ display: sectionsVisibility.metadata ? 'block' : 'none' }}>
+          <h3>Metadata Information</h3>
+          <ul>
+            {Object.entries(taskData.metadata.formData).map(([key, value]) => (
+              <li key={key}>
+                <strong>{key}:</strong> {value}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className='section'>
+        <div className='section-heading' onClick={() => toggleSectionVisibility('taskBuilder')}>
+          <h3>Task Builder</h3>
+          <span className="category-icon">
+            <FontAwesomeIcon
+              icon={sectionsVisibility.taskBuilder ? faAngleDown : faAngleRight}
+            />
+          </span>
+        </div>
+        <div className='section-content' style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
+          <strong>Task Type:</strong> {taskData.task_builder.task_type}
+          <h3>Task Labels: {taskData.task_builder.task_label.join(', ')}</h3>
+          <h3>Train Fraction: {taskData.task_builder.task_states.trainFraction}</h3>
+          <h3>Validation Fraction: {taskData.task_builder.task_states.validationFraction}</h3>
+          <h3>Test Fraction: {taskData.task_builder.task_states.testFraction}</h3>
+        </div>
+      </div>
+      <div className='section'>
+        <div className='section-heading' onClick={() => toggleSectionVisibility('benchmarks')}>
+          <h3>Benchmarks</h3>
+          <span className="category-icon">
+            <FontAwesomeIcon
+              icon={sectionsVisibility.benchmarks ? faAngleDown : faAngleRight}
+            />
+          </span>
+        </div>
+        <div className='section-content' style={{ display: sectionsVisibility.benchmarks ? 'block' : 'none' }}>
+          <p>Benchmarks Plots</p>
+          {taskData.benchmarks &&
+              taskData.benchmarks.benchmarks_results &&
+              taskData.benchmarks.benchmarks_results.map((result, index) => (
+                <React.Fragment key={index}>
+                  {/* Assuming BenchmarksPlot is a component that you want to render */}
+                  <BenchmarksPlots
+                    barPlot={result.bar_plot}
+                    linePlot={result.line_plot}
+                  />
+              </React.Fragment>
+          ))}
+        </div>
+      </div>
 
-        {/* Render sections based on visibility state */}
-        <div style={{ display: sectionsVisibility.qcPlots ? 'block' : 'none' }}>
-          
-        </div>
-      </div>
-      <div className='metadata-section'>
-        {/* Add button to toggle section visibility */}
-        <button onClick={() => toggleSectionVisibility('metadata')}>Metadata</button>
-
-        {/* Render sections based on visibility state */}
-        <div style={{ display: sectionsVisibility.metadata ? 'block' : 'none' }}>
-          
-        </div>
-      </div>
-      <div className='task-builder-section'>
-        {/* Add button to toggle section visibility */}
-        <button onClick={() => toggleSectionVisibility('taskBuilder')}>Task Builder</button>
-
-        {/* Render sections based on visibility state */}
-        <div style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
-          
-        </div>
-      </div>
-      <div className='benchmarks-section'>
-        {/* Add button to toggle section visibility */}
-        <button onClick={() => toggleSectionVisibility('benchmarks')}>Benchmarks</button>
-
-        {/* Render sections based on visibility state */}
-        <div style={{ display: sectionsVisibility.benchmarks ? 'block' : 'none' }}>
-          
-        </div>
-      </div>
       <div className='navigation-buttons'>
         <div className="previous">
           <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
