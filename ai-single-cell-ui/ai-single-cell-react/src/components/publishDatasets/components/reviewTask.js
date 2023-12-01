@@ -128,10 +128,17 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
           <strong>Task Type:</strong> {taskData.task_builder.task_type}
-          <h3>Task Labels: {taskData.task_builder.task_label.join(', ')}</h3>
-          <h3>Train Fraction: {taskData.task_builder.task_states.trainFraction}</h3>
-          <h3>Validation Fraction: {taskData.task_builder.task_states.validationFraction}</h3>
-          <h3>Test Fraction: {taskData.task_builder.task_states.testFraction}</h3>
+          <strong>Task Labels:</strong>
+          <ul>
+            {taskData.task_builder.task_label.map((labelItem, index) => (
+              <li key={index}>
+                {labelItem.label} - {labelItem.value}
+              </li>
+            ))}
+          </ul>
+          <strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}
+          <strong>Validation Fraction:</strong> {taskData.task_builder.task_states.validationFraction}
+          <strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction}
         </div>
       </div>
       <div className='section'>
