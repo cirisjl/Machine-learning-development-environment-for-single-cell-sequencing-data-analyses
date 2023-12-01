@@ -109,12 +109,12 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         <div className='section-content' style={{ display: sectionsVisibility.metadata ? 'block' : 'none' }}>
           <h3>Metadata Information</h3>
           <ul>
-          {/* {Object.entries(taskData.metadata.formData).map(([key, value]) => (
+          {Object.entries(taskData.metadata.formData).map(([key, value]) => (
               <li key={key}>
                 <strong>{key}:</strong>
                 {typeof value === 'object' ? value.label : value}
               </li>
-            ))} */}
+            ))}
           </ul>
         </div>
       </div>
@@ -128,9 +128,9 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           </span>
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
-          <strong>Task Type:</strong> {taskData.task_builder.task_type}
+          <strong>Task Type:</strong> {typeof taskData.task_builder.task_type === 'object' ? taskData.task_builder.task_type.label : taskData.task_builder.task_type}
           <strong>Task Labels:</strong>
-          {/* <ul>
+          <ul>
             {Array.isArray(taskData.task_builder.task_label) &&
               taskData.task_builder.task_label.map((labelItem, index) => (
                 <li key={index}>
@@ -141,7 +141,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
                   )}
                 </li>
               ))}
-          </ul> */}
+          </ul>
           <strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}
           <strong>Validation Fraction:</strong> {taskData.task_builder.task_states.validationFraction}
           <strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction}
