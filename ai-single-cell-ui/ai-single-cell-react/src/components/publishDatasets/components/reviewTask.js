@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTask, activeTask}) {
   
@@ -36,10 +38,15 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
       <div className='section'>
         <div className='section-heading' onClick={() => toggleSectionVisibility('inputData')}>
-          <i className={`fas ${sectionsVisibility.inputData ? 'fa-minus' : 'fa-plus'}`}></i> Input Data
+          <h3>Input Data</h3>
+          <span className="category-icon">
+            <FontAwesomeIcon
+              icon={sectionsVisibility.inputData ? faAngleDown : faAngleRight}
+            />
+          </span>
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.inputData ? 'block' : 'none' }}>
-          {/* Content for Input Data section */}
+          <h3> Content of input section</h3>
         </div>
       </div>
       
