@@ -11,44 +11,6 @@ library(BiocParallel)
 # library(loomR)
 
 
-#' Regularise dataframe
-#'
-#' This function checks if certain columns of a dataframe is of a single value
-#' and drop them if required
-#'
-#' @param df Input data frame, usually cell metadata table (data.frame-like
-#'   object)
-#' @param drop_single_values Drop columns with only a single value (logical)
-#'
-#' @return Dataframe
-.regularise_df <- function(df, drop_single_values=FALSE, drop_na_values=TRUE) {
-  if (ncol(df) == 0) df[["name"]] <- rownames(df)
-  if (drop_single_values) {
-    k_singular <- sapply(df, function(x) length(unique(x)) == 1)
-    if (sum(k_singular) > 0) {
-      warning(
-        paste("Dropping single category variables:"),
-        paste(colnames(df)[k_singular], collapse = ", ")
-      )
-    }
-    df <- df[, !k_singular, drop = F]
-    if (ncol(df) == 0) df[["name"]] <- rownames(df)
-  }
- if (drop_na_values) {
-    k_na <- sapply(df, function(x) sum(is.na(x))==length(x))
-    if (sum(k_na) > 0) {
-      warning(
-        paste("Dropping NA category variables:"),
-        paste(colnames(df)[k_na], collapse = ", ")
-      )
-    }
-    df <- df[, !k_na, drop = F]
-    if (ncol(df) == 0) df[["name"]] <- rownames(df)
-  }
-  return(df)
-}
-
-
 # Get suffix of the file
 GetSuffix <- function(path) {
     filename <- basename(path)
@@ -139,13 +101,18 @@ LoadSeurat <- function(path, project = NULL) {
         print("Inside LoadSeurat")
         srat <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
-        Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
-        srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
+        # Convert(path, "h5seurat", overwrite = TRUE, assay = "RNA")
+        # srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
+        project_name <- sub("\\.h5ad$", "", basename(path))
+        adata <- LoadAnndata(path)
+        srat <- AnndataToSeurat(adata, project_name = project_name)
+        rm(adata)
     } else if(suffix == "rds"){
         print("insode if else block of rds")
         robj <- readRDS(path)
         if(class(robj) == 'Seurat'){
-            srat <- CreateSeuratObject(counts=robj[['RNA']]@counts, meta.data=robj@meta.data, project = Project(robj))
+            # srat <- CreateSeuratObject(counts=robj[['RNA']]$counts, meta.data=robj@meta.data, project = Project(robj))
+            srat <- robj
         } else if(class(robj) == 'SingleCellExperiment'){
             if ('logcounts' %in% names(robj)){
                 srat <- as.Seurat(robj, slot = "counts")
@@ -562,4 +529,178 @@ IsNormalized <- function(Expression_Matrix, min_genes){
         is_normalized <- TRUE
     }
     is_normalized
+}
+
+
+#' Regularise dataframe
+#'
+#' This function checks if certain columns of a dataframe is of a single value
+#' and drop them if required
+#'
+#' @param df Input data frame, usually cell metadata table (data.frame-like
+#'   object)
+#' @param drop_single_values Drop columns with only a single value (logical)
+#'
+#' @return Dataframe
+.regularise_df <- function(df, drop_single_values=FALSE, drop_na_values=TRUE) {
+  if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  if (drop_single_values) {
+    k_singular <- sapply(df, function(x) length(unique(x)) == 1)
+    if (sum(k_singular) > 0) {
+      warning(
+        paste("Dropping single category variables:"),
+        paste(colnames(df)[k_singular], collapse = ", ")
+      )
+    }
+    df <- df[, !k_singular, drop = F]
+    if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  }
+ if (drop_na_values) {
+    k_na <- sapply(df, function(x) sum(is.na(x))==length(x))
+    if (sum(k_na) > 0) {
+      warning(
+        paste("Dropping NA category variables:"),
+        paste(colnames(df)[k_na], collapse = ", ")
+      )
+    }
+    df <- df[, !k_na, drop = F]
+    if (ncol(df) == 0) df[["name"]] <- rownames(df)
+  }
+  return(df)
+}
+
+
+#' Prepare cell metadata
+#'
+#' This function prepare cell metadata from AnnData.obs
+#'
+#' @param obs_pd Input AnnData.obs dataframe
+#' @param assay Assay name, default "RNA" (str)
+#'
+#' @return AnnData object
+#'
+#' @import reticulate
+.obs2metadata <- function(obs_pd, assay = "RNA") {
+  obs_df <- .regularise_df(obs_pd, drop_single_values=FALSE, drop_na_values=TRUE)
+  colnames(obs_df) <- sub("n_counts", paste0("nCounts_", assay), colnames(obs_df))
+  colnames(obs_df) <- sub("n_genes", paste0("nFeatures_", assay), colnames(obs_df))
+  if("pct_counts_mt" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_mt", "percent.mt", colnames(obs_df))
+  if("pct_counts_rb" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_rb", "percent.rb", colnames(obs_df))
+  if("pct_counts_hb" %in% colnames(obs_df)) colnames(obs_df) <- sub("pct_counts_hb", "percent.hb", colnames(obs_df))
+  return(obs_df)
+}
+
+
+#' Prepare feature metadata
+#'
+#' This function prepare feature metadata from AnnData.var
+#'
+#' @param var_pd Input AnnData.var dataframe
+#'
+#' @return AnnData object
+#'
+#' @import reticulate
+.var2feature_metadata <- function(var_pd) {
+  var_df <- .regularise_df(var_pd, drop_single_values=FALSE, drop_na_values=TRUE)
+  colnames(var_df) <- sub("dispersions_norm", "mvp.dispersion.scaled", colnames(var_df))
+  colnames(var_df) <- sub("dispersions", "mvp.dispersion", colnames(var_df))
+  colnames(var_df) <- sub("means", "mvp.mean", colnames(var_df))
+  colnames(var_df) <- sub("highly_variable", "highly.variable", colnames(var_df))
+  return(var_df)
+}
+
+
+.uns2misc <- function(ad, target_uns_keys = list()) {
+  uns_keys <- intersect(target_uns_keys, ad$uns_keys())
+  misc <- sapply(uns_keys, function(x) ad$uns[x], simplify = FALSE, USE.NAMES = TRUE)
+  return(misc)
+}
+
+
+#' Convert AnnData object to Seurat object
+#'
+#' This function converts an AnnData object to a Seurat object
+#'
+#' @param inFile Path to an input AnnData object on disk (str)
+#' @param outFile Save output Seurat to this file if specified (str or NULL)
+#' @param assay Name of assay in Seurat object to store expression values,
+#'   default "RNA" (str)
+#' @param main_layer Name of slot in `assay` to store AnnData.X, can be
+#'   "counts", "data", "scale.data", default "counts" (str)
+#' @param use_seurat Use Seurat::ReadH5AD() to do the conversion, default FALSE (logical)
+#' @param lzf Whether AnnData is compressed by `lzf`, default FALSE (logical)
+#'
+#' @return Seurat object
+#'
+#' @import reticulate
+#' @import Matrix
+AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay = "RNA", project_name = "Seurat Project", target_uns_keys = list()) {
+  main_layer <- match.arg(main_layer, c("counts", "data", "scale.data"))
+  sp <- reticulate::import("scipy.sparse", convert = FALSE)
+  
+  obs_df <- .obs2metadata(adata$obs)
+  var_df <- .var2feature_metadata(adata$var)
+  X <- t(adata$X)
+  colnames(X) <- rownames(obs_df)
+  rownames(X) <- rownames(var_df)
+
+  if ('scale.data' %in% names(adata$layers)){
+    srat <- CreateSeuratObject(counts = X, data = t(adata$layers['scale.data']), project = project_name, meta.data = obs_df)
+    message("X -> counts; scale.data -> data")
+  } else {
+    srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
+    message("X -> counts")
+  }
+  
+  # Add AnnData layers to assays
+  for (layer in names(adata$layers)){
+    if (layer == 'scale.data') next
+    srat[[layer]] <- CreateAssayObject(data = tadata$layers[layer])
+    message("Adding AnnData layers to Seurat assays")
+  }
+
+  DefaultAssay(srat) <- assay
+
+  # Add dimension reductions
+  embed_names <- unlist(adata$obsm_keys())
+  if (length(embed_names) > 0) {
+    embeddings <- sapply(embed_names, function(x) as.matrix(adata$obsm[[x]]), simplify = FALSE, USE.NAMES = TRUE)
+    names(embeddings) <- embed_names
+      for (name in embed_names) {
+        rownames(embeddings[[name]]) <- colnames(srat[[assay]])
+      }
+
+      dim.reducs <- vector(mode = "list", length = length(embeddings))
+      for (i in seq(length(embeddings))) {
+        name <- embed_names[i]
+        embed <- embeddings[[name]]
+        key <- switch(name,
+          sub("_(.*)", "\\L\\1", sub("^X_", "", toupper(name)), perl = T),
+          "X_pca" = "PC",
+          "X_tsne" = "tSNE",
+          "X_umap" = "UMAP"
+        )
+        colnames(embed) <- paste0(key, "_", seq(ncol(embed)))
+        dim.reducs[[i]] <- Seurat::CreateDimReducObject(
+          embeddings = embed,
+          loadings = new("matrix"),
+          assay = assay,
+          stdev = numeric(0L),
+          key = paste0(key, "_")
+        )
+      }
+      names(dim.reducs) <- sub("X_", "", embed_names)
+
+      for (name in names(dim.reducs)) {
+        srat[[name]] <- dim.reducs[[name]]
+        message("Adding AnnData embeddings to Seurat assays")
+      } 
+  }
+
+  srat@misc <- .uns2misc(adata, target_uns_keys = target_uns_keys)
+
+  # if (!is.null(outFile)) SaveH5Seurat(srat, filename = outFile, overwrite = TRUE, verbose = FALSE)
+  if (!is.null(outFile)) saveRDS(object = srat, file = outFile)
+
+  srat
 }

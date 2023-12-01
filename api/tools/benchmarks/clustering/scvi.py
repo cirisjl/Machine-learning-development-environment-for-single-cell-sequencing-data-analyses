@@ -19,10 +19,10 @@ import pymde
 
 torch.manual_seed(0)
 np.random.seed(0)
-sc.settings.verbosity = 0  # verbosity: errors (0), warnings (1), info (2), hints (3)
+# sc.settings.verbosity = 0  # verbosity: errors (0), warnings (1), info (2), hints (3)
 
 
-def clustering(adata, labels):
+def scvi_clustering(adata, labels):
     # Start monitoring
     monitor = Monitor(1)
 

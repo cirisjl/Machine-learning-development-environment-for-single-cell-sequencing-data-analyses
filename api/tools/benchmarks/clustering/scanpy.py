@@ -7,7 +7,7 @@ from tools.evaluation.monitor import *
 from tools.evaluation.clustering import clustering_scores
 
 
-def clustering(adata, labels, layer=None):
+def scanpy_clustering(adata, labels, layer=None):
     # Start monitoring
     monitor = Monitor(1)
 
