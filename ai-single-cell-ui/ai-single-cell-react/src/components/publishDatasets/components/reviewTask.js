@@ -109,12 +109,12 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         <div className='section-content' style={{ display: sectionsVisibility.metadata ? 'block' : 'none' }}>
           <h3>Metadata Information</h3>
           <ul>
-          {Object.entries(taskData.metadata.formData).map(([key, value]) => (
+          {/* {Object.entries(taskData.metadata.formData).map(([key, value]) => (
               <li key={key}>
                 <strong>{key}:</strong>
                 {typeof value === 'object' ? value.label : value}
               </li>
-            ))}
+            ))} */}
           </ul>
         </div>
       </div>
@@ -134,7 +134,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
             {Array.isArray(taskData.task_builder.task_label) &&
               taskData.task_builder.task_label.map((labelItem, index) => (
                 <li key={index}>
-                  {labelItem && typeof labelItem === 'object' && 'label' in labelItem && (
+                  {labelItem && typeof labelItem === 'object' && (
                     <>
                       {labelItem.label}
                     </>
