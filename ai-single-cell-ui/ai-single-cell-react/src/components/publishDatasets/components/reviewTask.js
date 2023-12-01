@@ -108,13 +108,14 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.metadata ? 'block' : 'none' }}>
           <h3>Metadata Information</h3>
-          {/* <ul>
-            {Object.entries(taskData.metadata.formData).map(([key, value]) => (
+          <ul>
+          {Object.entries(taskData.metadata.formData).map(([key, value]) => (
               <li key={key}>
-                <strong>{key}:</strong> {value}
+                <strong>{key}:</strong>
+                {typeof value === 'object' ? value.label : value}
               </li>
             ))}
-          </ul> */}
+          </ul>
         </div>
       </div>
       <div className='section'>
@@ -127,18 +128,23 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           </span>
         </div>
         <div className='section-content' style={{ display: sectionsVisibility.taskBuilder ? 'block' : 'none' }}>
-          {/* <strong>Task Type:</strong> {taskData.task_builder.task_type}
-          <strong>Task Labels:</strong> */}
-          {/* <ul>
-            {taskData.task_builder.task_label.map((labelItem, index) => (
-              <li key={index}>
-                {labelItem.label} - {labelItem.value}
-              </li>
-            ))}
-          </ul> */}
-          {/* <strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}
+          <strong>Task Type:</strong> {taskData.task_builder.task_type}
+          <strong>Task Labels:</strong>
+          <ul>
+            {Array.isArray(taskData.task_builder.task_label) &&
+              taskData.task_builder.task_label.map((labelItem, index) => (
+                <li key={index}>
+                  {labelItem && typeof labelItem === 'object' && 'label' in labelItem && (
+                    <>
+                      {labelItem.label}
+                    </>
+                  )}
+                </li>
+              ))}
+          </ul>
+          <strong>Train Fraction:</strong> {taskData.task_builder.task_states.trainFraction}
           <strong>Validation Fraction:</strong> {taskData.task_builder.task_states.validationFraction}
-          <strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction} */}
+          <strong>Test Fraction:</strong> {taskData.task_builder.task_states.testFraction}
         </div>
       </div>
       <div className='section'>
