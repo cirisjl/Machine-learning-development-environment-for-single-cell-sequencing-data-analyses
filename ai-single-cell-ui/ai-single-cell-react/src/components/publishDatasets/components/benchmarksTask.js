@@ -99,11 +99,13 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           {taskData.benchmarks &&
             taskData.benchmarks.benchmarks_results &&
             taskData.benchmarks.benchmarks_results.map((result, index) => (
-              // Assuming BenchmarksPlot is a component that you want to render
+              <React.Fragment key={index}>
+                {/* Assuming BenchmarksPlot is a component that you want to render */}
                 <BenchmarksPlots
                   barPlot={result.bar_plot}
                   linePlot={result.line_plot}
                 />
+             </React.Fragment>
             ))}
             
           <div className='navigation-buttons'>
