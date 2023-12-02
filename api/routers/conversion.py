@@ -7,10 +7,7 @@ from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
 from typing import List
-from tools.visualization.plot import plot_bar, plot_line
-from tools.benchmarks.clustering.scanpy import scanpy_clustering
-from tools.benchmarks.clustering.scvi import scvi_clustering
-from tools.benchmarks.clustering.seurat import seurat_clustering
+from services.clustering import clustering_task
 import logging
 from pathlib import Path
 import shutil
@@ -218,102 +215,16 @@ async def process_task_data(data: BenchmarksRequest):
         # Access the data received
         task_type = data.task_type
         items = data.data
-
-        if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
-            results = []
-            for item in items:
+        results = []
+        
+        for item in items:
+            if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
                 adata_path = item.adata_path
                 task_label = item.task_label
-
-                # Load AnnData
-                adata = load_anndata(adata_path)
-
-                # Call scanpy_clustering method
-                asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, task_label)
-
-                scanpy_results = {
-                    "asw_score": asw_scanpy,
-                    "nmi_score": nmi_scanpy,
-                    "ari_score": ari_scanpy,
-                    "time_points": time_points_scanpy,
-                    "cpu_usage": cpu_usage_scanpy,
-                    "mem_usage": mem_usage_scanpy,
-                    "gpu_mem_usage": gpu_mem_usage_scanpy
-                }
-                print("Scanpy")
-                print(scanpy_results)
-                # Call scvi_clustering method
-                # asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scanpy, gpu_mem_usage_scvi = scvi_clustering(adata, task_label)
-
-                # scvi_results = {
-                #     "asw_score": asw_scvi,
-                #     "nmi_score": nmi_scvi,
-                #     "ari_score": ari_scvi,
-                #     "time_points": time_points_scvi,
-                #     "cpu_usage": cpu_usage_scvi,
-                #     "mem_usage": mem_usage_scvi,
-                #     "gpu_mem_usage": gpu_mem_usage_scvi
-                # }
-                # print("scvi")
-                # print(scvi_results)
-
-                # Call seurat_clustering method
-                asw_scvi_seurat, nmi_scvi_seurat, ari_scvi_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, task_label)
-
-                seurat_results = {
-                    "asw_score": asw_scvi_seurat,
-                    "nmi_score": nmi_scvi_seurat,
-                    "ari_score": ari_scvi_seurat,
-                    "time_points": time_points_seurat,
-                    "cpu_usage": cpu_usage_seurat,
-                    "mem_usage": mem_usage_seurat,
-                    "gpu_mem_usage": gpu_mem_usage_seurat
-                }
-                print("Seurat")
-                print(seurat_results)
-               
-               # Format x and y for the plot_bar function
-                x_values = ['ARI', 'Silhouette', 'NMI']
-                y_values = {
-                    'Scanpy': [ scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']],
-                    'Seurat': [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score']],
-                }
-
-                # # Call the plot_bar function
-                bar_plot = plot_bar(x=x_values, y=y_values, title='Benchmarks')
-
-                # Format x and y for the plot_line function
-                y_values = {
-                    'Scanpy_CPU': scanpy_results['cpu_usage'],
-                    'Scanpy_Memory': scanpy_results['mem_usage'],
-                    'Scanpy_GPU': scanpy_results['gpu_mem_usage'],
-                    'Seurat_CPU': seurat_results['cpu_usage'],
-                    'Seurat_Memory': seurat_results['mem_usage'],
-                    'Seurat_GPU': seurat_results['gpu_mem_usage'],
-                }
-
-                # Call the plot_line function with an empty array for x
-                line_plot = plot_line(x=scanpy_results['time_points'], y=y_values)
-               
-                print("Completed both bar and line plots")
-            
-                print(bar_plot)
-                print(line_plot)
-                # Combine results
-                result = {
-                    # "adata_path": adata_path,
-                    "scanpy_clustering": scanpy_results,
-                    "seurat_clustering": seurat_results,
-                    # "scvi_clustering": scvi_results,
-                    "bar_plot": bar_plot,
-                    "line_plot": line_plot
-                }
-
-                results.append(result)
-
-            return results
-        else:
-            return {"message": "Task type is not 'clustering'. No actions performed."}
+                clustering_results = clustering_task(adata_path, task_label)
+                results.append(clustering_results)
+       
+        return results
 
     except Exception as e:
         # Handle exceptions as needed
