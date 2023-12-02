@@ -153,12 +153,12 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
                         <ReactPlotly plot_data={result.scatter_plot} />
                       </>
                     )}
-                    {result.highest_expr_genes_plot && (
+                    {/* {result.highest_expr_genes_plot && (
                       <>
                         <h2>Highest expression Genes Plot</h2>
                         <ReactPlotly plot_data={result.highest_expr_genes_plot} />
                       </>
-                    )}
+                    )} */}
                   </React.Fragment>
           ))}
         </div>
