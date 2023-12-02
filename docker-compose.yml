@@ -215,11 +215,12 @@ services:
   
   oscb_mysql:
     container_name: oscb_mysql_container
-    image: oscb_mysql
+    image: mysql:8.0
     build:
       context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
         - mysql_db:/var/lib/mysql
+        - ./ai-single-cell-ui/ai-single-cell-mysql/aisinglecell_schema_latest.sql:/docker-entrypoint-initdb.d/aisinglecell_schema_latest.sql
     restart: unless-stopped
     command:
         [
