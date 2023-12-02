@@ -230,7 +230,7 @@ class MyForm extends Component {
       errors.Downloads = 'Downloads is required';
     }
 
-    if (!formData['Submission Date']) {
+    if (!formData['Submission Date'] && formData['Submission Date'] === 'YYYY-MM-DD') {
       errors['Submission Date'] = 'Submission Date is required';
     }
 
