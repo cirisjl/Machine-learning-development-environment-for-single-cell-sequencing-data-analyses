@@ -23,7 +23,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 // // Import the database configuration
 // require('./config/mongoDBClient');
 
-
+// Increase the limit for the request body size to 25MB
 
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
@@ -31,7 +31,7 @@ app.use(cors({
     origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.ai-single-cell.biomizzou-pg0.clemson.cloudlab.us:3000'],
     credentials: true
 }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '25mb' }));
 app.use(cookieParser());
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
