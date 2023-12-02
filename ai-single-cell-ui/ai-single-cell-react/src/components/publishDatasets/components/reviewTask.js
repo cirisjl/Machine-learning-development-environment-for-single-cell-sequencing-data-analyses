@@ -79,11 +79,13 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
     axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
     .then(response => {
+      console.log(response);
       console.log('Form data submitted successfully');
       setMessage("Form data submitted successfully")
       setHasMessage(true)
     })
     .catch(error => {
+      console.log(error);
       console.error('Error submitting form data:', error);
       setMessage('Error submitting form data:', error)
       setHasMessage(true)
