@@ -54,7 +54,7 @@ export default function PublishDataset() {
             'Donor Count': 0,
             'Source': '',
             'Source Key': '',
-            'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here    
+            'Submission Date': '', // Set your initial date placeholder here    
            },
           taskOptions: [],
           options: {
