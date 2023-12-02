@@ -80,6 +80,7 @@ export default function PublishDataset() {
           task_type: '',
           task_id:'',
           task_label: [],
+          table_data: [],
           task_data_split:[],
           task_states: {
             trainFraction: 0.8,

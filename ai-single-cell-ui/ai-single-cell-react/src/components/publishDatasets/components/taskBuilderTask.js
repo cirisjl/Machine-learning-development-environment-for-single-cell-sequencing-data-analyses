@@ -3,6 +3,7 @@ import Select from 'react-select';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
+import ReactPlotly from './reactPlotly';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -21,11 +22,20 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
       axios.post(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, adata_paths)
       .then(response => {
-        
+        const data = response.data;
+       
+        // Updating taskData state
+        setTaskData(prevTaskData => ({
+          ...prevTaskData,
+          task_builder: {
+            ...prevTaskData.task_builder,
+            table_data: data,
+          },
+        }));
       })
       .catch(error => {
-        setMessage('Error while getting the table data: ' + error.response.data.error)
-        setHasMessage(true)
+        setMessage('Error while getting the table data: ' + error.response.data.detail);
+        setHasMessage(true);
       });
     }
   }, []);
@@ -163,7 +173,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                 <div key={index} className="metadata-item">
                   <div>
                     <p>Please Analyse the table before choosing the label</p>
-
+                    {taskData.task_builder.table_data.length > 0 && taskData.task_builder.table_data[index] && (
+                      <ReactPlotly plot_data={taskData.task_builder.table_data[index]} />                   
+                    )}
                   </div>
                   <div>
                     <label>
