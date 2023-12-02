@@ -32,7 +32,6 @@ export default function PublishDataset() {
         metadata: {
           formData: {
             Dataset: '',
-            Task: '',
             Downloads: '',
             Title: '',
             Author: '',
@@ -53,11 +52,9 @@ export default function PublishDataset() {
             'Disease Status (Donor)': '',
             'Development Stage': '',
             'Donor Count': 0,
-            'Cell Count Estimate': 0,
             'Source': '',
             'Source Key': '',
             'Submission Date': 'YYYY-MM-DD', // Set your initial date placeholder here    
-            'Id':'' 
            },
           taskOptions: [],
           options: {
