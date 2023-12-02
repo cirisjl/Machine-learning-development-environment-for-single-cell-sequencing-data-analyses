@@ -5,7 +5,7 @@ library(celldex)
 library(RColorBrewer)
 library("here")
 # source(here::here('tools/formating/formating.R'))
-source(here::here('api/tools/formating/formating.R'))
+source(here::here('tools/formating/formating.R'))
 
 
 clustering <- function(path, labels, dims=1:10){ # labels: column name of labels in srat@meta.data
