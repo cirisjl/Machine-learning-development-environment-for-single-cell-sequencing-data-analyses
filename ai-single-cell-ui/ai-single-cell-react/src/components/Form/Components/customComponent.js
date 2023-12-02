@@ -230,7 +230,7 @@ class MyForm extends Component {
       errors.Downloads = 'Downloads is required';
     }
 
-    if (!formData['Submission Date'] && formData['Submission Date'] === 'YYYY-MM-DD') {
+    if (!formData['Submission Date'] && formData['Submission Date'] === '') {
       errors['Submission Date'] = 'Submission Date is required';
     }
 
@@ -697,6 +697,7 @@ class MyForm extends Component {
             <label>Submission Date:</label>
             <input
               type="date"
+              required
               name="Submission Date"
               value={formData["Submission Date"]}
               onChange={this.handleChange}
