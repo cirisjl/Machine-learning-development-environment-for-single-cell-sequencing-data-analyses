@@ -2,20 +2,33 @@ import React , { useState, useEffect }from 'react';
 import Select from 'react-select';
 import { CELERY_BACKEND_API} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
+import axios from 'axios';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
-
-  // // const [data_path, setDataPath] = useState('');
-  // const [trainFraction, setTrainFraction] = useState(0.8);
-  // const [validationFraction, setValidationFraction] = useState(0.1);
-  // const [testFraction, setTestFraction] = useState(0.1);
-  // const [dataSplitPerformed, setDataSplitPerformed] = useState(false);
-  // const [archivePath, setArchivePath] = useState('');
 
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if(taskData.task_builder.status !== 'completed') {
+      let adata_paths = []
+      taskData.quality_control.qc_results
+              .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
+              .map((results, index) => (
+          adata_paths.push(results.adata_path)
+      ))
+
+      axios.post(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, adata_paths)
+      .then(response => {
+        
+      })
+      .catch(error => {
+        setMessage('Error while getting the table data: ' + error.response.data.error)
+        setHasMessage(true)
+      });
+    }
+  }, []);
 
   const handleDataSplit = async (index) => {
     try {
@@ -148,6 +161,10 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
               .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
               .map((metadata, index) => (
                 <div key={index} className="metadata-item">
+                  <div>
+                    <p>Please Analyse the table before choosing the label</p>
+
+                  </div>
                   <div>
                     <label>
                       <p>Please Choose the Label:</p>

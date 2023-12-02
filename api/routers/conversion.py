@@ -8,6 +8,7 @@ from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.utils import sc_train_val_test_split
 from typing import List
 from services.clustering import clustering_task
+from tools.visualization.plot import plot_table
 import logging
 from pathlib import Path
 import shutil
@@ -226,6 +227,23 @@ async def process_task_data(data: BenchmarksRequest):
        
         return results
 
+    except Exception as e:
+        # Handle exceptions as needed
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+@router.post("/api/getTablePlot")
+async def process_files(file_paths: List[str]):
+    
+    try:
+        results = []
+        for file_path in file_paths:
+            adata = load_anndata(file_path)
+            if adata is not None:
+                # Convert AnnData to DataFrame
+                dataframe = adata.to_df()
+                tablePlot = plot_table(dataframe)
+                results.append(tablePlot)
+        return results
     except Exception as e:
         # Handle exceptions as needed
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
