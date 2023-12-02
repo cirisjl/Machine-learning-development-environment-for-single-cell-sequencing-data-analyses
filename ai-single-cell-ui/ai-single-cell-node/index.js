@@ -1320,23 +1320,34 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   
       const formData = req.body; // This assumes you have the necessary middleware to parse JSON in the request body
   
-      collection.insertOne(formData, (err) => {
-        if (err) {
-          console.error('Error inserting form data into MongoDB:', err);
-          res.status(500).json({ error: 'Error submitting form data' });
-        } else {
-          console.log('Form data submitted successfully');
-          res.status(200).json({ message: 'Form data submitted successfully' });
-        }
+      // Check if a document with the provided Id already exists
+      const existingDocument = await collection.findOne({ Id: formData.Id });
   
-        // Close the MongoDB connection here after the operation is complete
-        client.close();
-      });
+      if (existingDocument) {
+        // Document with the provided Id already exists
+        console.log('Document with Id already exists:', formData.Id);
+        res.status(400).json({ error: 'Document with the provided Id already exists' });
+      } else {
+        // Document with the provided Id does not exist, proceed with insertion
+        collection.insertOne(formData, (err) => {
+          if (err) {
+            console.error('Error inserting form data into MongoDB:', err);
+            res.status(500).json({ error: 'Error submitting form data' });
+          } else {
+            console.log('Form data submitted successfully');
+            res.status(200).json({ message: 'Form data submitted successfully' });
+          }
+  
+          // Close the MongoDB connection here after the operation is complete
+          client.close();
+        });
+      }
     } catch (err) {
       console.error('Error:', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+  
   
 
 // Define a route to handle adding a new option to MongoDB

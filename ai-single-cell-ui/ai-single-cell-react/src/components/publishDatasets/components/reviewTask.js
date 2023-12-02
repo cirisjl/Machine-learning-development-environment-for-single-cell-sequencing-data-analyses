@@ -3,6 +3,9 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ReactPlotly from './reactPlotly';
 import BenchmarksPlots from './benchmarksPlots';
+import axios from 'axios';
+import { SERVER_URL } from '../../../constants/declarations';
+import AlertMessageComponent from './alertMessageComponent';
 
 function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTask, activeTask}) {
   
@@ -13,6 +16,9 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     taskBuilder: false,
     benchmarks: false,
   });
+
+  const [ message, setMessage ] = useState('');
+  const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
 
   const toggleSectionVisibility = (section) => {
     setSectionsVisibility((prevVisibility) => ({
@@ -71,6 +77,18 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     formData.Status = "Review"
     console.log(formData);
 
+    axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
+    .then(response => {
+      console.log('Form data submitted successfully');
+      setMessage("Form data submitted successfully")
+      setHasMessage(true)
+    })
+    .catch(error => {
+      console.error('Error submitting form data:', error);
+      setMessage('Error submitting form data:', error)
+      setHasMessage(true)
+    });
+
     // After Task 7 is successfully completed, update the task status
     setTaskStatus((prevTaskStatus) => ({
       ...prevTaskStatus,
@@ -83,6 +101,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
   return (
     <div className='review-task'>
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
       <div className='section'>
         <div className='section-heading' onClick={() => toggleSectionVisibility('inputData')}>
           <h3>Input Data</h3>
