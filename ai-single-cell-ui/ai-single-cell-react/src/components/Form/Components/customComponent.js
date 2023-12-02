@@ -295,6 +295,7 @@ class MyForm extends Component {
             <input
               type="text"
               name="Dataset"
+              required
               value={formData.Dataset}
               onChange={this.handleChange}
               className={`form-input ${errors.Dataset ? 'error' : ''}`}
@@ -324,6 +325,7 @@ class MyForm extends Component {
             <label className="form-label">Downloads:</label>
             <input
               type="text"
+              required
               name="Downloads"
               value={formData.Downloads}
               onChange={this.handleChange}
@@ -366,6 +368,7 @@ class MyForm extends Component {
             <input
               type="text"
               name="Author"
+              required
               value={formData.Author}
               onChange={this.handleChange}
               className={`form-input ${errors.Author ? 'error' : ''}`}
@@ -416,6 +419,7 @@ class MyForm extends Component {
               value={formData.Species}
               isClearable
               isSearchable
+              required
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Species', inputValue)}
