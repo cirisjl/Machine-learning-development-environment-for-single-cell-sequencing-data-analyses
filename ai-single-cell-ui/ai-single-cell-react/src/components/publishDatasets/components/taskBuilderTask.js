@@ -11,34 +11,34 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if(taskData.task_builder.status !== 'completed') {
-      let adata_paths = []
-      taskData.quality_control.qc_results
-              .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
-              .map((results, index) => (
-          adata_paths.push(results.adata_path)
-      ))
+  // useEffect(() => {
+  //   if(taskData.task_builder.status !== 'completed') {
+  //     let adata_paths = []
+  //     taskData.quality_control.qc_results
+  //             .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
+  //             .map((results, index) => (
+  //         adata_paths.push(results.adata_path)
+  //     ))
 
-      axios.post(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, adata_paths)
-      .then(response => {
-        const data = response.data;
+  //     axios.post(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, adata_paths)
+  //     .then(response => {
+  //       const data = response.data;
        
-        // Updating taskData state
-        setTaskData(prevTaskData => ({
-          ...prevTaskData,
-          task_builder: {
-            ...prevTaskData.task_builder,
-            table_data: data,
-          },
-        }));
-      })
-      .catch(error => {
-        setMessage('Error while getting the table data: ' + error.response.data.detail);
-        setHasMessage(true);
-      });
-    }
-  }, []);
+  //       // Updating taskData state
+  //       setTaskData(prevTaskData => ({
+  //         ...prevTaskData,
+  //         task_builder: {
+  //           ...prevTaskData.task_builder,
+  //           table_data: data,
+  //         },
+  //       }));
+  //     })
+  //     .catch(error => {
+  //       setMessage('Error while getting the table data: ' + error.response.data.detail);
+  //       setHasMessage(true);
+  //     });
+  //   }
+  // }, []);
 
   const handleDataSplit = async (index) => {
     try {
@@ -171,12 +171,12 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
               .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
               .map((metadata, index) => (
                 <div key={index} className="metadata-item">
-                  <div>
+                  {/* <div>
                     <p>Please Analyse the table before choosing the label</p>
                     {taskData.task_builder.table_data.length > 0 && taskData.task_builder.table_data[index] && (
                       <ReactPlotly plot_data={taskData.task_builder.table_data[index]} />                   
                     )}
-                  </div>
+                  </div> */}
                   <div>
                     <label>
                       <p>Please Choose the Label:</p>
