@@ -73,3 +73,5 @@ def clustering_task(adata_path, task_label):
         "bar_plot": bar_plot,
         "line_plot": line_plot
     }
+
+    return result
