@@ -85,9 +85,8 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
       setHasMessage(true)
     })
     .catch(error => {
-      console.log(error.error);
-      console.error('Error submitting form data:', error.error);
-      setMessage('Error submitting form data:', error.error)
+      console.error('Error submitting form data:', error.response.data.error);
+      setMessage('Error submitting form data:', error.response.data.error)
       setHasMessage(true)
     });
 
