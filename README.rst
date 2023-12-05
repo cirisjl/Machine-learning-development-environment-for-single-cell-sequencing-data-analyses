@@ -1,7 +1,7 @@
 .. image:: https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat
    :target: http://bioconda.github.io/recipes/ucsc-cell-browser/README.html
 
-UCSC Single Cell Browser
+Hello world
 ========================
 
 The UCSC Cell Browser is a viewer for single cell data. You can click on and
