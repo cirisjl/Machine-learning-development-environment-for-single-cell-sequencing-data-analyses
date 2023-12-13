@@ -183,7 +183,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
         const jwtToken = jwt.sign({ username }, 'secret' , { expiresIn: '1h' });
 
         res.cookie("jwtToken", jwtToken, {
-            httpOnly: true,
+            // httpOnly: true,
             maxAge: 60 * 60 * 1000,
             path: "/",
             // secure: process.env.NODE_ENV === "production",
