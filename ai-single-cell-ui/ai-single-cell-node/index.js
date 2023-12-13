@@ -33,6 +33,10 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
 app.use(cookieParser());
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Unhandled Error in Node Application');
+});
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
@@ -86,7 +90,6 @@ const createDirectoryIfNotExists = async (dirPath) => {
     } catch (err) {
       if (err.code !== 'EEXIST') {
         console.error('Error creating the directory:', err);
-        throw err;
       }
     }
   };
@@ -149,7 +152,6 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
       }
     } catch (error) {
       console.error('Error copying files:', error);
-      throw error;
     }
   };
 
@@ -321,16 +323,23 @@ app.post('/createDataset', async (req, res) => {
     }
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
                 }
 
@@ -352,7 +361,7 @@ app.post('/createDataset', async (req, res) => {
                             return res.status(400).send('Dataset title already exists');
                         } else {
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
                         }
                     } else {
@@ -369,7 +378,7 @@ app.post('/createDataset', async (req, res) => {
                         connection.commit(function (err) {
                             if (err) {
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
                             }
 
@@ -446,17 +455,25 @@ app.put('/updateDataset', async (req, res) => {
 
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) { console.log('Idi error: ' + err); throw err; }
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).send('Database query error');
                 }
 
                 const userId = userRows[0].user_id;
@@ -472,8 +489,9 @@ app.put('/updateDataset', async (req, res) => {
                 connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, title], function (err, datasetRows) {
                     if (err) {
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).send('Dataset query error');
                     }
 
                     const datasetId = datasetRows[0].dataset_id;
@@ -488,10 +506,10 @@ app.put('/updateDataset', async (req, res) => {
 
                     connection.query('UPDATE dataset SET n_cells=?, reference=?, summary=? WHERE dataset_id=?', [n_cells, reference, summary, datasetId], function (err, datasetResult) {
                         if (err) {
-
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
+                            return res.status(500).send('Dataset update error');
                         }
                         for (let file of insertList) {
                             if(filesFromPublic) {
@@ -509,8 +527,9 @@ app.put('/updateDataset', async (req, res) => {
                         connection.commit(function (err) {
                             if (err) {
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
+                                return res.status(500).send('Dataset update error');
                             }
 
                             console.log('Transaction completed successfully');
@@ -529,17 +548,26 @@ app.delete('/deleteDataset', async (req, res) => {
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).send('Database connection error');
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) { throw err; }
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).send('Transaction error');
+            }
 
             // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
+                    console.error('Error in SELECT query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).send('Database query error');
                 }
 
                 const userId = userRows[0].user_id;
@@ -554,9 +582,11 @@ app.delete('/deleteDataset', async (req, res) => {
 
                 connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, dataset], function (err, datasetRows) {
                     if (err) {
+                        console.error('Error in SELECT query for dataset:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).send('Dataset query error');
                     }
 
                     const datasetId = datasetRows[0].dataset_id;
@@ -571,19 +601,22 @@ app.delete('/deleteDataset', async (req, res) => {
 
                     connection.query('delete FROM file WHERE dataset_id=?', [datasetId], function (err, datasetResult) {
                         if (err) {
-
+                            console.error('Error deleting files:', err);
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
+                            return res.status(500).send('Error deleting files');
                         }
                         connection.query('DELETE FROM dataset where dataset_id=?', [datasetId]);
 
                         // Commit transaction
                         connection.commit(function (err) {
                             if (err) {
-                                connection.rollback(function () {
-                                    throw err;
-                                });
+                                console.error('Error committing transaction:', err);
+                                    connection.rollback(function () {
+                                        connection.release();
+                                    });
+                                    return res.status(500).send('Transaction commit error');
                             }
 
                             console.log('Transaction completed successfully');
@@ -1067,7 +1100,10 @@ app.get('/preview/datasets', (req, res) => {
     const userQuery = `SELECT user_id FROM users WHERE username = '${username}'`;
 
     pool.query(userQuery, (err, userResult) => {
-        if (err) throw err;
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
 
         if (userResult.length === 0) {
             res.status(404).send(`User '${username}' not found`);
@@ -1083,7 +1119,10 @@ app.get('/preview/datasets', (req, res) => {
         `;
 
             pool.query(datasetsQuery, (err, datasetsResult) => {
-                if (err) throw err;
+                if (err) {
+                    console.error('Database query error:', err);
+                    return res.status(500).json({ message: 'Internal Server Error' });
+                }
 
                 const datasets = {};
 
@@ -1137,16 +1176,25 @@ app.post('/createTask', (req, res) => {
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
+                    console.error('Error in SELECT query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).json({ message: 'Database query error' });
                 }
 
                 const userId = userRows[0].user_id;
@@ -1163,16 +1211,20 @@ app.post('/createTask', (req, res) => {
                 const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
                 connection.query('INSERT INTO task (task_title, task_id, user_id, tool, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
                     if (err) {
+                        console.error('Error in INSERT query:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).json({ message: 'Database insertion error' });
                     } else {
                         // Commit transaction
                         connection.commit(function (err) {
                             if (err) {
+                                console.error('Error committing transaction:', err);
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
+                                return res.status(500).json({ message: 'Transaction commit error' });
                             }
 
                             console.log('Transaction completed successfully');
@@ -1191,25 +1243,36 @@ app.put('/updateTaskStatus', (req, res) => {
     const taskIdsArr = taskIds.split(',');
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             const date = new Date();
             const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
             connection.query('UPDATE task SET status = ?, finish_datetime = ? WHERE task_id IN (?)', [status, timestamp, taskIdsArr], function (err, taskResult) {
                 if (err) {
+                    console.error('Error in UPDATE query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).json({ message: 'Database update error' });
                 } else {
                     // Commit transaction
                     connection.commit(function (err) {
                         if (err) {
+                            console.error('Error committing transaction:', err);
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
+                            return res.status(500).json({ message: 'Transaction commit error' });
                         }
 
                         console.log('Transaction completed successfully');
@@ -1227,16 +1290,21 @@ app.get('/getTasks', (req, res) => {
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
-
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
-                    connection.rollback(function () {
-                        throw err;
-                    });
+                    console.error('Database query error:', err);
+                    return res.status(500).json({ message: 'Internal Server Error' });
                 }
 
                 const userId = userRows[0].user_id;
@@ -1251,9 +1319,11 @@ app.get('/getTasks', (req, res) => {
 
                 connection.query('SELECT task_title, task_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
                     if (err) {
+                        console.error('Error committing transaction:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).json({ message: 'Transaction commit error' });
                     } else {
                         connection.release();
                         res.json(rows);
