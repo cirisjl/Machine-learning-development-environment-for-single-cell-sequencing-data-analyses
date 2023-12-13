@@ -172,7 +172,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
         const hash = await bcrypt.hash(password, 10);
 
         // Insert the user into the database
-        await pool.promise().query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hash]);
+        await pool.query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hash]);
 
         // Create directory for user storage
         if (!fs.existsSync(storageDir + username)) {
@@ -207,7 +207,7 @@ app.post('/api/login', async (req, res) => {
 
     try {
         // Query the database for the user
-        const [results] = await pool.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+        const [results] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
         if (results.length === 0) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -247,7 +247,7 @@ app.get('/protected', verifyToken, async (req, res) => {
             return res.status(403).json({ message: 'Access Denied' });
         }
 
-        const [results] = await pool.promise().query('SELECT isAdmin FROM users WHERE username = ?', authData.username);
+        const [results] = await pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username);
 
         if (results.length === 0) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -473,12 +473,12 @@ app.put('/updateDataset', async (req, res) => {
                         try {
                             for (let file of insertList) {
                                 file = filesFromPublic ? file.replace(/^\/?publicDatasets\//, '/') : file;
-                                await connection.promise().query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
+                                await connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                             }
 
                             // Delete removed files
                             for (const file of deleteList) {
-                                await connection.promise().query('DELETE FROM file WHERE file_loc=? AND dataset_id=?', [file, datasetId]);
+                                await connection.query('DELETE FROM file WHERE file_loc=? AND dataset_id=?', [file, datasetId]);
                             }
                         } catch (err) {
                             console.error('Error in file insert/delete:', err);
@@ -618,7 +618,7 @@ app.post('/renameFile', async (req, res) => {
     try {
         // Avoiding SQL injection by using prepared statements
         const query = `SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = ? AND f.file_loc LIKE ?;`;
-        const [results] = await pool.promise().query(query, [uname, `${oldName}%`]);
+        const [results] = await pool.query(query, [uname, `${oldName}%`]);
 
         if (results.length > 0) {
             return res.status(409).json({ message: 'Directory already exists' });
@@ -833,7 +833,7 @@ app.delete('/deleteFiles', async (req, res) => {
         let failFlag = false;
         for (const file of fileList) {
             try {
-                const [rows, fields] = await pool.promise().execute(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc like '${file.replace("'", "''")}%';`);
+                const [rows, fields] = await pool.execute(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc like '${file.replace("'", "''")}%';`);
                 console.log('Count: ' + rows.length);
                 if (rows.length > 0) {
                     res.status(401).json({ message: 'File(s) being used by datasets.' });
