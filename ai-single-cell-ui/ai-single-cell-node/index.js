@@ -1,6 +1,6 @@
 const express = require('express');
 const fs = require('fs-extra');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
@@ -15,15 +15,23 @@ const multer = require("multer");
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
-const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
-const { MongoClient, ObjectId } = require('mongodb');
+let mongoDBConfig; // Declare mongoDBConfig outside the try-catch block
+let mongoUrl, dbName, optionsCollectionName, datasetCollectionName;
 
-// const Option = require('../models/Option');
-// // Import the database configuration
-// require('./config/mongoDBClient');
+try {
+    mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json')); // Import the MongoDB connection configuration
+} catch (error) {
+    console.error('Error reading MongoDB configuration:', error);
+}
 
-// Increase the limit for the request body size to 25MB
+// Check if mongoDBConfig is defined before using it
+if (mongoDBConfig) {
+    ({ mongoUrl, dbName, optionsCollectionName, datasetCollectionName } = mongoDBConfig);
+    const { MongoClient, ObjectId } = require('mongodb');
+    // Now you can use MongoClient and ObjectId here
+} else {
+    console.error('MongoDB configuration not available. Ensure ./configs/mongoDB.json is properly configured.');
+}
 
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
@@ -33,6 +41,11 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
 app.use(cookieParser());
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Unhandled Error in Node Application');
+});
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
@@ -86,7 +99,6 @@ const createDirectoryIfNotExists = async (dirPath) => {
     } catch (err) {
       if (err.code !== 'EEXIST') {
         console.error('Error creating the directory:', err);
-        throw err;
       }
     }
   };
@@ -149,141 +161,109 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
       }
     } catch (error) {
       console.error('Error copying files:', error);
-      throw error;
     }
   };
 
-// Route to handle user signup
-app.post('/api/signup', (req, res) => {
+  app.post('/api/signup', async (req, res) => {
     const { username, email, password } = req.body;
 
-    // Hash the password using bcrypt
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-            console.error(err);
-            res.json({ status: 500, message: 'Internal Server Error' });
-            return;
-        }
+    try {
+        // Hash the password using bcrypt
+        const hash = await bcrypt.hash(password, 10);
 
         // Insert the user into the database
-        pool.query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hash], (err) => {
-            if (err) {
-                console.error(err);
-                res.json({ status: 500, message: 'An Account is already present with the given email or username. Please try to login or create a new account using different email.' });
-                return;
-            }
+        await pool.promise().query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hash]);
 
-            try {
-                if (!err) {
-                    if (!fs.existsSync(storageDir + username))
-                        fs.promises.mkdir(storageDir + username);
-
-                    // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({ username, password }, 'secret', { expiresIn: '1h' });
-
-                    // the cookie will be set with the name "jwtToken" and the value of the token
-                    // the "httpOnly" and "secure" options help prevent XSS and cookie theft
-                    // the "secure" option is only set if the app is running in production mode
-                    // set the cookie with the JWT token on the response object
-                    res.cookie("jwtToken", jwtToken, {
-                        //httpOnly: true,
-                        maxAge: 60 * 60 * 1000,
-                        path: "/"
-                        //secure: process.env.NODE_ENV === "production",
-                    });
-                    res.json({ status: 200, message: 'User account created successfully' });
-                }
-            }
-            catch (error) {
-                res.json({ status: 500, message: 'Error occured while creating a storage directory for the user' });
-            }
-
-        });
-    });
-});
-
-// Route to handle user login
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-
-    pool.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
-        if (err) {
-            console.error(err);
-            res.json({ status: 500, message: 'Internal Server Error' });
-            return;
+        // Create directory for user storage
+        if (!fs.existsSync(storageDir + username)) {
+            await fs.promises.mkdir(storageDir + username);
         }
 
+        // Create JWT token and send it back to the client
+        const jwtToken = jwt.sign({ username }, 'secret' , { expiresIn: '1h' });
+
+        res.cookie("jwtToken", jwtToken, {
+            httpOnly: true,
+            maxAge: 60 * 60 * 1000,
+            path: "/",
+            // secure: process.env.NODE_ENV === "production",
+        });
+
+        res.json({ status: 200, message: 'User account created successfully' });
+    } catch (error) {
+        console.error('Signup error:', error);
+
+        if (error.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ status: 409, message: 'Username or email already exists' });
+        } else {
+            res.status(500).json({ status: 500, message: 'Internal Server Error' });
+        }
+    }
+});
+
+
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Query the database for the user
+        const [results] = await pool.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+
         if (results.length === 0) {
-            res.json({ status: 401, message: 'Invalid credentials' });
-            return;
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         const user = results[0];
 
-        bcrypt.compare(password, user.password_hash, (err, isMatch) => {
-            if (err) {
-                console.error(err);
-                res.json({ status: 500, message: 'Internal Server Error' });
-                return;
-            }
+        // Compare the provided password with the stored hash
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
 
-            if (!isMatch) {
-                res.json({ status: 401, message: 'Invalid credentials' });
-                return;
-            }
+        // Create JWT token
+        const jwtToken = jwt.sign({ username }, 'secret', { expiresIn: '1h' });
 
-            // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({ username, password }, 'secret', { expiresIn: '1h' });
-
-            // the cookie will be set with the name "jwtToken" and the value of the token
-            // the "httpOnly" and "secure" options help prevent XSS and cookie theft
-            // the "secure" option is only set if the app is running in production mode
-            // set the cookie with the JWT token on the response object
-            res.cookie("jwtToken", jwtToken, {
-                //httpOnly: true,
-                maxAge: 60 * 60 * 1000,
-                path: "/"
-                //secure: process.env.NODE_ENV === "production",
-            });
-
-            console.log(req.cookies);
-            res.json({ status: 200, message: 'Logged in successfully', jwtToken });
+        // Set the cookie with the JWT token
+        res.cookie("jwtToken", jwtToken, {
+            // httpOnly: true,
+            maxAge: 60 * 60 * 1000, // 1 hour
+            path: "/",
+            // secure: process.env.NODE_ENV === "production",
         });
-    });
+
+        res.json({ status: 200, message: 'Logged in successfully', jwtToken });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
-// Route to handle protected resource
-app.get('/protected', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secret', (err, authData) => {
-        console.log(authData);
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            if (authData.username !== null && authData.username !== undefined) {
-                pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
-                    if (err) {
-                        console.error(err);
-                        res.json({ message: 'Internal Server Error'});
-                        return;
-                    }
-            
-                    if (results.length === 0) {
-                        res.json({ message: 'Invalid credentials'});
-                        return;
-                    }
-                    console.log("Inside the protected API, result after the query:: " + results[0].isAdmin);
-            
-                    const adminFlag = results[0].isAdmin;
-                    console.log("Inside adminFlag:: " + adminFlag);
+app.get('/protected', verifyToken, async (req, res) => {
+    try {
+        const authData = jwt.verify(req.token, 'secret');
 
-                    authData.isAdmin = (adminFlag == 1) ? true: false;
-                    console.log("Inside authData.isAdmin:: " + authData.isAdmin);
-
-                    res.json({ message: 'You have access to the protected resource', authData });
-                });
-            }
+        if (!authData.username) {
+            return res.status(403).json({ message: 'Access Denied' });
         }
-    });
+
+        const [results] = await pool.promise().query('SELECT isAdmin FROM users WHERE username = ?', authData.username);
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        authData.isAdmin = results[0].isAdmin === 1;
+        res.json({ message: 'You have access to the protected resource', authData });
+
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            res.status(403).json({ message: 'Invalid Token' });
+        } else {
+            console.error('Protected route error:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    }
 });
 
 app.post('/createDataset', async (req, res) => {
@@ -321,17 +301,23 @@ app.post('/createDataset', async (req, res) => {
     }
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
-                    connection.rollback(function () {
-                        throw err;
-                    });
+                    console.error('Database query error:', err);
+                    return res.status(500).json({ message: 'Internal Server Error' });
                 }
 
                 const userId = userRows[0].user_id;
@@ -352,7 +338,7 @@ app.post('/createDataset', async (req, res) => {
                             return res.status(400).send('Dataset title already exists');
                         } else {
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
                         }
                     } else {
@@ -369,7 +355,7 @@ app.post('/createDataset', async (req, res) => {
                         connection.commit(function (err) {
                             if (err) {
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
                             }
 
@@ -406,61 +392,48 @@ app.post('/createDataset', async (req, res) => {
 });
 
 app.put('/updateDataset', async (req, res) => {
-
     const { title, n_cells, reference, summary, authToken, files, currentFileList } = req.body;
     const username = getUserFromToken(authToken);
 
     const insertList = files.filter(item => !currentFileList.includes(item));
     const deleteList = currentFileList.filter(item => !files.includes(item));
 
-    let filesFromPublic = false;
-    console.log(insertList);
-    console.log("type of insert list" + typeof insertList);
+    let filesFromPublic = files.some(file => file.startsWith("publicDatasets") || file.startsWith("/publicDatasets"));
 
-    // Logic to Copy files from public storage to user private storage if it is a public Dataset.
-    for (const file of files) {
-        console.log("inside for loop")
-        console.log(file);
-        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
-            console.log("inside if loop for my check");
-            filesFromPublic = true;
-            break;
+    if (filesFromPublic) {
+        try {
+            let dirName = files.length > 0 ? path.dirname(files[0]) : "";
+            let userPrivateStorageDir = storageDir + username;
+            await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
+        } catch (err) {
+            console.error('Error copying files:', err);
+            return res.status(500).send('Error in file operation');
         }
     }
 
-    console.log("value of filesFromPublic::: " + filesFromPublic);
-
-
-    if(filesFromPublic) {
-        let dirName = ""
-
-        if (files.length > 0) {
-            dirName = path.dirname(files[0])
-        } 
-
-        let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
-
-        // Copy files from user's private storage to public dataset directory
-        await copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, files, filesFromPublic);
-    }
-
-
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).send('Database connection error');
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) { console.log('Idi error: ' + err); throw err; }
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).send('Transaction error');
+            }
 
-            // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
+                    console.error('Error in SELECT query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).send('Database query error');
                 }
 
-                const userId = userRows[0].user_id;
-
+                const userId = userRows[0]?.user_id;
                 if (!userId) {
                     res.status(400).send('User not found');
                     connection.rollback(function () {
@@ -471,13 +444,14 @@ app.put('/updateDataset', async (req, res) => {
 
                 connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, title], function (err, datasetRows) {
                     if (err) {
+                        console.error('Error in SELECT query for dataset:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).send('Dataset query error');
                     }
 
-                    const datasetId = datasetRows[0].dataset_id;
-
+                    const datasetId = datasetRows[0]?.dataset_id;
                     if (!datasetId) {
                         res.status(400).send('Dataset not found');
                         connection.rollback(function () {
@@ -486,31 +460,42 @@ app.put('/updateDataset', async (req, res) => {
                         return;
                     }
 
-                    connection.query('UPDATE dataset SET n_cells=?, reference=?, summary=? WHERE dataset_id=?', [n_cells, reference, summary, datasetId], function (err, datasetResult) {
+                    connection.query('UPDATE dataset SET n_cells=?, reference=?, summary=? WHERE dataset_id=?', [n_cells, reference, summary, datasetId], async function (err, datasetResult) {
                         if (err) {
-
+                            console.error('Error in UPDATE query:', err);
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
-                        }
-                        for (let file of insertList) {
-                            if(filesFromPublic) {
-                                console.log("value of filesFromPublic inside ifffffffffffff::: " + filesFromPublic);
-                                file = file.replace(/^\/?publicDatasets\//, '/'); 
-                            }
-                            connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
+                            return res.status(500).send('Dataset update error');
                         }
 
-                        for (const file of deleteList) {
-                            connection.query('DELETE FROM file WHERE file_loc=? AND dataset_id=?', [file, datasetId]);
+                        // Insert new files
+                        try {
+                            for (let file of insertList) {
+                                file = filesFromPublic ? file.replace(/^\/?publicDatasets\//, '/') : file;
+                                await connection.promise().query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
+                            }
+
+                            // Delete removed files
+                            for (const file of deleteList) {
+                                await connection.promise().query('DELETE FROM file WHERE file_loc=? AND dataset_id=?', [file, datasetId]);
+                            }
+                        } catch (err) {
+                            console.error('Error in file insert/delete:', err);
+                            connection.rollback(function () {
+                                connection.release();
+                            });
+                            return res.status(500).send('File insert/delete error');
                         }
 
                         // Commit transaction
                         connection.commit(function (err) {
                             if (err) {
+                                console.error('Error committing transaction:', err);
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
+                                return res.status(500).send('Transaction commit error');
                             }
 
                             console.log('Transaction completed successfully');
@@ -524,26 +509,35 @@ app.put('/updateDataset', async (req, res) => {
     });
 });
 
+
+
 app.delete('/deleteDataset', async (req, res) => {
     const { authToken, dataset } = req.query;
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).send('Database connection error');
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) { throw err; }
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).send('Transaction error');
+            }
 
-            // Run SELECT command
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
+                    console.error('Error in SELECT query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).send('Database query error');
                 }
 
-                const userId = userRows[0].user_id;
-
+                const userId = userRows[0]?.user_id;
                 if (!userId) {
                     res.status(400).send('User not found');
                     connection.rollback(function () {
@@ -554,13 +548,14 @@ app.delete('/deleteDataset', async (req, res) => {
 
                 connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, dataset], function (err, datasetRows) {
                     if (err) {
+                        console.error('Error in SELECT query for dataset:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).send('Dataset query error');
                     }
 
-                    const datasetId = datasetRows[0].dataset_id;
-
+                    const datasetId = datasetRows[0]?.dataset_id;
                     if (!datasetId) {
                         res.status(400).send('Dataset not found');
                         connection.rollback(function () {
@@ -569,26 +564,38 @@ app.delete('/deleteDataset', async (req, res) => {
                         return;
                     }
 
-                    connection.query('delete FROM file WHERE dataset_id=?', [datasetId], function (err, datasetResult) {
+                    connection.query('DELETE FROM file WHERE dataset_id=?', [datasetId], function (err) {
                         if (err) {
-
+                            console.error('Error deleting files:', err);
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
+                            return res.status(500).send('Error deleting files');
                         }
-                        connection.query('DELETE FROM dataset where dataset_id=?', [datasetId]);
 
-                        // Commit transaction
-                        connection.commit(function (err) {
+                        connection.query('DELETE FROM dataset WHERE dataset_id=?', [datasetId], function (err) {
                             if (err) {
+                                console.error('Error deleting dataset:', err);
                                 connection.rollback(function () {
-                                    throw err;
+                                    connection.release();
                                 });
+                                return res.status(500).send('Error deleting dataset');
                             }
 
-                            console.log('Transaction completed successfully');
-                            connection.release();
-                            res.status(200).jsonp('Dataset deleted.');
+                            // Commit transaction
+                            connection.commit(function (err) {
+                                if (err) {
+                                    console.error('Error committing transaction:', err);
+                                    connection.rollback(function () {
+                                        connection.release();
+                                    });
+                                    return res.status(500).send('Transaction commit error');
+                                }
+
+                                console.log('Transaction completed successfully');
+                                connection.release();
+                                res.status(200).jsonp('Dataset deleted.');
+                            });
                         });
                     });
                 });
@@ -597,66 +604,56 @@ app.delete('/deleteDataset', async (req, res) => {
     });
 });
 
-
 app.post('/renameFile', async (req, res) => {
-    let { oldName } = req.query;
-    let { newName } = req.query;
-    let { authToken } = req.query;
+    let { oldName, newName, authToken } = req.query;
 
     oldName = oldName.replace('//', '/');
     newName = newName.replace('//', '/');
 
     const uname = getUserFromToken(authToken);
-    if (uname == 'Unauthorized')
+    if (uname == 'Unauthorized') {
         return res.status(403).jsonp('Unauthorized');
+    }
 
-    pool.query(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc LIKE '${oldName}%';`, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ status: 500, message: 'Internal Server Error' });
-        }
+    try {
+        // Avoiding SQL injection by using prepared statements
+        const query = `SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = ? AND f.file_loc LIKE ?;`;
+        const [results] = await pool.promise().query(query, [uname, `${oldName}%`]);
 
         if (results.length > 0) {
-            return res.status(409).json({ status: 409, message: 'Directory already exists' });
+            return res.status(409).json({ message: 'Directory already exists' });
         } else {
-            if (oldName.includes("publicDatasets") && newName.includes("publicDatasets")) {
-                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {    
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
-                    } else {
-                        console.log('File renamed successfully!');
-                        return res.status(200).jsonp('Ok');
-                    }
-                });
-            } else {
-                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {    
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).json({ status: 500, message: 'Internal Server Error' });
-                    } else {
-                        console.log('File renamed successfully!');
-                        return res.status(200).jsonp('Ok');
-                    }
-                });
-            }
+            const oldPath = oldName.includes("publicDatasets") ? `/usr/src/app/storage/${oldName}` : `${storageDir}${uname}/${oldName}`;
+            const newPath = newName.includes("publicDatasets") ? `/usr/src/app/storage/${newName}` : `${storageDir}${uname}/${newName}`;
+
+            await fs.promises.rename(oldPath, newPath);
+            console.log('File renamed successfully!');
+            res.status(200).jsonp('Ok');
         }
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
 
 app.post('/download', async (req, res) => {
     const { fileList } = req.body;
-    const { authToken } = req.query;
-    const { pwd } = req.query;
-    console.log('Entered download function');
+    const { authToken, pwd } = req.query;
 
     const username = getUserFromToken(authToken);
-    console.log('Username is: ' + username);
-    if (fileList && Array.isArray(fileList)) {
+    if (username === 'Unauthorized') {
+        return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    if (!fileList || !Array.isArray(fileList) || fileList.length === 0) {
+        return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    try {
         const zipName = 'files.zip';
         const output = fs.createWriteStream(zipName);
-        const archive = archiver('zip');
+        const archive = archiver('zip'); // Sets the compression level
 
         archive.pipe(output);
 
@@ -703,104 +700,123 @@ app.post('/download', async (req, res) => {
             // Delete the zip file after it has been sent to the client
             // fs.unlinkSync(zipPath);
         });
-    } else {
-        return res.status(400).jsonp('Invalid request');
+
+        archive.on('error', (err) => {
+            console.error('Archive error:', err);
+            res.status(500).json({ message: 'Error creating archive' });
+        });
+
+    } catch (err) {
+        console.error('Error in download route:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
 app.get('/download', async (req, res) => {
-    const { fileUrl, authToken, forResultFile } = req.query;
-    const { pwd } = req.query
+    const { fileUrl, authToken, forResultFile } = req.query; // forResultFile seems unused
+    const { pwd } = req.query;
     const username = getUserFromToken(authToken);
-    let filePath = '';
-    console.log('Entered download function');
 
-    if (!fileUrl) {
-        return res.status(400).jsonp('Invalid request');
+    if (!fileUrl || username === 'Unauthorized') {
+        return res.status(400).jsonp('Invalid request or Unauthorized');
     }
-    
-    if(pwd && pwd.includes("publicDatasets")) {
-        filePath = path.join(storageDir, fileUrl);
-    } else {
-        filePath = path.join(storageDir, username, fileUrl);
-    }
-  
 
+    let filePath = pwd && pwd.includes("publicDatasets") ? path.join(storageDir, fileUrl) : path.join(storageDir, username, fileUrl);
     console.log('file: ' + filePath);
-    const fileStat = await fs.promises.stat(filePath);
 
-    if (fileStat.isFile()) {
-        // Download file
-        const filename = path.basename(fileUrl);
-        const mimetype = mime.getType(filePath, { legacy: true });
+    try {
+        const fileStat = await fs.promises.stat(filePath);
 
-        res.setHeader('Content-disposition', 'attachment; filename=' + filename);
-        res.setHeader('Content-type', mimetype);
+        if (fileStat.isFile()) {
+            // Download file
+            const filename = path.basename(fileUrl);
+            const mimetype = mime.getType(filePath, { legacy: true }) || 'application/octet-stream';
 
-        const filestream = fs.createReadStream(filePath);
-        console.log('Filename: ' + filename)
-        filestream.pipe(res);
-    } else if (fileStat.isDirectory()) {
-        // Download folder as zip
-        const folderName = path.basename(filePath);
-        const archive = archiver('zip', { zlib: { level: 9 } });
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Type', mimetype);
 
-        archive.directory(filePath, folderName);
-        archive.pipe(res);
+            const filestream = fs.createReadStream(filePath);
+            filestream.pipe(res);
 
-        res.setHeader('Content-disposition', 'attachment; filename=' + folderName + '.zip');
-        res.setHeader('Content-type', 'application/zip');
+            filestream.on('error', (err) => {
+                console.error('File stream error:', err);
+                res.status(500).jsonp('Internal Server Error');
+            });
+        } else if (fileStat.isDirectory()) {
+            // Download folder as zip
+            const folderName = path.basename(filePath);
+            const archive = archiver('zip', { zlib: { level: 9 } });
 
-        archive.finalize();
-    } else {
-        return res.status(400).jsonp('Invalid request');
+            archive.on('error', (err) => {
+                console.error('Archive error:', err);
+                res.status(500).jsonp('Internal Server Error');
+            });
+
+            res.setHeader('Content-Disposition', `attachment; filename="${folderName}.zip"`);
+            res.setHeader('Content-Type', 'application/zip');
+
+            archive.directory(filePath, folderName);
+            archive.pipe(res);
+            archive.finalize();
+        } else {
+            return res.status(400).jsonp('Invalid request');
+        }
+    } catch (err) {
+        console.error('Error in download route:', err);
+        res.status(500).jsonp('Internal Server Error');
     }
 });
 
 app.get('/fetchPreview', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const username = getUserFromToken(authToken);
-    let filePath = '';
-    console.log('Entered download function');
 
-    if (!fileUrl) {
-        return res.status(400).jsonp('Invalid request');
+    if (!fileUrl || username === 'Unauthorized') {
+        return res.status(400).jsonp('Invalid request or Unauthorized');
     }
 
-    if (!forResultFile)
-        filePath = `${storageDir}/${username}/${fileUrl}`;
-    else
-        filePath = `${intermediateStorage}/${fileUrl}`;
-
+    let filePath = forResultFile ? `${intermediateStorage}/${fileUrl}` : `${storageDir}/${username}/${fileUrl}`;
     console.log('file: ' + filePath);
-    const fileStat = await fs.promises.stat(filePath);
 
-    if (fileStat.isFile()) {
-        // Read first 100 lines of the file
-        const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-        let lines = '';
+    try {
+        const fileStat = await fs.promises.stat(filePath);
 
-        fileStream.on('data', (data) => {
-            lines += data;
+        if (fileStat.isFile()) {
+            // Read first 20 lines of the file
+            const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+            let lines = '';
+            let lineCount = 0;
 
-            // Check if 100 lines have been read
-            if (lines.split('\n').length >= 20) {
-                fileStream.destroy();
-            }
-        });
+            fileStream.on('data', (chunk) => {
+                lines += chunk;
+                lineCount = lines.split('\n').length;
 
-        fileStream.on('close', () => {
-            res.status(200).send(lines);
-        });
+                if (lineCount >= 20) {
+                    fileStream.destroy();
+                    lines = lines.split('\n').slice(0, 20).join('\n');
+                    res.status(200).send(lines);
+                }
+            });
 
-        fileStream.on('error', (error) => {
-            console.log('Error reading file: ' + error);
-            res.status(500).jsonp('Error reading file');
-        });
-    } else {
-        return res.status(400).jsonp('Invalid request');
+            fileStream.on('end', () => {
+                if (lineCount < 20) {
+                    res.status(200).send(lines);
+                }
+            });
+
+            fileStream.on('error', (error) => {
+                console.error('Error reading file:', error);
+                res.status(500).jsonp('Error reading file');
+            });
+        } else {
+            res.status(400).jsonp('File is not accessible');
+        }
+    } catch (error) {
+        console.error('Error in fetchPreview route:', error);
+        res.status(500).jsonp('Internal Server Error');
     }
 });
+
 
 app.delete('/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
@@ -939,7 +955,6 @@ app.get('/getDirContents', async (req, res) => {
 
 });
 
-
 app.post('/upload', async (req, res) => {
     let { uploadDir, authToken ,publicDatasetFlag} = req.query;
     let username = getUserFromToken(authToken);
@@ -992,28 +1007,33 @@ app.post('/upload', async (req, res) => {
     }
 });
 
-
-app.post('/createNewFolder', (req, res) => {
+app.post('/createNewFolder', async (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
-    let folderPath = ""
-    if(pwd.includes("publicDatasets")) {
-        folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
+
+    if (username === 'Unauthorized') {
+        return res.status(403).json('Unauthorized');
+    }
+
+    let folderPath = '';
+    if (pwd.includes("publicDatasets")) {
+        folderPath = path.join("/usr/src/app/storage", pwd, folderName);
     } else {
-        folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
+        folderPath = path.join(storageDir, username, pwd, folderName);
     }
-    if (fs.existsSync(folderPath)) {
-        res.status(400).jsonp('Folder already exists');
-        return;
-    }
+
     try {
-        fs.promises.mkdir(folderPath);
-        res.status(201).jsonp('Folder created')
+        if (fs.existsSync(folderPath)) {
+            return res.status(400).jsonp('Folder already exists');
+        }
+
+        await fs.promises.mkdir(folderPath, { recursive: true });
+        res.status(201).jsonp('Folder created');
+    } catch (err) {
+        console.error('Error creating folder:', err);
+        res.status(500).jsonp('Error creating folder: ' + err.message);
     }
-    catch (err) {
-        res.status(404).jsonp('Bad root folder: ' + err);
-    }
-})
+});
 
 const { exec } = require('child_process');
 
@@ -1052,63 +1072,63 @@ app.get('/getStorageDetails', async (req, res) => {
     }
 });
 
-// Route to get datasets and files for a specific user
 app.get('/preview/datasets', (req, res) => {
-
     const { authToken } = req.query;
-
     const username = getUserFromToken(authToken);
 
-    if (username == "Unauthorized") {
-        return res.status(403).jsonp(username);
+    if (username === "Unauthorized") {
+        return res.status(403).json('Unauthorized');
     }
 
-    // Get user ID based on username
-    const userQuery = `SELECT user_id FROM users WHERE username = '${username}'`;
+    const userQuery = 'SELECT user_id FROM users WHERE username = ?';
 
-    pool.query(userQuery, (err, userResult) => {
-        if (err) throw err;
+    pool.query(userQuery, [username], (err, userResult) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
 
         if (userResult.length === 0) {
-            res.status(404).send(`User '${username}' not found`);
-        } else {
-            const userID = userResult[0].user_id;
+            return res.status(404).json({ message: `User '${username}' not found` });
+        }
 
-            // Get datasets and files for the specified user
-            const datasetsQuery = `
-          SELECT dataset.dataset_id, dataset.title, dataset.n_cells, dataset.reference, dataset.summary, file.file_id, file.file_loc, SUBSTRING_INDEX(SUBSTRING_INDEX(file.file_loc, '/', 2), '/', -1) AS direc
-          FROM dataset
-          JOIN file ON dataset.dataset_id = file.dataset_id
-          WHERE dataset.user_id = ${userID}
+        const userID = userResult[0].user_id;
+        const datasetsQuery = `
+            SELECT dataset.dataset_id, dataset.title, dataset.n_cells, dataset.reference, dataset.summary, file.file_id, file.file_loc, SUBSTRING_INDEX(SUBSTRING_INDEX(file.file_loc, '/', 2), '/', -1) AS direc
+            FROM dataset
+            JOIN file ON dataset.dataset_id = file.dataset_id
+            WHERE dataset.user_id = ?
         `;
 
-            pool.query(datasetsQuery, (err, datasetsResult) => {
-                if (err) throw err;
+        pool.query(datasetsQuery, [userID], (err, datasetsResult) => {
+            if (err) {
+                console.error('Database query error:', err);
+                return res.status(500).json({ message: 'Internal Server Error' });
+            }
 
-                const datasets = {};
+            const datasets = {};
 
-                datasetsResult.forEach(row => {
-                    const { dataset_id, title, n_cells, reference, summary, file_id, file_loc, direc } = row;
-                    if (!datasets[dataset_id]) {
-                        datasets[dataset_id] = {
-                            title,
-                            n_cells,
-                            reference,
-                            summary,
-                            files: [],
-                            direc,
-                            dataset_id
-                        };
-                    }
-                    datasets[dataset_id].files.push({
-                        file_id,
-                        file_loc
-                    });
+            datasetsResult.forEach(row => {
+                const { dataset_id, title, n_cells, reference, summary, file_id, file_loc, direc } = row;
+                if (!datasets[dataset_id]) {
+                    datasets[dataset_id] = {
+                        title,
+                        n_cells,
+                        reference,
+                        summary,
+                        files: [],
+                        direc,
+                        dataset_id
+                    };
+                }
+                datasets[dataset_id].files.push({
+                    file_id,
+                    file_loc
                 });
-
-                res.json(datasets);
             });
-        }
+
+            res.json(datasets);
+        });
     });
 });
 
@@ -1133,83 +1153,109 @@ app.get('/api/tools/leftnav', function (req, res) {
 });
 
 app.post('/createTask', (req, res) => {
-    const {taskTitle, taskId, method, authToken, outputPath} = req.body;
+    const { taskTitle, taskId, method, authToken, outputPath } = req.body;
     const username = getUserFromToken(authToken);
 
+    if (username === "Unauthorized") {
+        return res.status(403).json({ message: 'Unauthorized' });
+    }
+
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
+                    console.error('Error in SELECT query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).json({ message: 'Database query error' });
                 }
 
-                const userId = userRows[0].user_id;
-
+                const userId = userRows[0]?.user_id;
                 if (!userId) {
-                    res.status(400).send('User not found');
+                    res.status(400).json({ message: 'User not found' });
                     connection.rollback(function () {
                         connection.release();
                     });
                     return;
                 }
 
-                const date = new Date();
-                const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
+                const timestamp = new Date().toISOString();
+                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, results_path, created_datetime) VALUES (?, ?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
                     if (err) {
+                        console.error('Error in INSERT query:', err);
                         connection.rollback(function () {
-                            throw err;
-                        });
-                    } else {
-                        // Commit transaction
-                        connection.commit(function (err) {
-                            if (err) {
-                                connection.rollback(function () {
-                                    throw err;
-                                });
-                            }
-
-                            console.log('Transaction completed successfully');
                             connection.release();
-                            res.status(201).jsonp('Task Created.');
                         });
+                        return res.status(500).json({ message: 'Database insertion error' });
                     }
+
+                    connection.commit(function (err) {
+                        if (err) {
+                            console.error('Error committing transaction:', err);
+                            connection.rollback(function () {
+                                connection.release();
+                            });
+                            return res.status(500).json({ message: 'Transaction commit error' });
+                        }
+
+                        console.log('Transaction completed successfully');
+                        connection.release();
+                        res.status(201).json({ message: 'Task Created.' });
+                    });
                 });
             });
         });
     });
 });
 
+
 app.put('/updateTaskStatus', (req, res) => {
     const { taskIds, status } = req.body;
     const taskIdsArr = taskIds.split(',');
 
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             const date = new Date();
             const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
             connection.query('UPDATE task SET status = ?, finish_datetime = ? WHERE task_id IN (?)', [status, timestamp, taskIdsArr], function (err, taskResult) {
                 if (err) {
+                    console.error('Error in UPDATE query:', err);
                     connection.rollback(function () {
-                        throw err;
+                        connection.release();
                     });
+                    return res.status(500).json({ message: 'Database update error' });
                 } else {
                     // Commit transaction
                     connection.commit(function (err) {
                         if (err) {
+                            console.error('Error committing transaction:', err);
                             connection.rollback(function () {
-                                throw err;
+                                connection.release();
                             });
+                            return res.status(500).json({ message: 'Transaction commit error' });
                         }
 
                         console.log('Transaction completed successfully');
@@ -1222,23 +1268,37 @@ app.put('/updateTaskStatus', (req, res) => {
     });
 });
 
+
 app.get('/getTasks', (req, res) => {
     const { authToken } = req.query;
     const username = getUserFromToken(authToken);
 
+    if (username === "Unauthorized") {
+        return res.status(403).json({ message: 'Unauthorized' });
+    }
+
     pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) {
+            console.error('Error getting DB connection:', err);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
 
         connection.beginTransaction(function (err) {
-            if (err) throw err;
+            if (err) {
+                console.error('Error starting transaction:', err);
+                connection.release();
+                return res.status(500).json({ message: 'Transaction error' });
+            }
 
             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
                 if (err) {
-                    connection.rollback(function () {
-                        throw err;
-                    });
+                    console.error('Database query error:', err);
+                    return res.status(500).json({ message: 'Internal Server Error' });
                 }
-
+        
+                if (userRows.length === 0) {
+                    return res.status(404).json({ message: 'User not found' });
+                }
                 const userId = userRows[0].user_id;
 
                 if (!userId) {
@@ -1251,9 +1311,11 @@ app.get('/getTasks', (req, res) => {
 
                 connection.query('SELECT task_title, task_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
                     if (err) {
+                        console.error('Error committing transaction:', err);
                         connection.rollback(function () {
-                            throw err;
+                            connection.release();
                         });
+                        return res.status(500).json({ message: 'Transaction commit error' });
                     } else {
                         connection.release();
                         res.json(rows);
