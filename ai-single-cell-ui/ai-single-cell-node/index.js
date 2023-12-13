@@ -850,7 +850,7 @@ app.delete('/deleteFiles', async (req, res) => {
         let failFlag = false;
         for (const file of fileList) {
             try {
-                const [rows, fields] = await pool.execute(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc like '${file.replace("'", "''")}%';`);
+                const [rows] = await pool.execute(`SELECT f.file_loc FROM aisinglecell.file f JOIN aisinglecell.dataset d ON f.dataset_id = d.dataset_id JOIN aisinglecell.users u ON d.user_id = u.user_id WHERE u.username = '${uname}' AND f.file_loc like '${file.replace("'", "''")}%';`);
                 console.log('Count: ' + rows.length);
                 if (rows.length > 0) {
                     res.status(401).json({ message: 'File(s) being used by datasets.' });
