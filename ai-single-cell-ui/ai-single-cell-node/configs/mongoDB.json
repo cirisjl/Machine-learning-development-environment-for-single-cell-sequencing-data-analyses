@@ -2,5 +2,6 @@
     "mongoUrl": "mongodb://mongodb:65528",
     "dbName": "ai-single-cell",
     "optionsCollectionName": "form-options",
-    "datasetCollectionName": "datasetsMetadata"
+    "datasetCollectionName": "datasets",
+    "taskBuilderCollectionName": "task-builder"
 }

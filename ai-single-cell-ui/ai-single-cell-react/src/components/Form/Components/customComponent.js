@@ -155,7 +155,7 @@ class MyForm extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { setTaskStatus, setTaskData, setActiveTask} = this.props;
+    const { setTaskStatus, setTaskData, setActiveTask, taskData} = this.props;
 
     const errors = this.validateForm(this.state.formData);
     this.setState({ errors });
@@ -163,39 +163,73 @@ class MyForm extends Component {
     if (Object.keys(errors).length === 0) {
       let formData = this.state.formData;
 
-      setTaskData((prevTaskData) => ({
-        ...prevTaskData,
-        metadata: {
-          ...prevTaskData.metadata,
-          formData: formData,
-          taskOptions: this.state.options["Task"],
-          options: this.state.options,
-          newOptions: this.state.newOptions,
-          status: "completed"
-        },
-      }));
+      // add data to the formData
+      formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
 
-      // axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
-      //   .then(response => {
-      //     console.log('Form data submitted successfully');
-      //   })
-      //   .catch(error => {
-      //     console.error('Error submitting form data:', error);
-      //   });
+      // construct ID 
+      // const task_abbv = formData.Task.value;
+      const species = formData.Species.value;
+      const tissue = formData['Anatomical Entity'].label;
+      const cellCount = formData['Cell Count Estimate'];
+      const author = formData['Author'];
+      const submissionDate = formData['Submission Date'];
+      const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
+      // Check if cellCount is greater than 1000
+      const useCellCount = cellCount && parseInt(cellCount) > 1000;
+
+      const constructedID = `${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${author}-${year}`;
+
+      formData.Id = constructedID;
+
+      //Add genes and cells
+      formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
+      formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
+
+      formData['QC_Plots'] = {
+        "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
+        "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
+        "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
+        // "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
+      }
+
+      axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
+      .then(response => {
+        console.log(response);
+        console.log('Form data submitted successfully');
         this.setState({
-          message: 'Form data submitted successfully',
+          message: 'Dataset created Successfully!',
           hasMessage: true, // Set hasMessage to true when a message is set
         });
 
-        // After Task 1 is successfully completed, update the task status
-      setTaskStatus((prevTaskStatus) => ({
-        ...prevTaskStatus,
-        4: true, // Mark Task 1 as completed
-      }));
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          metadata: {
+            ...prevTaskData.metadata,
+            formData: formData,
+            taskOptions: this.state.options["Task"],
+            options: this.state.options,
+            newOptions: this.state.newOptions,
+            status: "completed"
+          },
+        }));
+  
+          // After Task 1 is successfully completed, update the task status
+        setTaskStatus((prevTaskStatus) => ({
+          ...prevTaskStatus,
+          4: true, // Mark Task 4 as completed
+        }));
+      })
+      .catch(error => {
+        console.error('Error submitting form data:', error.response.data.error);
+        this.setState({
+          message: 'Error submitting form data: ' + error.response.data.error,
+          hasMessage: true, // Set hasMessage to true when a message is set
+        });
+      });
 
       //The current task is finished, so make the next task active
-      setActiveTask(5);
+      // setActiveTask(5);
     } else {
       this.setState({
         message: 'Please fill all the required fields to submit',
@@ -221,10 +255,6 @@ class MyForm extends Component {
     if (!formData.Dataset) {
       errors.Dataset = 'Dataset is required';
     }
-
-    // if (!formData.Task || (formData.Task && formData.Task.value === '')) {
-    //   errors.Task = 'Task is required';
-    // }
 
     if (!formData.Downloads) {
       errors.Downloads = 'Downloads is required';
@@ -718,7 +748,7 @@ class MyForm extends Component {
             </div>
             <div className="next-upon-success">
               <button type="submit" className="btn btn-info button">
-                Next
+                Submit
               </button>
             </div>
           </div>

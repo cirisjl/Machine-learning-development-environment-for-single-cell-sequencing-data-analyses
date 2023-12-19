@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName, taskBuilderCollectionName} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
