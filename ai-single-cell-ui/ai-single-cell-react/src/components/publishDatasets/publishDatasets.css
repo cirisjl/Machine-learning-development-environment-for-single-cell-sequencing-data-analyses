@@ -217,11 +217,16 @@
   justify-content: center;
   min-height: 100vh;
   font-family: Arial, sans-serif;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 5rem 25rem;
 }
 
 .flow-messaging h3 {
   text-align: center;
   margin-bottom: 20px;
+  padding: 0 7rem;
 }
 
 .flow-messaging button {
