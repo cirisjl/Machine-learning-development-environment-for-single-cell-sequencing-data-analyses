@@ -33,7 +33,8 @@ import NewApp from './Form/Components/component2';
 import MyForm from './Form/Components/customComponent';
 import AccessDenied from './AccessDeniedPage';
 import ManageOptions from './Form/Components/editablePageOptions';
-import PublishDataset from './publishDatasets/publishDataset';
+// import PublishDataset from './publishDatasets/publishDataset';
+import FlowControl from './publishDatasets/components/flowControl';
 
 function App() {
 
@@ -45,7 +46,7 @@ function App() {
           <Route path="updates"      element={<Updates/>} />
           <Route path="competitions" element={<Competitions/>}/>
           <Route path="benchmarks"   element={<Benchmarks/>}/>
-          <Route path="benchmarks/uploads"   element={<PublishDataset/>}/>
+          <Route path="benchmarks/uploads"   element={<FlowControl/>}/>
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
           <Route path="mydata/upload-data"       element={<UploadData/>}></Route>
