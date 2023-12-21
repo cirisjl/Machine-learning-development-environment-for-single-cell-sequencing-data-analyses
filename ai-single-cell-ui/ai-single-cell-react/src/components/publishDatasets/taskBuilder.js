@@ -4,7 +4,7 @@ import MiddleContent from "./components/mainContent";
 import React, { useState } from 'react';
 import './publishDatasets.css'; // Import a CSS file for styles
 
-export default function PublishDataset({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow, setFlow}) {
+export default function TaskBuilder({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow, setFlow}) {
 
     return(
         <div className="page-container">
@@ -12,7 +12,7 @@ export default function PublishDataset({taskStatus, setTaskStatus, taskData, set
             <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} taskData={taskData} setTaskData={setTaskData} flow={flow}/>
             </div>
             <div className="main-content">
-                <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus} setFlow={setFlow}/>
+                <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus}/>
             </div>
             <div className="right-rail">
                 <RightRail />

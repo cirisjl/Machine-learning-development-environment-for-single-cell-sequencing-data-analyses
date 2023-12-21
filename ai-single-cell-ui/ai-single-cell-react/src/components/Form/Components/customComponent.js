@@ -153,6 +153,13 @@ class MyForm extends Component {
       });
   };
 
+  continueToTaskBuilder = (e) => {
+    e.preventDefault();
+    const {setFlow, setActiveTask} = this.props;
+    setActiveTask(5);
+    setFlow('taskBuilder');
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     const { setTaskStatus, setTaskData, setActiveTask, taskData} = this.props;
@@ -195,7 +202,6 @@ class MyForm extends Component {
 
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
       .then(response => {
-        console.log(response);
         console.log('Form data submitted successfully');
         this.setState({
           message: 'Dataset created Successfully!',
@@ -302,12 +308,21 @@ class MyForm extends Component {
     }
     const { formData, errors, isLoading, options, hasMessage, message, isAdmin } = this.state;
 
-    const {setActiveTask, activeTask } = this.props;
-
+    const {setActiveTask, activeTask, taskData } = this.props;
+    
+    // If isAdmin is false, render nothing
+    if (!isAdmin) {
+      return null;
+    }
 
     return (
       <div>
-      {isAdmin && (
+        {taskData.metadata.status === 'completed' ? (
+          <div>
+            <p>Continue to taskBuilder</p>
+            <button className="btn btn-info button" onClick={this.continueToTaskBuilder}>Continue</button>
+          </div>
+        ) : (
       <div className="my-form-container">
         {hasMessage && (
         <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
@@ -756,8 +771,7 @@ class MyForm extends Component {
         </form>
         </div>
       </div>
-
-      )}
+        )}
       </div>
     );
   }
