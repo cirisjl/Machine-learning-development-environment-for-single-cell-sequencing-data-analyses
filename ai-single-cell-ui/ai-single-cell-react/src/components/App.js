@@ -34,7 +34,7 @@ import MyForm from './Form/Components/customComponent';
 import AccessDenied from './AccessDeniedPage';
 import ManageOptions from './Form/Components/editablePageOptions';
 // import PublishDataset from './publishDatasets/publishDataset';
-import FlowControl from './publishDatasets/components/flowControl';
+import FlowControl from './publishDatasets/flowControl';
 
 function App() {
 
