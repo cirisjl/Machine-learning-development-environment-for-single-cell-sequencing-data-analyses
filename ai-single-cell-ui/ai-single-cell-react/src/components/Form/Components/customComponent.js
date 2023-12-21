@@ -201,7 +201,6 @@ class MyForm extends Component {
 
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
       .then(response => {
-        console.log(response);
         console.log('Form data submitted successfully');
         this.setState({
           message: 'Dataset created Successfully!',
