@@ -155,7 +155,8 @@ class MyForm extends Component {
 
   continueToTaskBuilder = (e) => {
     e.preventDefault();
-    const {setFlow} = this.props;
+    const {setFlow, setActiveTask} = this.props;
+    setActiveTask(5);
     setFlow('taskBuilder');
   }
 
