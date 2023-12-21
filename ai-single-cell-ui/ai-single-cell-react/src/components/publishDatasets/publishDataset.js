@@ -12,7 +12,7 @@ export default function PublishDataset({taskStatus, setTaskStatus, taskData, set
             <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} taskData={taskData} setTaskData={setTaskData} flow={flow}/>
             </div>
             <div className="main-content">
-                <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus}/>
+                <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus} setFlow={setFlow}/>
             </div>
             <div className="right-rail">
                 <RightRail />
