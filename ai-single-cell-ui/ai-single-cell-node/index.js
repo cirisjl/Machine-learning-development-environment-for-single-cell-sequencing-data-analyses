@@ -1379,46 +1379,36 @@ app.get('/mongoDB/api/options', async (req, res) => {
 });
 
 app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+    
     try {
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-  
       // Connect to the MongoDB server
       await client.connect();
-  
       const db = client.db(dbName);
       const collection = db.collection(datasetCollectionName);
   
-      const formData = req.body; // This assumes you have the necessary middleware to parse JSON in the request body
+      const formData = req.body; // This assumes you have middleware to parse JSON in the request body
   
       // Check if a document with the provided Id already exists
       const existingDocument = await collection.findOne({ Id: formData.Id });
   
       if (existingDocument) {
-        // Document with the provided Id already exists
         console.log('Document with Id already exists:', formData.Id);
         res.status(400).json({ error: 'Document with the provided Id already exists' });
       } else {
         // Document with the provided Id does not exist, proceed with insertion
-        collection.insertOne(formData, (err) => {
-          if (err) {
-            console.error('Error inserting form data into MongoDB:', err);
-            res.status(500).json({ error: 'Error submitting form data' });
-          } else {
-            console.log('Form data submitted successfully');
-            res.status(200).json({ message: 'Form data submitted successfully' });
-          }
-  
-          // Close the MongoDB connection here after the operation is complete
-          client.close();
-        });
+        await collection.insertOne(formData);
+        console.log('Form data submitted successfully');
+        res.status(200).json({ message: 'Form data submitted successfully' });
       }
     } catch (err) {
       console.error('Error:', err);
       res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+      // Ensure the client will close when you finish/error
+      await client.close();
     }
   });
-  
-  
 
 // Define a route to handle adding a new option to MongoDB
 app.post('/mongoDB/api/addNewOption', async (req, res) => {
