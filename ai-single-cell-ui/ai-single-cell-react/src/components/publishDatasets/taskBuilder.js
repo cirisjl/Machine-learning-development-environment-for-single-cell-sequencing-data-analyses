@@ -4,12 +4,12 @@ import MiddleContent from "./components/mainContent";
 import React, { useState } from 'react';
 import './publishDatasets.css'; // Import a CSS file for styles
 
-export default function TaskBuilder({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask}) {
+export default function TaskBuilder({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow, setFlow}) {
 
     return(
         <div className="page-container">
             <div className="left-nav">
-            <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} taskData={taskData} setTaskData={setTaskData} />
+            <LeftNav activeTask={activeTask} setActiveTask={setActiveTask} taskStatus={taskStatus} taskData={taskData} setTaskData={setTaskData} flow={flow}/>
             </div>
             <div className="main-content">
                 <MiddleContent activeTask={activeTask} setActiveTask={setActiveTask} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} taskStatus={taskStatus}/>

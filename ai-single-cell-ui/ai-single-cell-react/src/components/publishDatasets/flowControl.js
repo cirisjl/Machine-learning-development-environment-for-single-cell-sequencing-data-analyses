@@ -120,8 +120,8 @@ const FlowControl = () => {
         }
       
         <div>
-            {flow === 'upload' && <div><PublishDataset taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask}/></div>}
-            {flow === 'taskBuilder' && <div><TaskBuilder taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask}/></div>}
+            {flow === 'upload' && <div><PublishDataset taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask} flow={flow} setFlow={setFlow}/></div>}
+            {flow === 'taskBuilder' && <div><TaskBuilder taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask} flow={flow} setFlow={setFlow}/></div>}
         </div>
     </div>
   );
