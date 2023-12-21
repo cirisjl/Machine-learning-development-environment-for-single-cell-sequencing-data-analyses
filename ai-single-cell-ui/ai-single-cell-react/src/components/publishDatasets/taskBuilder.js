@@ -4,7 +4,7 @@ import MiddleContent from "./components/mainContent";
 import React, { useState } from 'react';
 import './publishDatasets.css'; // Import a CSS file for styles
 
-export default function TaskBuilder() {
+export default function TaskBuilder({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask}) {
 
     return(
         <div className="page-container">
