@@ -1,6 +1,6 @@
 import React , { useState, useEffect }from 'react';
 import Select from 'react-select';
-import { CELERY_BACKEND_API} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
 import ReactPlotly from './reactPlotly';
@@ -11,34 +11,14 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [loading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   if(taskData.task_builder.status !== 'completed') {
-  //     let adata_paths = []
-  //     taskData.quality_control.qc_results
-  //             .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
-  //             .map((results, index) => (
-  //         adata_paths.push(results.adata_path)
-  //     ))
+  const [datasets, setDatasets] = useState([]);
 
-  //     axios.post(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, adata_paths)
-  //     .then(response => {
-  //       const data = response.data;
-       
-  //       // Updating taskData state
-  //       setTaskData(prevTaskData => ({
-  //         ...prevTaskData,
-  //         task_builder: {
-  //           ...prevTaskData.task_builder,
-  //           table_data: data,
-  //         },
-  //       }));
-  //     })
-  //     .catch(error => {
-  //       setMessage('Error while getting the table data: ' + error.response.data.detail);
-  //       setHasMessage(true);
-  //     });
-  //   }
-  // }, []);
+  useEffect(() => {
+    fetch(`${SERVER_URL}/mongoDB/api/getDatasets`)
+      .then(response => response.json())
+      .then(data => setDatasets(data))
+      .catch(error => console.error('Error fetching data:', error));
+  }, []);
 
   const handleDataSplit = async (index) => {
     try {
