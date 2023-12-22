@@ -1410,6 +1410,30 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     }
   });
 
+
+// API endpoint to get datasets
+app.get('/mongoDB/api/getDatasets', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollectionName);
+
+        // Fetching all documents from the collection
+        const datasets = await collection.find({}).toArray();
+
+        // Sending the datasets as a JSON response
+        res.status(200).json(datasets);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
 // Define a route to handle adding a new option to MongoDB
 app.post('/mongoDB/api/addNewOption', async (req, res) => {
     const { field, name, username } = req.body;
