@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import close_icon from '../../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../../assets/close_icon_u86_mouseOver.svg';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
 
@@ -126,9 +127,8 @@ function getStandardFileName(fileName, fileType) {
         for (let i = 0; i < selectedFiles.length; i++) {
             const fileName = selectedFiles[i];
             if (!acceptedMultiFileNames.includes(fileName)) {
-                if (lastSlashIndex === -1) {
                     selectedFiles[i] = selectedAliases[i];
-                }
+            
                 // fetch(`${SERVER_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
                 //     method: 'POST',
                 //     headers: {
