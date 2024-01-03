@@ -21,7 +21,9 @@ const FlowControl = () => {
 
 
   const [taskData, setTaskData] = useState({
-    upload: {},
+    upload: {
+      files:[]
+    },
     validation: {
         inputFiles: [],
         seuratFiles: [],
