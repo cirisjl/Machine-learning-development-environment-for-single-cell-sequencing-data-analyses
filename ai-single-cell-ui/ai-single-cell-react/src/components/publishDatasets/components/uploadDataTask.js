@@ -107,7 +107,7 @@ function getStandardFileName(fileName, fileType) {
   const removeFile = async (item, indexToRemove) => {
     try {
       // Send request to backend to delete the file
-      await axios.delete(`${SERVER_URL}/api/storage/delete-file?fileName=${item}&authToken=${jwtToken}&newDirectoryPath=${taskData.upload.newDirectoryPath}`);
+      await axios.delete(`${SERVER_URL}/api/storage/delete-file?fileName=${item}&authToken=${jwtToken}&newDirectoryPath=tempStorage`);
 
       // If successful, update the state to remove the file from the list
       setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
