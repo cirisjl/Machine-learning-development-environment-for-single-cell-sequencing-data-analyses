@@ -1615,6 +1615,29 @@ app.post('/mongoDB/api/addTaskOption', async (req, res) => {
     res.sendStatus(200);
   });
 
+  
+app.delete('/api/storage/delete-file', (req, res) => {
+
+    const { fileName, authToken, newDirectoryPath } = req.query;
+
+    const uname = getUserFromToken(authToken);
+    if (uname == 'Unauthorized')
+        return res.status(403).jsonp('Unauthorized');
+
+    let filepath = ""
+    if(uname) {
+        filepath = `${storageDir}/${uname}/${newDirectoryPath}/${fileName}`;
+    }
+
+    fs.unlink(filepath, (err) => {
+        if (err) {
+            console.error("Error deleting file:", err);
+            return res.status(500).send('Error deleting file');
+        }
+        res.send('File deleted successfully');
+    });
+});
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
