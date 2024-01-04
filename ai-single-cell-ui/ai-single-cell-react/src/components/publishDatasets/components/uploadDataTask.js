@@ -1,6 +1,7 @@
 import React from 'react';
 import UppyUploader from '../../MyData/uppy';
 import { getCookie, isUserAuth, createUniqueFolderName, moveFilesToNewDirectory } from '../../../utils/utilFunctions';
+import { SERVER_URL} from '../../../constants/declarations';
 import { useState, useEffect } from 'react';
 import close_icon from '../../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../../assets/close_icon_u86_mouseOver.svg';
@@ -102,10 +103,18 @@ function getStandardFileName(fileName, fileType) {
     setSelectedFiles(taskData.upload.files);
   }, [taskData.upload.files]); // Dependency array
 
-  const removeFile = (indexToRemove) => {
-    setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
-  };
+  const removeFile = async (item, indexToRemove) => {
+    try {
+      // Send request to backend to delete the file
+      await axios.delete(`${SERVER_URL}/api/storage/delete-file?fileName=${item}&authToken=${jwtToken}&newDirectoryPath=${taskData.upload.newDirectoryPath}`);
 
+      // If successful, update the state to remove the file from the list
+      setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      // Handle error (e.g., show error message to the user)
+    }
+};
   const handleTask1Completion = async () => {
     // Validate file upload and title input
     if (taskData.upload.files === undefined || taskData.upload.files.length === 0) {
