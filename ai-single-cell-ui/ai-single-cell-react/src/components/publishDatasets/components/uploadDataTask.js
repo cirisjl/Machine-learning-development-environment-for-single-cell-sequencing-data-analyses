@@ -98,6 +98,10 @@ function getStandardFileName(fileName, fileType) {
     }));
   };
 
+  useEffect(() => {
+    setSelectedFiles(taskData.upload.files);
+  }, [taskData.upload.files]); // Dependency array
+
   const handleTask1Completion = async () => {
     // Validate file upload and title input
     if (taskData.upload.files === undefined || taskData.upload.files.length === 0) {
