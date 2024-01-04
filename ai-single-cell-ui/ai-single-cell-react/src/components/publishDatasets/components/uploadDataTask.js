@@ -262,7 +262,7 @@ function getStandardFileName(fileName, fileType) {
                   return (
                     <div key={index}>
                       {item}&nbsp;&nbsp;
-                      <button onClick={() => removeFile(index)}>✖</button> {/* Cross Icon/Button */}
+                      <button className="cross-button" onClick={() => removeFile(index)}>✖</button> {/* Cross Icon/Button */}
                       {showDropdown && (
                         <select
                           onChange={(e) => {
@@ -286,7 +286,7 @@ function getStandardFileName(fileName, fileType) {
               </>
             ) : (
               <div>
-                {selectedFiles[0]} <button onClick={() => removeFile(0)}>✖</button> {/* Cross Icon/Button */}
+                {selectedFiles[0]} { taskData.upload.files.length > 0 && <button className="cross-button" onClick={() => removeFile(0)}>✖</button> }
               </div>
             )}
         </div>

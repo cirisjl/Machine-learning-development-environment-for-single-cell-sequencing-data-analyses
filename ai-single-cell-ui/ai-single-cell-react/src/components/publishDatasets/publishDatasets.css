@@ -249,3 +249,7 @@
   top: 0px !important;
   float: left;
 }
+
+.files-selected .cross-button {
+  cursor: pointer;
+}
