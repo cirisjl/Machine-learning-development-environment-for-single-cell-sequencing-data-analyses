@@ -37,9 +37,9 @@
     margin-top: 3%;
 }
 
-.uppy-uploader-component span{
+/* .uppy-uploader-component span{
     margin-left: 2rem;
-}
+} */
 
 .upload-task .uppy-Dashboard {
     height: 23rem;
@@ -243,4 +243,9 @@
 
 .flow-messaging button:hover {
   background-color: #0056b3;
+}
+
+.uppy-uploader-component .info-icon {
+  top: 0px !important;
+  float: left;
 }
