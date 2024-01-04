@@ -102,6 +102,10 @@ function getStandardFileName(fileName, fileType) {
     setSelectedFiles(taskData.upload.files);
   }, [taskData.upload.files]); // Dependency array
 
+  const removeFile = (indexToRemove) => {
+    setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
+  };
+
   const handleTask1Completion = async () => {
     // Validate file upload and title input
     if (taskData.upload.files === undefined || taskData.upload.files.length === 0) {
@@ -223,7 +227,7 @@ function getStandardFileName(fileName, fileType) {
             <div className="modal-content">
                 <div>
                     <p>
-                        Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5
+                        Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5. h5seurat, Robj
                     </p>
                     <p>
                         Standard File Structure for Multi-file Datasets:
@@ -252,37 +256,38 @@ function getStandardFileName(fileName, fileType) {
 
           <div id="files-selected">
             {selectedFiles.length > 1 ? (
-                <>
-                    {selectedFiles.map((item, index) => {
-                        const showDropdown = !acceptedMultiFileNames.includes(item);
-                        return (
-                            <div key={index} onClick={() => console.log(item)}>
-                                {item}&nbsp;&nbsp;
-                                {showDropdown && (
-                                    <select
-                                        onChange={(e) => {
-                                            const updatedAliases = [...selectedAliases];
-                                            updatedAliases[index] = getStandardFileName(item, e.target.value);
-                                            setSelectedAliases(updatedAliases);
-                                        }}
-                                    >
-                                        <option selected>Set a standard file type</option>
-                                        {getAliasOptions(item).map((alias, aliasIndex) => (
-                                            <option key={aliasIndex}>{alias}</option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
-                        );
-                    })}
-                    <div style={{ color: 'red' }}>
-                        Notice: Files will be renamed to standard names of their corresponding type.
+              <>
+                {selectedFiles.map((item, index) => {
+                  const showDropdown = !acceptedMultiFileNames.includes(item);
+                  return (
+                    <div key={index}>
+                      {item}&nbsp;&nbsp;
+                      <button onClick={() => removeFile(index)}>✖</button> {/* Cross Icon/Button */}
+                      {showDropdown && (
+                        <select
+                          onChange={(e) => {
+                            const updatedAliases = [...selectedAliases];
+                            updatedAliases[index] = getStandardFileName(item, e.target.value);
+                            setSelectedAliases(updatedAliases);
+                          }}
+                        >
+                          <option selected>Set a standard file type</option>
+                          {getAliasOptions(item).map((alias, aliasIndex) => (
+                            <option key={aliasIndex}>{alias}</option>
+                          ))}
+                        </select>
+                      )}
                     </div>
-                </>
-            ) : (
-                <div>
-                    {selectedFiles[0]}
+                  );
+                })}
+                <div style={{ color: 'red' }}>
+                  Notice: Files will be renamed to standard names of their corresponding type.
                 </div>
+              </>
+            ) : (
+              <div>
+                {selectedFiles[0]} <button onClick={() => removeFile(0)}>✖</button> {/* Cross Icon/Button */}
+              </div>
             )}
         </div>
         {fileError && <div className="error-message">{fileError}</div>}
