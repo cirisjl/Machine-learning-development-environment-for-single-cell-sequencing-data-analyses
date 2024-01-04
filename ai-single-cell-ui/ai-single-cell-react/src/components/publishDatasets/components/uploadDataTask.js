@@ -160,7 +160,7 @@ function getStandardFileName(fileName, fileType) {
             if (!acceptedMultiFileNames.includes(fileName)) {
                     selectedFiles[i] = selectedAliases[i];
             
-                fetch(`${SERVER_URL}/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}&authToken=${jwtToken}`, {
+                fetch(`${SERVER_URL}/api/storage/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}&authToken=${jwtToken}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
