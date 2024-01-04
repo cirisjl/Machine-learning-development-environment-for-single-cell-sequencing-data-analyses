@@ -1624,10 +1624,8 @@ app.delete('/api/storage/delete-file', (req, res) => {
     if (uname == 'Unauthorized')
         return res.status(403).jsonp('Unauthorized');
 
-    let filepath = ""
-    if(uname) {
-        filepath = `${storageDir}/${uname}/${newDirectoryPath}/${fileName}`;
-    }
+    let filepath = `${storageDir}/${newDirectoryPath}/${fileName}`;
+    
 
     fs.unlink(filepath, (err) => {
         if (err) {
