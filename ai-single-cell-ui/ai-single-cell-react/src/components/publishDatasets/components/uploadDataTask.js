@@ -2,6 +2,7 @@ import React from 'react';
 import UppyUploader from '../../MyData/uppy';
 import { getCookie, isUserAuth, createUniqueFolderName, moveFilesToNewDirectory } from '../../../utils/utilFunctions';
 import { SERVER_URL} from '../../../constants/declarations';
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import close_icon from '../../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../../assets/close_icon_u86_mouseOver.svg';
