@@ -102,6 +102,7 @@ function getStandardFileName(fileName, fileType) {
 
   useEffect(() => {
     setSelectedFiles(taskData.upload.files);
+    setSelectedAliases(taskData.upload.files)
   }, [taskData.upload.files]); // Dependency array
 
   const removeFile = async (item, indexToRemove) => {
@@ -111,6 +112,18 @@ function getStandardFileName(fileName, fileType) {
 
       // If successful, update the state to remove the file from the list
       setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
+      setSelectedAliases(selectedAliases.filter((_, index) => index !== indexToRemove));
+      const newTaskDataFiles = taskData.upload.files.filter((_, index) => index !== indexToRemove);
+        // Update the taskData state
+        setTaskData(previousTaskData => ({
+            ...previousTaskData,
+            upload: {
+                ...previousTaskData.upload,
+                files: newTaskDataFiles
+            }
+        }));
+
+
     } catch (error) {
       console.error("Error deleting file:", error);
       // Handle error (e.g., show error message to the user)
@@ -272,7 +285,7 @@ function getStandardFileName(fileName, fileType) {
                   return (
                     <div key={index}>
                       {item}&nbsp;&nbsp;
-                      { taskData.upload.files.length > 0 && <button className="cross-button" onClick={() => removeFile(item, index)}>✖</button> }
+                      { selectedFiles.length > 0 && <button className="cross-button" onClick={() => removeFile(item, index)}>✖</button> }
                       {showDropdown && (
                         <select
                           onChange={(e) => {
@@ -296,7 +309,7 @@ function getStandardFileName(fileName, fileType) {
               </>
             ) : (
               <div>
-                {selectedFiles[0]} { taskData.upload.files.length > 0 && <button className="cross-button" onClick={() => removeFile(selectedFiles[0], 0)}>✖</button> }
+                {selectedFiles[0]} { selectedFiles.length > 0 && <button className="cross-button" onClick={() => removeFile(selectedFiles[0], 0)}>✖</button> }
               </div>
             )}
         </div>
