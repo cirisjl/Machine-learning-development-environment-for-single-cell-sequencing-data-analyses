@@ -1618,22 +1618,56 @@ app.post('/mongoDB/api/addTaskOption', async (req, res) => {
   
 app.delete('/api/storage/delete-file', (req, res) => {
 
-    const { fileName, authToken, newDirectoryPath } = req.query;
+    try {
+        const { fileName, authToken, newDirectoryPath } = req.query;
 
-    const uname = getUserFromToken(authToken);
-    if (uname == 'Unauthorized')
-        return res.status(403).jsonp('Unauthorized');
-
-    let filepath = `${storageDir}/${newDirectoryPath}/${fileName}`;
+        const uname = getUserFromToken(authToken);
+        if (uname == 'Unauthorized')
+            return res.status(403).jsonp('Unauthorized');
     
+        let filepath = `${storageDir}/${newDirectoryPath}/${fileName}`;
+        
+    
+        fs.unlink(filepath, (err) => {
+            if (err) {
+                console.error("Error deleting file:", err);
+                return res.status(500).send('Error deleting file');
+            }
+            res.send('File deleted successfully');
+        });
+    } catch (error) {
+        console.error('Error deleting a file:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
-    fs.unlink(filepath, (err) => {
-        if (err) {
-            console.error("Error deleting file:", err);
-            return res.status(500).send('Error deleting file');
-        }
-        res.send('File deleted successfully');
-    });
+app.post('/api/storage/renameFile', async (req, res) => {
+
+    try {
+
+        let { oldName } = req.query;
+        let { newName } = req.query;
+        let { authToken } = req.query;
+
+        const uname = getUserFromToken(authToken);
+    
+        if (uname == 'Unauthorized')
+            return res.status(403).jsonp('Unauthorized');
+
+        fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {    
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Internal Server Error' });
+            } else {
+                console.log('File renamed successfully!');
+                return res.status(200).jsonp('File renamed successfully!');
+            }
+        });
+
+    } catch (error) {
+        console.error('Error renaming a file:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 
