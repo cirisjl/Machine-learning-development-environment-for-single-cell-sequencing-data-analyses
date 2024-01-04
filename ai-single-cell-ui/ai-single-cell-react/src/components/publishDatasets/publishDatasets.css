@@ -250,6 +250,6 @@
   float: left;
 }
 
-.files-selected .cross-button {
+.upload-task .files-selected button.cross-button {
   cursor: pointer;
 }
