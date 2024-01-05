@@ -41,9 +41,9 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     } else if (fileName.endsWith('.tsv.gz')) {
         return ['genes', 'cells', 'features'];
     } else if (fileName.endsWith('.mtx')) {
-        return ['matrix', 'count matrix'];
+        return ['matrix', 'count_matrix'];
     } else if (fileName.endsWith('.mtx.gz')) {
-        return ['matrix', 'count matrix'];
+        return ['matrix', 'count_matrix'];
     }
     else {
         return [];
@@ -51,15 +51,15 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 };
 
 function getStandardFileName(fileName, fileType) {
-    const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features", "count matrix"];
+    const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features", "count_matrix"];
     if (!acceptedFileTypes.includes(fileType)) {
         return fileName;
     }
     const txt = { "molecules": "molecules.txt", "annotation": "annotation.txt" }
     const tsv = { "cells": "barcodes.tsv", "genes": "genes.tsv", "features": "features.tsv" }
     const tsv_gz = { "cells": "barcodes.tsv.gz", "genes": "genes.tsv.gz", "features": "features.tsv.gz" }
-    const mtx = {"matrix": "matrix.mtx", "count matrix": "count_matrix.mtx"}
-    const mtx_gz = {"matrix": "matrix.mtx.gz", "count matrix": "count_matrix.mtx.gz"}
+    const mtx = {"matrix": "matrix.mtx", "count_matrix": "count_matrix.mtx"}
+    const mtx_gz = {"matrix": "matrix.mtx.gz", "count_matrix": "count_matrix.mtx.gz"}
 
     if (fileName.endsWith('.txt')) {
         return txt[fileType];
