@@ -136,9 +136,6 @@ function getStandardFileName(fileName, fileType) {
     } else {
       setFileError('');
     }
-
-    setSelectedAliases(taskData.upload.files);
-    setSelectedFiles(taskData.upload.files);
     if (selectedFiles.length > 1) {
         let isFileSelectionValid = false;
         acceptedMultiFileSets.forEach(function (multiFileSet) {
