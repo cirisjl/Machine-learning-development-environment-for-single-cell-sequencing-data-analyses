@@ -166,6 +166,14 @@ function getStandardFileName(fileName, fileType) {
                 console.log("Make an API Call to rename the files that are stored");
             }
         }
+        // Update the state of the task in the taskData state
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          upload: {
+            ...prevTaskData.upload,
+            files: selectedAliases
+          },
+        }));
     }
     else if(selectedFiles.length === 1) {
         const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj"];
@@ -187,6 +195,8 @@ function getStandardFileName(fileName, fileType) {
             if(taskData.upload.status !== 'completed') {  
           // Create a new directory with the title name
           const newDirectoryName = createUniqueFolderName(taskData.upload.title);
+
+          let isMultiFileDataset = taskData.upload.files.length
 
           let newDirectoryPath = `projects/${newDirectoryName}`;
           // Move the uploaded files from tempStorage to the new directory
