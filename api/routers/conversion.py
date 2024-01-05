@@ -15,6 +15,7 @@ import shutil
 import zipfile
 import tempfile
 from fastapi.encoders import jsonable_encoder
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -110,6 +111,9 @@ async def process_input_files_validation(request: InputFilesRequest):
             else:
                 # It's a different file, call load_annData method
                 adata = load_anndata(file)
+                if (os.path.isdir(file)):
+                    file = os.path.join(file, "anndata_object.h5ad")
+
                 adata_path = change_file_extension(file, 'h5ad')
                 adata.write_h5ad(adata_path)
                 result.append({"inputfile": file, "format": "h5ad", "adata_path": adata_path})
