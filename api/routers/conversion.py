@@ -128,6 +128,7 @@ async def process_input_files_validation(request: InputFilesRequest):
 @router.post("/publishDatasets/run/quality_control")
 async def run_quality_control(file_mappings: List[dict]):
     try:
+        result = []
         for mapping in file_mappings:
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
@@ -154,15 +155,24 @@ async def run_quality_control(file_mappings: List[dict]):
                         "embeddings": embeddings,
                         "message": "Quality control completed successfully"
                     }
-                    # Return UMAP traces and other metadata in the API response
-                    return JSONResponse(content={"umap_plot": umap_plot, "violin_plot": violin_plot, "scatter_plot": scatter_plot, "highest_expr_genes_plot": highest_expr_genes_plot, "metadata": metadata, "message": "UMAP traces and metadata generated successfully", "adata_path": path})
-
+                    
+                    result.append({
+                        "inputfile": input_path,
+                        "format": format,
+                        "adata_path": path,
+                        "umap_plot": umap_plot,
+                        "violin_plot": violin_plot,
+                        "scatter_plot": scatter_plot,
+                        "highest_expr_genes_plot": highest_expr_genes_plot,
+                        "metadata": metadata
+                    })
                 except Exception as e:
                     logger.exception("Error during Scanpy QC")
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail=f"Error during Scanpy QC: {str(e)}"
                     )
+        return result
 
     except Exception as error:
         logger.exception(f"Error during quality control: {error}")
@@ -170,13 +180,6 @@ async def run_quality_control(file_mappings: List[dict]):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during quality control: {str(error)}"
         )
-
-    # If the function reaches this point, it means the quality control process failed
-    logger.error("Quality control process failed for unknown reasons")
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="An error occurred during quality control"
-    )
 
 @router.post("/api/data-split")
 async def data_split(user_data: DataSplitRequest):
