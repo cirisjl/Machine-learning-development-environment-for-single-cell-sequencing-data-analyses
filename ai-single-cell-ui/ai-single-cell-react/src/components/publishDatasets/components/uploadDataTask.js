@@ -196,7 +196,7 @@ function getStandardFileName(fileName, fileType) {
           // Create a new directory with the title name
           const newDirectoryName = createUniqueFolderName(taskData.upload.title);
 
-          let isMultiFileDataset = taskData.upload.files.length
+          let isMultiFileDataset = taskData.upload.files.length > 1 ? true : false;
 
           let newDirectoryPath = `projects/${newDirectoryName}`;
           // Move the uploaded files from tempStorage to the new directory
@@ -213,7 +213,8 @@ function getStandardFileName(fileName, fileType) {
           upload: {
             ...prevTaskData.upload,
             status: 'completed',
-            newDirectoryPath: newDirectoryPath
+            newDirectoryPath: newDirectoryPath,
+            isMultiFileDataset: isMultiFileDataset
           },
         }));
       }

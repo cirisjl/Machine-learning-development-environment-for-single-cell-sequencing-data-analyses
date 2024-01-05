@@ -50,12 +50,29 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             },
           }));
 
-          // Assuming you have already prepared the inputFiles array
-          const requestData = {
-            inputFiles: inputFiles.map(file => ({
-              fileDetails: file
-            })),
-          };
+        let pathToUse;
+
+        if (inputFiles.length > 1) {
+            const firstFilePath = inputFiles[0]; 
+            pathToUse = firstFilePath.substring(0, firstFilePath.lastIndexOf('/'));
+        } else if (inputFiles.length === 1) {
+            // Only one file, use its complete path
+            pathToUse = inputFiles[0];
+        }
+
+        const requestData = {
+            inputFiles: [
+              {
+                fileDetails: pathToUse
+              }
+            ]
+        };
+          // // Assuming you have already prepared the inputFiles array
+          // const requestData = {
+          //   inputFiles: inputFiles.map(file => ({
+          //     fileDetails: file
+          //   })),
+          // };
           // Make the API call
           axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
           .then(response => {
