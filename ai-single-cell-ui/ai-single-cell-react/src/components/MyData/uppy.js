@@ -15,7 +15,6 @@ import "@uppy/drag-drop/dist/style.css"
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 export default function UppyUploader(props) {
 
-    const [uppy, setUppy] = useState(null);
     const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError ,setTaskData } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -41,104 +40,52 @@ export default function UppyUploader(props) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
-        const newUppy = new Uppy({
-            id: 'fileUploader',
-            autoProceed: false,
-            allowMultipleUploads: true,
-            restrictions: {
-                maxFileSize: freeSpace * 1024 * 1024 * 1024,
-                maxNumberOfFiles: 5,
-                maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
-            },
-            debug: true,
-        });
+    
+    const uppy = new Uppy({
+        id: 'fileUploader',
+        autoProceed: false,
+        allowMultipleUploads: true,
+        restrictions: {
+            maxFileSize: freeSpace * 1024 * 1024 * 1024,
+            maxNumberOfFiles: 5,
+            maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
+        },
+        debug: true,
+    });
+    uppy.use(GoogleDrive, {
+        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    });
+    uppy.use(OneDrive, {
+        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    });
+    uppy.use(Dropbox, {
+        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    });
+    uppy.use(Url, {
+        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+    });
+    uppy.use(XHRUpload, {
+        endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
+        formData: true,
+        fieldName: 'files'
+    });
 
-        newUppy.use(GoogleDrive, {
-            companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-        });
-        newUppy.use(OneDrive, {
-            companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-        });
-        newUppy.use(Dropbox, {
-            companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-        });
-        newUppy.use(Url, {
-            companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-        });
-        newUppy.use(XHRUpload, {
-            endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
-            formData: true,
-            fieldName: 'files'
-        });
-
-        // ... plugin configurations ...
-
-        newUppy.on('upload-success', (file, response) => {
-            if (toPublishDataset) {
-                setFileError('');
-                const filename = file.name;
-                setTaskData((prevTaskData) => ({
-                    ...prevTaskData,
-                    upload: {
-                        ...prevTaskData.upload,
-                        files: [...(prevTaskData.upload.files || []), filename],
-                    },
-                }));
-                console.log('Successfully uploaded file name:', filename);
-            }
-        });
-
-        setUppy(newUppy);
-        return () => newUppy.close(); // Clean up Uppy instance on unmount
-    }, [freeSpace, pwd, authToken, publicDatasetFlag, toPublishDataset, setFileError, setTaskData]);
-
-
-    // const uppy = new Uppy({
-    //     id: 'fileUploader',
-    //     autoProceed: false,
-    //     allowMultipleUploads: true,
-    //     restrictions: {
-    //         maxFileSize: freeSpace * 1024 * 1024 * 1024,
-    //         maxNumberOfFiles: 5,
-    //         maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
-    //     },
-    //     debug: true,
-    // });
-    // uppy.use(GoogleDrive, {
-    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-    // });
-    // uppy.use(OneDrive, {
-    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-    // });
-    // uppy.use(Dropbox, {
-    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-    // });
-    // uppy.use(Url, {
-    //     companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
-    // });
-    // uppy.use(XHRUpload, {
-    //     endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
-    //     formData: true,
-    //     fieldName: 'files'
-    // });
-
-    // uppy.on('upload-success', (file, response) => {
-    //     if(toPublishDataset) {
-    //         // Access the filename of the successfully uploaded file
-    //         setFileError('');
-    //         const filename = file.name;
+    uppy.on('upload-success', (file, response) => {
+        if(toPublishDataset) {
+            // Access the filename of the successfully uploaded file
+            setFileError('');
+            const filename = file.name;
         
-    //         setTaskData((prevTaskData) => ({
-    //                     ...prevTaskData,
-    //                     upload: {
-    //                         ...prevTaskData.upload,
-    //                         files: [...(prevTaskData.upload.files || []), file.name],
-    //                     },
-    //         }));
-    //         console.log('Successfully uploaded file name:', filename);
-    //     }
-    // });
+            setTaskData((prevTaskData) => ({
+                        ...prevTaskData,
+                        upload: {
+                            ...prevTaskData.upload,
+                            files: [...(prevTaskData.upload.files || []), file.name],
+                        },
+            }));
+            console.log('Successfully uploaded file name:', filename);
+        }
+    });
       
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
