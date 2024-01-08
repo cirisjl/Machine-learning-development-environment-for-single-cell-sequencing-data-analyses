@@ -156,9 +156,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           </div>
           {isDialogOpen && (
             <DatasetSelectionDialog
+              datasets={datasets}
               onSelect={handleSelectDatasets}
               multiple={selectionMode === 'multiple'}
               onClose={handleCloseDialog}
+              isVisible={isDialogOpen !== false}
             />
           )}
         </div>

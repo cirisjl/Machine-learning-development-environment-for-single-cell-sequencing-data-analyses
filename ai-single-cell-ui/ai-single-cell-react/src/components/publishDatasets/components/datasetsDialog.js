@@ -3,8 +3,13 @@ import React, { useState } from 'react';
 // This could be replaced with the actual list of datasets you have
 const mockDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3', 'Dataset 4'];
 
-const DatasetSelectionDialog = ({ onSelect, multiple, onClose }) => {
+const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisible }) => {
     const [selectedDatasets, setSelectedDatasets] = useState([]);
+
+    const dialogStyle = {
+        display: isVisible ? 'block' : 'none',
+        // ... other styles
+    };
   
     const handleSelectClick = () => {
       onSelect(selectedDatasets);
@@ -24,7 +29,7 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose }) => {
     };
   
     return (
-        <>
+        <div style={dialogStyle} className="dialog-container">
             <div className="dialog-backdrop" onClick={onClose} />
             <div className="dialog">
             <h3>Select Datasets</h3>
@@ -52,7 +57,7 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose }) => {
             <button onClick={handleSelectClick}>Select</button>
             <button onClick={onClose}>Cancel</button>
             </div>
-        </>
+        </div>
     );
   };
 
