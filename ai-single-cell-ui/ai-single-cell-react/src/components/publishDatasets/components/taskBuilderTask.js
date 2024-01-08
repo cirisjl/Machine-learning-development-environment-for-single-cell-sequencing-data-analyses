@@ -4,6 +4,9 @@ import { CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
 import ReactPlotly from './reactPlotly';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {faFile} from "@fortawesome/free-solid-svg-icons";
+import DatasetSelectionDialog from './datasetsDialog';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -12,6 +15,23 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [loading, setLoading] = useState(false);
 
   const [datasets, setDatasets] = useState([]);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState('single'); // or 'multiple'
+
+  const handleOpenDialog = (mode) => {
+    setSelectionMode(mode);
+    setIsDialogOpen(true);
+  };
+
+  const handleSelectDatasets = (datasets) => {
+    console.log(datasets); // Replace this with what you want to do with the selected datasets
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+
 
   useEffect(() => {
     fetch(`${SERVER_URL}/mongoDB/api/getDatasets`)
@@ -128,6 +148,21 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   return (
     <div className='task-builder-task'>
+      <div>
+        <div>
+          <div>
+            <button onClick={() => handleOpenDialog('single')}>Select Single Dataset</button>
+            <button onClick={() => handleOpenDialog('multiple')}>Select Multiple Datasets</button>
+          </div>
+          {isDialogOpen && (
+            <DatasetSelectionDialog
+              onSelect={handleSelectDatasets}
+              multiple={selectionMode === 'multiple'}
+              onClose={handleCloseDialog}
+            />
+          )}
+        </div>
+      </div>
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
       <div>
         <div className="task-section">
@@ -266,11 +301,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     )}
 
       <div className='navigation-buttons'>
-            <div className="previous">
+            {/* <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
                 Previous
               </button>
-            </div>
+            </div> */}
             <div className="next-upon-success">
               <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
                 Next
