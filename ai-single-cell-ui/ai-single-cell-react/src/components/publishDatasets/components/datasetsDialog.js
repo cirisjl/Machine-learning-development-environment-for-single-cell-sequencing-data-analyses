@@ -24,34 +24,35 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose }) => {
     };
   
     return (
-      <div className="dialog-backdrop">
-        <div className="dialog">
-          <h3>Select Datasets</h3>
-          <ul>
-            {mockDatasets.map((dataset) => (
-              <li key={dataset} onClick={() => handleDatasetClick(dataset)}>
-                {multiple ? (
-                  <input
-                    type="checkbox"
-                    checked={selectedDatasets.includes(dataset)}
-                    readOnly
-                  />
-                ) : (
-                  <input
-                    type="radio"
-                    name="dataset-selection"
-                    checked={selectedDatasets.includes(dataset)}
-                    readOnly
-                  />
-                )}
-                {dataset}
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleSelectClick}>Select</button>
-          <button onClick={onClose}>Cancel</button>
-        </div>
-      </div>
+        <>
+            <div className="dialog-backdrop" onClick={onClose} />
+            <div className="dialog">
+            <h3>Select Datasets</h3>
+            <ul>
+                {mockDatasets.map((dataset) => (
+                <li key={dataset} onClick={() => handleDatasetClick(dataset)}>
+                    {multiple ? (
+                    <input
+                        type="checkbox"
+                        checked={selectedDatasets.includes(dataset)}
+                        readOnly
+                    />
+                    ) : (
+                    <input
+                        type="radio"
+                        name="dataset-selection"
+                        checked={selectedDatasets.includes(dataset)}
+                        readOnly
+                    />
+                    )}
+                    {dataset}
+                </li>
+                ))}
+            </ul>
+            <button onClick={handleSelectClick}>Select</button>
+            <button onClick={onClose}>Cancel</button>
+            </div>
+        </>
     );
   };
 
