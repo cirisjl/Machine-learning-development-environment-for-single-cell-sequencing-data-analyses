@@ -157,59 +157,38 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
   
     const renderCell = (column, value, index) => {
       const uniqueKey = `cell_${index}_${column}`;
-  
-      if (
-        column === 'Species' ||
-        column === 'Anatomical Entity' ||
-        column === 'Disease Status (Donor)'
-      ) {
-        
-        if(value !== '') {
-          const values = value.label.split(',');
-          const count = values.length;
 
-          var k = '';
-          if (column === 'Anatomical Entity') {
-            k = 'Anatomic';
-          } else if (column === 'Disease Status (Donor)') {
-            k = 'Disease';
-          } else {
-            k = 'Species';
-          }
-    
-          if (count === 1) {
-            return <td key={uniqueKey}>{value}</td>;
-          } else {
-            const highlightClass =
-              column === 'Species' ||
-              column === 'Anatomical Entity' ||
-              column === 'Disease Status (Donor)'
-                ? 'highlight'
-                : '';
-    
-            return (
-              <td
-                key={uniqueKey}
-                data-toggle="tooltip"
-                data-placement="top"
-                title={value}
-                className={highlightClass}
-              >
-                <span className='abc'>{`${k} (${count})`}</span>
-              </td>
-            );
-          }
+       // Handle different types of values
+      let displayValue;
+      if (typeof value === 'string' || typeof value === 'number') {
+        displayValue = value; // Directly use the value if it's a string or number
+      } else if (value && typeof value === 'object' && value.label) {
+        displayValue = value.label; // Use the label property if it's an object with a label
+      } else {
+        displayValue = ''; // Fallback to an empty string if the value is not usable
+      }
+  
+     // Customize display for certain columns
+      if (['Species', 'Anatomical Entity', 'Disease Status (Donor)'].includes(column)) {
+        if (displayValue !== '') {
+          const values = displayValue.split(',');
+          const count = values.length;
+          const k = column === 'Anatomical Entity' ? 'Anatomic' : column === 'Disease Status (Donor)' ? 'Disease' : 'Species';
+
+          return (
+            <td key={uniqueKey} data-toggle="tooltip" data-placement="top" title={displayValue}>
+              {count === 1 ? (
+                <span>{displayValue}</span>
+              ) : (
+                <span className='highlight'>{`${k} (${count})`}</span>
+              )}
+            </td>
+          );
         }
-        
       } else {
         return (
-          <td
-            key={uniqueKey}
-            data-toggle="tooltip"
-            data-placement="top"
-            title={value}
-          >
-            {value}
+          <td key={uniqueKey} data-toggle="tooltip" data-placement="top" title={displayValue}>
+            {displayValue}
           </td>
         );
       }
