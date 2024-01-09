@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 
-// This could be replaced with the actual list of datasets you have
-const mockDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3', 'Dataset 4'];
+// // This could be replaced with the actual list of datasets you have
+// const mockDatasets = ['Dataset 1', 'Dataset 2', 'Dataset 3', 'Dataset 4'];
 
 const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisible }) => {
     const [selectedDatasets, setSelectedDatasets] = useState([]);
@@ -163,39 +163,44 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
         column === 'Anatomical Entity' ||
         column === 'Disease Status (Donor)'
       ) {
-        const values = value.label.split(',');
-        const count = values.length;
-        var k = '';
-        if (column === 'Anatomical Entity') {
-          k = 'Anatomic';
-        } else if (column === 'Disease Status (Donor)') {
-          k = 'Disease';
-        } else {
-          k = 'Species';
+        
+        if(value !== '') {
+          const values = value.label.split(',');
+          const count = values.length;
+
+          var k = '';
+          if (column === 'Anatomical Entity') {
+            k = 'Anatomic';
+          } else if (column === 'Disease Status (Donor)') {
+            k = 'Disease';
+          } else {
+            k = 'Species';
+          }
+    
+          if (count === 1) {
+            return <td key={uniqueKey}>{value}</td>;
+          } else {
+            const highlightClass =
+              column === 'Species' ||
+              column === 'Anatomical Entity' ||
+              column === 'Disease Status (Donor)'
+                ? 'highlight'
+                : '';
+    
+            return (
+              <td
+                key={uniqueKey}
+                data-toggle="tooltip"
+                data-placement="top"
+                title={value}
+                className={highlightClass}
+              >
+                <span className='abc'>{`${k} (${count})`}</span>
+              </td>
+            );
+          }
         }
-  
-        if (count === 1) {
-          return <td key={uniqueKey}>{value}</td>;
-        } else {
-          const highlightClass =
-            column === 'Species' ||
-            column === 'Anatomical Entity' ||
-            column === 'Disease Status (Donor)'
-              ? 'highlight'
-              : '';
-  
-          return (
-            <td
-              key={uniqueKey}
-              data-toggle="tooltip"
-              data-placement="top"
-              title={value}
-              className={highlightClass}
-            >
-              <span className='abc'>{`${k} (${count})`}</span>
-            </td>
-          );
-        }
+        
       } else {
         return (
           <td
