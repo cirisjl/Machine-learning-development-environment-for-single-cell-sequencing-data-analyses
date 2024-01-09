@@ -35,10 +35,10 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
     const [sortDirection, setSortDirection] = useState(1);
     const [visibleColumns, setVisibleColumns] = useState([
       'Species',
-      'LibraryConstructionMethod',
-      'AnatomicalEntity',
-      'DiseaseStatus(Donor)',
-      'CellCountEstimate',
+      'Library Construction Method',
+      'Anatomical Entity',
+      'Disease Status (Donor)',
+      'Cell Count Estimate',
     ]);
   
     const [filterValues, setFilterValues] = useState({});
@@ -52,10 +52,10 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
   
     const requiredColumns = [
       'Species',
-      'LibraryConstructionMethod',
-      'AnatomicalEntity',
-      'DiseaseStatus(Donor)',
-      'CellCountEstimate',
+      'Library Construction Method',
+      'Anatomical Entity',
+      'Disease Status (Donor)',
+      'Cell Count Estimate',
     ];
   
     const columnColors = {
