@@ -160,15 +160,15 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
   
       if (
         column === 'Species' ||
-        column === 'AnatomicalEntity' ||
-        column === 'DiseaseStatus(Donor)'
+        column === 'Anatomical Entity' ||
+        column === 'Disease Status (Donor)'
       ) {
-        const values = value.label.split(',').map((item) => item.trim());
+        const values = value.label.split(',');
         const count = values.length;
         var k = '';
-        if (column === 'AnatomicalEntity') {
+        if (column === 'Anatomical Entity') {
           k = 'Anatomic';
-        } else if (column === 'DiseaseStatus(Donor)') {
+        } else if (column === 'Disease Status (Donor)') {
           k = 'Disease';
         } else {
           k = 'Species';
@@ -179,8 +179,8 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
         } else {
           const highlightClass =
             column === 'Species' ||
-            column === 'AnatomicalEntity' ||
-            column === 'DiseaseStatus(Donor)'
+            column === 'Anatomical Entity' ||
+            column === 'Disease Status (Donor)'
               ? 'highlight'
               : '';
   
