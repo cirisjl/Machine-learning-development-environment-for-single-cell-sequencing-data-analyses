@@ -60,10 +60,10 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
   
     const columnColors = {
       Species: 'btn-info',
-      LibraryConstructionMethod: 'btn-info',
-      AnatomicalEntity: 'btn-info',
-      'DiseaseStatus(Donor)': 'btn-info',
-      CellCountEstimate: 'btn-info',
+      'Library Construction Method': 'btn-info',
+      'Anatomical Entity': 'btn-info',
+      'Disease Status (Donor)': 'btn-info',
+      'Cell Count Estimate': 'btn-info',
     };
   
     const handleSort = (columnName) => {
