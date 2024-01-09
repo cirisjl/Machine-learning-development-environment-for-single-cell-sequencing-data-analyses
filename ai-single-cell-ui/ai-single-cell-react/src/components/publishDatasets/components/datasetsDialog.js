@@ -163,7 +163,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
         column === 'AnatomicalEntity' ||
         column === 'DiseaseStatus(Donor)'
       ) {
-        const values = value.split(',').map((item) => item.trim());
+        const values = value.label.split(',').map((item) => item.trim());
         const count = values.length;
         var k = '';
         if (column === 'AnatomicalEntity') {
@@ -410,7 +410,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
                       </tr>
                     </thead>
                     <tbody>
-                      {/* {paginatedData
+                      {paginatedData
                         .filter(applySearch)
                         .map((result, index) => (
                           <tr key={`row_${index}`}>
@@ -418,7 +418,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
                               renderCell(column, result[column], index)
                             )}
                           </tr>
-                        ))} */}
+                        ))}
                     </tbody>
                   </table>
                 </div>
