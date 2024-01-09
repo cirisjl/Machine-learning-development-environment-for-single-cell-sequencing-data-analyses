@@ -410,7 +410,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
                       </tr>
                     </thead>
                     <tbody>
-                      {paginatedData
+                      {/* {paginatedData
                         .filter(applySearch)
                         .map((result, index) => (
                           <tr key={`row_${index}`}>
@@ -418,7 +418,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
                               renderCell(column, result[column], index)
                             )}
                           </tr>
-                        ))}
+                        ))} */}
                     </tbody>
                   </table>
                 </div>
