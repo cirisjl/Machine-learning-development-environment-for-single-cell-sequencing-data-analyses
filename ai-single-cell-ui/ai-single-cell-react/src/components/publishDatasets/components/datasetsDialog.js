@@ -29,7 +29,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
     };
 
     const [data, setData] = useState({
-      initial_data: dataset,
+      initial_data: datasets,
     });
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState(1);
