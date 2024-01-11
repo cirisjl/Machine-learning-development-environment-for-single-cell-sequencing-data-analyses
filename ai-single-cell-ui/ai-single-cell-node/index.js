@@ -1679,9 +1679,6 @@ app.get('/api/datasets/search', async (req, res) => {
 
         const db = client.db(dbName);
         const collection = db.collection(datasetCollectionName);
-        
-      // Define the unique compound index on 'field' and 'name'
-      await collection.createIndex({ field: 1, name: 1 }, { unique: true });
 
 
       const page = parseInt(req.query.page, 10) || 1;
