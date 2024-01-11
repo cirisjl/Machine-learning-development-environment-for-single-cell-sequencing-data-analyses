@@ -1670,6 +1670,91 @@ app.post('/api/storage/renameFile', async (req, res) => {
     }
 });
 
+// Fetch facets and paginated results
+app.get('/api/datasets/search', async (req, res) => {
+    try {
+
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollectionName);
+        
+      // Define the unique compound index on 'field' and 'name'
+      await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+
+      const page = parseInt(req.query.page, 10) || 1;
+      const pageSize = parseInt(req.query.pageSize, 10) || 10;
+  
+      // Build your query based on other filters, if any
+      let matchStage = {};
+  
+      // Define the pipeline for facets
+      const facetsPipeline = [
+        { $match: matchStage },
+        { $facet: {
+          'Species': [
+            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Author': [
+            { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Anatomical Entity': [
+            { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Organ Part': [
+            { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Selected Cell Types': [
+            { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Disease Status (Specimen)': [
+            { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Disease Status (Donor)': [
+            { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          'Species': [
+            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+          ],
+          // ... add other facets here
+        }},
+      ];
+  
+      // Get the facets
+      const facetsResult = await collection.aggregate(facetsPipeline).toArray();
+  
+      // Pagination: Get total count for the query
+      const totalCount = await collection.countDocuments(matchStage);
+  
+      // Build the pipeline for search results with pagination
+      const searchResultsPipeline = [
+        { $match: matchStage },
+        { $skip: (page - 1) * pageSize },
+        { $limit: pageSize },
+      ];
+  
+      // Get the paginated search results
+      const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
+  
+      res.json({
+        facets: facetsResult[0],
+        results: searchResults,
+        pagination: {
+          page,
+          pageSize,
+          pageCount: Math.ceil(totalCount / pageSize),
+          totalCount
+        }
+      });
+    } catch (error) {
+      console.error('Search failed:', error);
+      res.status(500).send('An error occurred while searching.');
+    }
+  });
+  
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
