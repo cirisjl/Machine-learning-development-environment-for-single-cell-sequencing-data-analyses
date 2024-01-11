@@ -1672,9 +1672,9 @@ app.post('/api/storage/renameFile', async (req, res) => {
 
 // Fetch facets and paginated results
 app.get('/api/datasets/search', async (req, res) => {
+    let client;
     try {
-
-        const client = new MongoClient(mongoUrl);
+        client = new MongoClient(mongoUrl);
         await client.connect();
 
         const db = client.db(dbName);
@@ -1712,9 +1712,6 @@ app.get('/api/datasets/search', async (req, res) => {
           'Disease Status (Donor)': [
             { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
           ],
-          'Species': [
-            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
           // ... add other facets here
         }},
       ];
@@ -1728,6 +1725,7 @@ app.get('/api/datasets/search', async (req, res) => {
       // Build the pipeline for search results with pagination
       const searchResultsPipeline = [
         { $match: matchStage },
+        { $project: { Cells: 0, Genes: 0, QC_Plots: 0 } }, // Excluding fields
         { $skip: (page - 1) * pageSize },
         { $limit: pageSize },
       ];
@@ -1748,7 +1746,12 @@ app.get('/api/datasets/search', async (req, res) => {
     } catch (error) {
       console.error('Search failed:', error);
       res.status(500).send('An error occurred while searching.');
-    }
+    } finally {
+        // Ensure the MongoDB client is always closed, even if an error occurs
+        if (client) {
+          await client.close();
+        }
+      }
   });
   
 
