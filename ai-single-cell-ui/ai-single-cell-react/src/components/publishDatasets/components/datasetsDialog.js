@@ -1,7 +1,8 @@
 import React, { useState,useEffect, useMemo } from 'react';
 import FilterComponent from './filtersComponent';
+import {SERVER_URL} from '../../../constants/declarations';
 
-const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisible }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     // const [selectedDatasets, setSelectedDatasets] = useState([]);
 
     const dialogStyle = {
@@ -24,7 +25,7 @@ const DatasetSelectionDialog = ({ datasets, onSelect, multiple, onClose , isVisi
         // }
         
         try {
-          const response = await fetch(`/api/datasets/search`);
+          const response = await fetch(`${SERVER_URL}/api/datasets/search`);
           const data = await response.json();
           setFilters(data.facets);
           setResults(data.results);

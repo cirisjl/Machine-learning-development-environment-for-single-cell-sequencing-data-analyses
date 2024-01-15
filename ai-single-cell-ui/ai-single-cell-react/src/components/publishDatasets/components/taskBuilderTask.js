@@ -32,14 +32,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     setIsDialogOpen(false);
   };
 
-
-  useEffect(() => {
-    fetch(`${SERVER_URL}/mongoDB/api/getDatasets`)
-      .then(response => response.json())
-      .then(data => setDatasets(data))
-      .catch(error => console.error('Error fetching data:', error));
-  }, []);
-
   const handleDataSplit = async (index) => {
     try {
 
@@ -156,7 +148,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           </div>
           {isDialogOpen && (
             <DatasetSelectionDialog
-              datasets={datasets}
               onSelect={handleSelectDatasets}
               multiple={selectionMode === 'multiple'}
               onClose={handleCloseDialog}
