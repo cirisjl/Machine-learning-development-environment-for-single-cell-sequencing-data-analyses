@@ -290,3 +290,28 @@
   flex: 1;
 }
 
+.task-builder-task .dialog-container .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+}
+
+.task-builder-task .dialog-container .pagination button {
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.task-builder-task .dialog-container .pagination button:disabled {
+  background-color: #e0e0e0;
+  cursor: default;
+}
+
+.task-builder-task .dialog-container .pagination span {
+  margin: 0 10px;
+}
+
+
