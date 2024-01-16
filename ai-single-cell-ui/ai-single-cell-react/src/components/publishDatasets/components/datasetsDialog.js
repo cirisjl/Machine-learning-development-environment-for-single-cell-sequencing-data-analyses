@@ -37,7 +37,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     }, [activeFilters, pagination.page]); // Refetch when activeFilters change
 
     const handleFilterCategoryChange = (category) => {
-      setActiveFilterCategory(prev => (prev === category ? null : category));
+      setActiveFilterCategory(prevCategory => prevCategory === category ? null : category);
   };
   
     const handleFilterChange = (filterCategory, filterValue) => {
