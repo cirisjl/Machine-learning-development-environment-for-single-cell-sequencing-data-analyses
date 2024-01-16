@@ -83,9 +83,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                           />
                       ))}
                   </div>
-                  <div className='search-section'>
-
-                  </div>
                 </div>
                 
                 {/* Results */}
@@ -95,7 +92,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                 {/* Pagination */}
                 <Pagination
                   pagination={pagination}
-                  onPageChange=
+                  onPageChange={onPageChange}
                 />
               </div>
               
