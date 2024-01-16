@@ -1,6 +1,7 @@
 import React, { useState,useEffect, useMemo } from 'react';
 import FilterComponent from './filtersComponent';
 import {SERVER_URL} from '../../../constants/declarations';
+import ResultsTable from './tableResultsComponent';
 
 const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
@@ -84,7 +85,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                 </div>
                 
                 {/* Results */}
-                {/* <ResultsList results={results} /> */}
+                <ResultsTable data={results} />
+
                 
                 {/* Pagination */}
                 {/* <Pagination
