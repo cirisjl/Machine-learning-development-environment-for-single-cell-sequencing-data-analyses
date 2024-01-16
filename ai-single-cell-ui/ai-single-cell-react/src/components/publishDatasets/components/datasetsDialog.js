@@ -16,6 +16,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const [pagination, setPagination] = useState({});
     const [activeFilters, setActiveFilters] = useState({});
 
+    const [activeFilterCategory, setActiveFilterCategory] = useState(null);
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters) => {
@@ -33,7 +34,11 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     useEffect(() => {   
       fetchData(pagination.page, activeFilters);
-    }, [activeFilters]); // Refetch when activeFilters change
+    }, [activeFilters, pagination.page]); // Refetch when activeFilters change
+
+    const handleFilterCategoryChange = (category) => {
+      setActiveFilterCategory(prev => (prev === category ? null : category));
+  };
   
     const handleFilterChange = (filterCategory, filterValue) => {
       setActiveFilters(prevFilters => {
@@ -79,6 +84,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                               options={filters[filterName]}
                               activeFilters={activeFilters}
                               onFilterChange={handleFilterChange}
+                              isVisible={activeFilterCategory === filterName}
+                              onCategoryChange={() => handleFilterCategoryChange(filterName)}
                               className="filter"
                           />
                       ))}
