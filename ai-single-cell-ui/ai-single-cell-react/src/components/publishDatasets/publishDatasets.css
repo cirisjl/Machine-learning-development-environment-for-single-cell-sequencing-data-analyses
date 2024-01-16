@@ -278,3 +278,15 @@
   border-radius: 8px;
   padding: 20px;
 }
+
+.task-builder-task .dialog-container .filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Adjust as needed */
+}
+
+/* Additional styles for FilterComponent */
+.task-builder-task .dialog-container .filter {
+  flex: 1;
+}
+
