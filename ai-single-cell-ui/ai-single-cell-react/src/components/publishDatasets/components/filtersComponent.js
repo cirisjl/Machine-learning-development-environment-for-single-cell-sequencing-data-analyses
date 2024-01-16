@@ -15,19 +15,23 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
         <div>
             <h3 onClick={() => onCategoryChange(name)}>{name}</h3>
             {isVisible && (
-                <ul>
-                    {options.map(option => (
-                        <li key={option._id}>
-                            <button
-                                type="button"
-                                onClick={() => onFilterChange(name, option._id)}
-                                className={isActive(option._id) ? 'active' : ''}
-                            >
-                                {option._id} ({option.count})
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <div>
+                    <ul>
+                        {options.map(option => (
+                            <li key={option.value}>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={activeFilters[name]?.includes(option.value)}
+                                        onChange={() => onFilterChange(name, option.value)}
+                                    />
+                                    {option.label}
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                    <button className="apply-filters-button">Apply</button>
+                </div>
             )}
         </div>
     );
