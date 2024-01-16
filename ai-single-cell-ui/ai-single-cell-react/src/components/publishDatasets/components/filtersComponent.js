@@ -18,14 +18,14 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                 <div>
                     <ul>
                         {options.map(option => (
-                            <li key={option.value}>
+                            <li key={option._id}>
                                 <label>
                                     <input
                                         type="checkbox"
-                                        checked={activeFilters[name]?.includes(option.value)}
-                                        onChange={() => onFilterChange(name, option.value)}
+                                        checked={activeFilters[name]?.includes(option._id)}
+                                        onChange={() => onFilterChange(name, option._id)}
                                     />
-                                    {option.label}
+                                     {option._id} ({option.count})
                                 </label>
                             </li>
                         ))}
