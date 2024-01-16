@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 
 
-const FilterComponent = ({ name, options, activeFilters, onFilterChange }) => {
+const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange  }) => {
 
-    const [isVisible, setIsVisible] = useState(false);
+    // const [isVisible, setIsVisible] = useState(false);
 
-    const toggleVisibility = () => setIsVisible(!isVisible);
+    // const toggleVisibility = () => setIsVisible(!isVisible);
 
     const isActive = (filterValue) => {
         return activeFilters[name] && activeFilters[name].includes(filterValue);
@@ -13,7 +13,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange }) => {
 
     return (
         <div>
-            <h3 onClick={toggleVisibility}>{name}</h3>
+            <h3 onClick={() => onCategoryChange(name)}>{name}</h3>
             {isVisible && (
                 <ul>
                     {options.map(option => (
