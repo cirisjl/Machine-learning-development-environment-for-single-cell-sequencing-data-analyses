@@ -3,6 +3,9 @@ import FilterComponent from './filtersComponent';
 import {SERVER_URL} from '../../../constants/declarations';
 import ResultsTable from './tableResultsComponent';
 import Pagination from './tablePaginationComponent';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {  faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import SearchBox from '../../Header/searchBar';
 
 const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
@@ -75,8 +78,9 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
             <div className="dialog">
               <div>
                 
-                <div className='filters-and search-container'>
-                  <div className='filters-container'>
+                <div className='filters-and-search-container'>
+                  <div className='metadata-search-wrap filters-container'>
+                  <span class="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
                       {Object.keys(filters).map((filterName) => (
                           <FilterComponent
                               key={filterName}
@@ -90,6 +94,11 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                           />
                       ))}
                   </div>
+                  <div className='study-keyword-search'>
+                    <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
+                    <SearchBox />
+                  </div>
+
                 </div>
                 
                 {/* Results */}

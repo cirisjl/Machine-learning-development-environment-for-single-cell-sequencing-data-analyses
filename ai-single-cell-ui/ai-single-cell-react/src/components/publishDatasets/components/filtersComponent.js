@@ -12,10 +12,12 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
     };
 
     return (
-        <div>
-            <h3 onClick={() => onCategoryChange(name)}>{name}</h3>
+        <div className='facet'>
+            <div className='filter-category'>
+                <h3 onClick={() => onCategoryChange(name)}>{name}</h3>
+            </div>
             {isVisible && (
-                <div>
+                <div className='filter options'>
                     <ul>
                         {options.map(option => (
                             <li key={option._id}>
