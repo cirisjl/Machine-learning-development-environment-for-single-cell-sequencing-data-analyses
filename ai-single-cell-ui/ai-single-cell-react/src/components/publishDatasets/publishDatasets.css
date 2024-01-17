@@ -314,4 +314,22 @@
   margin: 0 10px;
 }
 
+.task-builder-task .dialog-container .filters-and-search-container {
+  display: flex;
+}
+
+.task-builder-task .dialog-container span.search-title {
+  font-weight: 700;
+  color: #666;
+  display: block;
+  margin: 3px 0;
+}
+
+.task-builder-task .dialog-container .facet {
+    white-space: nowrap;
+    display: inline-block;
+    margin-right: 8px;
+    box-sizing: border-box;
+    vertical-align: top;
+}
 
