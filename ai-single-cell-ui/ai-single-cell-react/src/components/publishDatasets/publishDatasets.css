@@ -383,11 +383,11 @@
 }
 
 .task-builder-task .dialog-container .metadata-search-wrap {
-  flex: 0 0 70%;
+  flex: 0 0 60%;
 }
 
 .task-builder-task .dialog-container .study-keyword-search {
-  flex: 0 0 27%;
+  flex: 0 0 37%;
 }
 
 .task-builder-task .dialog-container .facet .filters-options ul {
