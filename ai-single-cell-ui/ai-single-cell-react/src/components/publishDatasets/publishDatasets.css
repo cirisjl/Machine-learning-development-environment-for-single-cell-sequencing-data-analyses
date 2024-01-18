@@ -420,3 +420,52 @@
 .task-builder-task .dialog-container .study-keyword-search svg.top-1\/2 {
   top: 3.6rem;
 }
+
+/* ResultsTable.css */
+
+/* Reset table styling */
+.task-builder-task .dialog-container .table-results table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.task-builder-task .dialog-container .table-results th,
+.task-builder-task .dialog-container .table-results td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.task-builder-task .dialog-container .table-results th {
+  background-color: #009879;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.task-builder-task .dialog-container .table-results tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.task-builder-task .dialog-container .table-results tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.task-builder-task .dialog-container .table-results tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+.task-builder-task .dialog-container .table-results tr:hover {
+  background-color: #f1f1f1;
+}
+
+.task-builder-task .dialog-container .table-results td {
+  border-right: 1px solid #dddddd;
+}
+
+.task-builder-task .dialog-container .table-results td:last-child {
+  border-right: none;
+}
