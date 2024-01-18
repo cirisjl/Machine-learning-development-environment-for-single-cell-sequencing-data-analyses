@@ -289,7 +289,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
   padding: 20px;
 }
 
@@ -379,7 +378,10 @@
     border-radius: 15px;
     border: 0.64px solid #4d72aa;
     box-sizing: border-box;
-    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    padding: 0px 16px;
 }
 
 .task-builder-task .dialog-container .metadata-search-wrap {
@@ -392,4 +394,8 @@
 
 .task-builder-task .dialog-container .facet .filters-options ul {
   list-style: none;
+}
+
+.task-builder-task .dialog-container button.filters-toggle svg{
+  margin-right: 5px;
 }
