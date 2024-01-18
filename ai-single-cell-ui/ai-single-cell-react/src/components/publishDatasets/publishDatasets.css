@@ -382,6 +382,11 @@
     align-items: center;
     display: flex;
     padding: 0px 16px;
+    height: 40px;
+}
+
+.task-builder-task .dialog-container .filters-toggle-div {
+  display: inline-block;
 }
 
 .task-builder-task .dialog-container .metadata-search-wrap {
@@ -393,9 +398,21 @@
 }
 
 .task-builder-task .dialog-container .facet .filters-options ul {
-  list-style: none;
+  list-style-type: none;
+}
+
+.task-builder-task .dialog-container .study-keyword-search form{
+  margin-top: 18px;
 }
 
 .task-builder-task .dialog-container button.filters-toggle svg{
   margin-right: 5px;
+}
+
+.task-builder-task .dialog-container button.filters-toggle .left-2\.5 {
+  right: 9rem;
+}
+
+.task-builder-task .dialog-container button.filters-toggle .top-1\/2 {
+  top: 3.6rem;
 }

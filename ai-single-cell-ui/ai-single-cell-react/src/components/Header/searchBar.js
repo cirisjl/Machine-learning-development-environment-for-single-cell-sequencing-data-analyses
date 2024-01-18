@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-function SearchBox({ onSearch }) {
+function SearchBox({ onSearch, placeHolder }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleInputChange = (event) => {
@@ -25,7 +25,7 @@ function SearchBox({ onSearch }) {
         type="text"
         autoComplete="off"
         className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
-        placeholder="Search models, datasets, users..."
+        placeholder={placeHolder}
         spellCheck="false"
         value={searchTerm}
         onChange={handleInputChange}
@@ -35,15 +35,6 @@ function SearchBox({ onSearch }) {
         <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
       </svg>    
 
-    {/* {searchTerm && (
-        <button type="button" onClick={handleClearInput}>
-        <FontAwesomeIcon icon={faTimes} />
-        </button>
-    )} */}
-
-      {/* <button type="submit">
-        <FontAwesomeIcon icon={faSearch} />
-      </button> */}
     </form>
   );
 }
