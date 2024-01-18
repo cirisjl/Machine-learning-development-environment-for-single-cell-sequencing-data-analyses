@@ -113,7 +113,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                               className="filter"
                           />
                       ))}
-                      <div>
+                      <div className='filters-toggle-div'>
                         {Object.keys(filters).length > 4 && (
                             <button onClick={toggleMoreFacets} className='filters-toggle'>
                                 <FontAwesomeIcon icon={faSliders} /> <p>{showMoreFacets ? 'Less facets' : 'More facets'}</p>
@@ -123,7 +123,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   </div>
                   <div className='study-keyword-search'>
                     <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
-                    <SearchBox />
+                    <SearchBox placeHolder="Search"/>
                   </div>
 
                 </div>

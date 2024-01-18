@@ -80,7 +80,7 @@ export default function RootLayout() {
                         <div className="flex flex-1 items-center">
                             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/"><span className="hidden whitespace-nowrap text-lg font-bold md:block">OSCB</span></a>
                             <div className="relative flex-1 lg:max-w-sm mr-2 sm:mr-4 lg:mr-6">
-                                <SearchBox />
+                                <SearchBox placeHolder="Search models, datasets, users..."/>
                             </div>
                         </div>
 
