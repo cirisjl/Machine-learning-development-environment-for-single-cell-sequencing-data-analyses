@@ -351,3 +351,23 @@
   box-sizing: border-box;
   display: inline-block;
 }
+
+.task-builder-task .dialog-container .facet .filters-box-searchable {
+  width: 560px;
+  border: 1px solid #aaa;
+  background: #fff;
+  position: absolute;
+  z-index: 9000;
+  border-radius: 5px;
+  padding: 2px;
+  margin-top: 2px;
+}
+
+.task-builder-task .dialog-container .facet .filters-box-searchable {
+  display: flex;
+}
+
+
+.task-builder-task .dialog-container .facet .filters-box-footer {
+  height: 40px;
+}
