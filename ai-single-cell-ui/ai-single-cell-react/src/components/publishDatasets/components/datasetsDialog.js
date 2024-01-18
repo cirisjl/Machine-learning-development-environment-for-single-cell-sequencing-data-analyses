@@ -4,7 +4,7 @@ import {SERVER_URL} from '../../../constants/declarations';
 import ResultsTable from './tableResultsComponent';
 import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../../Header/searchBar';
 
 const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
@@ -116,7 +116,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
                       {Object.keys(filters).length > 4 && (
                           <button onClick={toggleMoreFacets} className='filters-toggle'>
-                              <FontAwesomeIcon icon={'sliders'} /> {showMoreFacets ? 'Less facets' : 'More facets'}
+                              <FontAwesomeIcon icon={faSliders} /> <p>{showMoreFacets ? 'Less facets' : 'More facets'}</p>
                           </button>
                       )}
                   </div>
