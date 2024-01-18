@@ -20,13 +20,13 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                 <div className='filters-box-searchable'>
                     <div className='facet-container'>
                         <div className='single-facet'>
-                            <div className='filters-box-searchable'>
+                            <div>
                                 <div className='filters-searchbar'>
                                     <input autocomplete="false" placeholder="Search for a filter" type="text" id="filters-search-bar-filters-box-searchable-organ" class="form-control" value="" fdprocessedid="vdtrz3"/>
                                 </div>
 
                                 <div className='filters-header'>
-                                    <p>Available filters:</p>
+                                    <h4>Available filters:</h4>
                                 </div>
 
                                 <div className='filters-options'>
