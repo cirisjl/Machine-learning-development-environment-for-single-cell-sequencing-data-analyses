@@ -333,3 +333,11 @@
     vertical-align: top;
 }
 
+.task-builder-task .dialog-container .table-results {
+  overflow-y: auto;
+}
+
+.task-builder-task .dialog-container .table-results table{
+
+  width: 100%;
+}
