@@ -115,8 +115,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                       ))}
 
                       {Object.keys(filters).length > 4 && (
-                          <button onClick={toggleMoreFacets}>
-                              {showMoreFacets ? 'Less facets' : 'More facets'}
+                          <button onClick={toggleMoreFacets} className='filters-toggle'>
+                              <FontAwesomeIcon icon={'sliders'} /> {showMoreFacets ? 'Less facets' : 'More facets'}
                           </button>
                       )}
                   </div>
