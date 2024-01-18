@@ -100,17 +100,16 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   </div>
 
                 </div>
-                
-                <div className='table-results'>
-                  <ResultsTable data={results} />
-                </div>
 
-                
                 <div className='table-pagination'>
                   <Pagination
                     pagination={pagination}
                     onPageChange={onPageChange}
                   />
+                </div>
+                
+                <div className='table-results'>
+                  <ResultsTable data={results} />
                 </div>
               </div>
               

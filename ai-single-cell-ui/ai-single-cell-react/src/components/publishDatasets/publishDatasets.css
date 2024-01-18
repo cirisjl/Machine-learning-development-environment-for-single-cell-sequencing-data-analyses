@@ -341,3 +341,13 @@
 
   width: 100%;
 }
+
+.task-builder-task .dialog-container .facet h3 {
+  background-color: #fff;
+  padding: 8px 16px;
+  border-radius: 15px;
+  border: 0.64px solid #4d72aa;
+  width: 100%;
+  box-sizing: border-box;
+  display: inline-block;
+}
