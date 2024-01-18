@@ -325,6 +325,7 @@
     margin-right: 8px;
     box-sizing: border-box;
     vertical-align: top;
+    cursor: pointer;
 }
 
 .task-builder-task .dialog-container .table-results {
@@ -347,7 +348,7 @@
 }
 
 .task-builder-task .dialog-container .facet .filters-box-searchable {
-  width: 560px;
+  width: 375px;
   border: 1px solid #aaa;
   background: #fff;
   position: absolute;
@@ -413,12 +414,12 @@
   margin-right: 5px;
 }
 
-.task-builder-task .dialog-container .study-keyword-search svg.left-2\.5 {
+.task-builder-task .dialog-container .study-keyword-search svg.right {
   right: 9rem;
 }
 
 .task-builder-task .dialog-container .study-keyword-search svg.top-1\/2 {
-  top: 3.6rem;
+  top: 4.5rem;
 }
 
 /* ResultsTable.css */
