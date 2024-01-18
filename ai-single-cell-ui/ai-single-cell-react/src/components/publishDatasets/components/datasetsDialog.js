@@ -14,6 +14,9 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
         // ... other styles
     };
 
+    const [visibleFacets, setVisibleFacets] = useState([]); // Will hold the keys of the facets to display
+    const [showMoreFacets, setShowMoreFacets] = useState(false); // Toggle state for showing more facets
+
     const [filters, setFilters] = useState({});
     const [results, setResults] = useState([]);
     const [pagination, setPagination] = useState({});
@@ -38,6 +41,23 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     useEffect(() => {   
       fetchData(pagination.page, activeFilters);
     }, [activeFilters, pagination.page]); // Refetch when activeFilters change
+
+    useEffect(() => {
+      // Set initial visible facets to the first four, or fewer if there aren't four
+      setVisibleFacets(Object.keys(filters).slice(0, 4));
+  }, [filters]); // This will update visible facets when the filters are fetched
+
+
+  const toggleMoreFacets = () => {
+    setShowMoreFacets(!showMoreFacets);
+    // Show all facets if showMoreFacets is true, else show only the first four
+    if (!showMoreFacets) {
+        setVisibleFacets(Object.keys(filters));
+    } else {
+        setVisibleFacets(Object.keys(filters).slice(0, 4));
+    }
+};
+
 
     const handleFilterCategoryChange = (category) => {
       setActiveFilterCategory(prevCategory => prevCategory === category ? null : category);
@@ -81,7 +101,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                 <div className='filters-and-search-container'>
                   <div className='metadata-search-wrap filters-container'>
                   <span class="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
-                      {Object.keys(filters).map((filterName) => (
+                      {visibleFacets.map((filterName) => (
                           <FilterComponent
                               key={filterName}
                               name={filterName}
@@ -93,6 +113,12 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                               className="filter"
                           />
                       ))}
+
+                      {Object.keys(filters).length > 4 && (
+                          <button onClick={toggleMoreFacets}>
+                              {showMoreFacets ? 'Less facets' : 'More facets'}
+                          </button>
+                      )}
                   </div>
                   <div className='study-keyword-search'>
                     <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
