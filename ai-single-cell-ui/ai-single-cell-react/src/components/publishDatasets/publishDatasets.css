@@ -409,10 +409,10 @@
   margin-right: 5px;
 }
 
-.task-builder-task .dialog-container button.filters-toggle .left-2\.5 {
+.task-builder-task .dialog-container button.filters-toggle svg.left-2\.5 {
   right: 9rem;
 }
 
-.task-builder-task .dialog-container button.filters-toggle .top-1\/2 {
+.task-builder-task .dialog-container button.filters-toggle svg.top-1\/2 {
   top: 3.6rem;
 }
