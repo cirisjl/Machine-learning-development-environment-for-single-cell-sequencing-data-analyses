@@ -367,7 +367,7 @@
   height: 40px;
 }
 
-.task-builder-task .dialog-container .filters-toggle button{
+.task-builder-task .dialog-container button.filters-toggle{
   margin-top: 18px;
   white-space: nowrap;
     margin-right: 8px;
@@ -379,4 +379,12 @@
     border: 0.64px solid #4d72aa;
     box-sizing: border-box;
     display: inline-block;
+}
+
+.task-builder-task .dialog-container .metadata-search-wrap {
+  flex: 0 0 70%;
+}
+
+.task-builder-task .dialog-container .study-keyword-search {
+  flex: 0 0 27%;
 }
