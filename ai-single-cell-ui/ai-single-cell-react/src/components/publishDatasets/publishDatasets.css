@@ -279,11 +279,6 @@
   padding: 20px;
 }
 
-.task-builder-task .dialog-container .filters-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px; /* Adjust as needed */
-}
 
 /* Additional styles for FilterComponent */
 .task-builder-task .dialog-container .filter {
@@ -370,4 +365,18 @@
 
 .task-builder-task .dialog-container .facet .filters-box-footer {
   height: 40px;
+}
+
+.task-builder-task .dialog-container .filters-toggle button{
+  margin-top: 18px;
+  white-space: nowrap;
+    margin-right: 8px;
+    vertical-align: top;
+
+    background-color: #fff;
+    color: black;
+    border-radius: 15px;
+    border: 0.64px solid #4d72aa;
+    box-sizing: border-box;
+    display: inline-block;
 }
