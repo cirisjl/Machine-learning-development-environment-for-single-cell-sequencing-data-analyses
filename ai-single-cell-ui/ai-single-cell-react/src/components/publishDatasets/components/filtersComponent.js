@@ -14,7 +14,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
     return (
         <div className='facet'>
             <div className='filter-category'>
-                <h3 onClick={() => onCategoryChange(name)}>{name}</h3>
+                <p onClick={() => onCategoryChange(name)}>{name}</p>
             </div>
             {isVisible && (
                 <div className='filter options'>

@@ -342,7 +342,7 @@
   width: 100%;
 }
 
-.task-builder-task .dialog-container .facet h3 {
+.task-builder-task .dialog-container .facet p {
   background-color: #fff;
   padding: 8px 16px;
   border-radius: 15px;
