@@ -354,12 +354,13 @@
   position: absolute;
   z-index: 9000;
   border-radius: 5px;
-  padding: 2px;
+  padding: 2rem;
   margin-top: 2px;
 }
 
 .task-builder-task .dialog-container .facet .filters-box-searchable {
   display: flex;
+  flex-direction: column;
 }
 
 
@@ -387,4 +388,8 @@
 
 .task-builder-task .dialog-container .study-keyword-search {
   flex: 0 0 27%;
+}
+
+.task-builder-task .dialog-container .facet .filter-options ul {
+  list-style: none;
 }
