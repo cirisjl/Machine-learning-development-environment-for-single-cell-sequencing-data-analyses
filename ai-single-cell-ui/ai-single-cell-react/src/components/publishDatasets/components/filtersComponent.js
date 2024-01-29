@@ -20,7 +20,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                         <div className='single-facet'>
                             <div>
                                 <div className='filters-searchbar'>
-                                    <form onSubmit={handleSearchSubmit}>
+                                    <form>
                                         <input
                                             type="text"
                                             autoComplete="off"
