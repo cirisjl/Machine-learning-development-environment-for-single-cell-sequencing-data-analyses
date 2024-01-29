@@ -1683,9 +1683,26 @@ app.get('/api/datasets/search', async (req, res) => {
 
       const page = parseInt(req.query.page, 10) || 1;
       const pageSize = parseInt(req.query.pageSize, 10) || 10;
+      let globalSearchQuery = req.query.q; 
   
       // Build your query based on other filters, if any
       let matchStage = {};
+
+        // Add the global search query to the matchStage
+        if (globalSearchQuery) {
+            matchStage = {
+                $or: [
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } }, // Include 'Species.label' in the search
+                    { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // Add more fields and nested fields as needed
+                ],
+            };
+        }
   
       // Define the pipeline for facets
       const facetsPipeline = [
