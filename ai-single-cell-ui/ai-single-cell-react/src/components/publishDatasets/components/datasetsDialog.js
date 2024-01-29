@@ -21,14 +21,15 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const [results, setResults] = useState([]);
     const [pagination, setPagination] = useState({});
     const [activeFilters, setActiveFilters] = useState({});
+    const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
 
     // Function to fetch data from the API
-    const fetchData = async (currentPage, currentFilters) => {
+    const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
       try {
-        const response = await fetch(`${SERVER_URL}/api/datasets/search`);
+        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}`);
         const data = await response.json();
         setFilters(data.facets);
         setResults(data.results);
@@ -39,8 +40,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     };   
 
     useEffect(() => {   
-      fetchData(pagination.page, activeFilters);
-    }, [activeFilters, pagination.page]); // Refetch when activeFilters change
+      fetchData(pagination.page, activeFilters, globalSearchTerm);
+    }, [activeFilters, pagination.page, globalSearchTerm]); // Refetch when activeFilters change
 
     useEffect(() => {
       // Set initial visible facets to the first four, or fewer if there aren't four
@@ -92,6 +93,12 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
       setPagination(prev => ({ ...prev, page: newPage }));
     };
 
+    const handleSearchSubmit = (event) => {
+      event.preventDefault();
+      // onSearch(searchTerm);
+      console.log("Search Handled");
+    };
+
     return (
         <div style={dialogStyle} className="dialog-container">
             <div className="dialog-backdrop" onClick={onClose} />
@@ -123,7 +130,23 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   </div>
                   <div className='study-keyword-search'>
                     <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
-                    <SearchBox placeHolder="Search"/>
+                    <div>
+                      <form onSubmit={handleSearchSubmit}>
+                        <input
+                            type="text"
+                            autoComplete="off"
+                            className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
+                            placeholder="Search..."
+                            value={globalSearchTerm}
+                            onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                        />
+                        
+                        {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                            <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
+                        </svg>     */}
+
+                      </form>
+                    </div>
                   </div>
 
                 </div>
