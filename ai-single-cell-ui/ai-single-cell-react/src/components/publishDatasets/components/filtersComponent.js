@@ -3,7 +3,9 @@ import React, {useState} from 'react';
 
 const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange  }) => {
 
-    const [searchTerm, setSearchTerm] = useState('');
+    // const [isVisible, setIsVisible] = useState(false);
+
+    // const toggleVisibility = () => setIsVisible(!isVisible);
 
     const isActive = (filterValue) => {
         return activeFilters[name] && activeFilters[name].includes(filterValue);
@@ -20,14 +22,15 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                         <div className='single-facet'>
                             <div>
                                 <div className='filters-searchbar'>
-                                    <form onSubmit={handleSearchSubmit}>
+                                    <form>
                                         <input
                                             type="text"
                                             autoComplete="off"
                                             className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
                                             placeholder="Search..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            // spellCheck="false"
+                                            // value={searchTerm}
+                                            // onChange={handleInputChange}
                                         />
                                         
                                         {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
@@ -43,11 +46,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
 
                                 <div className='filters-options'>
                                     <ul>
-                                    {options
-                                        .filter((option) =>
-                                            option._id.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .map((option) => (
+                                        {options.map(option => (
                                             <li key={option._id}>
                                                 <label>
                                                     <input
