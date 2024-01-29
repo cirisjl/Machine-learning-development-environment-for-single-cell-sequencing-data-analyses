@@ -29,7 +29,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
       try {
-        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}`);
+        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}`);
         const data = await response.json();
         setFilters(data.facets);
         setResults(data.results);
