@@ -1682,7 +1682,7 @@ app.get('/api/datasets/search', async (req, res) => {
 
 
       const page = parseInt(req.query.page, 10) || 1;
-      const pageSize = parseInt(req.query.pageSize, 10) || 10;
+      const pageSize = parseInt(req.query.pageSize, 10) || 1;
       let globalSearchQuery = req.query.q; 
   
       // Build your query based on other filters, if any
