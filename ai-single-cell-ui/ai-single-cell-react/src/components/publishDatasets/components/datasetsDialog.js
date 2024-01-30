@@ -58,7 +58,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     useEffect(() => {   
       fetchData(pagination.page, activeFilters, globalSearchTerm);
-    }, [pagination.page]); // Refetch when activeFilters change
+    }, []); // Refetch when activeFilters change
 
     useEffect(() => {
       // Set initial visible facets to the first four, or fewer if there aren't four
@@ -107,7 +107,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     };
 
     const onPageChange = (newPage) => {
-      setPagination(prev => ({ ...prev, page: newPage }));
+      fetchData(newPage, activeFilters, globalSearchTerm);
     };
 
     const handleSearchSubmit = (event) => {
