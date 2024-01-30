@@ -29,7 +29,13 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
       try {
-        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}`);
+        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}` , {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filters: currentFilters }),
+        });
         const data = await response.json();
         setFilters(data.facets);
         setResults(data.results);
@@ -39,9 +45,13 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
       }
     };   
 
+    const handleApplyFilters = async () => {
+      fetchData(pagination.page, activeFilters, globalSearchTerm);
+    };
+
     useEffect(() => {   
       fetchData(pagination.page, activeFilters, globalSearchTerm);
-    }, [activeFilters, pagination.page, globalSearchTerm]); // Refetch when activeFilters change
+    }, [pagination.page]); // Refetch when activeFilters change
 
     useEffect(() => {
       // Set initial visible facets to the first four, or fewer if there aren't four
@@ -95,7 +105,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const handleSearchSubmit = (event) => {
       event.preventDefault();
-      // onSearch(searchTerm);
+      fetchData(pagination.page, activeFilters, globalSearchTerm);
       console.log("Search Handled");
     };
 
@@ -118,6 +128,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                               isVisible={activeFilterCategory === filterName}
                               onCategoryChange={() => handleFilterCategoryChange(filterName)}
                               className="filter"
+                              onApplyFilters={handleApplyFilters}
                           />
                       ))}
                       <div className='filters-toggle-div'>

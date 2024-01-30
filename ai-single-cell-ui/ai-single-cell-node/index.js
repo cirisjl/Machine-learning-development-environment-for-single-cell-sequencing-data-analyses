@@ -1684,6 +1684,7 @@ app.get('/api/datasets/search', async (req, res) => {
       const page = parseInt(req.query.page, 10) || 1;
       const pageSize = parseInt(req.query.pageSize, 10) || 1;
       let globalSearchQuery = req.query.q; 
+      const filters = req.body.filters;
   
       // Build your query based on other filters, if any
       let matchStage = {};
@@ -1702,6 +1703,14 @@ app.get('/api/datasets/search', async (req, res) => {
                     // Add more fields and nested fields as needed
                 ],
             };
+        }
+        // Apply additional filters
+        if (filters) {
+            Object.keys(filters).forEach((filterCategory) => {
+            matchStage[`$or`].push({
+                [`${filterCategory}.label`]: { $in: filters[filterCategory] },
+            });
+            });
         }
   
       // Define the pipeline for facets
