@@ -121,7 +121,7 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "5"
+            cpus: "10"
     volumes:
       - /data/ai-ready/results:/data/results
       - /data/ai-ready/uploads:/data/upload
@@ -152,7 +152,7 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "5"
+            cpus: "10"
     volumes:
       - /data/ai-ready/results:/data/results
       - /data/ai-ready/uploads:/data/upload
@@ -182,7 +182,7 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "5"
+            cpus: "10"
     volumes:
       - /data/ai-ready/results:/data/results
       - /data/ai-ready/uploads:/data/upload
