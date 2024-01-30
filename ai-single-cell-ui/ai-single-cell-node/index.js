@@ -1706,6 +1706,8 @@ app.post('/api/datasets/search', async (req, res) => {
         }
         // Apply additional filters
         if (filters) {
+            // Initialize $or as an empty array if it's undefined
+             matchStage["$or"] = matchStage["$or"] || [];
             Object.keys(filters).forEach((filterCategory) => {
             matchStage[`$or`].push({
                 [`${filterCategory}.label`]: { $in: filters[filterCategory] },
