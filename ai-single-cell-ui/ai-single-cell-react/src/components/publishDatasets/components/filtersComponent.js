@@ -14,9 +14,9 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
     };
 
     return (
-        <div className='facet'>
-            <div className='filter-category'>
-                <p onClick={() => onCategoryChange(name)}>{name}</p>
+        <div className={`facet ${isVisible ? 'active' : ''}`}>
+            <div className={`filter-category ${isVisible ? 'highlighted' : ''}`} onClick={() => onCategoryChange(name)}>
+                <p>{name}</p>
             </div>
             {isVisible && (
                 <div className='filters-box-searchable'>

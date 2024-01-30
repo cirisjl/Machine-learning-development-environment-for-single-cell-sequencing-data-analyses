@@ -470,3 +470,20 @@
 .task-builder-task .dialog-container .table-results td:last-child {
   border-right: none;
 }
+
+
+.task-builder-task .dialog-container .facet .filter-category {
+  /* Your default styles for filter category */
+  cursor: pointer;
+}
+
+.task-builder-task .dialog-container .facet .filter-category.highlighted {
+  /* Styles for the highlighted state */
+  background-color: #f0f0f0;
+}
+
+.task-builder-task .dialog-container .facet.active {
+  /* Styles for the active (opened) state */
+  border: 1px solid #ccc;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
