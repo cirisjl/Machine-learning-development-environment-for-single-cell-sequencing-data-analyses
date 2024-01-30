@@ -477,13 +477,8 @@
   cursor: pointer;
 }
 
-.task-builder-task .dialog-container .facet .filter-category.highlighted {
+.task-builder-task .dialog-container .facet .filter-category p.highlighted,
+.task-builder-task .dialog-container .facet .filter-category p:hover {
   /* Styles for the highlighted state */
   background-color: #f0f0f0;
-}
-
-.task-builder-task .dialog-container .facet.active {
-  /* Styles for the active (opened) state */
-  border: 1px solid #ccc;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
