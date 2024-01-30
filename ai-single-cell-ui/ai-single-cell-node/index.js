@@ -1685,6 +1685,9 @@ app.post('/api/datasets/search', async (req, res) => {
       const pageSize = parseInt(req.query.pageSize, 10) || 1;
       let globalSearchQuery = req.query.q; 
       const filters = req.body.filters;
+
+      const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+
   
       // Build your query based on other filters, if any
       let matchStage = {};
@@ -1706,12 +1709,22 @@ app.post('/api/datasets/search', async (req, res) => {
         }
         // Apply additional filters
         if (filters) {
-            // Initialize $or as an empty array if it's undefined
-             matchStage["$or"] = matchStage["$or"] || [];
             Object.keys(filters).forEach((filterCategory) => {
-            matchStage[`$or`].push({
-                [`${filterCategory}.label`]: { $in: filters[filterCategory] },
-            });
+                const filterValue = filters[filterCategory];
+
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    const filterQuery = {};
+
+                    if (fieldsWithLabel.includes(filterCategory)) {
+                        // For fields with 'label' property
+                        filterQuery[`${filterCategory}.label`] = { $in: filterValue };
+                    } else {
+                        // For other fields (like 'Author'), assuming they are direct string values
+                        filterQuery[filterCategory] = { $in: filterValue };
+                    }
+
+                    matchStage.$or.push(filterQuery);
+                }
             });
         }
 
