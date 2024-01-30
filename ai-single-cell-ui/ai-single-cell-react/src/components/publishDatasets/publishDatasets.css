@@ -477,8 +477,8 @@
   cursor: pointer;
 }
 
-.task-builder-task .dialog-container .facet .filter-category p.highlighted,
-.task-builder-task .dialog-container .facet .filter-category p:hover {
+.task-builder-task .dialog-container .facet .filter-category.highlighted,
+.task-builder-task .dialog-container .facet p.filter-category:hover {
   /* Styles for the highlighted state */
   background-color: #f0f0f0;
 }
