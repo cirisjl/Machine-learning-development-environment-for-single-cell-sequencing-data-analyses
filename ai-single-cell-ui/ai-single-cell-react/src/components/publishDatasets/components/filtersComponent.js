@@ -1,12 +1,16 @@
 import React, {useState} from 'react';
 
 
-const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange  }) => {
+const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange, onApplyFilters}) => {
 
     const [searchTerm, setSearchTerm] = useState('');
 
     const isActive = (filterValue) => {
         return activeFilters[name] && activeFilters[name].includes(filterValue);
+    };
+
+    const handleApplyButtonClick = () => {
+        onApplyFilters();
     };
 
     return (
@@ -67,7 +71,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                     </div>
 
                     <div className='filters-footer'>
-                        <button className="apply-filters-button">Apply</button>
+                        <button className="apply-filters-button" onClick={handleApplyButtonClick}>Apply</button>
                     </div>
                 </div>
             )}
