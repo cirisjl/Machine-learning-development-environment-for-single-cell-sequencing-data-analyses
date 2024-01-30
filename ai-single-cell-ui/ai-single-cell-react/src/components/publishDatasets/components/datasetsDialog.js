@@ -190,7 +190,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   {appliedFilters.map((filter, index) => (
                     <div key={index} className="applied-filter">
                       {filter.category}: {filter.value}
-                      <span onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                      <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
                     </div>
                   ))}
                 </div>
