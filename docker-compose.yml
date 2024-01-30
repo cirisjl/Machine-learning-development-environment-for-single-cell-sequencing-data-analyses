@@ -261,7 +261,7 @@ services:
     image: oscb_react
     build: ./ai-single-cell-ui/ai-single-cell-react
     ports:
-      - "80:3000"
+      - "3000:3000"
     depends_on:
       - oscb_node
     environment:
