@@ -17,7 +17,6 @@ import jax
 import jax.numpy as jnp
 from collections import OrderedDict
 from anndata import AnnData
-from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
 from tools.visualization.plot import plot_UMAP, plot_scatter, plot_highest_expr_genes, plot_violin
 
 try:
@@ -188,44 +187,6 @@ def get_metadata_from_anndata(adata):
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
     return layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
-
-
-# def generate_umap_traces(adata, clustering_plot_type="cluster.ids", selected_cell_intersection=[], n_dim=2):
-#     print("[DEBUG] generating new UMAP traces")
-
-#     obs = adata.obs
-#     obsm = adata.obsm
-
-#     coords = pd.DataFrame(obsm["X_umap"], index=obs.index)
-
-#     traces = []
-#     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
-#         a = obs[obs[clustering_plot_type] == val]
-#         b = coords[obs[clustering_plot_type] == val]
-#         s = list(range(len(a.index))) if (selected_cell_intersection in [None, []]) else []
-
-#         if n_dim == 2:
-#             traces.append({
-#                 "x": b[0].tolist(),
-#                 "y": b[1].tolist(),
-#                 "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
-#                 "selectedpoints": s,
-#                 "mode":'markers',
-#                 "marker": {
-#                     'size': point_size_2d,
-#                     'line': {'width': point_line_width_2d, 'color': 'grey'},
-#                     "color": discrete_colors_3[i % len(discrete_colors_3)]
-#                 },
-#                 "unselected": {
-#                     "marker": {"opacity": min_opacity}
-#                 },
-#                 "selected": {
-#                     "marker": {"opacity": max_opacity}
-#                 },
-#                 "name": f"Cluster {val}"
-#             })
-
-#     return traces
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
