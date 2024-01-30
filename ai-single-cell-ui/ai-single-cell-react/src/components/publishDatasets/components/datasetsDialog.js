@@ -130,6 +130,9 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
   
       // Remove filter from the list of applied filters
       setAppliedFilters(prevFilters => prevFilters.filter(filter => !(filter.category === category && filter.value === value)));
+
+      fetchData(pagination.page, activeFilters, globalSearchTerm);
+
     };
 
     return (
