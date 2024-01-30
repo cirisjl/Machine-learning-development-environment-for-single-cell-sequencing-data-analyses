@@ -1671,7 +1671,7 @@ app.post('/api/storage/renameFile', async (req, res) => {
 });
 
 // Fetch facets and paginated results
-app.get('/api/datasets/search', async (req, res) => {
+app.post('/api/datasets/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl);
