@@ -1714,6 +1714,11 @@ app.post('/api/datasets/search', async (req, res) => {
             });
             });
         }
+
+        // Check if $or is empty and handle accordingly
+        if (matchStage["$or"] && matchStage["$or"].length === 0) {
+            delete matchStage["$or"];
+        }
   
       // Define the pipeline for facets
       const facetsPipeline = [
