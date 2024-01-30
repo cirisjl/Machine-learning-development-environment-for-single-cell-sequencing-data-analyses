@@ -482,3 +482,35 @@
   /* Styles for the highlighted state */
   background-color: #f0f0f0;
 }
+
+/* Add styles for applied filters */
+.task-builder-task .dialog .applied-filters {
+  margin-top: 10px;
+}
+
+.task-builder-task .dialog .applied-filter {
+  display: inline-flex;
+  align-items: center;
+  background-color: #007bff; /* Applied filter background color */
+  color: #fff; /* Text color for applied filter */
+  padding: 5px 10px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Add a smooth transition effect */
+}
+
+.task-builder-task .dialog .applied-filters .applied-filter:hover {
+  background-color: #0056b3; /* Hover effect color */
+}
+
+.task-builder-task .dialog .applied-filters .cross-icon {
+  margin-left: 5px;
+  color: #fff; /* Cross icon color */
+  cursor: pointer;
+  transition: color 0.3s ease; /* Add a smooth transition effect */
+}
+
+.task-builder-task .dialog .applied-filters .cross-icon:hover {
+  color: #ff6363; /* Hover effect color for cross icon */
+}
