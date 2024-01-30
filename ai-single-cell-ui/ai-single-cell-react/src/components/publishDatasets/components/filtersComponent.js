@@ -1,20 +1,39 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 
-const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange  }) => {
 
-    // const [isVisible, setIsVisible] = useState(false);
+const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange, onApplyFilters}) => {
 
-    // const toggleVisibility = () => setIsVisible(!isVisible);
+    const [searchTerm, setSearchTerm] = useState('');
+    // const [dropdownVisible, setDropdownVisible] = useState(isVisible);
+    // const dropdownRef = useRef(null);
 
     const isActive = (filterValue) => {
         return activeFilters[name] && activeFilters[name].includes(filterValue);
     };
 
+    const handleApplyButtonClick = () => {
+        onApplyFilters();
+    };
+
+    // useEffect(() => {
+    //     const handleClickOutside = (event) => {
+    //       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    //         setDropdownVisible(false);
+    //       }
+    //     };
+    
+    //     document.addEventListener('click', handleClickOutside);
+    
+    //     return () => {
+    //       document.removeEventListener('click', handleClickOutside);
+    //     };
+    //   }, []);
+
     return (
-        <div className='facet'>
-            <div className='filter-category'>
-                <p onClick={() => onCategoryChange(name)}>{name}</p>
+        <div className={`facet ${isVisible ? 'active' : ''}`}>
+            <div onClick={() => onCategoryChange(name)}>
+                <p className={`filter-category ${isVisible ? 'highlighted' : ''}`} >{name}</p>
             </div>
             {isVisible && (
                 <div className='filters-box-searchable'>
@@ -28,9 +47,8 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                                             autoComplete="off"
                                             className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
                                             placeholder="Search..."
-                                            // spellCheck="false"
-                                            // value={searchTerm}
-                                            // onChange={handleInputChange}
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
                                         />
                                         
                                         {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
@@ -46,7 +64,11 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
 
                                 <div className='filters-options'>
                                     <ul>
-                                        {options.map(option => (
+                                    {options
+                                        .filter((option) =>
+                                            option._id.toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map((option) => (
                                             <li key={option._id}>
                                                 <label>
                                                     <input
@@ -66,7 +88,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                     </div>
 
                     <div className='filters-footer'>
-                        <button className="apply-filters-button">Apply</button>
+                        <button className="apply-filters-button" onClick={handleApplyButtonClick}>Apply</button>
                     </div>
                 </div>
             )}

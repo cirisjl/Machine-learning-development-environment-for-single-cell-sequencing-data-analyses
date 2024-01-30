@@ -1671,7 +1671,7 @@ app.post('/api/storage/renameFile', async (req, res) => {
 });
 
 // Fetch facets and paginated results
-app.get('/api/datasets/search', async (req, res) => {
+app.post('/api/datasets/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl);
@@ -1682,10 +1682,59 @@ app.get('/api/datasets/search', async (req, res) => {
 
 
       const page = parseInt(req.query.page, 10) || 1;
-      const pageSize = parseInt(req.query.pageSize, 10) || 10;
+      const pageSize = parseInt(req.query.pageSize, 10) || 1;
+      let globalSearchQuery = req.query.q; 
+      const filters = req.body.filters;
+
+      const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+
   
       // Build your query based on other filters, if any
       let matchStage = {};
+
+        // Add the global search query to the matchStage
+        if (globalSearchQuery) {
+            matchStage = {
+                $or: [
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } }, // Include 'Species.label' in the search
+                    { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // Add more fields and nested fields as needed
+                ],
+            };
+        }
+        // Apply additional filters
+        if (filters) {
+
+            matchStage["$or"] = matchStage["$or"] || [];
+
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    const filterQuery = {};
+
+                    if (fieldsWithLabel.includes(filterCategory)) {
+                        // For fields with 'label' property
+                        filterQuery[`${filterCategory}.label`] = { $in: filterValue };
+                    } else {
+                        // For other fields (like 'Author'), assuming they are direct string values
+                        filterQuery[filterCategory] = { $in: filterValue };
+                    }
+
+                    matchStage.$or.push(filterQuery);
+                }
+            });
+        }
+
+        // Check if $or is empty and handle accordingly
+        if (matchStage["$or"] && matchStage["$or"].length === 0) {
+            delete matchStage["$or"];
+        }
   
       // Define the pipeline for facets
       const facetsPipeline = [
