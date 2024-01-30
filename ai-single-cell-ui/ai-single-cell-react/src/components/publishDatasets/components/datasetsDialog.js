@@ -24,6 +24,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
+    const [appliedFilters, setAppliedFilters] = useState([]);
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
@@ -47,6 +48,12 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const handleApplyFilters = async () => {
       fetchData(pagination.page, activeFilters, globalSearchTerm);
+
+      // Update the list of applied filters
+      const filtersList = Object.entries(activeFilters).map(([category, values]) => {
+        return values.map(value => ({ category, value }));
+      }).flat();
+      setAppliedFilters(filtersList);
     };
 
     useEffect(() => {   
@@ -109,6 +116,22 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
       console.log("Search Handled");
     };
 
+    const handleRemoveFilter = (category, value) => {
+      setActiveFilters(prevFilters => {
+        const newFilters = { ...prevFilters };
+        newFilters[category] = newFilters[category].filter(v => v !== value);
+  
+        if (newFilters[category].length === 0) {
+          delete newFilters[category];
+        }
+  
+        return newFilters;
+      });
+  
+      // Remove filter from the list of applied filters
+      setAppliedFilters(prevFilters => prevFilters.filter(filter => !(filter.category === category && filter.value === value)));
+    };
+
     return (
         <div style={dialogStyle} className="dialog-container">
             <div className="dialog-backdrop" onClick={onClose} />
@@ -160,6 +183,16 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                     </div>
                   </div>
 
+                </div>
+
+                <div className="applied-filters">
+                  <p>Applied Filters:</p>
+                  {appliedFilters.map((filter, index) => (
+                    <div key={index} className="applied-filter">
+                      {filter.category}: {filter.value}
+                      <span onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className='table-pagination'>
