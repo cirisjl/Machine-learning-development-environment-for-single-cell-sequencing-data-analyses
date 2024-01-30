@@ -187,15 +187,18 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   </div>
 
                 </div>
-
-                <div className="applied-filters">
-                  <p>Applied Filters:</p>
-                  {appliedFilters.map((filter, index) => (
-                    <div key={index} className="applied-filter">
-                      {filter.category}: {filter.value}
-                      <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
-                    </div>
-                  ))}
+                <div className='applied-filters-container'>
+                  {appliedFilters.length > 0 && (
+                          <div className="applied-filters">
+                            <p>Applied Filters:</p>
+                            {appliedFilters.map((filter, index) => (
+                              <div key={index} className="applied-filter">
+                                {filter.category}: {filter.value}
+                                <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                              </div>
+                            ))}
+                          </div>
+                  )}
                 </div>
 
                 <div className='table-pagination'>
