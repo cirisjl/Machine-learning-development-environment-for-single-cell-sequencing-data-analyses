@@ -442,8 +442,8 @@
 }
 
 .task-builder-task .dialog-container .table-results th {
-  background-color: #009879;
-  color: #ffffff;
+  background-color: rgb(201, 201, 201);;
+  color: black;
   text-transform: uppercase;
 }
 
