@@ -1709,6 +1709,9 @@ app.post('/api/datasets/search', async (req, res) => {
         }
         // Apply additional filters
         if (filters) {
+
+            matchStage["$or"] = matchStage["$or"] || [];
+
             Object.keys(filters).forEach((filterCategory) => {
                 const filterValue = filters[filterCategory];
 
