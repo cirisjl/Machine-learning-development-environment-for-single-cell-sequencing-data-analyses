@@ -9,7 +9,7 @@ services:
     ports:
       - 65528:65528
     volumes:
-      - /ps/code/db:/data/db
+      - /data/ai-ready/db/mongodb:/data/db
     networks:
       - oscb-network
 
@@ -48,8 +48,8 @@ services:
     env_file:
       - ./rabbitmq.env
     volumes:
-      - /ps/code/db/rabbitmq/data/:/var/lib/rabbitmq/
-      - /ps/code/db/rabbitmq/log/:/var/log/rabbitmq
+      - /data/ai-ready/db/rabbitmq/data/:/var/lib/rabbitmq/
+      - /data/ai-ready/db/rabbitmq/log/:/var/log/rabbitmq
     networks:
       - oscb-network
 
@@ -92,10 +92,10 @@ services:
     ports:
       - 5000:5000
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/results:/data/results
+      - /data/ai-ready/uploads:/data/upload
+      - /data/ai-ready/upload/errors:/data/errors
+      - /data/ai-ready/upload/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     env_file:
@@ -121,12 +121,12 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "10"
+            cpus: "5"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/error
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/results:/data/results
+      - /data/ai-ready/uploads:/data/upload
+      - /data/ai-ready/upload/errors:/data/errors
+      - /data/ai-ready/upload/user_storage:/usr/src/app/storage/
 
     networks:
       - oscb-network
@@ -152,12 +152,12 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "10"
+            cpus: "5"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/results:/data/results
+      - /data/ai-ready/uploads:/data/upload
+      - /data/ai-ready/upload/errors:/data/errors
+      - /data/ai-ready/upload/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -182,12 +182,12 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "10"
+            cpus: "5"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/results:/data/results
+      - /data/ai-ready/uploads:/data/upload
+      - /data/ai-ready/upload/errors:/data/errors
+      - /data/ai-ready/upload/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -219,7 +219,7 @@ services:
     build:
       context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
-        - mysql_db:/var/lib/mysql
+        - /data/ai-ready/mysql_db:/var/lib/mysql
         - ./ai-single-cell-ui/ai-single-cell-mysql/aisinglecell_schema_latest.sql:/docker-entrypoint-initdb.d/aisinglecell_schema_latest.sql
     restart: unless-stopped
     command:
@@ -252,7 +252,7 @@ services:
     depends_on:
       - oscb_mysql
     volumes:
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
 
@@ -261,7 +261,7 @@ services:
     image: oscb_react
     build: ./ai-single-cell-ui/ai-single-cell-react
     ports:
-      - "3000:3000"
+      - "80:3000"
     depends_on:
       - oscb_node
     environment:
@@ -276,7 +276,7 @@ services:
     ports:
         - 8055:8055
     volumes:
-        - Directus_uploads:/directus/uploads
+        - /data/ai-ready/Directus_uploads:/directus/uploads
     depends_on:
         - oscb_mysql
     env_file:
@@ -298,17 +298,17 @@ services:
     env_file:
       - .env
     volumes:
-      - user_storage:/usr/src/app/storage/
+      - /data/ai-ready/user_storage:/usr/src/app/storage/
 
 networks:
   oscb-network:
     driver: bridge
 
-volumes:
-  Predictions: 
-  Uploads:
-  Errors:
-  user_storage: {}
-  Directus_uploads:
-  mysql_db:
+# volumes:
+#   Predictions: 
+#   Uploads:
+#   Errors:
+#   user_storage: {}
+#   Directus_uploads:
+#   mysql_db:
 
