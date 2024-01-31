@@ -38,29 +38,30 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
             Cell: ({ row }) => {
                 console.log("Rendering action cell for row:", row);
 
-                return(
-                <div className="action-buttons">
-                    <input
-                        type="checkbox"
-                        {...row.getToggleRowSelectedProps()}
-                        checked={selectedDatasets[row.id] === true}
-                        onChange={() => onSelectDataset(row.id)}
-                        style={{ marginRight: '5px' }}
-                    />
-                    <button
-                        onClick={() => handleEdit(row.original)}
-                        className="action-button"
-                    >Edit
-                        {/* <FontAwesomeIcon icon={faEdit} /> */}
-                    </button>
-                    <button
-                        onClick={() => handleVisualize(row.original)}
-                        className="action-button"
-                    >
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
-                </div>
-                );
+                <p>hello</p>
+                // return(
+                // <div className="action-buttons">
+                //     <input
+                //         type="checkbox"
+                //         {...row.getToggleRowSelectedProps()}
+                //         checked={selectedDatasets[row.id] === true}
+                //         onChange={() => onSelectDataset(row.id)}
+                //         style={{ marginRight: '5px' }}
+                //     />
+                //     <button
+                //         onClick={() => handleEdit(row.original)}
+                //         className="action-button"
+                //     >Edit
+                //         {/* <FontAwesomeIcon icon={faEdit} /> */}
+                //     </button>
+                //     <button
+                //         onClick={() => handleVisualize(row.original)}
+                //         className="action-button"
+                //     >
+                //         <FontAwesomeIcon icon={faEye} />
+                //     </button>
+                // </div>
+                // );
             }
         };
 
