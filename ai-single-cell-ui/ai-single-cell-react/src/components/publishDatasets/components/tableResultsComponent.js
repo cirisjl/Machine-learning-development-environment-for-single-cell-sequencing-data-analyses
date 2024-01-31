@@ -1,30 +1,68 @@
+import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { useTable } from 'react-table';
 
 
-const ResultsTable = ({ data }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
+
+    const handleEdit = (dataset) => {
+        console.log("Editing dataset: ", dataset);
+        // Implement your edit logic here
+    };
+    
+    const handleVisualize = (dataset) => {
+        console.log("Visualizing dataset: ", dataset);
+        // Implement your visualization logic here
+    };
+
     const columns = React.useMemo(() => {
         if (data.length === 0) {
             return [];
         }
 
-        // Extracting the first item's keys to determine columns
-        const sampleItem = data[0];
-
-        return Object.keys(sampleItem).map(key => {
-            return {
-                Header: key,
-                // Customize the accessor to handle nested objects
-                accessor: item => {
-                    const value = item[key];
-                    if (value && typeof value === 'object' && value.label) {
-                        return value.label;
-                    }
-                    return value;
+        const baseColumns = Object.keys(data[0]).map(key => ({
+            Header: key,
+            accessor: item => {
+                const value = item[key];
+                if (value && typeof value === 'object' && value.label) {
+                    return value.label;
                 }
-            };
-        });
-    }, [data]);
+                return value;
+            }
+        }));
+
+        const actionColumn = {
+            id: 'actions',
+            Header: 'Actions',
+            Cell: ({ row }) => (
+                <div className="action-buttons">
+                    <input
+                        type="checkbox"
+                        {...row.getToggleRowSelectedProps()}
+                        checked={selectedDatasets[row.id] === true}
+                        onChange={() => onSelectDataset(row.id)}
+                        style={{ marginRight: '5px' }}
+                    />
+                    <button
+                        onClick={() => handleEdit(row.original)}
+                        className="action-button"
+                    >
+                        <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                        onClick={() => handleVisualize(row.original)}
+                        className="action-button"
+                    >
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                </div>
+            )
+        };
+
+        return [actionColumn, ...baseColumns];
+    }, [data, selectedDatasets]);
+
 
     const {
         getTableProps,
@@ -35,8 +73,8 @@ const ResultsTable = ({ data }) => {
     } = useTable({ columns, data });
 
     return (
-        <table {...getTableProps()}>
-            <thead>
+        <table {...getTableProps()} className="table-container">
+        <thead>
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map(column => (
