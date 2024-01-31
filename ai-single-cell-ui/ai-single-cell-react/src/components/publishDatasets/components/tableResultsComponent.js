@@ -63,34 +63,65 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         //     }
         // };
 
-        const actionColumn = {
-            id: 'actions',
-            Header: 'Actions',
-            Cell: ({ row }) => (
-                <div className="action-buttons">
-                    <input
-                        type="checkbox"
-                        style={{ marginRight: '5px' }}
-                    />
-                    <button
-                        onClick={() => handleEdit(row.original)}
-                        className="action-button"
-                    >
-                        Edit {/* Use the FontAwesomeIcon component if you prefer */}
-                    </button>
-                    <button
-                        onClick={() => handleVisualize(row.original)}
-                        className="action-button"
-                    >
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
-                </div>
-            ),
-        };
+        // const actionColumn = {
+        //     id: 'actions',
+        //     Header: 'Actions',
+        //     Cell: ({ row }) => (
+        //         <div className="action-buttons">
+        //             <input
+        //                 type="checkbox"
+        //                 style={{ marginRight: '5px' }}
+        //             />
+        //             <button
+        //                 onClick={() => handleEdit(row.original)}
+        //                 className="action-button"
+        //             >
+        //                 Edit {/* Use the FontAwesomeIcon component if you prefer */}
+        //             </button>
+        //             <button
+        //                 onClick={() => handleVisualize(row.original)}
+        //                 className="action-button"
+        //             >
+        //                 <FontAwesomeIcon icon={faEye} />
+        //             </button>
+        //         </div>
+        //     ),
+        // };
 
+        const actionColumn =  {
+            Header: 'Actions',
+            id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
+            Cell: ({ row }) => (
+              <div style={{ textAlign: 'center' }}> {/* Style as needed */}
+                {/* Button for action 1 (e.g., Edit) */}
+                <button
+                  onClick={() => handleAction1(row.original)}
+                  style={{ marginRight: '10px' }} // Style as needed
+                >
+                  Action 1
+                </button>
+                {/* Button for action 2 (e.g., Delete) */}
+                <button
+                  onClick={() => handleAction2(row.original)}
+                  style={{ marginRight: '10px' }} // Style as needed
+                >
+                  Action 2
+                </button>
+              </div>
+            ),
+          },
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets]);
 
+    const handleAction1 = (rowData) => {
+        console.log('Action 1 clicked for: ', rowData);
+        // Implement your Action 1 logic here
+      };
+    
+      const handleAction2 = (rowData) => {
+        console.log('Action 2 clicked for: ', rowData);
+        // Implement your Action 2 logic here
+      };
 
     const {
         getTableProps,
