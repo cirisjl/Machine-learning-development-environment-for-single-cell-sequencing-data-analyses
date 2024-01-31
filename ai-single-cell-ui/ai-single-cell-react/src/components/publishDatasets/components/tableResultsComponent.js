@@ -39,29 +39,27 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                 console.log("Rendering action cell for row:", row);
 
                 return(
-                    <p>hello</p>
-
-                // <div className="action-buttons">
-                //     <input
-                //         type="checkbox"
-                //         {...row.getToggleRowSelectedProps()}
-                //         checked={selectedDatasets[row.id] === true}
-                //         onChange={() => onSelectDataset(row.id)}
-                //         style={{ marginRight: '5px' }}
-                //     />
-                //     <button
-                //         onClick={() => handleEdit(row.original)}
-                //         className="action-button"
-                //     >Edit
-                //         {/* <FontAwesomeIcon icon={faEdit} /> */}
-                //     </button>
-                //     <button
-                //         onClick={() => handleVisualize(row.original)}
-                //         className="action-button"
-                //     >
-                //         <FontAwesomeIcon icon={faEye} />
-                //     </button>
-                // </div>
+                <div className="action-buttons">
+                    <input
+                        type="checkbox"
+                        {...row.getToggleRowSelectedProps()}
+                        checked={selectedDatasets[row.id] === true}
+                        onChange={() => onSelectDataset(row.id)}
+                        style={{ marginRight: '5px' }}
+                    />
+                    <button
+                        onClick={() => handleEdit(row.original)}
+                        className="action-button"
+                    >Edit
+                        {/* <FontAwesomeIcon icon={faEdit} /> */}
+                    </button>
+                    <button
+                        onClick={() => handleVisualize(row.original)}
+                        className="action-button"
+                    >
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                </div>
                 );
             }
         };
