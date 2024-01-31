@@ -112,7 +112,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const handleSearchSubmit = (event) => {
       event.preventDefault();
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
+      fetchData(1 , activeFilters, globalSearchTerm);
       console.log("Search Handled");
     };
 
@@ -131,7 +131,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
       // Remove filter from the list of applied filters
       setAppliedFilters(prevFilters => prevFilters.filter(filter => !(filter.category === category && filter.value === value)));
 
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
+      fetchData(1, activeFilters, globalSearchTerm);
 
     };
 
