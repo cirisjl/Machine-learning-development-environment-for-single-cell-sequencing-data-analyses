@@ -35,8 +35,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         const actionColumn = {
             id: 'actions',
             Header: 'Actions',
-            Cell: ({ row }) => {
+            accessor: ({ row }) => {
                 console.log("Rendering action cell for row:", row);
+                return(
                 <div className="action-buttons">
                     <input
                         type="checkbox"
@@ -58,6 +59,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                         <FontAwesomeIcon icon={faEye} />
                     </button>
                 </div>
+                );
             }
         };
 
