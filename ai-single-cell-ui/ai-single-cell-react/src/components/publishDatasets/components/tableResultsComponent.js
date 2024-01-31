@@ -109,7 +109,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                 </button>
               </div>
             ),
-          },
+          }
+          
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets]);
 
