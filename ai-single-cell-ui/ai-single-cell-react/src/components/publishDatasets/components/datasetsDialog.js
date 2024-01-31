@@ -47,7 +47,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     };   
 
     const handleApplyFilters = async () => {
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
+      fetchData(1, activeFilters, globalSearchTerm);
 
       // Update the list of applied filters
       const filtersList = Object.entries(activeFilters).map(([category, values]) => {
@@ -125,13 +125,12 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
           delete newFilters[category];
         }
   
+        fetchData(1, newFilters, globalSearchTerm);
         return newFilters;
       });
   
       // Remove filter from the list of applied filters
       setAppliedFilters(prevFilters => prevFilters.filter(filter => !(filter.category === category && filter.value === value)));
-
-      fetchData(1, activeFilters, globalSearchTerm);
 
     };
 
