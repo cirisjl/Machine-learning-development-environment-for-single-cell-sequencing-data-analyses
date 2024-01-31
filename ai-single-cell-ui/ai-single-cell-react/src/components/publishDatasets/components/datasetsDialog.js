@@ -25,6 +25,14 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState([]);
+    const [selectedDatasets, setSelectedDatasets] = useState({});
+
+    const onSelectDataset = (datasetId) => {
+      setSelectedDatasets(prev => ({
+          ...prev,
+          [datasetId]: !prev[datasetId]
+      }));
+  };
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
@@ -211,7 +219,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                  <ResultsTable data={results} />
+                <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} />
+
                 </div>
               </div>
               

@@ -514,3 +514,56 @@
 .task-builder-task .dialog .applied-filters .cross-icon:hover {
   color: #ff6363; /* Hover effect color for cross icon */
 }
+
+
+/* ResultsTable.css */
+.task-builder-task .dialog .table-results .action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.task-builder-task .dialog .table-results .action-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.task-builder-task .dialog .table-results .action-button:hover {
+  background-color: #f2f2f2;
+}
+
+.task-builder-task .dialog .table-results .action-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.task-builder-task .dialog .table-results .table-container {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.task-builder-task .dialog .table-results .table-container thead {
+  background-color: #f0f0f0;
+}
+
+.task-builder-task .dialog .table-results .table-container th, .table-container td {
+  text-align: left;
+  padding: 8px;
+}
+
+.task-builder-task .dialog .table-results .table-container tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+@media screen and (max-width: 768px) {
+  .task-builder-task .dialog .table-results .action-buttons {
+      flex-direction: column;
+  }
+}
+
