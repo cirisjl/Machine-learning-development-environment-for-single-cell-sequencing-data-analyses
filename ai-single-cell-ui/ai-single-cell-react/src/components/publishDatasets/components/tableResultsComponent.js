@@ -32,25 +32,51 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
             }
         }));
 
+        // const actionColumn = {
+        //     id: 'actions',
+        //     Header: 'Actions',
+        //     accessor: ({ row }) => {
+        //         console.log("Rendering action cell for row:", row);
+        //         return(
+        //         <div className="action-buttons">
+        //             <input
+        //                 type="checkbox"
+        //                 // {...row.getToggleRowSelectedProps()}
+        //                 checked={selectedDatasets[row.id] === true}
+        //                 onChange={() => onSelectDataset(row.id)}
+        //                 style={{ marginRight: '5px' }}
+        //             />
+        //             <button
+        //                 onClick={() => handleEdit(row.original)}
+        //                 className="action-button"
+        //             >Edit
+        //                 {/* <FontAwesomeIcon icon={faEdit} /> */}
+        //             </button>
+        //             <button
+        //                 onClick={() => handleVisualize(row.original)}
+        //                 className="action-button"
+        //             >
+        //                 <FontAwesomeIcon icon={faEye} />
+        //             </button>
+        //         </div>
+        //         );
+        //     }
+        // };
+
         const actionColumn = {
             id: 'actions',
             Header: 'Actions',
-            accessor: ({ row }) => {
-                console.log("Rendering action cell for row:", row);
-                return(
+            Cell: ({ row }) => (
                 <div className="action-buttons">
                     <input
                         type="checkbox"
-                        // {...row.getToggleRowSelectedProps()}
-                        checked={selectedDatasets[row.id] === true}
-                        onChange={() => onSelectDataset(row.id)}
                         style={{ marginRight: '5px' }}
                     />
                     <button
                         onClick={() => handleEdit(row.original)}
                         className="action-button"
-                    >Edit
-                        {/* <FontAwesomeIcon icon={faEdit} /> */}
+                    >
+                        Edit {/* Use the FontAwesomeIcon component if you prefer */}
                     </button>
                     <button
                         onClick={() => handleVisualize(row.original)}
@@ -59,8 +85,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                         <FontAwesomeIcon icon={faEye} />
                     </button>
                 </div>
-                );
-            }
+            ),
         };
 
         return [actionColumn, ...baseColumns];
