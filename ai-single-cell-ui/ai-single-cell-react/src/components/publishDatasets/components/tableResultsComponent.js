@@ -1,7 +1,7 @@
 import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { useTable } from 'react-table';
+import { useTable, useRowSelect } from 'react-table';
 
 
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
@@ -47,8 +47,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                     <button
                         onClick={() => handleEdit(row.original)}
                         className="action-button"
-                    >
-                        <FontAwesomeIcon icon={faEdit} />
+                    >Edit
+                        {/* <FontAwesomeIcon icon={faEdit} /> */}
                     </button>
                     <button
                         onClick={() => handleVisualize(row.original)}
@@ -70,26 +70,26 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         headerGroups,
         rows,
         prepareRow,
-    } = useTable({ columns, data });
+    } = useTable({ columns, data },useRowSelect);
 
     return (
         <table {...getTableProps()} className="table-container">
         <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                {headerGroups.map((headerGroup, index) => (
+                    <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                        {headerGroup.headers.map((column, colIndex) => (
+                            <th {...column.getHeaderProps()} key={colIndex}>{column.render('Header')}</th>
                         ))}
                     </tr>
                 ))}
             </thead>
             <tbody {...getTableBodyProps()}>
-                {rows.map(row => {
+                {rows.map((row, rowIndex) => {
                     prepareRow(row);
                     return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.value}</td>;
+                        <tr {...row.getRowProps()} key={rowIndex}>
+                            {row.cells.map((cell, cellIndex) => {
+                                return <td {...cell.getCellProps()} key={cellIndex}>{cell.value}</td>;
                             })}
                         </tr>
                     );
