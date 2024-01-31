@@ -40,9 +40,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                 <div className="action-buttons">
                     <input
                         type="checkbox"
-                        {...row.getToggleRowSelectedProps()}
-                        // checked={selectedDatasets[row.id] === true}
-                        // onChange={() => onSelectDataset(row.id)}
+                        // {...row.getToggleRowSelectedProps()}
+                        checked={selectedDatasets[row.id] === true}
+                        onChange={() => onSelectDataset(row.id)}
                         style={{ marginRight: '5px' }}
                     />
                     <button
@@ -71,29 +71,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         headerGroups,
         rows,
         prepareRow,
-        selectedFlatRows
-    } = useTable({ columns, data },useRowSelect,(hooks) => {
-        hooks.allColumns.push((columns) => [
-          // Define a column for selection checkboxes
-          {
-            id: 'selection',
-            // The header can use the getToggleAllPageRowsSelectedProps method to render a checkbox
-            Header: ({ getToggleAllPageRowsSelectedProps }) => (
-              <div>
-                <input type="checkbox" {...getToggleAllPageRowsSelectedProps()} />
-              </div>
-            ),
-            // The cell can use the getToggleRowSelectedProps method to render a checkbox
-            Cell: ({ row }) => (
-              <div>
-                <input type="checkbox" {...row.getToggleRowSelectedProps()} />
-              </div>
-            ),
-          },
-          ...columns,
-        ]);
-      }
-    );
+    } = useTable({ columns, data },useRowSelect);
 
     return (
         <table {...getTableProps()} className="table-container">
