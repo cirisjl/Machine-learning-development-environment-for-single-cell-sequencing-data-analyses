@@ -27,12 +27,28 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     const [appliedFilters, setAppliedFilters] = useState([]);
     const [selectedDatasets, setSelectedDatasets] = useState({});
 
-    const onSelectDataset = (datasetId) => {
-      setSelectedDatasets(prev => ({
-          ...prev,
-          [datasetId]: !prev[datasetId]
-      }));
+    const onSelectDataset = (dataset) => {
+      setSelectedDatasets(prev => {
+          const newSelectedDatasets = { ...prev };
+          const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
+  
+          if (newSelectedDatasets[datasetId]) {
+              // Dataset is currently selected, deselect it
+              delete newSelectedDatasets[datasetId];
+          } else {
+              // Dataset is not selected, select it
+              newSelectedDatasets[datasetId] = dataset;
+          }
+  
+          return newSelectedDatasets;
+      });
   };
+
+  useEffect(() => {   
+    Object.values(selectedDatasets).forEach(dataset => {
+      console.log(dataset);
+  });
+  }, [selectedDatasets]); 
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {

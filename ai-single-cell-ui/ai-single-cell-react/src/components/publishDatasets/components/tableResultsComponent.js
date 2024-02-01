@@ -36,14 +36,13 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
             id: 'actions',
             Header: 'Actions',
             accessor: item => {
-                console.log("Rendering action cell for row:", item);
                 return(
                 <div className="action-buttons">
                     <input
                         type="checkbox"
                         style={{ cursor:'pointer' }}
-                        onChange={() => onSelectDataset(item["Id"])}
-                        checked={selectedDatasets[item["Id"]] === true} // Checked if this datasetId is true in selectedDatasets
+                        onChange={() => onSelectDataset(item)}
+                        checked={!!selectedDatasets[item["Id"]]}
 
                     />
                     <button
@@ -65,16 +64,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
           
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets]);
-
-    const handleAction1 = (rowData) => {
-        console.log('Action 1 clicked for: ', rowData);
-        // Implement your Action 1 logic here
-      };
-    
-      const handleAction2 = (rowData) => {
-        console.log('Action 2 clicked for: ', rowData);
-        // Implement your Action 2 logic here
-      };
 
     const {
         getTableProps,
