@@ -91,7 +91,10 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         const actionColumn = {
             Header: 'Actions',
             id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
-            Cell: ({ row }) => (
+            Cell: ({ row }) => {
+                console.log('Row data:', row.original);
+
+                return(
               <div style={{ textAlign: 'center' }}> {/* Style as needed */}
                 {/* Button for Edit */}
                 <button
@@ -108,7 +111,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                   <FontAwesomeIcon icon={faEye} /> {/* Display Visualize Icon */}
                 </button>
               </div>
-            ),
+                );
+            },
           };
           
 
