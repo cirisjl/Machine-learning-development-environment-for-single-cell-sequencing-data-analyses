@@ -235,7 +235,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} />
+                <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} multiple={multiple} />
 
                 </div>
               </div>

@@ -4,7 +4,10 @@ import React from 'react';
 import { useTable, useRowSelect } from 'react-table';
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple }) => {
+
+    const isSelected = datasetId => !!selectedDatasets[datasetId];
+    const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
     const handleEdit = (dataset) => {
         console.log("Editing dataset: ", dataset);
@@ -43,6 +46,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                         style={{ cursor:'pointer' }}
                         onChange={() => onSelectDataset(item)}
                         checked={!!selectedDatasets[item["Id"]]}
+                        disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
 
                     />
                     <button
