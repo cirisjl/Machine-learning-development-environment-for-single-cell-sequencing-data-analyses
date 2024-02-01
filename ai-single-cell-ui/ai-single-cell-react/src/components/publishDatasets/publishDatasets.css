@@ -528,7 +528,7 @@
   border: none;
   background: none;
   cursor: pointer;
-  padding: 5px;
+  padding: 0px;
   border-radius: 5px;
   transition: background-color 0.3s;
 }
@@ -538,8 +538,8 @@
 }
 
 .task-builder-task .dialog .table-results .action-button svg {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
 }
 
 .task-builder-task .dialog .table-results .table-container {
