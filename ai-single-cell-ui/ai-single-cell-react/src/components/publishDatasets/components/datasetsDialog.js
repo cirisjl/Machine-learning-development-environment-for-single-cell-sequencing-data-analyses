@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../../Header/searchBar';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, setSelectedDatasets }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -25,7 +25,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState([]);
-    const [selectedDatasets, setSelectedDatasets] = useState({});
+    // const [selectedDatasets, setSelectedDatasets] = useState({});
 
     const onSelectDataset = (dataset) => {
       setSelectedDatasets(prev => {

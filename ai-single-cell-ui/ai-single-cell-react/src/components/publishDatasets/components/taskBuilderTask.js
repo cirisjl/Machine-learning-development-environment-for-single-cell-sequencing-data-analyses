@@ -17,9 +17,14 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [datasets, setDatasets] = useState([]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectionMode, setSelectionMode] = useState('single'); // or 'multiple'
+  const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
+  const [selectedDatasets, setSelectedDatasets] = useState({});
+
 
   const handleOpenDialog = (mode) => {
+    if(selectionMode !== mode) {
+      setSelectedDatasets({});
+    }
     setSelectionMode(mode);
     setIsDialogOpen(true);
   };
@@ -152,6 +157,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
               multiple={selectionMode === 'multiple'}
               onClose={handleCloseDialog}
               isVisible={isDialogOpen !== false}
+              selectedDatasets={selectedDatasets}
+              setSelectedDatasets={setSelectedDatasets}
             />
           )}
         </div>
