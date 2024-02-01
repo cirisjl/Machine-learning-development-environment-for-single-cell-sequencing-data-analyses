@@ -88,29 +88,30 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         //     ),
         // };
 
-        const actionColumn =  {
+        const actionColumn = {
             Header: 'Actions',
             id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
             Cell: ({ row }) => (
               <div style={{ textAlign: 'center' }}> {/* Style as needed */}
-                {/* Button for action 1 (e.g., Edit) */}
+                {/* Button for Edit */}
                 <button
-                  onClick={() => handleAction1(row.original)}
+                  onClick={() => handleEdit(row.original)}
                   style={{ marginRight: '10px' }} // Style as needed
                 >
-                  Action 1
+                  <FontAwesomeIcon icon={faEdit} /> {/* Display Edit Icon */}
                 </button>
-                {/* Button for action 2 (e.g., Delete) */}
+                {/* Button for Visualize */}
                 <button
-                  onClick={() => handleAction2(row.original)}
+                  onClick={() => handleVisualize(row.original)}
                   style={{ marginRight: '10px' }} // Style as needed
                 >
-                  Action 2
+                  <FontAwesomeIcon icon={faEye} /> {/* Display Visualize Icon */}
                 </button>
               </div>
             ),
-          }
+          };
           
+
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets]);
 
