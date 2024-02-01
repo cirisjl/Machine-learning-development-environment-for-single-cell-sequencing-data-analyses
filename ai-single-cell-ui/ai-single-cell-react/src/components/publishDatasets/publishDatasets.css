@@ -567,3 +567,7 @@
   }
 }
 
+.task-builder-task .dialog .dialog-close {
+  text-align: center;
+  margin-top: 1rem;
+}
