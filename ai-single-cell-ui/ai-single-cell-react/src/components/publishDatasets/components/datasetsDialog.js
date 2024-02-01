@@ -25,7 +25,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState([]);
-    // const [selectedDatasets, setSelectedDatasets] = useState({});
 
     const onSelectDataset = (dataset) => {
       setSelectedDatasets(prev => {
@@ -235,8 +234,10 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} multiple={multiple} />
-
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} multiple={multiple} />
+                </div>
+                <div className='dialog-close'>
+                    <button onClick={onClose}>Close</button>
                 </div>
               </div>
               
