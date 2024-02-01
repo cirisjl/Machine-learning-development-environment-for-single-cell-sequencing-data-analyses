@@ -118,7 +118,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         const actionColumn = {
             Header: 'Actions',
             id: 'actions',
-            Cell: () => {
+            accessor: () => {
               console.log('Cell renderer called');
               return <span>Test</span>; // Something very simple
             },
