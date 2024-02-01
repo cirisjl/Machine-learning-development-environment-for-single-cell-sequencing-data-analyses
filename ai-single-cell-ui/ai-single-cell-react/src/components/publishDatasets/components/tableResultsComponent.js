@@ -88,30 +88,39 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
         //     ),
         // };
 
+        // const actionColumn = {
+        //     Header: 'Actions',
+        //     id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
+        //     Cell: ({ row }) => {
+        //         console.log('Row data:', row.original);
+
+        //         return(
+        //       <div style={{ textAlign: 'center' }}> {/* Style as needed */}
+        //         {/* Button for Edit */}
+        //         <button
+        //           onClick={() => handleEdit(row.original)}
+        //           style={{ marginRight: '10px' }} // Style as needed
+        //         >
+        //           <FontAwesomeIcon icon={faEdit} /> {/* Display Edit Icon */}
+        //         </button>
+        //         {/* Button for Visualize */}
+        //         <button
+        //           onClick={() => handleVisualize(row.original)}
+        //           style={{ marginRight: '10px' }} // Style as needed
+        //         >
+        //           <FontAwesomeIcon icon={faEye} /> {/* Display Visualize Icon */}
+        //         </button>
+        //       </div>
+        //         );
+        //     },
+        //   };
+
         const actionColumn = {
             Header: 'Actions',
-            id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
-            Cell: ({ row }) => {
-                console.log('Row data:', row.original);
-
-                return(
-              <div style={{ textAlign: 'center' }}> {/* Style as needed */}
-                {/* Button for Edit */}
-                <button
-                  onClick={() => handleEdit(row.original)}
-                  style={{ marginRight: '10px' }} // Style as needed
-                >
-                  <FontAwesomeIcon icon={faEdit} /> {/* Display Edit Icon */}
-                </button>
-                {/* Button for Visualize */}
-                <button
-                  onClick={() => handleVisualize(row.original)}
-                  style={{ marginRight: '10px' }} // Style as needed
-                >
-                  <FontAwesomeIcon icon={faEye} /> {/* Display Visualize Icon */}
-                </button>
-              </div>
-                );
+            id: 'actions',
+            Cell: () => {
+              console.log('Cell renderer called');
+              return <span>Test</span>; // Something very simple
             },
           };
           
