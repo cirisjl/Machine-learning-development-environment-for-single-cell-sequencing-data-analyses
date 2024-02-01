@@ -41,16 +41,19 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                 <div className="action-buttons">
                     <input
                         type="checkbox"
-                        style={{ marginRight: '5px' }}
+                        style={{ cursor:'pointer' }}
+                        onChange={() => onSelectDataset(item["Id"])}
+                        checked={selectedDatasets[item["Id"]] === true} // Checked if this datasetId is true in selectedDatasets
+
                     />
                     <button
-                        onClick={() => handleEdit()}
+                        onClick={() => handleEdit(item["Id"])}
                         className="action-button"
-                    >Edit
-                        {/* <FontAwesomeIcon icon={faEdit} /> */}
+                    >
+                        <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
-                        onClick={() => handleVisualize()}
+                        onClick={() => handleVisualize(item["Id"])}
                         className="action-button"
                     >
                         <FontAwesomeIcon icon={faEye} />
@@ -59,70 +62,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets }) => {
                 );
             }
         };
-
-        // const actionColumn = {
-        //     id: 'actions',
-        //     Header: 'Actions',
-        //     Cell: ({ row }) => (
-        //         <div className="action-buttons">
-        //             <input
-        //                 type="checkbox"
-        //                 style={{ marginRight: '5px' }}
-        //             />
-        //             <button
-        //                 onClick={() => handleEdit(row.original)}
-        //                 className="action-button"
-        //             >
-        //                 Edit {/* Use the FontAwesomeIcon component if you prefer */}
-        //             </button>
-        //             <button
-        //                 onClick={() => handleVisualize(row.original)}
-        //                 className="action-button"
-        //             >
-        //                 <FontAwesomeIcon icon={faEye} />
-        //             </button>
-        //         </div>
-        //     ),
-        // };
-
-        // const actionColumn = {
-        //     Header: 'Actions',
-        //     id: 'actions', // 'id' is used instead of 'accessor' as we're not displaying data from the dataset
-        //     accessor: row => row.uniqueId, // replace 'uniqueId' with the actual property that uniquely identifies your row
-        //     Cell: ({ row }) => {
-        //         console.log('Row data:', row.original);
-
-        //         return(
-        //       <div style={{ textAlign: 'center' }}> {/* Style as needed */}
-        //         {/* Button for Edit */}
-        //         <button
-        //           onClick={() => handleEdit(row.original)}
-        //           style={{ marginRight: '10px' }} // Style as needed
-        //         >
-        //           <FontAwesomeIcon icon={faEdit} /> {/* Display Edit Icon */}
-        //         </button>
-        //         {/* Button for Visualize */}
-        //         <button
-        //           onClick={() => handleVisualize(row.original)}
-        //           style={{ marginRight: '10px' }} // Style as needed
-        //         >
-        //           <FontAwesomeIcon icon={faEye} /> {/* Display Visualize Icon */}
-        //         </button>
-        //       </div>
-        //         );
-        //     },
-        //   };
-
-        // const actionColumn = {
-        //     Header: 'Actions',
-        //     id: 'actions',
-        //     accessor: () => {
-        //       console.log('Cell renderer called');
-        //       return <span>Test</span>; // Something very simple
-        //     },
-        //   };
           
-
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets]);
 
