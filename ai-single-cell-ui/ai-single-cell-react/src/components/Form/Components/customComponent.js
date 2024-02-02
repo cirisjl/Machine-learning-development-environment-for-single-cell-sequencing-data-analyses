@@ -189,10 +189,21 @@ class MyForm extends Component {
 
       formData.Id = constructedID;
 
-      //Add genes and cells
+      //Add metadata
       formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
       formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
+      formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
+      formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
+      formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cell_metadata_obs);
+      formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
+      formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
 
+
+      //Add inputs
+      formData.inputFiles = taskData.validation.inputFiles;
+      formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
+
+      // Add plots
       formData['QC_Plots'] = {
         "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
         "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,

@@ -1,5 +1,6 @@
 import React , { useState, useEffect }from 'react';
 import Select from 'react-select';
+import { Card, CardContent, Typography, Slider, Button } from '@material-ui/core';
 import { CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
@@ -180,37 +181,30 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
             </div>
           )}
         </div>
-          {taskData.quality_control.qc_results && taskData.quality_control.qc_results.length > 0 && (
-          <div className="metadata-section">
-            {taskData.quality_control.qc_results
-              .filter((result) => result.metadata && result.metadata.cell_metadata_obs)
-              .map((metadata, index) => (
-                <div key={index} className="metadata-item">
-                  {/* <div>
-                    <p>Please Analyse the table before choosing the label</p>
-                    {taskData.task_builder.table_data.length > 0 && taskData.task_builder.table_data[index] && (
-                      <ReactPlotly plot_data={taskData.task_builder.table_data[index]} />                   
-                    )}
-                  </div> */}
-                  <div>
-                    <label>
-                      <p>Please Choose the Label:</p>
-                      <Select
-                        options={Object.keys(metadata.metadata.cell_metadata_obs).map((key) => ({
-                          label: key,
-                          value: key,
-                        }))}
-                        onChange={(selectedOption) => handleLabelChange(selectedOption, index)}
-                        value={taskData.task_builder.task_label[index]}
-                        />
-                    </label>
-                  </div>
 
-                  <div className="split-parameters">
-                    <h3> Data Split Parameters</h3>
-
-                    {/* Slider input for Train Fraction */}
-                    <label>
+    {Object.entries(selectedDatasets).length > 0 && (
+      <div className="metadata-section">
+          {Object.entries(selectedDatasets).map(([key, dataset], index) => (
+            <Card key={index} className="metadata-item">
+              <CardContent>
+                <Typography variant="h6" component="h2">
+                  Please Choose the Label:
+                </Typography>
+                <Select
+                  options={Object.keys(JSON.parse(dataset.cell_metadata_obs)).map((key) => ({
+                    label: key,
+                    value: key,
+                  }))}
+                  onChange={(selectedOption) => handleLabelChange(selectedOption, index)}
+                  value={taskData.task_builder.task_label[index]}
+                />
+                
+                <Typography variant="h6" component="h2" style={{ marginTop: '20px' }}>
+                  Data Split Parameters
+                </Typography>
+               
+               {/* Slider input for Train Fraction */}
+               <label>
                       <p>Train Fraction:</p>
                       <input
                         type="range"
@@ -287,17 +281,26 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                       {taskData.task_builder.task_states.testFraction}
                     </label>
 
-                    {/* Button to perform data split */}
-                    <button onClick={() => handleDataSplit(index)} disabled={taskData.task_builder.task_states.dataSplitPerformed || loading}>
-                      {loading ? 'Processing, please wait...' : 'Perform Data Split'}
-                    </button>
+                
+                <Button 
+                  onClick={() => handleDataSplit(index)} 
+                  disabled={taskData.task_builder.task_states.dataSplitPerformed || loading}
+                  variant="contained" 
+                  color="primary"
+                  style={{ marginTop: '20px' }}
+                >
+                  {loading ? 'Processing, please wait...' : 'Perform Data Split'}
+                </Button>
 
-                    {taskData.task_builder.task_states.dataSplitPerformed && <p><b>Archive Path: </b>{taskData.task_builder.task_states.archivePath}</p>}
-
-                  </div>
-                </div>
-            ))}
-    </div>
+                {taskData.task_builder.task_states.dataSplitPerformed && (
+                  <Typography variant="body2" component="p">
+                    <b>Archive Path: </b>{taskData.task_builder.task_states.archivePath}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+        ))}
+      </div>
     )}
 
       <div className='navigation-buttons'>
