@@ -1774,7 +1774,7 @@ app.post('/api/datasets/search', async (req, res) => {
       // Build the pipeline for search results with pagination
       const searchResultsPipeline = [
         { $match: matchStage },
-        { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
+        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
         { $skip: (page - 1) * pageSize },
         { $limit: pageSize },
       ];

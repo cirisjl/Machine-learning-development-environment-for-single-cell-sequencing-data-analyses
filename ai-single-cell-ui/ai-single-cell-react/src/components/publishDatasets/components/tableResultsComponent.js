@@ -6,6 +6,8 @@ import { useTable, useRowSelect } from 'react-table';
 
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple }) => {
 
+    const ignoredColumns = ['Cells', 'Genes', 'QC_Plots', 'cell_metadata_obs', 'gene_metadata','layers', 'inputFiles', 'adata_path']; // Add column keys that you want to ignore
+
     const isSelected = datasetId => !!selectedDatasets[datasetId];
     const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
@@ -24,7 +26,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple }) => 
             return [];
         }
 
-        const baseColumns = Object.keys(data[0]).map(key => ({
+        const baseColumns = Object.keys(data[0])
+        .filter(key => !ignoredColumns.includes(key)) // Filter out ignored columns
+        .map(key => ({
             Header: key,
             accessor: item => {
                 const value = item[key];
