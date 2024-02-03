@@ -121,7 +121,7 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "10"
+            cpus: "2"
     volumes:
       - /data/oscb/results:/data/results
       - /data/oscb/uploads:/data/upload
@@ -152,7 +152,7 @@ services:
     deploy:
       resources:
          limits:
-            cpus: "10"
+            cpus: "2"
     volumes:
       - /data/oscb/results:/data/results
       - /data/oscb/uploads:/data/upload
@@ -166,35 +166,35 @@ services:
       - rabbitmq
       - celery-api
 
-  worker3:
-    build:
-      context: ./api/
-      dockerfile: Dockerfile
-    container_name: oscb_worker3
-    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
-    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
-    # command: celery --app project.server.tasks.celery worker -P solo 
-    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
-    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
-    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
-    env_file:
-      - .env
-    deploy:
-      resources:
-         limits:
-            cpus: "10"
-    volumes:
-      - /data/oscb/results:/data/results
-      - /data/oscb/uploads:/data/upload
-      - /data/oscb/upload/errors:/data/errors
-      - /data/oscb/upload/user_storage:/usr/src/app/storage/
-    networks:
-      - oscb-network
-    depends_on:
-      - mongodb
-      - redis
-      - rabbitmq
-      - celery-api
+  # worker3:
+  #   build:
+  #     context: ./api/
+  #     dockerfile: Dockerfile
+  #   container_name: oscb_worker3
+  #   command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+  #   # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+  #   # command: celery --app project.server.tasks.celery worker -P solo 
+  #   # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+  #   # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+  #   # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+  #   env_file:
+  #     - .env
+  #   deploy:
+  #     resources:
+  #        limits:
+  #           cpus: "10"
+  #   volumes:
+  #     - /data/oscb/results:/data/results
+  #     - /data/oscb/uploads:/data/upload
+  #     - /data/oscb/upload/errors:/data/errors
+  #     - /data/oscb/upload/user_storage:/usr/src/app/storage/
+  #   networks:
+  #     - oscb-network
+  #   depends_on:
+  #     - mongodb
+  #     - redis
+  #     - rabbitmq
+  #     - celery-api
 
   dashboard:
     build:
