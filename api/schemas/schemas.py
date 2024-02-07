@@ -86,6 +86,7 @@ class DataSplitRequest(BaseModel):
 class TaskDataRequest(BaseModel):
     adata_path: str
     task_label: str
+    datasetId: str
 
 class BenchmarksRequest(BaseModel):
     task_type: str

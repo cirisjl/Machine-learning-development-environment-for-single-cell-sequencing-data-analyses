@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../../Header/searchBar';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskData }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -25,6 +25,23 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState([]);
+
+    const onSelectDataset = (dataset) => {
+      // Get a copy of the current selected datasets from the state or props
+      const currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
+      const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
+    
+      if (currentSelectedDatasets[datasetId]) {
+          // Dataset is currently selected, deselect it
+          delete currentSelectedDatasets[datasetId];
+      } else {
+          // Dataset is not selected, select it
+          currentSelectedDatasets[datasetId] = dataset;
+      }
+    
+      // Call onSelect with the updated selected datasets
+      onSelect(currentSelectedDatasets);
+    };
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
@@ -47,7 +64,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
     };   
 
     const handleApplyFilters = async () => {
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
+      fetchData(1, activeFilters, globalSearchTerm);
 
       // Update the list of applied filters
       const filtersList = Object.entries(activeFilters).map(([category, values]) => {
@@ -112,7 +129,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
 
     const handleSearchSubmit = (event) => {
       event.preventDefault();
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
+      fetchData(1 , activeFilters, globalSearchTerm);
       console.log("Search Handled");
     };
 
@@ -125,13 +142,12 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
           delete newFilters[category];
         }
   
+        fetchData(1, newFilters, globalSearchTerm);
         return newFilters;
       });
   
       // Remove filter from the list of applied filters
       setAppliedFilters(prevFilters => prevFilters.filter(filter => !(filter.category === category && filter.value === value)));
-
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
 
     };
 
@@ -212,7 +228,10 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible }) => {
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                  <ResultsTable data={results} />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} taskData={taskData} multiple={multiple} />
+                </div>
+                <div className='dialog-close'>
+                    <button onClick={onClose}>Close</button>
                 </div>
               </div>
               
