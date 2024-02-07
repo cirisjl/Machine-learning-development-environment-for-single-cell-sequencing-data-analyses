@@ -3,5 +3,5 @@
     "dbName": "ai-single-cell",
     "optionsCollectionName": "form-options",
     "datasetCollectionName": "datasets",
-    "taskBuilderCollectionName": "task-builder"
+    "taskBuilderCollectionName": "tasks"
 }

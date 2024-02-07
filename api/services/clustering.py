@@ -4,7 +4,7 @@ from tools.benchmarks.clustering.scanpy import scanpy_clustering
 from tools.benchmarks.clustering.scvi import scvi_clustering
 from tools.benchmarks.clustering.seurat import seurat_clustering
 
-def clustering_task(adata_path, task_label):
+def clustering_task(adata_path, task_label, datasetId, task_type):
     # Load AnnData
     adata = load_anndata(adata_path)
 
@@ -71,7 +71,9 @@ def clustering_task(adata_path, task_label):
         "Scanpy": scanpy_results,
         "Seurat": seurat_results,
         "bar_plot": bar_plot,
-        "line_plot": line_plot
+        "line_plot": line_plot,
+        "datasetId": datasetId,
+        "task_type": task_type
     }
 
     return result

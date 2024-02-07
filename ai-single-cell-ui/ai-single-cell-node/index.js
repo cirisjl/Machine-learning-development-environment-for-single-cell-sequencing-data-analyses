@@ -1411,6 +1411,71 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   });
 
 
+  app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+  
+    try {
+      await client.connect();
+      const db = client.db(dbName);
+      const collection = db.collection(taskBuilderCollectionName);
+  
+      let documents = req.body;
+      // Ensure documents is always an array for consistency
+      if (!Array.isArray(documents)) {
+        documents = [documents];
+      }
+  
+      const insertionResults = [];
+      for (const formData of documents) {
+        // Check if a document with the provided Id already exists
+        const existingDocument = await collection.findOne({ Id: formData.Id });
+  
+        if (existingDocument) {
+          console.log('Document with Id already exists:', formData.Id);
+          insertionResults.push({
+            Id: formData.Id,
+            status: 'error',
+            message: 'Document with the provided Id already exists',
+          });
+        } else {
+          // Document with the provided Id does not exist, proceed with insertion
+          await collection.insertOne(formData);
+          console.log('Form data submitted successfully for Id:', formData.Id);
+          insertionResults.push({
+            Id: formData.Id,
+            status: 'success',
+            message: 'Form data submitted successfully',
+          });
+        }
+      }
+  
+      // If handling multiple documents, you might want to aggregate results and respond accordingly
+      if (insertionResults.length > 1) {
+        // Respond with the aggregated results for multiple documents
+        res.status(200).json(insertionResults);
+      } else if (insertionResults.length === 1) {
+        // For a single document, you can respond with the single result
+        const result = insertionResults[0];
+        if (result.status === 'success') {
+          res.status(200).json({ message: result.message });
+        } else {
+          res.status(400).json({ error: result.message });
+        }
+      } else {
+        // No documents were processed
+        res.status(400).json({ error: 'No documents were submitted' });
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+      await client.close();
+    }
+  });
+  
+
+
+
 // API endpoint to get datasets
 app.get('/mongoDB/api/getDatasets', async (req, res) => {
     const client = new MongoClient(mongoUrl);

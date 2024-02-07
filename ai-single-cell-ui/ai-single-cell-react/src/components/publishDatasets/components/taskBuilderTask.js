@@ -13,47 +13,82 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({});
 
   const [datasets, setDatasets] = useState([]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
-  const [selectedDatasets, setSelectedDatasets] = useState({});
-
 
   const handleOpenDialog = (mode) => {
-    if(selectionMode !== mode) {
-      setSelectedDatasets({});
+    if (selectionMode !== mode) {
+      // Reset selectedDatasets in taskData when the selection mode changes
+      setTaskData(prevTaskData => ({
+        ...prevTaskData,
+        task_builder: {
+          ...prevTaskData.task_builder,
+          selectedDatasets: {}, // Resetting selectedDatasets when the mode changes
+        },
+      }));
     }
     setSelectionMode(mode);
     setIsDialogOpen(true);
   };
-
-  const handleSelectDatasets = (datasets) => {
-    console.log(datasets); // Replace this with what you want to do with the selected datasets
+  const handleSelectDatasets = (newSelectedDatasets) => {
+    // Initialize additional parameters for new datasets
+    Object.keys(newSelectedDatasets).forEach(key => {
+      if (!taskData.task_builder.selectedDatasets[key]) {
+        newSelectedDatasets[key] = {
+          ...newSelectedDatasets[key],
+          taskType: null,
+          taskLabel: '',
+          dataSplit: {
+            trainFraction: 0.8,
+            validationFraction: 0.1,
+            testFraction: 0.1,
+            dataSplitPerformed: false,
+            archivePath: ''
+          }
+        };
+      }
+    });
+  
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        selectedDatasets: newSelectedDatasets
+      },
+    }));
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
   };
 
-  const handleDataSplit = async (index) => {
+  const handleDataSplit = async (adata_path, datasetId) => {
     try {
-
-      setLoading(true); // Set loading to true when data split is initiated
-
-      const dataPath = taskData.quality_control.qc_results[index].adata_path || ''
-      // User input for data split fractions
+      setLoading(prevLoading => ({ ...prevLoading, [datasetId]: true })); // Set loading to true for the specific dataset
+      const dataset = taskData.task_builder.selectedDatasets[datasetId];
+  
       const userData = {
-        data: dataPath,
-        train_fraction: taskData.task_builder.task_states.trainFraction,
-        validation_fraction: taskData.task_builder.task_states.validationFraction,
-        test_fraction: taskData.task_builder.task_states.testFraction,
+        data: adata_path || '',
+        train_fraction: dataset.dataSplit.trainFraction,
+        validation_fraction: dataset.dataSplit.validationFraction,
+        test_fraction: dataset.dataSplit.testFraction,
       };
-
+  
+      const totalFraction = userData.train_fraction + userData.validation_fraction + userData.test_fraction;
+  
+      if (totalFraction !== 1) {
+        setHasMessage(true);
+        setMessage("The sum of train, validation, and test fractions must equal 1.");
+        setLoading(false);
+        return;
+      }
+  
       console.log(userData);
-
+  
       // Make the API call
       const response = await fetch(`${CELERY_BACKEND_API}/convert/api/data-split`, {
         method: 'POST',
@@ -62,21 +97,28 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         },
         body: JSON.stringify(userData),
       });
-
-      // Check if the response is successful
+  
       if (response.ok) {
         const result = await response.json();
         console.log(result); // Handle the result as needed
-        setTaskData((prevTaskData) => ({
+  
+        // Update only the specific dataset's dataSplit parameters
+        setTaskData(prevTaskData => ({
           ...prevTaskData,
           task_builder: {
             ...prevTaskData.task_builder,
-            task_states: {
-              ...prevTaskData.task_builder.task_states,
-              dataSplitPerformed: true,
-              archivePath: result.archive_path,
-            },
-          },
+            selectedDatasets: {
+              ...prevTaskData.task_builder.selectedDatasets,
+              [datasetId]: {
+                ...prevTaskData.task_builder.selectedDatasets[datasetId],
+                dataSplit: {
+                  ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
+                  dataSplitPerformed: true,
+                  archivePath: result.archive_path,
+                }
+              }
+            }
+          }
         }));
       } else {
         const error = await response.json();
@@ -85,62 +127,87 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     } catch (error) {
       console.error('Error:', error);
     } finally {
-      setLoading(false); // Set loading to false after data split (success or failure)
+      setLoading(prevLoading => ({ ...prevLoading, [datasetId]: false })); // Set loading to false for the specific dataset
     }
   };
+  
 
   const handleTaskCompletion = () => {
-    const isValid =
-            taskData.task_builder.task_type &&
-            taskData.task_builder.task_label.length > 0 &&
-            taskData.task_builder.task_states.dataSplitPerformed
-            
-    if(isValid) {
-        // After Task 5 is successfully completed, update the task status
-        setTaskStatus((prevTaskStatus) => ({
-          ...prevTaskStatus,
-          5: true, // Mark Task 5 as completed
-        }));
+    // Check if all datasets have a task type, label and data split performed
+    const allDatasetsValid = Object.values(taskData.task_builder.selectedDatasets).every(dataset => 
+      dataset.taskType && 
+      dataset.taskLabel && 
+      dataset.dataSplit.dataSplitPerformed
+    );
   
-        //The current task is finished, so make the next task active
-        setActiveTask(6);
+    if (allDatasetsValid) {
+      setTaskStatus(prevTaskStatus => ({
+        ...prevTaskStatus,
+        5: true, // Mark Task 5 as completed
+      }));
+  
+      setActiveTask(6);
     } else {
-      // Display an error message or throw an error
-      setMessage('Please ensure that the task type, labels, dataset split, and data are valid.');
+      setMessage('Please ensure that the task type, labels, and data split for each dataset are valid.');
       setHasMessage(true);
     }
   };
+  
 
-  const handleTaskChange = (selectedOption) => {
-    // Update the task_type in task_builder
-    setTaskData((prevTaskData) => ({
+  const handleTaskTypeChange = (datasetId, newTaskType) => {
+    setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
         ...prevTaskData.task_builder,
-        task_type: selectedOption,
-      },
+        selectedDatasets: {
+          ...prevTaskData.task_builder.selectedDatasets,
+          [datasetId]: {
+            ...prevTaskData.task_builder.selectedDatasets[datasetId],
+            taskType: newTaskType
+          }
+        }
+      }
     }));
   };
 
+
+  const handleDataSplitChange = (datasetId, parameter, value) => {
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        selectedDatasets: {
+          ...prevTaskData.task_builder.selectedDatasets,
+          [datasetId]: {
+            ...prevTaskData.task_builder.selectedDatasets[datasetId],
+            dataSplit: {
+              ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
+              [parameter]: value
+            }
+          }
+        }
+      }
+    }));
+  };
+  
   useEffect(() => {
     console.log(taskData);
   }, [taskData]);
 
-  const handleLabelChange = (selectedOption, index) => {
-
-    // Update the task_label in task_builder for the specific result
-    setTaskData((prevTaskData) => {
-      const updatedLabels = [...prevTaskData.task_builder.task_label];
-      updatedLabels[index] = selectedOption;
-
-      return {
-        ...prevTaskData,
-        task_builder: {
-          ...prevTaskData.task_builder,
-          task_label: updatedLabels,
-        },
-      };
-    });
+  const handleLabelChange = (datasetId, selectedOption) => {
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        selectedDatasets: {
+          ...prevTaskData.task_builder.selectedDatasets,
+          [datasetId]: {
+            ...prevTaskData.task_builder.selectedDatasets[datasetId],
+            taskLabel: selectedOption
+          }
+        }
+      }
+    }));
   };
   
 
@@ -158,36 +225,33 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
               multiple={selectionMode === 'multiple'}
               onClose={handleCloseDialog}
               isVisible={isDialogOpen !== false}
-              selectedDatasets={selectedDatasets}
-              setSelectedDatasets={setSelectedDatasets}
+              taskData={taskData}
             />
           )}
         </div>
       </div>
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
       <div>
-        <div className="task-section">
-          <label>
-            <p>Please Choose the Task Type:</p>
-              <Select
-                value={taskData.task_builder.task_type}
-                options={taskData.metadata.taskOptions}
-                onChange={handleTaskChange}
-            />
-          </label>
-          {taskData.task_builder.task_id && (
-            <div className="task-id-section">
-              Task ID: {taskData.task_builder.task_id}
-            </div>
-          )}
-        </div>
 
-    {Object.entries(selectedDatasets).length > 0 && (
+    {Object.entries(taskData.task_builder.selectedDatasets).length > 0 && (
       <div className="metadata-section">
-          {Object.entries(selectedDatasets).map(([key, dataset], index) => (
+        <Typography variant="h6" component="h6">Select task type and choose the label for each dataset accordingly.</Typography>
+          {Object.entries(taskData.task_builder.selectedDatasets).map(([key, dataset], index) => (
             <Card key={index} className="metadata-item">
               <CardContent>
-                <Typography variant="h6" component="h2">
+              <Typography variant="body2" component="p"> {index} Dataset: {dataset.Id}</Typography>
+              <Typography variant="body2" component="p">
+                <label>
+                  <p>Please Choose the Task Type:</p>
+                    <Select
+                      value={dataset.taskType}
+                      options={dataset.taskOptions}
+                      onChange={(selectedOption) => handleTaskTypeChange(key, selectedOption)}
+                      />
+                </label>
+              </Typography>
+
+              <Typography variant="body2" component="p">
                   Please Choose the Label:
                 </Typography>
                 <Select
@@ -195,14 +259,16 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     label: key,
                     value: key,
                   }))}
-                  onChange={(selectedOption) => handleLabelChange(selectedOption, index)}
-                  value={taskData.task_builder.task_label[index]}
-                />
+                  onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
+                  value={dataset.taskLabel}
+                  />
                 
-                <Typography variant="h6" component="h2" style={{ marginTop: '20px' }}>
+                <Typography variant="body2" component="p" style={{ marginTop: '20px' }}>
                   Data Split Parameters
                 </Typography>
                
+                <Typography variant="body2" component="p">
+
                {/* Slider input for Train Fraction */}
                <label>
                       <p>Train Fraction:</p>
@@ -211,22 +277,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={taskData.task_builder.task_states.trainFraction}
-                        onChange={(e) => {
-                          setTaskData((prevTaskData) => ({
-                            ...prevTaskData,
-                            task_builder: {
-                              ...prevTaskData.task_builder,
-                              task_states: {
-                                ...prevTaskData.task_builder.task_states,
-                                dataSplitPerformed: false,
-                                trainFraction: parseFloat(e.target.value),
-                              },
-                            },
-                          }));
-                        }}
+                        value={dataset.dataSplit.trainFraction}
+                        onChange={(e) => handleDataSplitChange(key, 'trainFraction', parseFloat(e.target.value))}
+
                       />
-                      {taskData.task_builder.task_states.trainFraction}
+                        {dataset.dataSplit.trainFraction}
                     </label>
 
                     {/* Slider input for Validation Fraction */}
@@ -237,22 +292,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={taskData.task_builder.task_states.validationFraction}
-                        onChange={(e) => {
-                          setTaskData((prevTaskData) => ({
-                            ...prevTaskData,
-                            task_builder: {
-                              ...prevTaskData.task_builder,
-                              task_states: {
-                                ...prevTaskData.task_builder.task_states,
-                                dataSplitPerformed: false,
-                                validationFraction: parseFloat(e.target.value),
-                              },
-                            },
-                          }));
-                        }}
+                        value={dataset.dataSplit.validationFraction}
+                        onChange={(e) => handleDataSplitChange(key, 'validationFraction', parseFloat(e.target.value))}
+
                       />
-                      {taskData.task_builder.task_states.validationFraction}
+                       {dataset.dataSplit.validationFraction}
                     </label>
 
                     {/* Slider input for Test Fraction */}
@@ -263,38 +307,29 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                         min={0}
                         max={1}
                         step={0.01}
-                        value={taskData.task_builder.task_states.testFraction}
-                        onChange={(e) => {
-                          setTaskData((prevTaskData) => ({
-                            ...prevTaskData,
-                            task_builder: {
-                              ...prevTaskData.task_builder,
-                              task_states: {
-                                ...prevTaskData.task_builder.task_states,
-                                dataSplitPerformed: false,
-                                testFraction: parseFloat(e.target.value),
-                              },
-                            },
-                          }));
-                        }}
+                        value={dataset.dataSplit.testFraction}
+                        onChange={(e) => handleDataSplitChange(key, 'testFraction', parseFloat(e.target.value))}
+
                       />
-                      {taskData.task_builder.task_states.testFraction}
+                      {dataset.dataSplit.testFraction}
                     </label>
 
                 
                 <Button 
-                  onClick={() => handleDataSplit(index)} 
-                  disabled={taskData.task_builder.task_states.dataSplitPerformed || loading}
+                  onClick={() => handleDataSplit(dataset.adata_path, key)} 
+                  disabled={dataset.dataSplit.dataSplitPerformed || loading[key]} // Use dataset-specific loading state
                   variant="contained" 
                   color="primary"
                   style={{ marginTop: '20px' }}
                 >
-                  {loading ? 'Processing, please wait...' : 'Perform Data Split'}
+                {loading[key] ? 'Processing, please wait...' : 'Perform Data Split'} 
                 </Button>
 
-                {taskData.task_builder.task_states.dataSplitPerformed && (
+                </Typography>
+
+                {dataset.dataSplit.dataSplitPerformed && (
                   <Typography variant="body2" component="p">
-                    <b>Archive Path: </b>{taskData.task_builder.task_states.archivePath}
+                    <b>Archive Path: </b>{dataset.dataSplit.archivePath}
                   </Typography>
                 )}
               </CardContent>

@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../../Header/searchBar';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, setSelectedDatasets }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskData }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -27,27 +27,21 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
     const [appliedFilters, setAppliedFilters] = useState([]);
 
     const onSelectDataset = (dataset) => {
-      setSelectedDatasets(prev => {
-          const newSelectedDatasets = { ...prev };
-          const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
-  
-          if (newSelectedDatasets[datasetId]) {
-              // Dataset is currently selected, deselect it
-              delete newSelectedDatasets[datasetId];
-          } else {
-              // Dataset is not selected, select it
-              newSelectedDatasets[datasetId] = dataset;
-          }
-  
-          return newSelectedDatasets;
-      });
-  };
-
-  useEffect(() => {   
-    Object.values(selectedDatasets).forEach(dataset => {
-      console.log(dataset);
-  });
-  }, [selectedDatasets]); 
+      // Get a copy of the current selected datasets from the state or props
+      const currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
+      const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
+    
+      if (currentSelectedDatasets[datasetId]) {
+          // Dataset is currently selected, deselect it
+          delete currentSelectedDatasets[datasetId];
+      } else {
+          // Dataset is not selected, select it
+          currentSelectedDatasets[datasetId] = dataset;
+      }
+    
+      // Call onSelect with the updated selected datasets
+      onSelect(currentSelectedDatasets);
+    };
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
@@ -234,7 +228,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedDatasets} multiple={multiple} />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} taskData={taskData} multiple={multiple} />
                 </div>
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>
