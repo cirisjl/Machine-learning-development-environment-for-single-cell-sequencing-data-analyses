@@ -229,7 +229,8 @@ async def process_task_data(data: BenchmarksRequest):
             if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
                 adata_path = item.adata_path
                 task_label = item.task_label
-                clustering_results = clustering_task(adata_path, task_label)
+                datasetId = item.datasetId
+                clustering_results = clustering_task(adata_path, task_label, datasetId, task_type)
                 results.append(clustering_results)
        
         return results

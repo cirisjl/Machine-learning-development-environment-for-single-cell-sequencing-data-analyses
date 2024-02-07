@@ -3,6 +3,8 @@ import {CELERY_BACKEND_API} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
+import { Card, CardContent, Typography} from '@material-ui/core';
+
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -33,16 +35,17 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   useEffect(() => {
     if(taskData.benchmarks.status !== 'completed') {
 
-    if (taskData.quality_control && taskData.quality_control.qc_results) {
+    if (taskData.task_builder && taskData.task_builder.selectedDatasets) {
       setLoading(true);
 
-      const { qc_results } = taskData.quality_control;
+      const selectedDatasets  = taskData.task_builder.selectedDatasets;
 
       const postBody = {
-        task_type: taskData.task_builder.task_type.label,
-        data: qc_results.map((result, index) => ({
-          adata_path: result.adata_path,
-          task_label: taskData.task_builder.task_label[index].label || '',
+        task_type: 'Clustering',
+        data: Object.entries(selectedDatasets).map(([key, dataset], index) => ({
+          adata_path: dataset.adata_path,
+          task_label: dataset.taskLabel.label || '',
+          datasetId: dataset.Id
         })),
       };
 
@@ -100,11 +103,15 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             taskData.benchmarks.benchmarks_results &&
             taskData.benchmarks.benchmarks_results.map((result, index) => (
               <React.Fragment key={index}>
-                {/* Assuming BenchmarksPlot is a component that you want to render */}
-                <BenchmarksPlots
-                  barPlot={result.bar_plot}
-                  linePlot={result.line_plot}
-                />
+                <Card key={index} className="benchmarks-results">
+                  <CardContent>
+                    <Typography variant="body2">Benchmark Results for {result.datasetId}</Typography>
+                    <BenchmarksPlots
+                      barPlot={result.bar_plot}
+                      linePlot={result.line_plot}
+                    />
+                  </CardContent>
+                </Card>
              </React.Fragment>
             ))}
             

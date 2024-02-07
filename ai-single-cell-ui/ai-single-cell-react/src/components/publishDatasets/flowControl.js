@@ -81,6 +81,7 @@ const FlowControl = () => {
       newOptions: []
     },
     task_builder: {
+      selectedDatasets: {},
       task_type: '',
       task_id:'',
       task_label: [],

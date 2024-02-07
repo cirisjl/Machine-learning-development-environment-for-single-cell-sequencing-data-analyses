@@ -1,30 +1,77 @@
+import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { useTable } from 'react-table';
+import { useTable, useRowSelect } from 'react-table';
 
 
-const ResultsTable = ({ data }) => {
+const ResultsTable = ({ data, onSelectDataset, taskData, multiple }) => {
+
+    const ignoredColumns = ['Cells', 'Genes', 'QC_Plots', 'cell_metadata_obs', 'gene_metadata','layers', 'inputFiles', 'adata_path', 'taskOptions']; // Add column keys that you want to ignore
+
+    const isSelected = datasetId => !!taskData.task_builder.selectedDatasets[datasetId];
+    const isDisabled = () => !multiple && Object.keys(taskData.task_builder.selectedDatasets).length >= 1;
+
+    const handleEdit = (dataset) => {
+        console.log("Editing dataset: ", dataset);
+        // Implement your edit logic here
+    };
+    
+    const handleVisualize = (dataset) => {
+        console.log("Visualizing dataset: ", dataset);
+        // Implement your visualization logic here
+    };
+
     const columns = React.useMemo(() => {
         if (data.length === 0) {
             return [];
         }
 
-        // Extracting the first item's keys to determine columns
-        const sampleItem = data[0];
-
-        return Object.keys(sampleItem).map(key => {
-            return {
-                Header: key,
-                // Customize the accessor to handle nested objects
-                accessor: item => {
-                    const value = item[key];
-                    if (value && typeof value === 'object' && value.label) {
-                        return value.label;
-                    }
-                    return value;
+        const baseColumns = Object.keys(data[0])
+        .filter(key => !ignoredColumns.includes(key)) // Filter out ignored columns
+        .map(key => ({
+            Header: key,
+            accessor: item => {
+                const value = item[key];
+                if (value && typeof value === 'object' && value.label) {
+                    return value.label;
                 }
-            };
-        });
-    }, [data]);
+                return value;
+            }
+        }));
+
+        const actionColumn = {
+            id: 'actions',
+            Header: 'Actions',
+            accessor: item => {
+                return(
+                <div className="action-buttons">
+                    <input
+                        type="checkbox"
+                        style={{ cursor:'pointer' }}
+                        onChange={() => onSelectDataset(item)}
+                        checked={!!taskData.task_builder.selectedDatasets[item["Id"]]}
+                        disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
+
+                    />
+                    <button
+                        onClick={() => handleEdit(item["Id"])}
+                        className="action-button"
+                    >
+                        <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                        onClick={() => handleVisualize(item["Id"])}
+                        className="action-button"
+                    >
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                </div>
+                );
+            }
+        };
+          
+        return [actionColumn, ...baseColumns];
+    }, [data, taskData.task_builder.selectedDatasets]);
 
     const {
         getTableProps,
@@ -32,26 +79,26 @@ const ResultsTable = ({ data }) => {
         headerGroups,
         rows,
         prepareRow,
-    } = useTable({ columns, data });
+    } = useTable({ columns, data },useRowSelect);
 
     return (
-        <table {...getTableProps()}>
-            <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+        <table {...getTableProps()} className="table-container">
+        <thead>
+                {headerGroups.map((headerGroup, index) => (
+                    <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                        {headerGroup.headers.map((column, colIndex) => (
+                            <th {...column.getHeaderProps()} key={colIndex}>{column.render('Header')}</th>
                         ))}
                     </tr>
                 ))}
             </thead>
             <tbody {...getTableBodyProps()}>
-                {rows.map(row => {
+                {rows.map((row, rowIndex) => {
                     prepareRow(row);
                     return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.value}</td>;
+                        <tr {...row.getRowProps()} key={rowIndex}>
+                            {row.cells.map((cell, cellIndex) => {
+                                return <td {...cell.getCellProps()} key={cellIndex}>{cell.value}</td>;
                             })}
                         </tr>
                     );
