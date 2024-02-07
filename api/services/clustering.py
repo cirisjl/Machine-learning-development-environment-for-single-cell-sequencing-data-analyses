@@ -23,25 +23,37 @@ def clustering_task(adata_path, task_label):
         "gpu_mem_usage": gpu_mem_usage_scanpy
     }
 
-     # Call seurat_clustering method
-    asw_scvi_seurat, nmi_scvi_seurat, ari_scvi_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, task_label)
+    # Call seurat_clustering method
+    asw_seurat, nmi_seurat, ari_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, task_label)
 
     seurat_results = {
-        "asw_score": asw_scvi_seurat,
-        "nmi_score": nmi_scvi_seurat,
-        "ari_score": ari_scvi_seurat,
+        "asw_score": asw_seurat,
+        "nmi_score": nmi_seurat,
+        "ari_score": ari_seurat,
         "time_points": time_points_seurat,
         "cpu_usage": cpu_usage_seurat,
         "mem_usage": mem_usage_seurat,
         "gpu_mem_usage": gpu_mem_usage_seurat
     }
     
-    #Create plots for clustering methods
+    # Call scvi_clustering method
+    asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata_path, task_label)
+
+    scvi_results = {
+        "asw_score": asw_scvi,
+        "nmi_score": nmi_scvi,
+        "ari_score": ari_scvi,
+        "time_points": time_points_scvi,
+        "cpu_usage": cpu_usage_scvi,
+        "mem_usage": mem_usage_scvi,
+        "gpu_mem_usage": gpu_mem_usage_scvi
+    }
 
     # Format x and y for the plot_bar function
     y_values = {
         'Scanpy': [ scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']],
         'Seurat': [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score']],
+        'scvi': [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']],
     }
 
     # # Call the plot_bar function
@@ -55,12 +67,18 @@ def clustering_task(adata_path, task_label):
         'Seurat_CPU': seurat_results['cpu_usage'],
         'Seurat_Memory': seurat_results['mem_usage'],
         'Seurat_GPU': seurat_results['gpu_mem_usage'],
+        'scvi_CPU': scvi_results['cpu_usage'],
+        'scvi_Memory': scvi_results['mem_usage'],
+        'scvi_GPU': scvi_results['gpu_mem_usage'],
     }
     x_timepoints = []
     if len(scanpy_results['time_points']) > len(seurat_results['time_points']):
         x_timepoints = scanpy_results['time_points']
     else:
         x_timepoints =  seurat_results['time_points']
+    
+    if len(scvi_results['time_points']) > len(x_timepoints):
+        x_timepoints = scvi_results['time_points']
 
     # Call the plot_line function with an empty array for x
     line_plot = plot_line(x=x_timepoints, y=y_values)
@@ -70,6 +88,7 @@ def clustering_task(adata_path, task_label):
         "metrics": metrics,
         "Scanpy": scanpy_results,
         "Seurat": seurat_results,
+        "scvi": scvi_results,
         "bar_plot": bar_plot,
         "line_plot": line_plot
     }
