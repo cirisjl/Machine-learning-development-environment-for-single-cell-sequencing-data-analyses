@@ -203,6 +203,8 @@ class MyForm extends Component {
       formData.inputFiles = taskData.validation.inputFiles;
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
+      formData.taskOptions = this.state.options["Task"];
+
       // Add plots
       formData['QC_Plots'] = {
         "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
