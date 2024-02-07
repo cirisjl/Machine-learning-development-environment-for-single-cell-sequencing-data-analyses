@@ -13,7 +13,7 @@ import numpy as np
 from anndata import AnnData
 from scipy.sparse import csr_matrix
 
-from tools.formating.plotConstants import *
+from tools.visualization.plotConstants import *
 
 def plot_UMAP(adata, layer=None, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
