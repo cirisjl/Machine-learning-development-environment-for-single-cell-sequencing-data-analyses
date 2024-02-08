@@ -8,6 +8,7 @@ import ReactPlotly from './reactPlotly';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faFile} from "@fortawesome/free-solid-svg-icons";
 import DatasetSelectionDialog from './datasetsDialog';
+import TableComponent from './labelTableComponent';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -34,7 +35,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     setSelectionMode(mode);
     setIsDialogOpen(true);
   };
-  const handleSelectDatasets = (newSelectedDatasets) => {
+  const handleSelectDatasets = async (newSelectedDatasets) => {
     // Initialize additional parameters for new datasets
     Object.keys(newSelectedDatasets).forEach(key => {
       if (!taskData.task_builder.selectedDatasets[key]) {
@@ -52,6 +53,40 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         };
       }
     });
+
+  //   // Extract file paths for new datasets to make an API call
+  // const filePaths = Object.values(newSelectedDatasets).map(dataset => dataset.adata_path).filter(Boolean);
+
+  // if (filePaths.length > 0) {
+  //   try {
+  //     // Make an API call to get the table plots for new datasets
+  //     const response = await fetch(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(filePaths),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+
+  //     const tablePlots = await response.json();
+
+  //     // Assuming tablePlots is an array of results corresponding to filePaths,
+  //     // Attach each tablePlot result to its respective dataset
+  //     filePaths.forEach((filePath, index) => {
+  //       const key = Object.keys(newSelectedDatasets).find(key => newSelectedDatasets[key].adata_path === filePath);
+  //       if (key) {
+  //         newSelectedDatasets[key].tablePlot = tablePlots[index];
+  //       }
+  //     });
+
+  //   } catch (error) {
+  //     console.error('There was a problem with the fetch operation:', error);
+  //   }
+  // }
   
     setTaskData(prevTaskData => ({
       ...prevTaskData,
@@ -239,7 +274,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           {Object.entries(taskData.task_builder.selectedDatasets).map(([key, dataset], index) => (
             <Card key={index} className="metadata-item">
               <CardContent>
-              <Typography variant="body2" component="p"> {index} Dataset: {dataset.Id}</Typography>
+              <Typography variant="h6" component="h6">Dataset {index + 1} : {dataset.Id}</Typography>
               <Typography variant="body2" component="p">
                 <label>
                   <p>Please Choose the Task Type:</p>
@@ -262,6 +297,17 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                   onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
                   value={dataset.taskLabel}
                   />
+{/* 
+                  {dataset.tablePlot && (
+                    <>
+                      <h2>Table: </h2>
+                      <ReactPlotly plot_data={dataset.tablePlot} />
+                    </>
+                  )} */}
+
+                <div className="label-table-container">
+                  <TableComponent cellMetadataObs={JSON.parse(dataset.cell_metadata_obs)} />
+                </div>
                 
                 <Typography variant="body2" component="p" style={{ marginTop: '20px' }}>
                   Data Split Parameters
