@@ -432,6 +432,7 @@
   font-size: 0.9em;
   font-family: sans-serif;
   min-width: 400px;
+  background-color: #fff; /* White background for the table */
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -439,25 +440,26 @@
 .task-builder-task .dialog-container .table-results td {
   padding: 12px 15px;
   text-align: left;
+  border-bottom: 1px solid #ddd; /* Light grey border for rows */
 }
 
 .task-builder-task .dialog-container .table-results th {
-  background-color: rgb(201, 201, 201);;
+  background-color: #f8f8f8;
   color: black;
   text-transform: uppercase;
 }
 
-.task-builder-task .dialog-container .table-results tr {
+/* .task-builder-task .dialog-container .table-results tr {
   border-bottom: 1px solid #dddddd;
-}
+} */
 
 .task-builder-task .dialog-container .table-results tr:nth-of-type(even) {
-  background-color: #f3f3f3;
+  background-color: #f1f1f1;
 }
 
-.task-builder-task .dialog-container .table-results tr:last-of-type {
+/* .task-builder-task .dialog-container .table-results tr:last-of-type {
   border-bottom: 2px solid #009879;
-}
+} */
 
 .task-builder-task .dialog-container .table-results tr:hover {
   background-color: #f1f1f1;
@@ -570,4 +572,42 @@
 .task-builder-task .dialog .dialog-close {
   text-align: center;
   margin-top: 1rem;
+}
+
+
+.task-builder-task .metadata-section .label-table-container .table-container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  margin: 1rem; /* Add some spacing around the table */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+}
+
+.task-builder-task .metadata-section .label-table-container .table-container table {
+  width: 100%; /* Full width of the container */
+  border-collapse: collapse; /* Collapse borders */
+  background-color: #fff; /* White background for the table */
+}
+
+.task-builder-task .metadata-section .label-table-container .table-container th, td {
+  padding: 0.5rem 1rem; /* Padding for table cells */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid #ddd; /* Light grey border for rows */
+}
+
+.task-builder-task .metadata-section .label-table-container .table-container th {
+  background-color: #f8f8f8; /* Slightly grey background for headers */
+  font-weight: bold; /* Make header text bold */
+}
+
+.task-builder-task .metadata-section .label-table-container .table-container tr:hover {
+  background-color: #f1f1f1; /* Highlight row on hover */
+}
+
+/* Responsive table */
+@media screen and (max-width: 600px) {
+  .task-builder-task .metadata-section .label-table-container .table-container {
+    margin: 0; /* Remove margin in small screens */
+  }
+  .task-builder-task .metadata-section .label-table-container .table-container th, td {
+    padding: 0.5rem; /* Smaller padding for small screens */
+  }
 }
