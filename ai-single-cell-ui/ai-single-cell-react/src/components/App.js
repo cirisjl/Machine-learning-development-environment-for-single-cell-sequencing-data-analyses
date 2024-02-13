@@ -35,6 +35,7 @@ import AccessDenied from './AccessDeniedPage';
 import ManageOptions from './Form/Components/editablePageOptions';
 // import PublishDataset from './publishDatasets/publishDataset';
 import FlowControl from './publishDatasets/flowControl';
+import TaskResultsComponent from './Benchmarks/taskResultsComponent';
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="competitions" element={<Competitions/>}/>
           <Route path="benchmarks"   element={<Benchmarks/>}/>
           <Route path="benchmarks/uploads"   element={<FlowControl/>}/>
+          <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
           <Route path="mydata/upload-data"       element={<UploadData/>}></Route>

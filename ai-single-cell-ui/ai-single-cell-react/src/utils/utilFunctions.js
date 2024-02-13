@@ -116,3 +116,24 @@ export function moveFilesToNewDirectory(newDirectoryPath) {
       throw error; // Re-throw the error so it can be caught in the calling code
     });
 }
+
+
+// Data transformation function
+export function prepareTableData(cellMetadataObs) {
+  const identifiers = new Set();
+  Object.values(cellMetadataObs).forEach(values => {
+    Object.keys(values).forEach(key => identifiers.add(key));
+  });
+
+  // Convert the Set of identifiers into an array and map over it to create rows
+  const rows = Array.from(identifiers).map(identifier => {
+    const row = { identifier }; // Start each row with the identifier
+    Object.entries(cellMetadataObs).forEach(([category, values]) => {
+      row[category] = values[identifier] || 'N/A'; // Use 'N/A' for missing values
+    });
+    return row;
+  });
+
+  // Limit the number of rows to 5
+  return rows.slice(0, 5);
+};

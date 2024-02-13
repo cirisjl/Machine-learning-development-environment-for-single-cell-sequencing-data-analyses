@@ -71,8 +71,6 @@ function getUserFromToken(token) {
 
     try {
         const decoded = jwt.verify(token, 'secret');
-
-        console.log('token: ' + decoded.username);
         if (!decoded.username) {
             return 'Unauthorized';
         }
@@ -116,16 +114,6 @@ const createUniqueFolder = (destinationDir, folderName, index = 1) => {
 const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
     try {
 
-        // if(dirName) {
-        //     destinationDir = path.join(destinationDir, dirName);
-        // } 
-        console.log("logger to debug the source and destination directories");
-        console.log("source" + sourceDir);
-        console.log(destinationDir);
-
-        // Ensure the destination directory exists before copying files
-    //   await createDirectoryIfNotExists(destinationDir);
-    //   const files = await fs.readdir(sourceDir);
   
       for (let file of files) {
         const sourceFilePath = path.join(sourceDir, file);
@@ -142,10 +130,6 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
   
         // Ensure the destination directory exists before copying files
         await createDirectoryIfNotExists(destinationFileDir);
- 
-        console.log("final paths");
-        console.log("source paths" + sourceFilePath);
-        console.log("destination paths" + destinationFilePath);
 
         // Perform the actual file copy
         await fs.copyFile(sourceFilePath, destinationFilePath);
@@ -248,7 +232,6 @@ app.post('/api/login', (req, res) => {
                 //secure: process.env.NODE_ENV === "production",
             });
 
-            console.log(req.cookies);
             res.json({ status: 200, message: 'Logged in successfully', jwtToken });
         });
     });
@@ -257,7 +240,6 @@ app.post('/api/login', (req, res) => {
 // Route to handle protected resource
 app.get('/protected', verifyToken, (req, res) => {
     jwt.verify(req.token, 'secret', (err, authData) => {
-        console.log(authData);
         if (err) {
             res.sendStatus(403);
         } else {
@@ -273,13 +255,10 @@ app.get('/protected', verifyToken, (req, res) => {
                         res.json({ message: 'Invalid credentials'});
                         return;
                     }
-                    console.log("Inside the protected API, result after the query:: " + results[0].isAdmin);
             
                     const adminFlag = results[0].isAdmin;
-                    console.log("Inside adminFlag:: " + adminFlag);
 
                     authData.isAdmin = (adminFlag == 1) ? true: false;
-                    console.log("Inside authData.isAdmin:: " + authData.isAdmin);
 
                     res.json({ message: 'You have access to the protected resource', authData });
                 });
@@ -295,20 +274,14 @@ app.post('/createDataset', async (req, res) => {
 
     let filesFromPublic = false;
 
-    console.log("Logger to debug makeit public flag : " + makeItpublic);
-
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-        console.log("inside for loop")
-        console.log(file);
+    
         if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
-            console.log("inside if loop for my check");
             filesFromPublic = true;
             break;
         }
     }
-    console.log("value of filesFromPublic::: " + filesFromPublic);
-
     if(filesFromPublic) {
         let dirName = ""
 
@@ -403,8 +376,6 @@ app.post('/createDataset', async (req, res) => {
 
             let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
-            console.log("logger to see the userPrivateStorageDir" + userPrivateStorageDir);
-
             // Copy files from user's private storage to public dataset directory
             await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
 
@@ -423,21 +394,14 @@ app.put('/updateDataset', async (req, res) => {
     const deleteList = currentFileList.filter(item => !files.includes(item));
 
     let filesFromPublic = false;
-    console.log(insertList);
-    console.log("type of insert list" + typeof insertList);
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-        console.log("inside for loop")
-        console.log(file);
         if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
-            console.log("inside if loop for my check");
             filesFromPublic = true;
             break;
         }
     }
-
-    console.log("value of filesFromPublic::: " + filesFromPublic);
 
 
     if(filesFromPublic) {
@@ -513,7 +477,6 @@ app.put('/updateDataset', async (req, res) => {
                         }
                         for (let file of insertList) {
                             if(filesFromPublic) {
-                                console.log("value of filesFromPublic inside ifffffffffffff::: " + filesFromPublic);
                                 file = file.replace(/^\/?publicDatasets\//, '/'); 
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
@@ -682,10 +645,8 @@ app.post('/download', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
     const { pwd } = req.query;
-    console.log('Entered download function');
 
     const username = getUserFromToken(authToken);
-    console.log('Username is: ' + username);
     if (fileList && Array.isArray(fileList)) {
         const zipName = 'files.zip';
         const output = fs.createWriteStream(zipName);
@@ -746,7 +707,6 @@ app.get('/download', async (req, res) => {
     const { pwd } = req.query
     const username = getUserFromToken(authToken);
     let filePath = '';
-    console.log('Entered download function');
 
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
@@ -759,7 +719,6 @@ app.get('/download', async (req, res) => {
     }
   
 
-    console.log('file: ' + filePath);
     const fileStat = await fs.promises.stat(filePath);
 
     if (fileStat.isFile()) {
@@ -794,7 +753,6 @@ app.get('/fetchPreview', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const username = getUserFromToken(authToken);
     let filePath = '';
-    console.log('Entered download function');
 
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
@@ -839,7 +797,6 @@ app.delete('/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
     const { pwd } = req.query
-    console.log('Entered delete function');
     const uname = getUserFromToken(authToken);
     if (uname === 'Unauthorized') {
         return res.status(403).json('Unauthorized');
@@ -916,8 +873,6 @@ app.get('/getDirContents', async (req, res) => {
         }
 
         subdir = req.query.subdir;
-        console.log("Debug point to check the value of subdir");
-        console.log(dirPath);
         var directoryPath = ""
 
         
@@ -978,8 +933,6 @@ app.post('/upload', async (req, res) => {
     let username = getUserFromToken(authToken);
 
     let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
-    console.log("publicdatasetFlag value debug point:::: " + publicDatasetFlag);
-    console.log("Inside else destDir:: " + destDir);
 
     let tempDir = './uploads'; 
 
@@ -1551,9 +1504,6 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         // Define the match stage of the aggregation pipeline
         const matchStage = isAdmin=== 'true' ? {} : { username: username };
 
-        console.log(isAdmin);
-        console.log(matchStage);
-
         // Aggregation pipeline stages
         const pipeline = [
             { $match: matchStage },
@@ -1747,10 +1697,11 @@ app.post('/api/datasets/search', async (req, res) => {
 
 
       const page = parseInt(req.query.page, 10) || 1;
-      const pageSize = parseInt(req.query.pageSize, 10) || 1;
+      const pageSize = parseInt(req.query.pageSize, 10) || 10;
       let globalSearchQuery = req.query.q; 
       const filters = req.body.filters;
 
+      //Update this field accordingly whenever you add a new facet 
       const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
 
   
@@ -1867,9 +1818,204 @@ app.post('/api/datasets/search', async (req, res) => {
         }
       }
   });
+
+
+  app.post('/api/tasks/search', async (req, res) => {
+    let client;
+    try {
+        client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+        await client.connect();
+
+        const db = client.db(dbName);
+        const tasksCollection = db.collection(taskBuilderCollectionName);
+
+        const page = parseInt(req.query.page, 10) || 1;
+        const taskType = req.query.task_type; // Extract task_type from query parameters
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+        const globalSearchQuery = req.query.q || '';
+        const filters = req.body.filters;
+      
+        //Update this field accordingly whenever you add a new facet 
+        const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+
+        if (!taskType) {
+            return res.status(400).send('task_type is required');
+        }
+
+        let matchStage = {
+            'TaskType.label': taskType, // Filter by task_type
+        };
+
+        if(globalSearchQuery) {
+            matchStage["$or"] = [
+                { 'TaskType.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+            ];
+        }
+
+        // Apply additional filters
+        if (filters && Object.keys(filters)?.length > 0) {
+
+            matchStage["$or"] = matchStage["$or"] || [];
+
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    const filterQuery = {};
+
+                    if (fieldsWithLabel.includes(filterCategory)) {
+                        // For fields with 'label' property
+                        filterQuery[`${filterCategory}.label`] = { $in: filterValue };
+                    } else {
+                        // For other fields (like 'Author'), assuming they are direct string values
+                        filterQuery[filterCategory] = { $in: filterValue };
+                    }
+
+                    matchStage.$or.push(filterQuery);
+                }
+            });
+        }
+
+            // After processing filters, check if $or is still empty, remove it if so
+    if (matchStage["$or"]?.length === 0) {
+        delete matchStage["$or"];
+    }
+
+        const basePipeline = [
+            {
+                $lookup: {
+                    from: datasetCollectionName,
+                    localField: "DatasetId",
+                    foreignField: "Id",
+                    as: "datasetDetails"
+                }
+            },
+            { $unwind: "$datasetDetails" },
+            {
+                $match: matchStage
+            }
+        ];
+
+        // Define the pipeline for counting the total number of matching tasks
+        const countPipeline = [
+            ...basePipeline,
+            { $count: "total" }
+        ];
+
+        // Execute the count pipeline
+        const countResults = await tasksCollection.aggregate(countPipeline).toArray();
+        const totalTasksCount = countResults.length > 0 ? countResults[0].total : 0;
+
+        
+        const facetAndDocumentsPipeline = [
+            {
+                $facet: {
+                    // Each facet is a direct property of the `$facet` object
+                    Species: [
+                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    Author: [
+                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    'Anatomical Entity': [
+                        { $group: { _id: '$datasetDetails.Anatomical Entity.label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    'Organ Part': [
+                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Specimen)': [
+                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Donor)': [
+                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } }, 
+                        { $sort: { count: -1 } }
+                    ],
+                    // Documents facet for pagination
+                    documents: [
+                        { $skip: (page - 1) * pageSize },
+                        { $limit: pageSize },
+                        {
+                            $project: {
+                                TaskId: "$Id",
+                                TaskType: "$TaskType.label",
+                                TaskLabel: "$TaskLabel.label",
+                                Title: "$datasetDetails.Title",
+                                Species: "$datasetDetails.Species.label",
+                                OrganPart: "$datasetDetails.Organ Part.label",
+                                CellCountEstimate: "$datasetDetails.Cell Count Estimate",
+                                AnatomicalEntity: "$datasetDetails.Anatomical Entity.label",
+                                DiseaseStatusDonor: "$datasetDetails.Disease Status (Donor).label",
+                                // Include additional fields as required
+                            }
+                        }
+                    ]
+                }
+            }
+        ];
+        
+        
+        const finalPipeline = basePipeline.concat(facetAndDocumentsPipeline);
+        
+        const aggregatedResults = await tasksCollection.aggregate(finalPipeline).toArray();
+
+        console.log(aggregatedResults);
+        
+        // Extract the first (and only) element of the aggregatedResults, which contains your facets and documents
+        const aggregationResult = aggregatedResults[0];
+
+        // Extract documents from the 'documents' facet
+        const documents = aggregationResult.documents;
+
+        // Extract and transform facets
+        const facets = Object.keys(aggregationResult)
+            .filter(key => key !== 'documents') // Exclude the 'documents' key to process only facets
+            .reduce((acc, key) => {
+                // Transform each facet's results for easier consumption
+                acc[key] = aggregationResult[key].map(facet => ({
+                    _id: facet._id, // Assuming each object has an _id field
+                    count: facet.count // Assuming each object has a count field
+                }));
+                return acc;
+            }, {});
+
+        // Assuming totalTasksCount is calculated elsewhere in your code
+        res.json({
+            results: documents,
+            facets: facets,
+            pagination: {
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalTasksCount / pageSize),
+                totalCount: totalTasksCount,
+            }
+        });    
+    } catch (error) {
+        console.error('API request failed:', error);
+        res.status(500).send('An error occurred while fetching tasks.');
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+});
+
   
-
-
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
