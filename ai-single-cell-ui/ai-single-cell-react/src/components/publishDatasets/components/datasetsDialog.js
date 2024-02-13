@@ -228,7 +228,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                   <p>{pagination.totalCount} results found!</p>
                 </div>
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} taskData={taskData} multiple={multiple} />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} />
                 </div>
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>
