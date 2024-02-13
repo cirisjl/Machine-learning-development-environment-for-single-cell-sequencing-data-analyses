@@ -1631,3 +1631,19 @@ width
 #dashFrame{
   height: 100vh;
 }
+
+
+.eighty-twenty-grid {
+  display: grid;
+  grid-template-columns: 80% 20%;
+}
+
+
+
+.eighty-twenty-grid .main-content{
+  margin-left: 4rem;
+}
+
+.eighty-twenty-grid .main-content .task-builder-task{
+  margin-top:2rem;
+}

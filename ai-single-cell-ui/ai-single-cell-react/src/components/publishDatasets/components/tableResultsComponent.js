@@ -4,12 +4,12 @@ import React from 'react';
 import { useTable, useRowSelect } from 'react-table';
 
 
-const ResultsTable = ({ data, onSelectDataset, taskData, multiple }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple }) => {
 
-    const ignoredColumns = ['Cells', 'Genes', 'QC_Plots', 'cell_metadata_obs', 'gene_metadata','layers', 'inputFiles', 'adata_path', 'taskOptions']; // Add column keys that you want to ignore
+    const ignoredColumns = ['Cells', 'Genes', 'QC_Plots', 'cell_metadata_obs', 'gene_metadata','layers', 'inputFiles', 'adata_path', 'taskOptions', '_id']; // Add column keys that you want to ignore
 
-    const isSelected = datasetId => !!taskData.task_builder.selectedDatasets[datasetId];
-    const isDisabled = () => !multiple && Object.keys(taskData.task_builder.selectedDatasets).length >= 1;
+    const isSelected = datasetId => !!selectedDatasets[datasetId];
+    const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
     const handleEdit = (dataset) => {
         console.log("Editing dataset: ", dataset);
@@ -49,7 +49,7 @@ const ResultsTable = ({ data, onSelectDataset, taskData, multiple }) => {
                         type="checkbox"
                         style={{ cursor:'pointer' }}
                         onChange={() => onSelectDataset(item)}
-                        checked={!!taskData.task_builder.selectedDatasets[item["Id"]]}
+                        checked={!!selectedDatasets[item["Id"]]}
                         disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
 
                     />
@@ -71,7 +71,7 @@ const ResultsTable = ({ data, onSelectDataset, taskData, multiple }) => {
         };
           
         return [actionColumn, ...baseColumns];
-    }, [data, taskData.task_builder.selectedDatasets]);
+    }, [data, selectedDatasets]);
 
     const {
         getTableProps,

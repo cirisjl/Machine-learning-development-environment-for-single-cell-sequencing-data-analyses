@@ -54,40 +54,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       }
     });
 
-  //   // Extract file paths for new datasets to make an API call
-  // const filePaths = Object.values(newSelectedDatasets).map(dataset => dataset.adata_path).filter(Boolean);
-
-  // if (filePaths.length > 0) {
-  //   try {
-  //     // Make an API call to get the table plots for new datasets
-  //     const response = await fetch(`${CELERY_BACKEND_API}/convert/api/getTablePlot`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(filePaths),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-
-  //     const tablePlots = await response.json();
-
-  //     // Assuming tablePlots is an array of results corresponding to filePaths,
-  //     // Attach each tablePlot result to its respective dataset
-  //     filePaths.forEach((filePath, index) => {
-  //       const key = Object.keys(newSelectedDatasets).find(key => newSelectedDatasets[key].adata_path === filePath);
-  //       if (key) {
-  //         newSelectedDatasets[key].tablePlot = tablePlots[index];
-  //       }
-  //     });
-
-  //   } catch (error) {
-  //     console.error('There was a problem with the fetch operation:', error);
-  //   }
-  // }
-  
     setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
