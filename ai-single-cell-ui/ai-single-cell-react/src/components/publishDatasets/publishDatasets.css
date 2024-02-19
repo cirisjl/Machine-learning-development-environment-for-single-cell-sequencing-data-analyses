@@ -439,35 +439,59 @@
 .task-builder-task .dialog-container .table-results th,
 .task-builder-task .dialog-container .table-results td {
   padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd; /* Light grey border for rows */
+  text-align: center;
+  /* border-bottom: 1px solid #ddd; Light grey border for rows */
+  border-top: 1px solid #e1e1e1; /* Light grey border */
+  border-bottom: 1px solid #e1e1e1; /* Light grey border */
 }
 
 .task-builder-task .dialog-container .table-results th {
-  background-color: #f8f8f8;
+  /* background-color: #f8f8f8; */
+  /* background-color: #f9f9f9;*/
   color: black;
   text-transform: capitalize;
+  font-weight: bold;
 }
 
 /* .task-builder-task .dialog-container .table-results tr {
   border-bottom: 1px solid #dddddd;
 } */
 
-.task-builder-task .dialog-container .table-results tr:nth-of-type(even) {
-  background-color: #f1f1f1;
-}
+/* .task-builder-task .dialog-container .table-results tr:nth-of-type(odd) {
+  /* background-color: #f1f1f1; */
+  /* background-color: #f2f2f2; 
+
+} */
 
 /* .task-builder-task .dialog-container .table-results tr:last-of-type {
   border-bottom: 2px solid #009879;
 } */
 
 .task-builder-task .dialog-container .table-results tr:hover {
-  background-color: #f1f1f1;
+  background-color: #f2f2f2;
 }
 
 .task-builder-task .dialog-container .table-results td {
-  border-right: 1px solid #dddddd;
+  /* border-right: 1px solid #dddddd; */
+  max-width: 200px; /* Adjust the max-width as necessary */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.task-builder-task .dialog-container .table-results td:hover {
+  cursor: pointer;
+  position: relative;
+}
+
+.task-builder-task .dialog-container .table-results .cell-ellipsis {
+  display: block; /* or inline-block */
+  max-width: 200px; /* or a specific width */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer; /* or default, depending on your need */
+}
+
 
 .task-builder-task .dialog-container .table-results td:last-child {
   border-right: none;
@@ -479,8 +503,18 @@
   cursor: pointer;
 }
 
-.task-builder-task .dialog-container .facet .filter-category.highlighted,
-.task-builder-task .dialog-container .facet p.filter-category:hover {
+.task-builder-task .dialog-container .facet .filter-category .filters-box-searchable {
+  display: none;
+  position: absolute;
+}
+
+.task-builder-task .dialog-container .facet .filter-category:hover .filters-box-searchable {
+  margin-top: -13px;
+  display: block;
+}
+
+
+.task-builder-task .dialog-container .facet .filter-category:hover p{
   /* Styles for the highlighted state */
   background-color: #f0f0f0;
 }
@@ -550,18 +584,18 @@
   width: 100%;
 }
 
-.task-builder-task .dialog-container .table-results .table-container thead {
+/* .task-builder-task .dialog-container .table-results .table-container thead {
   background-color: #f0f0f0;
-}
+} */
 
 .task-builder-task .dialog-container .table-results .table-container th, .table-container td {
-  text-align: left;
+  text-align: center;
   padding: 8px;
 }
 
-.task-builder-task .dialog-container .table-results .table-container tr:nth-child(even) {
+/* .task-builder-task .dialog-container .table-results .table-container tr:nth-child(even) {
   background-color: #f2f2f2;
-}
+} */
 
 @media screen and (max-width: 768px) {
   .task-builder-task .dialog-container .table-results .action-buttons {
@@ -610,4 +644,11 @@
   .task-builder-task .metadata-section .label-table-container .table-container th, td {
     padding: 0.5rem; /* Smaller padding for small screens */
   }
+}
+
+
+.task-builder-task .dialog-container .table-results .dropdown{
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
 }
