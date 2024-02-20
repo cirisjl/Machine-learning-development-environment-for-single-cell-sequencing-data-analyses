@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 
+from livelogs.logger import liveLogger
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.scrublet_calls import predict_scrublet
@@ -12,7 +13,7 @@ from config.celery_utils import get_input_path, get_output
 
 def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', colour_by='NULL', shape_by_1='NULL', shape_by_2='NULL', default_assay='RNA', show_error=True):
     if methods is None:
-        print("No quality control method is selected.")
+        liveLogger.push("No quality control method is selected.")
         return None   
     
 
@@ -28,7 +29,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
         adata = load_anndata(input)
 
         if adata is None:
-            print("File format is not supported.")
+            liveLogger.push("File format is not supported.")
             return None
 
         # Scanpy QC
@@ -38,11 +39,10 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
                 output_path = get_output_path(dataset, output, method='scanpy')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
-                print("AnnData object for Scanpy QC is saved successfully")
+                liveLogger.push("AnnData object for Scanpy QC is saved successfully")
             except Exception as e:
-                print("Scanpy QC is failed")
-                if show_error: print(e)
-
+                liveLogger.push("Scanpy QC is failed")
+                if show_error: liveLogger.push(e)
         # Dropkick QC
         if "DROPKICK" in methods:
             try:
@@ -50,10 +50,10 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
                 output_path = get_output_path(dataset, output, method='dropkick')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')
-                print("AnnData object for Dropkick QC is saved successfully")
+                liveLogger.push("AnnData object for Dropkick QC is saved successfully")
             except Exception as e:
-                print("Dropkick QC is failed")
-                if show_error: print(e)
+                liveLogger.push("Dropkick QC is failed")
+                if show_error: liveLogger.push(e)
 
     # Bioconductor QC
     if "BIOCONDUCTOR" in methods:
@@ -72,10 +72,10 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
             
             # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + bioconductor_path + "', params=list(dataset='" + str(dataset) + "', input_path='" + input + "', idtype='" + idtype + "', colour_by='" + colour_by + "', shape_by_1='" + shape_by_1 + "', shape_by_2='" + shape_by_2 + "', output='" + output_path + "', output_format='SingleCellExperiment'), output_file='" + report_path + "')\""], shell = True)
-            print(s)
+            liveLogger.push(s)
         except Exception as e:
-            print("Bioconductor QC is failed")
-            if show_error: print(e)
+            liveLogger.push("Bioconductor QC is failed")
+            if show_error: liveLogger.push(e)
 
     # Seurat QC
     if "SEURAT" in methods:
@@ -94,9 +94,9 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
             seurat_path = os.path.abspath(relative_path)
             # seurat_path = os.path.abspath("seurat_qc.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + seurat_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', default_assay='" + default_assay + "', output='" + output_path + "', output_format='Seurat', path_of_scrublet_calls='" + path_of_scrublet_calls + "'), output_file='" + report_path + "')\""], shell = True)
-            print(s)
+            liveLogger.push(s)
         except Exception as e:
-            print("Seurat QC is failed")
-            if show_error: print(e)
+            liveLogger.push("Seurat QC is failed")
+            if show_error: liveLogger.push(e)
 
     return {'status': 'Success'}

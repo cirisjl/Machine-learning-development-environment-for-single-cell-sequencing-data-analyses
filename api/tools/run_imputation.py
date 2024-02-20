@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from livelogs.logger import liveLogger
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
@@ -8,7 +9,7 @@ from config.celery_utils import get_input_path, get_output
 
 def run_imputation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     if methods is None:
-        print("No imputation method is selected.")
+        liveLogger.push("No imputation method is selected.")
         return None
     
     #Get the absolute path for the given input
@@ -21,7 +22,7 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
     if "MAGIC" in methods:
         adata = LoadAnndata(input)
         if adata is None:
-            print("File format is not supported.")
+            liveLogger.push("File format is not supported.")
             return None 
         
         if 'MAGIC_imputed' not in adata.layers.keys(): 
@@ -31,28 +32,28 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
                 adata.layers['MAGIC_imputed'] = data_magic
                 output = get_output_path(dataset, output, method='MAGIC_imputation')
                 adata.write_h5ad(output, compression='gzip')
-                print("AnnData object for MAGIC imputation is saved successfully")
+                liveLogger.push("AnnData object for MAGIC imputation is saved successfully")
             except Exception as e:
-                print("MAGIC imputation is failed")
-                if show_error: print(e)
+                liveLogger.push("MAGIC imputation is failed")
+                if show_error: liveLogger.push(e)
         else: 
-            print("'MAGIC_imputed' layer already exists.")
+            liveLogger.push("'MAGIC_imputed' layer already exists.")
 
     if "scGNN" in methods:
         if 'scGNN_imputed' not in adata.layers.keys(): 
             try:
                 output = get_output_path(dataset, output, method='scGNN_imputation')
-                print("AnnData object for scGNN imputation is saved successfully")          
+                liveLogger.push("AnnData object for scGNN imputation is saved successfully")             
             except Exception as e:
-                print("scGNN imputation is failed")
-                if show_error: print(e)
+                liveLogger.push("scGNN imputation is failed")
+                if show_error: liveLogger.push(e)
         else: 
-            print("'scGNN_imputed' layer already exists.") 
+            liveLogger.push("'scGNN_imputed' layer already exists.") 
     
     if "SAVER" in methods:
         adata, counts, csv_path = LoadAnndata_to_csv(input, output, layer, show_error)
         if adata is None:
-            print("File format is not supported.")
+            liveLogger.push("File format is not supported.")
             return None 
         if 'SAVER_imputed' not in adata.layers.keys(): 
             try:
@@ -70,12 +71,12 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
 
                 # saver_path = os.path.abspath("imputation/SAVER.Rmd")
                 s = subprocess.call(["R -e \"rmarkdown::render('" + saver_path + "', params=list(dataset='" + str(dataset) + "', input='" + csv_path + "', output='" + output + "', output_format='AnnData', ncores=" + str(ncores) + "), output_file='" + report_path + "')\""], shell = True)
-                print(s)
+                liveLogger.push(s)
             except Exception as e:
-                print("SAVER imputation is failed")
-                if show_error: print(e)
+                liveLogger.push("SAVER imputation is failed")
+                if show_error: liveLogger.push(e)
         else: 
-            print("'SAVER_imputed' layer already exists.")
+            liveLogger.push("'SAVER_imputed' layer already exists.")
 
     return {'status': 'Success'}
 

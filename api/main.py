@@ -4,7 +4,7 @@ from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
 import asyncio
 from fastapi.responses import HTMLResponse
-
+from livelogs import logger.liveLogger
 from config.celery_utils import create_celery
 from routers import tools, conversion
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,6 +65,17 @@ async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
                 results[taskId] = 'Processing'
         await websocket.send_json(results)
         await asyncio.sleep(3)
+
+
+@app.websocket("logs/")
+async def livelogs(websocket: WebSocket):
+    await websocket.accept()
+
+    while True:
+        for msg in liveLogger.log_messages:
+            await websocket.send_text(msg)
+        
+        liveLogger.log_messages = []
 
 
 @app.get("/status")

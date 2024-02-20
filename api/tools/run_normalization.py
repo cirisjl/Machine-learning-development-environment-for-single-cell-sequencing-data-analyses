@@ -2,6 +2,7 @@ import os
 import subprocess
 # import sys
 # sys.path.append('..')
+from livelogs.logger import liveLogger
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 
@@ -9,7 +10,7 @@ from config.celery_utils import get_input_path, get_output
 def run_normalization(task_id, dataset, input, userID, output, methods, species, default_assay='RNA', output_format='AnnData',idtype='ENSEMBL', show_umap = True, show_error = True):
     
     if methods is None:
-        print("No normalization method is selected.")
+        liveLogger.push("No normalization method is selected.")
         return None
     
     #Get the absolute path for the given input
@@ -36,9 +37,9 @@ def run_normalization(task_id, dataset, input, userID, output, methods, species,
 
         # rmd_path = os.path.abspath("normalization/normalization.Rmd")
         s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', species='" + str(species) + "', idtype='" + str(idtype) + "', show_umap='" + str(show_umap) + "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\""], shell = True)
-        print(s)
+        liveLogger.push(s)
     except Exception as e:
-        print("Normalization is failed")
-        if show_error: print(e)
+        liveLogger.push("Normalization is failed")
+        if show_error: liveLogger.push(e)
 
     return {'status': 'Success'}

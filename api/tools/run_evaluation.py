@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from livelogs.logger import liveLogger
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
@@ -8,7 +9,7 @@ from config.celery_utils import get_input_path, get_output
 
 def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     if methods is None:
-        print("No evaluation method is selected.")
+        liveLogger.push("No evaluation method is selected.")
         return None
 
     #Get the absolute path for the given input
@@ -34,9 +35,9 @@ def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None,
         rmd_path = os.path.abspath(relative_path)
 
         s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(dataset='" + str(dataset) + "', input='" + input + "', output_folder='" + output +  "', methods='" + methods +  "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\""], shell = True)
-        print(s)
+        liveLogger.push(s)
     except Exception as e:
-        print("Normalization is failed")
-        if show_error: print(e)
+        liveLogger.push("Normalization is failed")
+        if show_error: liveLogger.push(e)
 
     return {'status': 'Success'}
