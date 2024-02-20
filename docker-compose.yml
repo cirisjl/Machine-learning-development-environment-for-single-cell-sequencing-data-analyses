@@ -247,7 +247,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=digbio-devel.missouri.edu # $(hostname)
+      - HOST_URL=clnode160.clemson.cloudlab.us # $(hostname)
       - SSH_CONNECTION=${SSH_CONNECTION}
     depends_on:
       - oscb_mysql
@@ -265,7 +265,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=digbio-devel.missouri.edu # $(hostname)
+      - HOST_URL=clnode160.clemson.cloudlab.us # $(hostname)
     networks:
       - oscb-network
 
