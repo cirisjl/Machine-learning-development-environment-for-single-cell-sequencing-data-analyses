@@ -247,7 +247,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=${HOST}
+      - HOST_URL=node-1.c220g2-prakash.biomizzou-pg0.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     depends_on:
       - oscb_mysql
@@ -265,9 +265,10 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=${HOST}
+      - HOST_URL=node-1.c220g2-prakash.biomizzou-pg0.wisc.cloudlab.us
     networks:
       - oscb-network
+
 
   directus:
     container_name: oscb_directus_container
