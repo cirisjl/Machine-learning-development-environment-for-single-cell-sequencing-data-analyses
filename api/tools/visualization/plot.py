@@ -13,7 +13,7 @@ import numpy as np
 from anndata import AnnData
 from scipy.sparse import csr_matrix
 
-from tools.formating.plotConstants import *
+from tools.visualization.plotConstants import *
 
 def plot_UMAP(adata, layer=None, clustering_plot_type="n_genes", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'n_genes', 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
@@ -354,6 +354,15 @@ def plot_table(dataframe, n_top=5):
         })
 
 
+def get_line_style(key):
+    style = 'dot'
+    if 'CPU' in key:
+        style = 'solid'
+    elif 'GPU' in key:
+        style = 'dashdot'
+    return style
+
+
 def plot_line(x=[], y={}):
     x = [n for n in range(len(x))]
     traces = []
@@ -363,7 +372,7 @@ def plot_line(x=[], y={}):
             if sum(value) == 0:
                 continue
 
-            value = [float('{:.4f}'.format(i)) for i in value]
+            line_style = get_line_style(key)
 
             traces.append({
                 "type": "scatter",
@@ -372,7 +381,7 @@ def plot_line(x=[], y={}):
                 "name": key,
                 "mode": 'lines+markers',
                 "line": {
-                    "dash": 'solid' if 'CPU' in key else 'dot'
+                    "dash": line_style # 'solid' if 'CPU' in key else 'dot'
                 },
                 "marker": {
                     'size': point_size_2d
@@ -389,8 +398,8 @@ def plot_line(x=[], y={}):
         'data': [trace for trace in traces],
         'layout': {
             'title': 'Computing assessments',
-            'xaxis': {"title": 'Time points'},
-            'yaxis': {"title": 'Utilization %'},
+            'xaxis': {"title": 'Time points (s)'},
+            'yaxis': {"title": 'Utilization (%)'},
             'margin': margin,
             'hovermode': 'closest',
             'transition': {'duration': 100},
@@ -408,8 +417,6 @@ def plot_bar(x=[], y={}, title="Benchmarks"):
         for key, value in y.items():
             if sum(value) == 0:
                 continue
-
-            # value = [float('{:.4f}'.format(i)) for i in value]
 
             traces.append({
                 "type": "bar",

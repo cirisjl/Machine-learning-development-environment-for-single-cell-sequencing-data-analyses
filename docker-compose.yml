@@ -9,7 +9,7 @@ services:
     ports:
       - 65528:65528
     volumes:
-      - /ps/code/db:/data/db
+      - /ps/code/oscb/db/mongodb:/data/db
     networks:
       - oscb-network
 
@@ -48,8 +48,8 @@ services:
     env_file:
       - ./rabbitmq.env
     volumes:
-      - /ps/code/db/rabbitmq/data/:/var/lib/rabbitmq/
-      - /ps/code/db/rabbitmq/log/:/var/log/rabbitmq
+      - /ps/code/oscb/db/rabbitmq/data/:/var/lib/rabbitmq/
+      - /ps/code/oscb/db/rabbitmq/log/:/var/log/rabbitmq
     networks:
       - oscb-network
 
@@ -92,10 +92,10 @@ services:
     ports:
       - 5000:5000
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     env_file:
@@ -123,10 +123,10 @@ services:
          limits:
             cpus: "10"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/error
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
     networks:
       - oscb-network
@@ -154,10 +154,10 @@ services:
          limits:
             cpus: "10"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -184,10 +184,10 @@ services:
          limits:
             cpus: "10"
     volumes:
-      - Predictions:/data/results
-      - Uploads:/data/upload
-      - Errors:/data/errors
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -219,7 +219,7 @@ services:
     build:
       context: ./ai-single-cell-ui/ai-single-cell-mysql
     volumes:
-        - mysql_db:/var/lib/mysql
+        - /ps/code/oscb/mysql_db:/var/lib/mysql
         - ./ai-single-cell-ui/ai-single-cell-mysql/aisinglecell_schema_latest.sql:/docker-entrypoint-initdb.d/aisinglecell_schema_latest.sql
     restart: unless-stopped
     command:
@@ -247,12 +247,12 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=${HOST}
+      - HOST_URL=clnode119.clemson.cloudlab.us # $(hostname)
       - SSH_CONNECTION=${SSH_CONNECTION}
     depends_on:
       - oscb_mysql
     volumes:
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
 
@@ -265,7 +265,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=${HOST}
+      - HOST_URL=clnode119.clemson.cloudlab.us # $(hostname)
     networks:
       - oscb-network
 
@@ -276,7 +276,7 @@ services:
     ports:
         - 8055:8055
     volumes:
-        - Directus_uploads:/directus/uploads
+        - /ps/code/oscb/Directus_uploads:/directus/uploads
     depends_on:
         - oscb_mysql
     env_file:
@@ -298,17 +298,17 @@ services:
     env_file:
       - .env
     volumes:
-      - user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
 networks:
   oscb-network:
     driver: bridge
 
-volumes:
-  Predictions: 
-  Uploads:
-  Errors:
-  user_storage: {}
-  Directus_uploads:
-  mysql_db:
+# volumes:
+#   Predictions: 
+#   Uploads:
+#   Errors:
+#   user_storage: {}
+#   Directus_uploads:
+#   mysql_db:
 
