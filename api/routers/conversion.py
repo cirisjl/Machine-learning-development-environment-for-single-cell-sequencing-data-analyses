@@ -9,6 +9,7 @@ from tools.utils.utils import sc_train_val_test_split
 from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
+from file_manager.unzip import unzip_file_if_compressed
 import logging
 from pathlib import Path
 import shutil
@@ -30,7 +31,8 @@ async def convert_to_annData(request_data: ConversionRequest):
     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
     """
     try:
-        adata_path, assay_names = convert_seurat_sce_to_anndata(request_data.path)
+        file_path = unzip_file_if_compressed(request_data.path)
+        adata_path, assay_names = convert_seurat_sce_to_anndata(file_path)
 
         if assay_names is None:
             assay_names = []
@@ -47,7 +49,7 @@ async def receive_data(data: List[dict]):
     response_data = []
 
     for entry in data:
-        path = entry.get('fileDetails')
+        path = unzip_file_if_compressed(entry.get('fileDetails'))
         assay = entry.get('assayName')
 
         if path and assay:
@@ -71,7 +73,7 @@ async def process_input_files_validation(request: InputFilesRequest):
     result = []
 
     for input in input_files:
-        file = input.fileDetails
+        file = unzip_file_if_compressed(input.fileDetails)
         assay = input.assay
 
         try:

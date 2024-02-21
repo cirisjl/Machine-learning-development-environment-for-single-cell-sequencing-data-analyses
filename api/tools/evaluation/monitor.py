@@ -1,4 +1,5 @@
 
+# pip install nvidia-ml-py
 import os
 import time
 import psutil
@@ -36,7 +37,6 @@ class Monitor(Thread):
     
 
     def nvidia_info(self):
-        # pip install nvidia-ml-py
         nvidia_dict = {
             "state": True,
             "nvidia_version": "",
