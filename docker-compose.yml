@@ -94,8 +94,8 @@ services:
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
-      - /ps/code/oscb/upload/errors:/data/errors
-      - /ps/code/oscb/upload/user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     env_file:
@@ -125,8 +125,8 @@ services:
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
-      - /ps/code/oscb/upload/errors:/data/errors
-      - /ps/code/oscb/upload/user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
     networks:
       - oscb-network
@@ -156,8 +156,8 @@ services:
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
-      - /ps/code/oscb/upload/errors:/data/errors
-      - /ps/code/oscb/upload/user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -186,8 +186,8 @@ services:
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
-      - /ps/code/oscb/upload/errors:/data/errors
-      - /ps/code/oscb/upload/user_storage:/usr/src/app/storage/
+      - /ps/code/oscb/errors:/data/errors
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
     networks:
       - oscb-network
     depends_on:
@@ -247,7 +247,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=clnode160.clemson.cloudlab.us # $(hostname)
+      - HOST_URL=clnode119.clemson.cloudlab.us # $(hostname)
       - SSH_CONNECTION=${SSH_CONNECTION}
     depends_on:
       - oscb_mysql
@@ -265,7 +265,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=clnode160.clemson.cloudlab.us # $(hostname)
+      - HOST_URL=clnode119.clemson.cloudlab.us # $(hostname)
     networks:
       - oscb-network
 
