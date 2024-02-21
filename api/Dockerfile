@@ -3,7 +3,7 @@ FROM stormgod/oscb-api
 
 # Install python packages
 RUN pip install --upgrade --no-cache \
-    dash~=2.9.1 pymongo dash-bootstrap-components dash_bootstrap_templates python-multipart numpyro==0.12.1
+    dash~=2.9.1 pymongo dash-bootstrap-components dash_bootstrap_templates python-multipart numpyro==0.12.1 rarfile
     # louvain plotly psutil nvidia-ml-py pymde
     # gputil
 
