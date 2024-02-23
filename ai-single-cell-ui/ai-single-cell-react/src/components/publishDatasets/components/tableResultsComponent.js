@@ -9,7 +9,9 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ListItemText from '@material-ui/core/ListItemText';
-
+import ReactPlotly from './reactPlotly';
+import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
 
@@ -80,8 +82,90 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     
     const handleVisualize = (dataset) => {
         console.log("Visualizing dataset: ", dataset);
-        // Implement your visualization logic here
+        console.log("resulys", data);
+        console.log("hghg",data.QC_Plots)
+        console.log("check2",data[0].QC_Plots);
+        console.log("check2",data[0].QC_Plots.scatter_plot);
+        
+        // Open a new tab/window
+        const newWindow = window.open('', '_blank');
+    
+        if (newWindow) {
+            // Write the necessary HTML structure to the new tab with a spinner
+            newWindow.document.write('<html><head><title>Loading...</title>');
+            newWindow.document.write('<style>');
+            newWindow.document.write(`
+                body { display: flex; flex-direction: column; margin: 0; }
+                .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+                .plot-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: 20px; }
+                .plot-container h2 { margin-bottom: 20px; }
+            `);
+            newWindow.document.write('</style></head>');
+            newWindow.document.write('<body><div class="spinner"></div></body></html>');
+    
+            // Debug statement to check if the spinner HTML is written
+            console.log("Spinner HTML written to the new tab.");
+    
+            setTimeout(() => {
+                if (data && data.length > 0 && data[0].QC_Plots) {
+                    // Debug statement to check the availability of QC_Plots in the data
+                    console.log("QC_Plots found in data.");
+    
+                    // Write the necessary HTML structure to the new tab
+                    newWindow.document.write('<html><head><title>Visualization</title></head><body></body></html>');
+    
+                    // Debug statement to verify the HTML structure is written correctly
+                    console.log("HTML structure written to the new tab.");
+    
+                    // Render your plots in the new window/tab, for example using React components:
+                    if (data[0].QC_Plots.umap_plot) {
+                        const umapPlotContainer = newWindow.document.createElement('div');
+                        umapPlotContainer.className = 'plot-container';
+                        umapPlotContainer.innerHTML = '<h2>UMAP Plot</h2>';
+                        newWindow.document.body.appendChild(umapPlotContainer);
+                        const root = newWindow.document.createElement('div');
+                        umapPlotContainer.appendChild(root);
+                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.umap_plot} />);
+                    }
+    
+                    if (data[0].QC_Plots.scatter_plot) {
+                        const scatterPlotContainer = newWindow.document.createElement('div');
+                        scatterPlotContainer.className = 'plot-container';
+                        scatterPlotContainer.innerHTML = '<h2>Scatter Plot</h2>';
+                        newWindow.document.body.appendChild(scatterPlotContainer);
+                        const root = newWindow.document.createElement('div');
+                        scatterPlotContainer.appendChild(root);
+                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.scatter_plot} />);
+                    }
+    
+                    if (data[0].QC_Plots.violin_plot) {
+                        const violinPlotContainer = newWindow.document.createElement('div');
+                        violinPlotContainer.className = 'plot-container';
+                        violinPlotContainer.innerHTML = '<h2>Violin Plot</h2>';
+                        newWindow.document.body.appendChild(violinPlotContainer);
+                        const root = newWindow.document.createElement('div');
+                        violinPlotContainer.appendChild(root);
+                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.violin_plot} />);
+                    }
+                    const spinner = newWindow.document.querySelector(".spinner");
+                spinner.parentNode.removeChild(spinner);
+                } else {
+                    // Error handling if data or QC_Plots is not found
+                    console.error("Data or QC_Plots not found or not in the expected format.");
+                }
+    
+                // For demonstration, let's write a simple message after a delay
+                //newWindow.document.body.innerHTML = '<h1>Data Loaded!</h1>';
+            }, 2000); // Simulating a delay of 2 seconds (2000 milliseconds)
+        } else {
+            // Error handling if newWindow is null (window.open failed)
+            console.error("Failed to open new window. Ensure popup blockers are disabled.");
+        }
     };
+    
+    
+    
+    
 
     const columns = React.useMemo(() => {
         if (data.length === 0) {

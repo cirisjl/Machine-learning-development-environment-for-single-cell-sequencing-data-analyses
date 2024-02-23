@@ -84,13 +84,17 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       ) : (
       <div>
         <div className="App">
+          
         {/* {taskData.quality_control.qc_results &&
               taskData.quality_control.qc_results.map((result, index) => (
                 result.umap_plot && <ReactPlotly plot_data={result.umap_plot} />
         ))} */}
+
         {taskData.quality_control.qc_results &&
           taskData.quality_control.qc_results.map((result, index) => (
+            
             <React.Fragment key={index}>
+              
                   {result.umap_plot && (
                     <>
                       <h2>UMAP Plot</h2>
