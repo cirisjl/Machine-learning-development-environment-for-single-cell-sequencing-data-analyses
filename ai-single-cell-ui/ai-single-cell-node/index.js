@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName, taskBuilderCollectionName} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1335,12 +1335,14 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
+    const formData = req.body; // This assumes you have middleware to parse JSON in the request body
       // Connect to the MongoDB server
       await client.connect();
       const db = client.db(dbName);
-      const collection = db.collection(datasetCollectionName);
+
+       const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
+    
   
-      const formData = req.body; // This assumes you have middleware to parse JSON in the request body
   
       // Check if a document with the provided Id already exists
       const existingDocument = await collection.findOne({ Id: formData.Id });
@@ -1437,7 +1439,7 @@ app.get('/mongoDB/api/getDatasets', async (req, res) => {
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollectionName);
+        const collection = db.collection(datasetCollection);
 
         // Fetching all documents from the collection
         const datasets = await collection.find({}).toArray();
@@ -1693,7 +1695,7 @@ app.post('/api/datasets/search', async (req, res) => {
         await client.connect();
 
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollectionName);
+        const collection = db.collection(datasetCollection);
 
 
       const page = parseInt(req.query.page, 10) || 1;
@@ -1884,7 +1886,7 @@ app.post('/api/datasets/search', async (req, res) => {
         const basePipeline = [
             {
                 $lookup: {
-                    from: datasetCollectionName,
+                    from: datasetCollection,
                     localField: "DatasetId",
                     foreignField: "Id",
                     as: "datasetDetails"
