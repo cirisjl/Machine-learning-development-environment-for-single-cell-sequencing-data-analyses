@@ -136,8 +136,8 @@ const MyTasksSideNav = () => {
                         {tasks.length === 0 ? (
                             <div>
                                 <div>
-                                    <div role="alert" aria-live="polite" aria-atomic="true" class="alert m-2 alert-info">
-                                        <h4 class="mb-1">
+                                    <div role="alert" aria-live="polite" aria-atomic="true" className="alert m-2 alert-info">
+                                        <h4 className="mb-1">
                                             <FontAwesomeIcon icon={faInfoCircle} />
                                             <span>Your task list is empty.</span>
                                         </h4> 

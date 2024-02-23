@@ -36,6 +36,7 @@ import ManageOptions from './Form/Components/editablePageOptions';
 // import PublishDataset from './publishDatasets/publishDataset';
 import FlowControl from './publishDatasets/flowControl';
 import TaskResultsComponent from './Benchmarks/taskResultsComponent';
+import UploadDataset from './MyData/UploadData/uploadDataset';
 
 function App() {
 
@@ -51,7 +52,7 @@ function App() {
           <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
-          <Route path="mydata/upload-data"       element={<UploadData/>}></Route>
+          <Route path="mydata/upload-data"       element={<UploadDataset/>}></Route>
           <Route path="mydata/update-dataset"       element={<UploadData/>}></Route>
           <Route path="mydata/preview-datasets" element={<PreviewDatasets/>}></Route>
           <Route path="mydata/workflows" element={<ClusteringUsingRaceID/>}></Route>

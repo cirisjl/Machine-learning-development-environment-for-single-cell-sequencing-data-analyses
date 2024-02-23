@@ -154,14 +154,12 @@ LoadSeurat <- function(path, project = NULL) {
 LoadSCE <- function(path) {
     sce <- NULL
     if(file_test("-d", path)){
-        print("Inside LoadSeurat 3")
         if(file.exists(file.path(path,"molecules.txt")) && file.exists(file.path(path,"annotation.txt"))){
             delim <- DetectDelim(path)
             molecules <- read.delim(file.path(path,"molecules.txt"), sep = delim, row.names = 1) 
             annotation <- read.delim(file.path(path,"annotation.txt"), sep = delim, stringsAsFactors = T)
             sce <- SingleCellExperiment(assays = list(counts = as.matrix(molecules)), colData = annotation)
         } else{
-            print("Inside LoadSeurat 4")
             srat <- LoadSeurat(path)
             if(!is.null(srat)){
                 sce <- as.SingleCellExperiment(srat)
@@ -169,13 +167,10 @@ LoadSCE <- function(path) {
             }
         }
     } else{
-        print("Inside LoadSeurat 5")
         suffix <- tolower(GetSuffix(path))
         if(suffix == "rds"){
             sce <- readRDS(path)
-            print("Inside LoadSeurat 6")
         } else{
-            print("Inside LoadSeurat 7")
             srat <- LoadSeurat(path)
             if(!is.null(srat)){
                 sce <- as.SingleCellExperiment(srat)
@@ -245,14 +240,13 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
 
 
 # Return a list of assays if the default assay is not "RNA"
-ConvertSeuratSCEtoAnndata <- function(path, assay = NULL) {
+ConvertSeuratSCEtoAnndata <- function(path, assay = 'RNA') {
     assay_names <- NULL
     default_assay <- NULL
     adata_path <- paste0(tools::file_path_sans_ext(path), ".h5ad")
     suffix <- tolower(GetSuffix(path))
     
-    print("inside R ConvertSeuratSCEtoAnndata")
-
+    print("Inside ConvertSeuratSCEtoAnndata R function")
     srat <- LoadSeurat(path)
 
     print("srat object is loaded")

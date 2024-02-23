@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName, taskBuilderCollectionName} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1335,12 +1335,14 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
+    const formData = req.body; // This assumes you have middleware to parse JSON in the request body
       // Connect to the MongoDB server
       await client.connect();
       const db = client.db(dbName);
-      const collection = db.collection(datasetCollectionName);
+
+       const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
+    
   
-      const formData = req.body; // This assumes you have middleware to parse JSON in the request body
   
       // Check if a document with the provided Id already exists
       const existingDocument = await collection.findOne({ Id: formData.Id });
@@ -1437,7 +1439,7 @@ app.get('/mongoDB/api/getDatasets', async (req, res) => {
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollectionName);
+        const collection = db.collection(datasetCollection);
 
         // Fetching all documents from the collection
         const datasets = await collection.find({}).toArray();
@@ -1693,7 +1695,7 @@ app.post('/api/datasets/search', async (req, res) => {
         await client.connect();
 
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollectionName);
+        const collection = db.collection(datasetCollection);
 
 
       const page = parseInt(req.query.page, 10) || 1;
@@ -1704,54 +1706,50 @@ app.post('/api/datasets/search', async (req, res) => {
       //Update this field accordingly whenever you add a new facet 
       const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
 
-  
-      // Build your query based on other filters, if any
-      let matchStage = {};
+      let matchConditions = [];
 
-        // Add the global search query to the matchStage
+        // Add the global search query to the match conditions
         if (globalSearchQuery) {
-            matchStage = {
+            matchConditions.push({
                 $or: [
-                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } }, // Include 'Species.label' in the search
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // Add more fields and nested fields as needed
                 ],
-            };
+            });
         }
+
         // Apply additional filters
         if (filters) {
-
-            matchStage["$or"] = matchStage["$or"] || [];
-
             Object.keys(filters).forEach((filterCategory) => {
                 const filterValue = filters[filterCategory];
-
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
-                    const filterQuery = {};
+                    let condition = {};
 
+                    // Check if the filter category should use the 'label' property
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        // For fields with 'label' property
-                        filterQuery[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[`${filterCategory}.label`] = { $in: filterValue };
                     } else {
-                        // For other fields (like 'Author'), assuming they are direct string values
-                        filterQuery[filterCategory] = { $in: filterValue };
+                        // Directly use the filter category for other fields
+                        condition[filterCategory] = { $in: filterValue };
                     }
 
-                    matchStage.$or.push(filterQuery);
+                    // Add this condition to the matchConditions array
+                    matchConditions.push(condition);
                 }
             });
         }
 
-        // Check if $or is empty and handle accordingly
-        if (matchStage["$or"] && matchStage["$or"].length === 0) {
-            delete matchStage["$or"];
+        // Construct the final match stage using $and, only if there are multiple conditions
+        let matchStage = {};
+        if (matchConditions.length > 0) {
+            matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
         }
-  
+
       // Define the pipeline for facets
       const facetsPipeline = [
         { $match: matchStage },
@@ -1841,57 +1839,54 @@ app.post('/api/datasets/search', async (req, res) => {
         if (!taskType) {
             return res.status(400).send('task_type is required');
         }
+        // Initialize matchConditions to include the taskType filter
+        let matchConditions = [{ 'TaskType.label': taskType }];
 
-        let matchStage = {
-            'TaskType.label': taskType, // Filter by task_type
-        };
-
-        if(globalSearchQuery) {
-            matchStage["$or"] = [
-                { 'TaskType.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Species.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
-            ];
+        // Include global search query in match conditions
+        if (globalSearchQuery) {
+            matchConditions.push({
+                $or: [
+                    { 'TaskType.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                ]
+            });
         }
 
+
         // Apply additional filters
-        if (filters && Object.keys(filters)?.length > 0) {
-
-            matchStage["$or"] = matchStage["$or"] || [];
-
+        if (filters && Object.keys(filters).length > 0) {
             Object.keys(filters).forEach((filterCategory) => {
                 const filterValue = filters[filterCategory];
-
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
-                    const filterQuery = {};
-
+                    let condition = {};
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        // For fields with 'label' property
-                        filterQuery[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[`datasetDetails.${filterCategory}.label`] = { $in: filterValue };
                     } else {
-                        // For other fields (like 'Author'), assuming they are direct string values
-                        filterQuery[filterCategory] = { $in: filterValue };
+                        condition[`datasetDetails.${filterCategory}`] = { $in: filterValue };
                     }
-
-                    matchStage.$or.push(filterQuery);
+                    matchConditions.push(condition);
                 }
             });
         }
 
-            // After processing filters, check if $or is still empty, remove it if so
-    if (matchStage["$or"]?.length === 0) {
-        delete matchStage["$or"];
-    }
+        // Construct the final match stage
+        let matchStage = {};
+        if (matchConditions.length > 1) {
+            matchStage = { $and: matchConditions };
+        } else if (matchConditions.length === 1) {
+            matchStage = matchConditions[0];
+        }
 
         const basePipeline = [
             {
                 $lookup: {
-                    from: datasetCollectionName,
+                    from: datasetCollection,
                     localField: "DatasetId",
                     foreignField: "Id",
                     as: "datasetDetails"
@@ -1952,16 +1947,19 @@ app.post('/api/datasets/search', async (req, res) => {
                         { $limit: pageSize },
                         {
                             $project: {
+                                Title: "$datasetDetails.Title",
                                 TaskId: "$Id",
                                 TaskType: "$TaskType.label",
-                                TaskLabel: "$TaskLabel.label",
-                                Title: "$datasetDetails.Title",
                                 Species: "$datasetDetails.Species.label",
-                                OrganPart: "$datasetDetails.Organ Part.label",
-                                CellCountEstimate: "$datasetDetails.Cell Count Estimate",
-                                AnatomicalEntity: "$datasetDetails.Anatomical Entity.label",
-                                DiseaseStatusDonor: "$datasetDetails.Disease Status (Donor).label",
-                                // Include additional fields as required
+                                'Organ Part': "$datasetDetails.Organ Part.label",
+                                'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
+                                'Development Stage': "$datasetDetails.Development Stage",
+                                'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
+                                'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
+                                Author: "$datasetDetails.Author",
+                                TaskLabel: "$TaskLabel.label",
+                                'Source': "$datasetDetails.Source",
+                                'Submission Date': "$datasetDetails.Submission Date",
                             }
                         }
                     ]

@@ -91,3 +91,7 @@ class TaskDataRequest(BaseModel):
 class BenchmarksRequest(BaseModel):
     task_type: str
     data: List[TaskDataRequest]
+
+class ConvertRequest(BaseModel):
+    fileDetails: List[str]
+    assay_name: Optional[str] = None
