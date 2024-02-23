@@ -97,7 +97,7 @@
     margin-bottom: 20px;
   }
   
-  .validation-task .spinner-container {
+  .validation-task .spinner-container, .spinner-container {
     display: flex;
     justify-content: center;
     align-items: center;
