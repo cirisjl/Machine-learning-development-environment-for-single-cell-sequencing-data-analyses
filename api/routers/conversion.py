@@ -1,6 +1,6 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,BenchmarksRequest
+from schemas.schemas import ConversionRequest,ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,BenchmarksRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
@@ -25,46 +25,46 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
 
 
-@router.post('/api/convert_to_anndata', response_model=ConversionResponse)
-async def convert_to_annData(request_data: ConversionRequest):
-    """
-    Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
-    """
-    try:
-        file_path = unzip_file_if_compressed(request_data.path)
-        adata_path, assay_names = convert_seurat_sce_to_anndata(file_path)
+# @router.post('/api/convert_to_anndata', response_model=ConversionResponse)
+# async def convert_to_annData(request_data: ConversionRequest):
+#     """
+#     Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object or the list of assay names of Seurat object
+#     """
+#     try:
+#         file_path = unzip_file_if_compressed(request_data.path)
+#         adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file_path)
 
-        if assay_names is None:
-            assay_names = []
-        if adata_path is None:
-            adata_path = "Not available"
+#         if assay_names is None:
+#             assay_names = []
+#         if adata_path is None:
+#             adata_path = "Not available"
 
-        return ConversionResponse(assay_names=assay_names, adata_path=adata_path, message="OK")
+#         return ConversionResponse(assay_names=assay_names, adata_path=adata_path, message="OK")
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post('/api/convert_sce_to_annData', response_model=dict)
-async def receive_data(data: List[dict]):
-    response_data = []
+# @router.post('/api/convert_sce_to_annData', response_model=dict)
+# async def receive_data(data: List[dict]):
+#     response_data = []
 
-    for entry in data:
-        path = unzip_file_if_compressed(entry.get('fileDetails'))
-        assay = entry.get('assayName')
+#     for entry in data:
+#         path = unzip_file_if_compressed(entry.get('fileDetails'))
+#         assay = entry.get('assayName')
 
-        if path and assay:
-            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay)
+#         if path and assay:
+#             adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(path, assay)
 
-            if adata_path and adata_path != None:
-                adata_path = adata_path.lstrip('[1] ').rstrip('\n')
+#             if adata_path and adata_path != None:
+#                 adata_path = adata_path.lstrip('[1] ').rstrip('\n')
 
-            response_data.append({
-                'path': path,
-                'assay': assay,
-                'adata_path': adata_path
-            })
+#             response_data.append({
+#                 'path': path,
+#                 'assay': assay,
+#                 'adata_path': adata_path
+#             })
 
-    return {'data': response_data, 'message': 'Data processed successfully'}
+#     return {'data': response_data, 'message': 'Data processed successfully'}
 
 
 @router.post('/publishDatasets/validation')
@@ -257,3 +257,53 @@ async def process_files(file_paths: List[str]):
     except Exception as e:
         # Handle exceptions as needed
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@router.post('/api/to_adata_or_srat')
+async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
+
+    fileDetails = request_body.fileDetails
+    assay_name = request_body.assay_name
+    results = []
+
+    # Check if only one file is provided
+    if len(fileDetails) == 1:
+        file = unzip_file_if_compressed(fileDetails[0])
+        try:
+            # Check if the file is of a specific type
+            if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')):
+                # Process as specified for these file types
+                adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file, assay=assay_name)
+                results.append({
+                    'adata_path': adata_path,
+                    'assay_names': assay_names,
+                    'default_assay': default_assay,
+                    "inputfile": file,
+                    "format": "h5seurat"
+                })
+            else:
+                adata_path = change_file_extension(file, 'h5ad')
+                adata = load_anndata(file)
+                adata.write_h5ad(adata_path)
+                results.append({"inputfile": file, "adata_path": adata_path, "format": "h5ad"})
+        except Exception as e:
+            # Handle the exception and return an error response
+            raise HTTPException(status_code=500, detail=str(e))
+
+    elif len(fileDetails) > 1:
+        parent_directory = os.path.dirname(unzip_file_if_compressed(fileDetails[0]))
+        
+        # Optionally, verify that all files are in the same directory
+        if not all(os.path.dirname(unzip_file_if_compressed(file)) == parent_directory for file in fileDetails):
+            raise HTTPException(status_code=400, detail="Not all files are in the same directory.")
+
+        try:
+            # Now, use the parent directory to load the dataset
+            adata = load_anndata(parent_directory)
+            adata_path = os.path.join(parent_directory, "combined_dataset.h5ad")
+            adata.write_h5ad(adata_path)
+            results.append({"inputfile": parent_directory, "adata_path": adata_path, "format": "h5ad"})
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+ 
+    return results

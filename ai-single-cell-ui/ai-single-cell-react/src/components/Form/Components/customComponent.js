@@ -162,7 +162,7 @@ class MyForm extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { setTaskStatus, setTaskData, setActiveTask, taskData} = this.props;
+    const { setTaskStatus, setTaskData, setActiveTask, taskData, flow} = this.props;
 
     const errors = this.validateForm(this.state.formData);
     this.setState({ errors });
@@ -170,17 +170,20 @@ class MyForm extends Component {
     if (Object.keys(errors).length === 0) {
       let formData = this.state.formData;
 
-      // add data to the formData
-      formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
-
+      
       // construct ID 
       // const task_abbv = formData.Task.value;
       const species = formData.Species.value;
       const tissue = formData['Anatomical Entity'].label;
-      const cellCount = formData['Cell Count Estimate'];
       const author = formData['Author'];
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
+
+      if(flow === 'upload') {
+        formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
+
+         // add data to the formData
+         const cellCount = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
 
       // Check if cellCount is greater than 1000
       const useCellCount = cellCount && parseInt(cellCount) > 1000;
@@ -213,6 +216,15 @@ class MyForm extends Component {
         // "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
       }
 
+      } else {
+        const constructedID = `${species}-${tissue}-${author}-${year}`;
+        formData.Id = constructedID;
+        formData.inputFiles = taskData.upload.final_files;
+      }
+
+      formData.flow = flow;
+     
+
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
       .then(response => {
         console.log('Form data submitted successfully');
@@ -229,7 +241,7 @@ class MyForm extends Component {
             taskOptions: this.state.options["Task"],
             options: this.state.options,
             newOptions: this.state.newOptions,
-            status: "completed"
+            status: flow === "upload"? "completed" : ''
           },
         }));
   

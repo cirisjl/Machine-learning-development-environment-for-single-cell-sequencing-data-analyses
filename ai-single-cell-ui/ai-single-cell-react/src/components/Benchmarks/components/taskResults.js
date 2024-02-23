@@ -15,7 +15,6 @@ function SearchTasks({taskType}) {
     const [visibleFacets, setVisibleFacets] = useState([]); // Will hold the keys of the facets to display
     const [showMoreFacets, setShowMoreFacets] = useState(false); // Toggle state for showing more facets
     const [activeFilters, setActiveFilters] = useState({});
-    const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
     const [appliedFilters, setAppliedFilters] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState({});
@@ -135,9 +134,6 @@ const handleFilterChange = (filterCategory, filterValue) => {
     });
   };
 
-  const handleFilterCategoryChange = (category) => {
-    setActiveFilterCategory(prevCategory => prevCategory === category ? null : category);
-};
 
 const toggleMoreFacets = () => {
     setShowMoreFacets(!showMoreFacets);
@@ -161,7 +157,7 @@ const onPageChange = (newPage) => {
                 
                 <div className='filters-and-search-container'>
                   <div className='metadata-search-wrap filters-container'>
-                  <span class="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
+                  <span className="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
                       {visibleFacets.map((filterName) => (
                           <FilterComponent
                               key={filterName}
@@ -169,8 +165,6 @@ const onPageChange = (newPage) => {
                               options={filters[filterName]}
                               activeFilters={activeFilters}
                               onFilterChange={handleFilterChange}
-                              isVisible={activeFilterCategory === filterName}
-                              onCategoryChange={() => handleFilterCategoryChange(filterName)}
                               className="filter"
                               onApplyFilters={handleApplyFilters}
                           />
@@ -184,7 +178,7 @@ const onPageChange = (newPage) => {
                       </div>
                   </div>
                   <div className='study-keyword-search'>
-                    <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
+                    <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
                     <div>
                       <form onSubmit={handleSearchSubmit}>
                         <input
@@ -222,11 +216,8 @@ const onPageChange = (newPage) => {
                   />
                 </div>
                 
-                <div className='total-results-count'>
-                  <p>{pagination.totalCount} results found!</p>
-                </div>
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination}/>
                 </div>
               </div>
               
