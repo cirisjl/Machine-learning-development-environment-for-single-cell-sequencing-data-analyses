@@ -10,6 +10,10 @@ import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import React from "react";
 import ToggleSwitch from "../ToggleSwitch";
+import axios from 'axios';
+import {CELERY_BACKEND_API} from '../../constants/declarations'
+import ReactSelect from 'react-select';
+import {ScaleLoader } from 'react-spinners';
 
 
 import schema from "../../schema/react-json-schema/uploadDataSchema.json";
@@ -19,9 +23,9 @@ import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
 import FileManagerModal from "./fileManagerModal";
 
-export default function UploadData() {
+export default function UploadData({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow}) {
     const [isFileManagerOpen, setIsFileManagerOpen] = useState(false);
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState(taskData?.upload?.files);
     const [pwd, setPwd] = useState('/');
     const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
     let jwtToken = getCookie('jwtToken');
@@ -41,10 +45,10 @@ export default function UploadData() {
     const [fileNames, setFileNames] = useState([]);
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-    const [publicdataset, setPublicdataset] = useState(false);
+    const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
     const [isAdminuser, setIsAdminUser] = useState(false);
-
     const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
+    const [isLoading, setIsLoading] = useState(false);
 
 
     let [selectedAliases, setSelectedAliases] = useState([]);
@@ -258,115 +262,379 @@ export default function UploadData() {
 
     }
 
-    const handleSubmit = (event) => {
-        if (selectedFiles === undefined || selectedFiles.length === 0) {
-            setErrorMessage('Select at least one file.');
+    const handleAssaySelection = selectedOption => {
+        setTaskData(prevTaskData => ({
+            ...prevTaskData,
+            upload: {
+                ...prevTaskData.upload,
+                selectedAssayName: (selectedOption ? selectedOption.value : null)
+            },
+        }));
+    };
+
+    // useEffect(() => {
+    //     // Define your default values for taskData.upload here
+    //     const defaultUploadValues = {
+    //       files: [],
+    //       final_files: {},
+    //       displayAssayNames: false,
+    //       assayNames: [],
+    //       makeItpublic: false,
+    //       authToken: '',
+    //     };
+      
+    //     // Reset taskData.upload to default values
+    //     setTaskData(prevTaskData => ({
+    //       ...prevTaskData,
+    //       upload: defaultUploadValues,
+    //     }));
+      
+    //     // This effect depends on selectedFiles, so it runs whenever selectedFiles changes
+    //   }, [selectedFiles]);
+
+      useEffect(() => {
+        console.log(taskData)
+      }, [taskData]);
+      
+
+    const handleAssaySelectionSubmit = () => {
+
+        if(taskData.upload.selectedAssayName === '') {
+            setErrorMessage('Please select the default assay to continue');
             return;
         }
-        else if (jwtToken === undefined || jwtToken.length === 0) {
-            setErrorMessage('Please log in first.');
-            return;
-        }
+        setIsLoading(true); // Start loading
 
-        if (selectedFiles.length > 1) {
-            let isFileSelectionValid = false;
-            acceptedMultiFileSets.forEach(function (multiFileSet) {
-                for (let i = 0; i < multiFileSet.length; i++) {
-                    if (!selectedAliases.includes(multiFileSet[i])) {
-                        break;
-                    }
-                    else if (i == multiFileSet.length - 1)
-                        isFileSelectionValid = true;
-                }
-            });
-            console.log('Selected Aliases: ' + selectedAliases);
-            if (!isFileSelectionValid) {
-                setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
-                return;
-            }
-            for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
-                const lastSlashIndex = file.lastIndexOf('/');
-                const fileName = file.substring(lastSlashIndex + 1, file.length);
-                if (!acceptedMultiFileNames.includes(fileName)) {
-                    if (lastSlashIndex !== -1) {
-                        const prefix = file.substring(0, lastSlashIndex + 1);
-                        selectedFiles[i] = prefix + selectedAliases[i];
-                    } else {
-                        selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
-                    }
-                    fetch(`${SERVER_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
-                }
-            }
-        }
-        else {
-            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj"];
-            if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
-                setErrorMessage("The selected file is not of an accepted standard format.");
-                return;
-            }
-        }
-
-        formData['makeItpublic'] = publicdataset
-        formData['authToken'] = jwtToken;
-        formData['files'] = selectedFiles;
-
-        console.log("Form Data ::::::: ")
-        console.log(formData['makeItpublic'])
-        if (mode === 'update') {
-            formData.currentFileList = currentFileList;
-            fetch(`${SERVER_URL}/updateDataset`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
+        if(taskData.upload.selectedAssayName === taskData.upload.default_assay) {
+            setTaskStatus((prevTaskStatus) => ({
+                ...prevTaskStatus,
+                1: true, // Mark Task 1 as completed
+            }));
+    
+            setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                upload: {
+                ...prevTaskData.upload,
+                status: 'completed',
                 },
-                body: JSON.stringify(formData),
-            })
-                .then(response => {
-                    if (response.status === 200) {
-                        navigate('/dashboard', { state: { message: 'Dataset updated successfully.', title: formData['title'] } });
+            }));
+
+            setTaskData(prevTaskData => ({
+                ...prevTaskData,
+                upload: {
+                    ...prevTaskData.upload,
+                    final_files: {
+                        ...prevTaskData.upload.final_files,
+                        status: 'completed',
+                    },
+                },
+            }));
+    
+            //The current task is finished, so make the next task active
+            setActiveTask(2);  
+        } else {
+
+        // Construct your API payload
+        const payload = {
+        fileDetails: taskData.upload.final_files.inputFiles,
+        };
+        
+        // Include assay_name in the payload only if it is not null
+        if (taskData.upload.selectedAssayName) {
+            payload.assay_name = taskData.upload.selectedAssayName;
+        }
+    
+        // Make the API call
+        axios.post(`${CELERY_BACKEND_API}/api/convert/to_adata_or_srat`, payload)
+        .then(response => {
+            // Handle your response here
+            console.log(response.data);
+            let data = response.data[0];
+            setTaskData(prevTaskData => ({
+                ...prevTaskData,
+                upload: {
+                    ...prevTaskData.upload,
+                    final_files: {
+                        ...prevTaskData.upload.final_files,
+                        inputFiles: data.inputfile,
+                        adata_path: data.adata_path,
+                        format: data.format,
+                        default_assay: data.default_assay,
+                        status: 'completed',
+                    },
+                },
+            }));
+
+            setTaskStatus((prevTaskStatus) => ({
+                ...prevTaskStatus,
+                1: true, // Mark Task 1 as completed
+            }));
+    
+            //The current task is finished, so make the next task active
+            setActiveTask(2);   
+            setIsLoading(false);
+        })
+        .catch(error => {
+            console.error('There was an error with the conversion:', error);
+        });
+    }
+    };
+
+    const handleSubmit = (event) => {
+
+        if(taskData.upload.final_files.status !== 'completed') {
+            isUserAuth(jwtToken) 
+            .then((authData) => {
+                if (authData.isAuth) {
+                    if (selectedFiles === undefined || selectedFiles.length === 0) {
+                        setErrorMessage('Select at least one file.');
+                        return;
+                    }
+                    else if (jwtToken === undefined || jwtToken.length === 0) {
+                        setErrorMessage('Please log in first.');
+                        return;
+                    }
+
+                    if (selectedFiles.length > 1) {
+                        let isFileSelectionValid = false;
+                        acceptedMultiFileSets.forEach(function (multiFileSet) {
+                            for (let i = 0; i < multiFileSet.length; i++) {
+                                if (!selectedAliases.includes(multiFileSet[i])) {
+                                    break;
+                                }
+                                else if (i == multiFileSet.length - 1)
+                                    isFileSelectionValid = true;
+                            }
+                        });
+                        console.log('Selected Aliases: ' + selectedAliases);
+                        if (!isFileSelectionValid) {
+                            setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
+                            return;
+                        }
+                        for (let i = 0; i < selectedFiles.length; i++) {
+                            const file = selectedFiles[i];
+                            const lastSlashIndex = file.lastIndexOf('/');
+                            const fileName = file.substring(lastSlashIndex + 1, file.length);
+                            if (!acceptedMultiFileNames.includes(fileName)) {
+                                if (lastSlashIndex !== -1) {
+                                    const prefix = file.substring(0, lastSlashIndex + 1);
+                                    selectedFiles[i] = prefix + selectedAliases[i];
+                                } else {
+                                    selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
+                                }
+                                fetch(`${SERVER_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                })
+                            }
+                        }
                     }
                     else {
-                        console.log('Error updating dataset:', response);
+                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+                        if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
+                            setErrorMessage("The selected file is not of an accepted standard format.");
+                            return;
+                        }
                     }
-                })
-                .catch(error => {
-                    setErrorMessage('Error updating dataset.');
-                    console.error('Error updating dataset:', error);
-                });
-            return;
-        }
-        fetch(`${SERVER_URL}/createDataset`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData),
-        })
-            .then(response => {
-                if (response.status === 201) {
-                    navigate('/dashboard', { state: { message: 'Dataset created successfully.', title: formData['title']  } });
+
+                    // Update the state of the task in the taskData state
+                    setTaskData((prevTaskData) => ({
+                        ...prevTaskData,
+                        upload: {
+                        ...prevTaskData.upload,
+                        files: selectedFiles,
+                        makeItpublic: publicdataset,
+                        authToken: jwtToken,
+                        },
+                    }));
+
+                    if(selectedFiles && selectedFiles.length > 0) {
+                        
+                        let updatedFiles = selectedFiles.map(file => "/usr/src/app/storage/" + authData.username + file);
+
+                        let needAPICall = false;
+                        
+                        if(updatedFiles.length === 1) {
+                            // If the length is one, that means it is not a dataset with combinations.
+                            let file = updatedFiles[0];
+
+                            if(file.toLowerCase().endsWith('h5ad')) {
+                                //Add the result to taskData
+                            // Properly update taskData using setTaskData
+                                setTaskData(prevTaskData => ({
+                                    ...prevTaskData,
+                                    upload: {
+                                        ...prevTaskData.upload,
+                                        final_files: {
+                                            ...prevTaskData.upload.final_files,
+                                            inputFiles: updatedFiles,
+                                            adata_path: updatedFiles[0],
+                                            format: 'h5ad',
+                                            status: 'completed'
+                                        },
+                                    },
+                                }));
+
+                                setTaskStatus((prevTaskStatus) => ({
+                                    ...prevTaskStatus,
+                                    1: true, // Mark Task 1 as completed
+                                }));
+                        
+                                //The current task is finished, so make the next task active
+                                setActiveTask(2);   
+                                
+                            } else {
+                                needAPICall = true;
+                            }
+                        } else {
+                            needAPICall = true;
+                        }
+
+                        if(needAPICall) {
+                            setIsLoading(true); // Start loading
+
+                            const data = {
+                                fileDetails: updatedFiles
+                            };
+                            
+                            axios.post(`${CELERY_BACKEND_API}/convert/api/to_adata_or_srat`, data)
+                            .then(function (response) {
+                                console.log(response.data);
+                                let data = response.data[0];
+                                if(data.format === 'h5seurat') {
+                                    if(data.assay_names && data.assay_names.length > 1) {
+                                        setTaskData(prevTaskData => ({
+                                            ...prevTaskData,
+                                            upload: {
+                                                ...prevTaskData.upload,
+                                                displayAssayNames: true,
+                                                assayNames: data.assay_names,
+                                                default_assay: data.default_assay,
+                                            },
+                                        }));
+                                        return;
+                                    } else {
+                                        setTaskData(prevTaskData => ({
+                                            ...prevTaskData,
+                                            upload: {
+                                                ...prevTaskData.upload,
+                                                final_files: {
+                                                    ...prevTaskData.upload.final_files,
+                                                    inputFiles: data.inputfile,
+                                                    adata_path: data.adata_path,
+                                                    format: data.format,
+                                                    default_assay: data.default_assay,
+                                                    status: 'completed'
+                                                },
+                                            },
+                                        }));
+                                    }
+                                } else {
+                                    //set the task Data and make the task active
+                                    setTaskData(prevTaskData => ({
+                                        ...prevTaskData,
+                                        upload: {
+                                            ...prevTaskData.upload,
+                                            final_files: {
+                                                ...prevTaskData.upload.final_files,
+                                                inputFiles: data.inputfile,
+                                                adata_path: data.adata_path,
+                                                format: data.format,
+                                                status: 'completed'
+                                            },
+                                        },
+                                    }));
+                                    
+                                   
+                                }
+                                
+                setTaskStatus((prevTaskStatus) => ({
+                    ...prevTaskStatus,
+                    1: true, // Mark Task 1 as completed
+                }));
+        
+                //The current task is finished, so make the next task active
+                setActiveTask(2);   
+                
+                setIsButtonDisabled(true);
+                setTimeout(() => {
+                    setIsButtonDisabled(false);
+                }, 5000);
+
+                setIsLoading(false);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
                 }
-                else if (response.status === 400) {
-                    setErrorMessage(`Dataset '${formData.title}' already exists. Choose a different name.`);
-                }
-                else {
-                    console.log('Error creating dataset:', response);
+            }
+            // formData['makeItpublic'] = publicdataset
+            // formData['authToken'] = jwtToken;
+            // formData['files'] = selectedFiles;
+
+            // if (mode === 'update') {
+            //     formData.currentFileList = currentFileList;
+            //     fetch(`${SERVER_URL}/updateDataset`, {
+            //         method: 'PUT',
+            //         headers: {
+            //             'Content-Type': 'application/json'
+            //         },
+            //         body: JSON.stringify(formData),
+            //     })
+            //         .then(response => {
+            //             if (response.status === 200) {
+            //                 navigate('/dashboard', { state: { message: 'Dataset updated successfully.', title: formData['title'] } });
+            //             }
+            //             else {
+            //                 console.log('Error updating dataset:', response);
+            //             }
+            //         })
+            //         .catch(error => {
+            //             setErrorMessage('Error updating dataset.');
+            //             console.error('Error updating dataset:', error);
+            //         });
+            //     return;
+            // }
+            // fetch(`${SERVER_URL}/createDataset`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(formData),
+            // })
+            //     .then(response => {
+            //         if (response.status === 201) {
+            //             navigate('/dashboard', { state: { message: 'Dataset created successfully.', title: formData['title']  } });
+            //         }
+            //         else if (response.status === 400) {
+            //             setErrorMessage(`Dataset '${formData.title}' already exists. Choose a different name.`);
+            //         }
+            //         else {
+            //             console.log('Error creating dataset:', response);
+            //         }
+            //     })
+            //     .catch(error => {
+            //         setErrorMessage('Error creating dataset.');
+            //         console.error('Error creating dataset:', error);
+            //     });
+                    
+                } else {
+                console.warn("Unauthorized - pLease login first to continue");
+                navigate("/routing");
                 }
             })
-            .catch(error => {
-                setErrorMessage('Error creating dataset.');
-                console.error('Error creating dataset:', error);
-            });
-        setIsButtonDisabled(true);
-        setTimeout(() => {
-            setIsButtonDisabled(false);
-        }, 5000);
+            .catch((error) => console.error(error));
+        } else {
+            setTaskStatus((prevTaskStatus) => ({
+                ...prevTaskStatus,
+                1: true, // Mark Task 1 as completed
+            }));
+    
+            //The current task is finished, so make the next task active
+            setActiveTask(2);   
+        }
     };
 
     if (jwtToken === '' || jwtToken === undefined) {
@@ -374,11 +642,8 @@ export default function UploadData() {
     }
 
     else return (
-        <div className="page-container">
-            <div className="left-nav">
-                {/* <LeftNav /> */}
-            </div>
-            <div className="main-content">
+        <div className="uploadMyData-container">
+            <div className="uploadmydata">
                 {(errorMessage !== '') && (
                     <div className='message-box' style={{ backgroundColor: 'lightpink', zIndex: 9999 }}>
                         <div style={{ textAlign: 'center' }}>
@@ -468,12 +733,12 @@ export default function UploadData() {
                         {isAdminuser && 
                             <div className="publish-dataset-div">
                                 <React.Fragment>
-                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets}/>
+                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic}/>
                                 </React.Fragment>
                             </div>
                         }
                         <br />
-                        <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
+                        {/* <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
 
 
                         <Form
@@ -482,13 +747,43 @@ export default function UploadData() {
                             onChange={({ formData }) => setFormData(formData)}
                             onSubmit={handleSubmit}
                             SubmitButton={SubmitButton}
-                        />
+                        /> */}
+
+                        
+                    {
+                    isLoading ? (
+
+                        <div className="spinner-container">
+                            <ScaleLoader color="#36d7b7" loading={isLoading} />
+                        </div>
+                    ) : (
+                        taskData.upload.displayAssayNames && (
+                        <div>
+                            <h3>Default Assay: {taskData.upload.default_assay}</h3>
+                            <p>Do you want to change the default assay?</p>
+                            <ReactSelect
+                            id="assaySelection"
+                            placeholder="Select an Assay"
+                            options={taskData.upload.assayNames.map(name => ({ value: name, label: name }))}
+                            onChange={handleAssaySelection}
+                            />
+                            <div className='next-upon-success'>
+                            <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>Next</button>
+                            </div>
+                        </div>
+                        )
+                    )
+                    }
+
+
+                        {!taskData.upload.displayAssayNames && (
+                        <div className='next-upon-success'>
+                            <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
+                        </div>
+                        )}
 
                     </div></div>
                 </div >
-            </div>
-            <div className="right-rail">
-                <RightRail />
             </div>
         </div>
     )

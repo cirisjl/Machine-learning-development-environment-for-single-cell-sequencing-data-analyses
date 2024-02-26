@@ -17,8 +17,17 @@ import jax
 import jax.numpy as jnp
 from collections import OrderedDict
 from anndata import AnnData
-from tools.formating.plotConstants import point_size_2d, point_line_width_2d, discrete_colors_3, min_opacity, max_opacity
 from tools.visualization.plot import plot_UMAP, plot_scatter, plot_highest_expr_genes, plot_violin
+import rpy2.robjects as ro
+from rpy2.robjects.packages import importr
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.conversion import localconverter
+
+# Ensure that pandas2ri is activated for automatic conversion
+pandas2ri.activate()
+
+# Defining the R script and loading the instance in Python
+ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
 
 try:
     from anndata._core.sparse_dataset import SparseDataset
@@ -86,7 +95,7 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
         elif path.endswith(".gz"):
             adata = sc.read_umi_tools(path)
         elif path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
-            adata_path, assay_names = convert_seurat_sce_to_anndata(path, assay=assay)
+            adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(path, assay=assay)
             if os.path.exists(adata_path):
                 adata = sc.read_h5ad(adata_path)
 
@@ -190,81 +199,44 @@ def get_metadata_from_anndata(adata):
     return layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
 
 
-# def generate_umap_traces(adata, clustering_plot_type="cluster.ids", selected_cell_intersection=[], n_dim=2):
-#     print("[DEBUG] generating new UMAP traces")
-
-#     obs = adata.obs
-#     obsm = adata.obsm
-
-#     coords = pd.DataFrame(obsm["X_umap"], index=obs.index)
-
-#     traces = []
-#     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
-#         a = obs[obs[clustering_plot_type] == val]
-#         b = coords[obs[clustering_plot_type] == val]
-#         s = list(range(len(a.index))) if (selected_cell_intersection in [None, []]) else []
-
-#         if n_dim == 2:
-#             traces.append({
-#                 "x": b[0].tolist(),
-#                 "y": b[1].tolist(),
-#                 "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
-#                 "selectedpoints": s,
-#                 "mode":'markers',
-#                 "marker": {
-#                     'size': point_size_2d,
-#                     'line': {'width': point_line_width_2d, 'color': 'grey'},
-#                     "color": discrete_colors_3[i % len(discrete_colors_3)]
-#                 },
-#                 "unselected": {
-#                     "marker": {"opacity": min_opacity}
-#                 },
-#                 "selected": {
-#                     "marker": {"opacity": max_opacity}
-#                 },
-#                 "name": f"Cluster {val}"
-#             })
-
-#     return traces
-
-
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
 def convert_seurat_sce_to_anndata(path, assay='RNA'):
-    import rpy2.rinterface_lib.callbacks as rcb
-    import rpy2.robjects as ro
-    import anndata2ri
-    from rpy2.robjects.packages import importr
-    from rpy2.robjects import pandas2ri
-    from rpy2.robjects.conversion import localconverter
-    
-    rcb.logger.setLevel(logging.ERROR)
-    ro.pandas2ri.activate()
-    anndata2ri.activate()
 
-    # Defining the R script and loading the instance in Python
-    ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
+    if assay is None:
+        assay = 'RNA'
+
     # Access the loaded R functions
     ConvertSeuratSCEtoAnndata_r = ro.globalenv['ConvertSeuratSCEtoAnndata']
 
     assay_names = None
     adata_path = None
-
-    print("Inside convert_seurat_sce_to_anndata")
-    print(assay)
-    print(path)
+    default_assay = None
 
     if path.endswith(".h5Seurat") or path.endswith(".h5seurat") or path.endswith(".rds") or path.endswith(".Robj"):
         try:
-            results = ConvertSeuratSCEtoAnndata_r(path, assay=assay)
-            adata_path = list(results['adata_path'])[0]
-            assay_names = list(results['assay_names'])          
-            print(adata_path)
-            print(assay_names)
+            print("convert_seurat_sce_to_anndata")
+            print(assay)
+            results = list(ConvertSeuratSCEtoAnndata_r(path, assay=assay))
+            if results[0] is not None and results[0] != ro.rinterface.NULL:
+                default_assay = list(results[0])[0]
+            else:
+                default_assay = None  # or a sensible default like 'RNA'
+
+            if results[1] is not None and results[1] != ro.rinterface.NULL:
+                assay_names = list(results[1])
+            else:
+                assay_names = []
+
+            if results[2] is not None and results[2] != ro.rinterface.NULL:
+                adata_path = list(results[2])[0]
+            else:
+                adata_path = None     
+
         except Exception as e:
             print("Seurat/SCE to Anndata is failed")
             print(e)
 
-    return adata_path, assay_names
+    return adata_path, assay_names, default_assay
 
 
 def anndata_to_csv(adata, output_path, layer = None):

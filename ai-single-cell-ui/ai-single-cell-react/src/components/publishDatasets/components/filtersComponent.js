@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 
 
 
-const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisible, onCategoryChange, onApplyFilters}) => {
+const FilterComponent = ({ name, options, activeFilters, onFilterChange, onApplyFilters}) => {
 
     const [searchTerm, setSearchTerm] = useState('');
-    // const [dropdownVisible, setDropdownVisible] = useState(isVisible);
-    // const dropdownRef = useRef(null);
 
     const isActive = (filterValue) => {
         return activeFilters[name] && activeFilters[name].includes(filterValue);
@@ -16,26 +14,11 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
         onApplyFilters();
     };
 
-    // useEffect(() => {
-    //     const handleClickOutside = (event) => {
-    //       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-    //         setDropdownVisible(false);
-    //       }
-    //     };
-    
-    //     document.addEventListener('click', handleClickOutside);
-    
-    //     return () => {
-    //       document.removeEventListener('click', handleClickOutside);
-    //     };
-    //   }, []);
-
     return (
-        <div className={`facet ${isVisible ? 'active' : ''}`}>
-            <div onClick={() => onCategoryChange(name)}>
-                <p className={`filter-category ${isVisible ? 'highlighted' : ''}`} >{name}</p>
-            </div>
-            {isVisible && (
+        <div className='facet'>
+            <div className='filter-category' >
+                <p>{name}</p>
+
                 <div className='filters-box-searchable'>
                     <div className='facet-container'>
                         <div className='single-facet'>
@@ -91,7 +74,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, isVisib
                         <button className="apply-filters-button" onClick={handleApplyButtonClick}>Apply</button>
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 

@@ -8,13 +8,13 @@ import TaskBuilderTaskComponent from './taskBuilderTask';
 import BenchmarksTaskComponent from './benchmarksTask';
 import MyForm from '../../Form/Components/customComponent';
 
-function MiddleContent({ activeTask, setActiveTask, setTaskStatus, taskData, setTaskData, taskStatus, setFlow}) {
+function MiddleContent({ activeTask, setActiveTask, setTaskStatus, taskData, setTaskData, taskStatus, setFlow, flow}) {
   const taskComponents = {
     1: <UploadDataTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask} />,
     2: <ValidationTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask}/>,
     3: <QualityControlTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask}/>,
     // 4: <GetMetaDataComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask}/>,
-    4: <MyForm setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask} setFlow={setFlow}/>,
+    4: <MyForm setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask} setFlow={setFlow} flow={flow}/>,
     5: <TaskBuilderTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask} />,
     6: <BenchmarksTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask}/>,
     7: <ReviewTaskComponent setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} setActiveTask = {setActiveTask} activeTask={activeTask}/>,

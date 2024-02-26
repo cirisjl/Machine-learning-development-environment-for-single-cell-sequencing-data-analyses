@@ -23,7 +23,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
     const [activeFilters, setActiveFilters] = useState({});
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
-    const [activeFilterCategory, setActiveFilterCategory] = useState(null);
     const [appliedFilters, setAppliedFilters] = useState([]);
 
     const onSelectDataset = (dataset) => {
@@ -64,6 +63,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
     };   
 
     const handleApplyFilters = async () => {
+      setShowMoreFacets(false);
       fetchData(1, activeFilters, globalSearchTerm);
 
       // Update the list of applied filters
@@ -92,11 +92,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
         setVisibleFacets(Object.keys(filters).slice(0, 4));
     }
 };
-
-
-    const handleFilterCategoryChange = (category) => {
-      setActiveFilterCategory(prevCategory => prevCategory === category ? null : category);
-  };
   
     const handleFilterChange = (filterCategory, filterValue) => {
       setActiveFilters(prevFilters => {
@@ -124,16 +119,19 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
     };
 
     const onPageChange = (newPage) => {
+      setShowMoreFacets(false);
       fetchData(newPage, activeFilters, globalSearchTerm);
     };
 
     const handleSearchSubmit = (event) => {
       event.preventDefault();
+      setShowMoreFacets(false);
       fetchData(1 , activeFilters, globalSearchTerm);
       console.log("Search Handled");
     };
 
     const handleRemoveFilter = (category, value) => {
+      setShowMoreFacets(false);
       setActiveFilters(prevFilters => {
         const newFilters = { ...prevFilters };
         newFilters[category] = newFilters[category].filter(v => v !== value);
@@ -159,7 +157,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                 
                 <div className='filters-and-search-container'>
                   <div className='metadata-search-wrap filters-container'>
-                  <span class="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
+                  <span className="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
                       {visibleFacets.map((filterName) => (
                           <FilterComponent
                               key={filterName}
@@ -167,8 +165,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                               options={filters[filterName]}
                               activeFilters={activeFilters}
                               onFilterChange={handleFilterChange}
-                              isVisible={activeFilterCategory === filterName}
-                              onCategoryChange={() => handleFilterCategoryChange(filterName)}
                               className="filter"
                               onApplyFilters={handleApplyFilters}
                           />
@@ -182,7 +178,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                       </div>
                   </div>
                   <div className='study-keyword-search'>
-                    <span class="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
+                    <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
                     <div>
                       <form onSubmit={handleSearchSubmit}>
                         <input
@@ -224,11 +220,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                   />
                 </div>
                 
-                <div className='total-results-count'>
-                  <p>{pagination.totalCount} results found!</p>
-                </div>
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} pagination={pagination}/>
                 </div>
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>

@@ -9,10 +9,10 @@ from tools.formating.formating import is_normalized, check_nonnegative_integers
 from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
-sc.settings.set_figure_params(dpi=80, facecolor='white')
+# sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cell_cycle=False):
+def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None ,regress_cell_cycle=False):
         if adata is None:
             raise ValueError("The input is None.")
         
@@ -30,7 +30,10 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
         adata.var_names_make_unique()
 
         # Filtering low quality reads
-        sc.pp.filter_cells(adata, min_genes=min_genes)
+        if max_genes is not None:
+            sc.pp.filter_cells(adata, min_genes=min_genes, max_genes=max_genes)
+        else:
+            sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_cells=min_cells)
         # mitochondrial genes
         adata.var['mt']=adata.var_names.str.startswith('MT-')
@@ -75,7 +78,7 @@ def run_scanpy_qc(adata, min_genes=200, min_cells=3, target_sum=1e4, regress_cel
 
         sc.pp.log1p(adata)
 
-        sc.pp.highly_variable_genes(adata)
+        sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
 
         adata=adata[:, adata.var.highly_variable] # Do the filtering
         sc.pp.regress_out(adata, ['total_counts', 'pct_counts_mt'])
