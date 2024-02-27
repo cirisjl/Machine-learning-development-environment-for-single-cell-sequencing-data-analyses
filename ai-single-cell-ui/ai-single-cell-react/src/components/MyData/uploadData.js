@@ -4,7 +4,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ModalWindow.css';
-import { getCookie, isUserAuth } from '../../utils/utilFunctions';
+import { getCookie, isUserAuth, copyFilesToPrivateStorage } from '../../utils/utilFunctions';
 import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
@@ -153,6 +153,21 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     // toggle modal window visibility
     const toggleModal = async () => {
         await setIsFileManagerOpen(!isFileManagerOpen);
+
+        const defaultUploadValues = {
+            files: [],
+            final_files: {},
+            displayAssayNames: false,
+            assayNames: [],
+            makeItpublic: false,
+            authToken: '',
+        };
+              
+        // Reset taskData.upload to default values
+        setTaskData(prevTaskData => ({
+            ...prevTaskData,
+            upload: defaultUploadValues,
+        }));
 
         if (!isFileManagerOpen) {
             setSelectedFiles([]);
@@ -451,7 +466,38 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                     }));
 
                     if(selectedFiles && selectedFiles.length > 0) {
+
+                        let filesFromPublic = false;
+
+                            // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+                        for (const file of selectedFiles) {
                         
+                            if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+                                filesFromPublic = true;
+                                break;
+                            }
+                        }
+
+                        if(filesFromPublic) {
+                            copyFilesToPrivateStorage(selectedFiles, authData.username)
+                            .then(response => {
+                            if (response.success) {
+                                console.log(response.message);
+                            } else {
+                                console.error(response.message);
+                            }
+                            })
+                            .catch(error => {
+                            console.error("Error:", error.message);
+                            });
+                        }
+
+                        if(filesFromPublic) {
+                            for (let i = 0; i < selectedFiles.length; i++) {
+                                selectedFiles[i] = selectedFiles[i].replace(/^\/?publicDatasets\//, '/');
+                              }
+                        }
+
                         let updatedFiles = selectedFiles.map(file => "/usr/src/app/storage/" + authData.username + file);
 
                         let needAPICall = false;
@@ -678,7 +724,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         </div>
                     </div>}
                     {previewBoxOpen && <FilePreviewModal selectedFile={fileToPreview} setPreviewBoxOpen={setPreviewBoxOpen} jwtToken={jwtToken} forResultFile={false} />}
-                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser} publicDatasetFlag={publicDatasetFlag}/>}
+                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser} publicDatasetFlag={publicDatasetFlag} taskData={taskData}/>}
                     <div>        <div>
                         <div id="upload-data-div">
                             <div className="info-icon" onClick={() => { setIsInfoModalOpen(true); }}>
