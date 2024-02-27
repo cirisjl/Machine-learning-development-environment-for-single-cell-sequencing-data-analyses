@@ -220,6 +220,9 @@ class MyForm extends Component {
         const constructedID = `${species}-${tissue}-${author}-${year}`;
         formData.Id = constructedID;
         formData.inputFiles = taskData.upload.final_files;
+        formData.files = taskData.upload.files;
+        formData.makeItpublic = taskData.upload.makeItpublic;
+        formData.userId = taskData.upload.authToken;
       }
 
       formData.flow = flow;

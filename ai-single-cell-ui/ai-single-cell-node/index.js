@@ -139,6 +139,39 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     }
   };
 
+  app.post('/api/copyFiles', async (req, res) => {
+
+    const { selectedFiles, userId } = req.body;
+
+    try {
+        let filesFromPublic = false;
+        let dirName = ""
+
+        // Logic to Copy files from public storage to user private storage if it is a public Dataset.
+        for (const file of selectedFiles) {                      
+          if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+              filesFromPublic = true;
+              break;
+          }
+      }
+  
+      if(filesFromPublic) {
+  
+          if (selectedFiles.length > 0) {
+              dirName = path.dirname(selectedFiles[0])
+          } 
+  
+          let userPrivateStorageDir = storageDir + userId // Change this to the user's private storage path
+  
+          // Copy files from public dataset directory to user's private storage
+          copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, selectedFiles, filesFromPublic);
+          res.json({ status: 200, message: 'Files copied successfully' });
+      }
+    } catch (error) {
+        res.json({ status: 500, message: 'Error while copying files from source to destination' });
+    }
+  });
+
 // Route to handle user signup
 app.post('/api/signup', (req, res) => {
     const { username, email, password } = req.body;
@@ -1336,6 +1369,14 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     
     try {
     const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+    const makeItpublic = formData.makeItpublic;
+    let files = formData.files;
+    let authToken = formData.userId;
+
+    let username = getUserFromToken(authToken);
+
+    formData.userId = username;
+
       // Connect to the MongoDB server
       await client.connect();
       const db = client.db(dbName);
@@ -1354,6 +1395,25 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
         // Document with the provided Id does not exist, proceed with insertion
         await collection.insertOne(formData);
         console.log('Form data submitted successfully');
+
+        if(makeItpublic) {
+            console.log("Transfering files from local to public folder");
+            try {
+                let dirName = "";
+                const fromPublic = false;
+                if (files.length > 0) {
+                    dirName = path.dirname(files[0])
+                } 
+    
+                let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+    
+                // Copy files from user's private storage to public dataset directory
+                await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
+    
+             } catch (err) {
+                console.error(err);
+            }
+          }
         res.status(200).json({ message: 'Form data submitted successfully' });
       }
     } catch (err) {
