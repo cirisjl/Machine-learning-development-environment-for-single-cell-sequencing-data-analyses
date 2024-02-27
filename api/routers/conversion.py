@@ -278,14 +278,14 @@ async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
                     'adata_path': adata_path,
                     'assay_names': assay_names,
                     'default_assay': default_assay,
-                    "inputfile": file,
+                    "inputfile": fileDetails,
                     "format": "h5seurat"
                 })
             else:
                 adata_path = change_file_extension(file, 'h5ad')
                 adata = load_anndata(file)
                 adata.write_h5ad(adata_path)
-                results.append({"inputfile": file, "adata_path": adata_path, "format": "h5ad"})
+                results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
         except Exception as e:
             # Handle the exception and return an error response
             raise HTTPException(status_code=500, detail=str(e))
@@ -302,7 +302,7 @@ async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
             adata = load_anndata(parent_directory)
             adata_path = os.path.join(parent_directory, "combined_dataset.h5ad")
             adata.write_h5ad(adata_path)
-            results.append({"inputfile": parent_directory, "adata_path": adata_path, "format": "h5ad"})
+            results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
  
