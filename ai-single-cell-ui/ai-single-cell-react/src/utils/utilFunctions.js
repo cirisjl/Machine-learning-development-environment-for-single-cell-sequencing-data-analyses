@@ -137,3 +137,25 @@ export function prepareTableData(cellMetadataObs) {
   // Limit the number of rows to 5
   return rows.slice(0, 5);
 };
+
+export async function copyFilesToPrivateStorage(selectedFiles, userId){
+  try {
+    const response = await axios.post(`${SERVER_URL}/api/copyFiles`, {
+      selectedFiles,
+      userId,
+    });
+
+    // Check if the server responded with a non-200 status code
+    if (response.data.status !== 200) {
+      console.error('Server error:', response.data.message);
+      return { success: false, message: response.data.message };
+    }
+
+    console.log('Success:', response.data.message);
+    return { success: true, message: response.data.message };
+
+} catch (error) {
+    // Handle error depending on if it's an Axios error or a different error
+    let errorMessage = error.response ? error.response.data.message : error.message;
+    return { success: false, message: errorMessage };  }
+};
