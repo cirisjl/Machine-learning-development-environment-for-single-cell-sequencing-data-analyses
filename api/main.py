@@ -10,7 +10,9 @@ from routers import tools, conversion
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
+from utils.logger import *
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
+
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
@@ -39,6 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
     start_time = time.time()
@@ -65,6 +68,26 @@ async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
                 results[taskId] = 'Processing'
         await websocket.send_json(results)
         await asyncio.sleep(3)
+
+
+@app.websocket("/log/{user_id}")
+async def websocket_endpoint_log(websocket: WebSocket, user_id: str) -> None:
+    """WebSocket endpoint for client connections
+
+    Args:
+        websocket (WebSocket): WebSocket request from client.
+    """
+    await websocket.accept()
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+            logs = await log_reader(user_id, 30)
+            await websocket.send_text(logs)
+    except Exception as e:
+        print(e)
+    finally:
+        await websocket.close()
 
 
 @app.get("/status")
