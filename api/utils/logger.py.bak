@@ -1,5 +1,6 @@
 from loguru import logger as lg
 import sys
+import asyncio
 import os
 
 
@@ -8,7 +9,7 @@ class AppLogger:
     def __init__(self):
         self.app_logger = lg
 
-    def set_logger(self, log_path=sys.stderr, user_id=None, rotation='500 MB', retention='7 days', filter_type=None, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[user_id]} | {message}", level='DEBUG'):
+    def set_logger(self, log_path=sys.stderr, user_id=None, rotation='1 MB', retention='1 days', filter_type=None, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[user_id]} | {message}", level='DEBUG'):
         """
         :param log_path: log file path
         :param filter_type: filter
@@ -67,7 +68,30 @@ class AppLogger:
         self.app_logger.bind(user_id=user_id).critical(msg)
 
 
-# user_format = "{level} | {message}"
+
+async def log_reader(user_id, n=5) -> list:
+    """Log reader
+
+    Args:
+        n (int, optional): number of lines to read from file. Defaults to 5.
+
+    Returns:
+        list: List containing last n-lines in log file with html tags.
+    """
+    log_file = './' + user_id +'.log'
+    log_lines = []
+    with open(log_file, "r") as file:
+        for line in file.readlines()[-n:]:
+            if line.__contains__("ERROR"):
+                log_lines.append(f'<span class="text-red-500">{line}</span><br/>')
+            elif line.__contains__("WARNING"):
+                log_lines.append(f'<span class="text-yellow-400">{line}</span><br/>')
+            elif line.__contains__("SUCCESS"):
+                log_lines.append(f'<span class="text-green-500">{line}</span><br/>')
+            else:
+                log_lines.append(f"{line}<br/>")
+        return log_lines
+    
+
+user_format = "{level} | {message}"
 logger = AppLogger()
-logger.set_logger('/data/logs/error.log', filter_type='ERROR')
-logger.set_logger('/data/logs/activity.log', filter_type='INFO', level='INFO')
