@@ -176,7 +176,7 @@ function getStandardFileName(fileName, fileType) {
         }));
     }
     else if(selectedFiles.length === 1) {
-        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj"];
+        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
         if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
             setErrorMessage("The selected file is not of an accepted standard format.");
             return;

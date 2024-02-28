@@ -104,7 +104,7 @@ RUN pip install --upgrade --no-cache \
     torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin plotly \
     rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
     zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph loompy louvain \
-    rarfile
+    rarfile loguru
 RUN pip install --upgrade --no-cache \
     dash~=2.9.1 dash-bootstrap-components dash_bootstrap_templates python-multipart 
 

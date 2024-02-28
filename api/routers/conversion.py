@@ -9,7 +9,7 @@ from tools.utils.utils import sc_train_val_test_split
 from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
-from file_manager.unzip import unzip_file_if_compressed
+from utils.unzip import unzip_file_if_compressed
 import logging
 from pathlib import Path
 import shutil
