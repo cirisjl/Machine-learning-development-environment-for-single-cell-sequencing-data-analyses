@@ -1,7 +1,7 @@
 import redis
 
 
-
+# unique_id: user_id or task_id
 class RedisClient:
     def __init__(self):
         # pool = redis.ConnectionPool(host='redis', port=6381, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
@@ -9,15 +9,15 @@ class RedisClient:
         self.r = redis.Redis(host='redis', port=6381, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
 
 
-    def write_log(self, user_id, msg):
-        self.r.ltrim(user_id, 1, 0)
-        self.r.lpush(user_id, msg)
+    def write_log(self, unique_id, msg):
+        self.r.ltrim(unique_id, 1, 0)
+        self.r.lpush(unique_id, msg)
 
 
-    def read_log(self, user_id, start, end):
+    def read_log(self, unique_id, start, end):
         log_lines = []
-        logs = self.r.lrange(user_id, start, end)
-        self.r.ltrim(user_id, start, end)
+        logs = self.r.lrange(unique_id, start, end)
+        self.r.ltrim(unique_id, start, end)
 
         for log in logs:
             log_lines.append(log.decode('utf-8'))
@@ -25,8 +25,8 @@ class RedisClient:
         return log_lines
     
 
-    def clear_log(user_id, self):
-        self.r.ltrim(user_id, 1, 0)
+    def clear_log(unique_id, self):
+        self.r.ltrim(unique_id, 1, 0)
 
 
     def close(self):

@@ -10,7 +10,7 @@ from routers import tools, conversion
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
-from utils.logger import *
+from utils.redislogger import *
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 
@@ -70,8 +70,8 @@ async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
         await asyncio.sleep(3)
 
 
-@app.websocket("/log/{user_id}")
-async def websocket_endpoint_log(websocket: WebSocket, user_id: str) -> None:
+@app.websocket("/log/{unique_id}") # unique_id: user_id or task_id
+async def websocket_endpoint_log(websocket: WebSocket, unique_id: str) -> None:
     """WebSocket endpoint for client connections
 
     Args:
@@ -82,7 +82,7 @@ async def websocket_endpoint_log(websocket: WebSocket, user_id: str) -> None:
     try:
         while True:
             await asyncio.sleep(1)
-            logs = await log_reader(user_id, 30)
+            logs = await log_reader(unique_id, 30)
             await websocket.send_text(logs)
     except Exception as e:
         print(e)
