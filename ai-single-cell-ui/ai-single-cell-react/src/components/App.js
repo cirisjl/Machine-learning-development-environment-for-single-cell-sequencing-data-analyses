@@ -24,7 +24,7 @@ import Login from '../pages/login/login';
 import SignUp from '../pages/login/signup';
 import RoutingTemplate from '../pages/login/loginRouting';
 import ClusteringUsingRaceID from '../pages/MyData/Workflows/ClusteringUsingRaceID';
-import NormalizeUsingScanpy from '../pages/MyData/Tools/normalizeUsingScanpy';
+import ToolsComponentPage from '../pages/MyData/Tools/toolsComponentPage';
 import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
@@ -56,7 +56,7 @@ function App() {
           <Route path="mydata/update-dataset"       element={<UploadData/>}></Route>
           <Route path="mydata/preview-datasets" element={<PreviewDatasets/>}></Route>
           <Route path="mydata/workflows" element={<ClusteringUsingRaceID/>}></Route>
-          <Route path="mydata/tools" element={<NormalizeUsingScanpy/>}></Route>
+          <Route path="mydata/tools" element={<ToolsComponentPage/>}></Route>
           <Route path="team"         element={<Team/>}/>
           <Route path="dashboard"         element={<FlaskDashboard/>}/>
           <Route path="docs"         element={<Docs/>}/>
