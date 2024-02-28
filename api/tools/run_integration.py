@@ -2,11 +2,12 @@ import os
 import subprocess
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
+from utils.redislogger import *
 
 
 def run_integration(task_id, datasets, inputs,userID,output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error=True):
     if methods is None:
-        print("No integration method is selected.")
+        redislogger.warning(task_id, "No integration method is selected.")
         return None
     # output = get_output_path(datasets, input, method='integration')
     # methods = [x.upper() for x in methods if isinstance(x,str)]
@@ -51,11 +52,10 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
         print(methods)
         print(input)
         print("R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + str(methods) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\"")
-        print("hello")
         s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + str(methods) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\""], shell = True)
-        print(s)
+        redislogger.info(task_id, s)
     except Exception as e:
-        print("Integration  is failed")
-        if show_error: print(e)
+        redislogger.error(task_id, "Integration is failed.")
+        if show_error: redislogger.error(task_id, f"Integration is failed: {e}")
 
     return {'status': 'Success'}

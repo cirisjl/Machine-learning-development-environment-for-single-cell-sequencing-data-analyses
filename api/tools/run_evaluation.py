@@ -4,6 +4,7 @@ import sys
 from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
+from utils.redislogger import *
     
 
 def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
