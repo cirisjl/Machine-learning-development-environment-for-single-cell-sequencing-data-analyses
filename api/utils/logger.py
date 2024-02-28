@@ -3,20 +3,20 @@ import sys
 import os
 
 
-
+# unique_id: user_id or task_id
 class AppLogger:
     def __init__(self):
         self.app_logger = lg
 
-    def set_logger(self, log_path=sys.stderr, user_id=None, rotation='500 MB', retention='7 days', filter_type=None, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[user_id]} | {message}", level='DEBUG'):
+    def set_logger(self, log_path=sys.stderr, unique_id=None, rotation='500 MB', retention='7 days', filter_type=None, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[unique_id]} | {message}", level='DEBUG'):
         """
         :param log_path: log file path
         :param filter_type: filter
         :param level: [TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL]
         :return:
         """
-        if user_id:
-            log_path = './' + user_id +'.log'
+        if unique_id:
+            log_path = './' + unique_id +'.log'
 
         if not os.path.exists(os.path.dirname(log_path)):
              os.makedirs(os.path.dirname(log_path))
@@ -30,9 +30,9 @@ class AppLogger:
             level=level,
             enqueue=True,
         )
-        if user_id:
-            dic["filter"] = lambda record: record["extra"].get("user_id") == user_id
-            # self.app_logger = self.app_logger.bind(user_id=user_id)
+        if unique_id:
+            dic["filter"] = lambda record: record["extra"].get("unique_id") == unique_id
+            # self.app_logger = self.app_logger.bind(unique_id=unique_id)
         elif filter_type:
             dic["filter"] = lambda x: filter_type in str(x['level']).upper()
         
@@ -45,26 +45,26 @@ class AppLogger:
         return self.app_logger
     
     @staticmethod
-    def trace(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).trace(msg)
+    def trace(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).trace(msg)
  
-    def debug(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).debug(msg)
+    def debug(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).debug(msg)
  
-    def info(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).info(msg)
+    def info(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).info(msg)
  
-    def success(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).success(msg)
+    def success(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).success(msg)
  
-    def warning(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).warning(msg)
+    def warning(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).warning(msg)
  
-    def error(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).error(msg)
+    def error(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).error(msg)
  
-    def critical(self, user_id, msg):
-        self.app_logger.bind(user_id=user_id).critical(msg)
+    def critical(self, unique_id, msg):
+        self.app_logger.bind(unique_id=unique_id).critical(msg)
 
 
 # user_format = "{level} | {message}"

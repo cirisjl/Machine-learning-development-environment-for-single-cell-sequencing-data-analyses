@@ -19,7 +19,7 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
     methods = [x.upper() for x in methods if isinstance(x,str)]
     
     if "MAGIC" in methods:
-        adata = LoadAnndata(input)
+        adata = load_anndata(input)
         if adata is None:
             print("File format is not supported.")
             return None 
@@ -50,7 +50,7 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
             print("'scGNN_imputed' layer already exists.") 
     
     if "SAVER" in methods:
-        adata, counts, csv_path = LoadAnndata_to_csv(input, output, layer, show_error)
+        adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)
         if adata is None:
             print("File format is not supported.")
             return None 
