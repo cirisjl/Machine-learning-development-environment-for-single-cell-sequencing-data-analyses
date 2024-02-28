@@ -10,17 +10,12 @@ from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
 from utils.unzip import unzip_file_if_compressed
-import logging
 from pathlib import Path
 import shutil
-import zipfile
 import tempfile
 from fastapi.encoders import jsonable_encoder
 import os
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
 
