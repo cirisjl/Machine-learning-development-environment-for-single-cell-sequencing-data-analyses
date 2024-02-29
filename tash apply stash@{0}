@@ -1,0 +1,68 @@
+[1mdiff --git a/ai-single-cell-ui/ai-single-cell-node/index.js b/ai-single-cell-ui/ai-single-cell-node/index.js[m
+[1mindex 931370a..b18ce80 100755[m
+[1m--- a/ai-single-cell-ui/ai-single-cell-node/index.js[m
+[1m+++ b/ai-single-cell-ui/ai-single-cell-node/index.js[m
+[36m@@ -14,6 +14,8 @@[m [mconst stat = util.promisify(fs.stat);[m
+ const multer = require("multer");[m
+ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];[m
+ require('dotenv').config();[m
+[32m+[m[32mconst crypto = require('crypto');[m
+[32m+[m
+ [m
+ const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration[m
+ const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;[m
+[36m@@ -341,11 +343,29 @@[m [mapp.post('/createDataset', async (req, res) => {[m
+                         const datasetId = datasetResult.insertId;[m
+ [m
+                         for (let file of files) {[m
+[31m-                            if(filesFromPublic) {[m
+[31m-                                file = file.replace(/^\/?publicDatasets\//, '/'); [m
+[32m+[m[32m                            if (filesFromPublic) {[m
+[32m+[m[32m                                file = file.replace(/^\/?publicDatasets\//, '/');[m
+[32m+[m[32m                            }[m
+[32m+[m[41m                        [m
+[32m+[m[32m                            const fileLoc = file;[m
+[32m+[m[32m                            const fileMd5Hash = crypto.createHash('md5').update(fileLoc).digest('hex');[m
+[32m+[m[41m                        [m
+[32m+[m[32m                            // Check if the MD5 hash already exists in the database[m
+[32m+[m[32m                            const md5CheckQuery = 'SELECT COUNT(*) AS count FROM file WHERE file_md5_hash = ?';[m
+[32m+[m[32m                            const [md5CheckResults] = connection.query(md5CheckQuery, [fileMd5Hash]);[m
+[32m+[m[32m                            const md5HashExists = md5CheckResults[0].count > 0;[m
+[32m+[m[41m                        [m
+[32m+[m[32m                            if (!md5HashExists) {[m
+[32m+[m[32m                                const insertQuery = 'INSERT INTO file (file_loc, dataset_id, file_md5_hash) VALUES (?, ?, ?)';[m
+[32m+[m[32m                                connection.query(insertQuery, [fileLoc, datasetId, fileMd5Hash]);[m
+                             }[m
+[31m-                            connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);[m
+                         }[m
+[32m+[m[32m                        // for (let file of files) {[m
+[32m+[m[32m                        //     if(filesFromPublic) {[m
+[32m+[m[32m                        //         file = file.replace(/^\/?publicDatasets\//, '/');[m[41m [m
+[32m+[m[32m                        //     }[m
+[32m+[m[32m                        //     connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);[m
+[32m+[m[32m                        // }[m
+ [m
+                         // Commit transaction[m
+                         connection.commit(function (err) {[m
+[1mdiff --git a/docker-compose.yml b/docker-compose.yml[m
+[1mindex 2e0ae32..6395c4f 100755[m
+[1m--- a/docker-compose.yml[m
+[1m+++ b/docker-compose.yml[m
+[36m@@ -247,7 +247,7 @@[m [mservices:[m
+       - DBPASSWORD=Shirley@2410[m
+       - DATABASE=aisinglecell[m
+       - HOST=oscb_mysql # NAME OF THE SERVICE[m
+[31m-      - HOST_URL=node-0.c6320-server.biomizzou-pg0.clemson.cloudlab.us # $(hostname)[m
+[32m+[m[32m      - HOST_URL=node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us # $(hostname)[m
+       - SSH_CONNECTION=${SSH_CONNECTION}[m
+     depends_on:[m
+       - oscb_mysql[m
+[36m@@ -265,7 +265,7 @@[m [mservices:[m
+     depends_on:[m
+       - oscb_node[m
+     environment:[m
+[31m-      - HOST_URL=node-0.c6320-server.biomizzou-pg0.clemson.cloudlab.us # $(hostname)[m
+[32m+[m[32m      - HOST_URL=node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us # $(hostname)[m
+     networks:[m
+       - oscb-network[m
+ [m

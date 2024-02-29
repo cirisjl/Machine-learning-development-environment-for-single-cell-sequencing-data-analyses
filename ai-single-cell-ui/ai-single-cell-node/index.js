@@ -1342,14 +1342,39 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
 
        const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
     
+       if(files.length>0){
+        formData.hash = '';
+        for (const file of formData.inputFiles.inputFiles) {
+            const md5sum = crypto.createHash('md5');
+            const fileStream = fs.createReadStream(file);
+            console.log("File--->", file);
+            
+            // Promisify fileStream events to ensure proper handling
+            await new Promise((resolve, reject) => {
+                fileStream.on('data', (chunk) => {
+                    md5sum.update(chunk);
+                });
+                fileStream.on('end', () => {
+                    const fileHash = md5sum.digest('hex');
+                    formData.hash += fileHash ;
+                    resolve();
+                });
+                fileStream.on('error', (err) => {
+                    reject(err);
+                });
+            });
+        }
+        // Check if a document with the provided Id already exists or if any file with the same hash already exists
+        existingFile = await collection.findOne({hash: formData.hash});
+    }
+
   
-  
-      // Check if a document with the provided Id already exists
-      const existingDocument = await collection.findOne({ Id: formData.Id });
-  
-      if (existingDocument) {
-        console.log('Document with Id already exists:', formData.Id);
-        res.status(400).json({ error: 'Document with the provided Id already exists' });
+  // Check if a document with the provided Id already exists
+  const existingDocument = await collection.findOne({ Id: formData.Id });
+
+  if (existingDocument || existingFile) {
+    console.log('Document with Id already exists:', formData.Id);
+    res.status(400).json({ error: 'Document with the provided Id  already exists' });
       } else {
         // Document with the provided Id does not exist, proceed with insertion
         await collection.insertOne(formData);
