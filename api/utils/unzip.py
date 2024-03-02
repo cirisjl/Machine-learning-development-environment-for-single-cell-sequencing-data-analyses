@@ -4,6 +4,8 @@ import zipfile
 import rarfile
 import tarfile
 from tarfile import is_tarfile
+from utils.redislogger import *
+
 
 # zip files
 def extract_zip_all(zip_file_path):
