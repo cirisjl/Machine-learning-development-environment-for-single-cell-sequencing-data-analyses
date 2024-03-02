@@ -8,7 +8,7 @@ source(here::here('tools/formating/formating.R'))
 # source("../../formating/formating.R")
 
 
-RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -66,14 +66,14 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
             # PCA
             # srat <- RunPCA(srat, features = VariableFeatures(srat), ndims.print = 6:10, nfeatures.print = 10)
-            srat <- RunPCA(srat, features = VariableFeatures(srat))
+            srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
                 RegressCellCycle(srat)
             }
 
             srat <- FindNeighbors(srat, dims=dims)
-            srat <- FindClusters(srat, resolution = 0.5)
+            srat <- FindClusters(srat, resolution=resolution)
             # TSNE
             srat <- RunTSNE(srat, dims=dims)
             # UMAP
