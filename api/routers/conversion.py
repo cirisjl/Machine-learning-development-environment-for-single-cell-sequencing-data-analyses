@@ -74,10 +74,10 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata , output= run_seurat_qc(file, assay=assay)
+                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(file, assay=assay)
                 layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
-                 # Return metadata in the API response
+                # Return metadata in the API response
                 metadata =  {
                     "layers": layers,
                     "cell_metadata_obs": cell_metadata_obs.to_dict(),
@@ -164,7 +164,7 @@ async def run_quality_control(file_mappings: List[dict]):
                         "metadata": metadata
                     })
                 except Exception as e:
-                    logger.exception("Error during Scanpy QC")
+                    # logger.exception("Error during Scanpy QC")
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail=f"Error during Scanpy QC: {str(e)}"
@@ -172,11 +172,12 @@ async def run_quality_control(file_mappings: List[dict]):
         return result
 
     except Exception as error:
-        logger.exception(f"Error during quality control: {error}")
+        # logger.exception(f"Error during quality control: {error}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during quality control: {str(error)}"
         )
+
 
 @router.post("/api/data-split")
 async def data_split(user_data: DataSplitRequest):
@@ -236,6 +237,7 @@ async def process_task_data(data: BenchmarksRequest):
         # Handle exceptions as needed
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
+
 @router.post("/api/getTablePlot")
 async def process_files(file_paths: List[str]):
     

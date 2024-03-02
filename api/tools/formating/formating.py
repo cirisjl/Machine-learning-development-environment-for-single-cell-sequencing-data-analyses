@@ -1,5 +1,6 @@
 import scanpy as sc
 import os
+import hashlib
 import sys
 import subprocess
 import numpy as np
@@ -493,6 +494,43 @@ def _is_not_count_val(data: jnp.ndarray):
     non_integer = jnp.any(data % 1 != 0)
 
     return negative, non_integer
+
+
+def get_file_md5(path: str, split_num=256, get_byte=8):
+
+    if not isinstance(split_num, int) or split_num <= 0:
+        raise TypeError("split_num must be a positive none-zero integer!")
+    if not isinstance(get_byte, int) or get_byte <= 0:
+        raise TypeError("get_byte must be a positive none-zero integer!")
+    if not os.path.exists(path):
+        raise TypeError("%s does not exist!" % path)
+    if os.path.isdir(path):
+        raise TypeError("%s is a folder, while path should be a file!" % path)
+    
+    size = os.path.getsize(path)
+    # For a small file (equal to or less than 2M), caculate the MD5 values directly.
+    if size < split_num * get_byte:
+        # Read the file
+        with open(path, 'rb') as f1:
+            f1 = f1.read()
+        cipher = hashlib.md5()
+        cipher.update(str(split_num).encode('utf-8'))
+        cipher.update(f1)
+        cipher.update(str(get_byte).encode('utf-8'))
+        return cipher.hexdigest()
+    # For a large file, split the file in to several segment, and then sum the MD5 value. 
+    mean_size = size // split_num
+    cipher = hashlib.md5()
+    # Position
+    place = 0
+    with open(path, 'rb') as f1:
+        for i in range(split_num):
+            f1.seek(place)
+            res = f1.read(get_byte)
+            cipher.update(res)
+            place = place + mean_size
+
+    return cipher.hexdigest()
 
 
 # def load_annData_dash(path, replace_invalid=False):
