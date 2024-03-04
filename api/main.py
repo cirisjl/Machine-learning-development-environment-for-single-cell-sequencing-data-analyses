@@ -1,5 +1,4 @@
 import time
-from api.routers import benchmarks
 import uvicorn as uvicorn
 from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
@@ -7,7 +6,7 @@ import asyncio
 from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
-from routers import tools
+from routers import tools, benchmarks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
