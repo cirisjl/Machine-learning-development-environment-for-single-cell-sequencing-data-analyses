@@ -31,6 +31,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           selectedDatasets: {}, // Resetting selectedDatasets when the mode changes
         },
       }));
+      console.log(taskData)
+
     }
     setSelectionMode(mode);
     setIsDialogOpen(true);
@@ -354,7 +356,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
             {/* <div className="previous">
               <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
                 Previous
-              </button>
+
             </div> */}
             <div className="next-upon-success">
               <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
