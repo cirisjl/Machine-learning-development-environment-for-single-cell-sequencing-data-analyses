@@ -1,6 +1,5 @@
 import sys
 sys.path.append('..')
-from tools.utils.utils import run_dimension_reduction
 from tools.evaluation.monitor import *
 from tools.evaluation.clustering import clustering_scores
 import os

@@ -1,11 +1,11 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest,ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest,BenchmarksRequest
+from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, BenchmarksRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
-from tools.utils.utils import sc_train_val_test_split
+from tools.utils.datasplit import sc_train_val_test_split
 from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 import os
 
 
-router = APIRouter(prefix='/convert', tags=['conversion'], responses={404: {"description": "API Not found"}})
+router = APIRouter(prefix='/convert', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
 
 
 # @router.post('/api/convert_to_anndata', response_model=ConversionResponse)

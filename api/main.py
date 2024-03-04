@@ -1,4 +1,5 @@
 import time
+from api.routers import benchmarks
 import uvicorn as uvicorn
 from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
@@ -6,7 +7,7 @@ import asyncio
 from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
-from routers import tools, conversion
+from routers import tools
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
@@ -22,7 +23,7 @@ def create_app() -> FastAPI:
 
     current_app.celery_app = create_celery()
     current_app.include_router(tools.router)
-    current_app.include_router(conversion.router)
+    current_app.include_router(benchmarks.router)
     return current_app
 
 
