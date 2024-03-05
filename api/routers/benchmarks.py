@@ -101,12 +101,25 @@ async def run_quality_control(file_mappings: List[dict]):
             input_path = mapping.get("fileDetails")
             path = mapping.get("adata_path")
             assay = mapping.get("assay")
+            min_genes = mapping.get("min_genes")
+            max_genes = mapping.get("max_genes")
+            min_cells = mapping.get("min_cells")
+            # max_cells = mapping.get("max_cells")
+            target_sum = mapping.get("target_sum")
+            n_top_genes = mapping.get("n_top_genes")
+            n_neighbors = mapping.get("n_neighbors")
+            n_pcs = mapping.get("n_pcs")
+            resolution = mapping.get("resolution")
+            regress_cell_cycle = mapping.get("regress_cell_cycle")
+
+
             md5 = get_md5(input_path)
 
 
             if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
                 info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
                 # Return metadata in the API response
@@ -146,6 +159,7 @@ async def run_quality_control(file_mappings: List[dict]):
                 # Run Scanpy QC
                 try:
                     scanpy_results = run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=40, resolution=1, regress_cell_cycle=False)
+                    # scanpy_results = run_scanpy_qc(adata, min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, regress_cell_cycle=regress_cell_cycle)
                     info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
                     # Return metadata in the API response
