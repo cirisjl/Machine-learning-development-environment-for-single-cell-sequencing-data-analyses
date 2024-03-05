@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, isUserAuth} from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
-// import schema from '../../../react-json-schema/Tools/normalizeUsingScanpySchema.json';
 import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
@@ -14,6 +13,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
+    const [selectedDatasets, setSelectedDatasets] = useState({});
 
     const filterCategoryMap = {
       quality_control: '/tools/qc',
@@ -330,9 +330,8 @@ export default function ToolsDetailsComponent(props) {
           </h2> 
         <div className="stripe"></div>
       </div>
-      {/* {formErrors && <span className="error">{formErrors}</span>} */}
       <div>
-        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} />
+        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}/>
       </div>
             
         {filterSchema && UIfilterSchema ? (

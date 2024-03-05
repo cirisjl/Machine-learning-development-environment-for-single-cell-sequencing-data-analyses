@@ -216,13 +216,15 @@ class MyForm extends Component {
         // "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
       }
 
+      formData.owner = taskData.validation.token;
+
       } else {
         const constructedID = `${species}-${tissue}-${author}-${year}`;
         formData.Id = constructedID;
         formData.inputFiles = taskData.upload.final_files;
         formData.files = taskData.upload.files;
         formData.makeItpublic = taskData.upload.makeItpublic;
-        formData.userId = taskData.upload.authToken;
+        formData.owner = taskData.upload.authToken;
       }
 
       formData.flow = flow;
@@ -364,7 +366,10 @@ class MyForm extends Component {
         <form onSubmit={this.handleSubmit} className="form">
           {/* Dataset */}
           <div className="form-field">
-            <label className="form-label">Dataset:</label>
+            <div>
+              <label className="form-label">Dataset:</label> 
+              <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <input
               type="text"
               name="Dataset"
@@ -376,26 +381,12 @@ class MyForm extends Component {
             {errors.Dataset && <div className="error-tooltip">{errors.Dataset}</div>}
           </div>
 
-          {/* Task (CreatableSelect) */}
-          {/* <div className="form-field">
-            <label className="form-label">Task:</label>
-            <Select
-              name="Task"
-              value={formData.Task}
-              isClearable
-              isSearchable
-              isLoading={isLoading}
-              isCreatable={false} // Set isCreatable to false to prevent creating new options
-              onChange={(selectedOption) => this.handleSelectChange('Task', selectedOption)} // Use handleSelectChange            
-              options={options.Task} // Set options to the fetched options
-              className={`form-input ${errors.Task ? 'error' : ''}`}
-            />
-            {errors.Task && <div className="error-tooltip">{errors.Task}</div>}
-          </div> */}
-
           {/* Downloads */}
           <div className="form-field">
-            <label className="form-label">Downloads:</label>
+            <div>
+              <label className="form-label">Downloads:</label> 
+              <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <input
               type="text"
               required
@@ -409,7 +400,10 @@ class MyForm extends Component {
           </div>
 
           <div className="form-field">
-            <label className="form-label">Title:</label>
+            <div>
+              <label className="form-label">Title:</label> 
+              <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <input
               type="text"
               name="Title"
@@ -419,25 +413,11 @@ class MyForm extends Component {
             />
           </div>
 
-          {/* Author (CreatableSelect) */}
-          {/* <div className="form-field">
-            <label className="form-label">Author:</label>
-            <CreatableSelect
-              name="Author"
-              value={formData.Author}
-              isClearable
-              isSearchable
-              isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Author', selectedOption)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Author', inputValue)}
-              options={options.Author} // Set options to the fetched options
-              className={`form-input ${errors.Author ? 'error' : ''}`}
-            />
-            {errors.Author && <div className="error-tooltip">{errors.Author}</div>}
-          </div> */}
-
           <div className="form-field">
-            <label className="form-label">Author:</label>
+            <div>
+              <label className="form-label">Author:</label> 
+              <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <input
               type="text"
               name="Author"
@@ -486,7 +466,10 @@ class MyForm extends Component {
 
           {/* Species (CreatableSelect) */}
           <div className="form-field">
-            <label className="form-label">Species:</label>
+            <div>
+              <label className="form-label">Species:</label> 
+              <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <CreatableSelect
               name="Species"
               value={formData.Species}
@@ -522,7 +505,9 @@ class MyForm extends Component {
 
           {/* "Anatomical Entity" (CreatableSelect) */}
           <div className="form-field">
+            <div>
             <label className="form-label">Anatomical Entity:</label>
+            <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Anatomical Entity"
               value={formData['Anatomical Entity']}
@@ -539,7 +524,9 @@ class MyForm extends Component {
 
           {/* "Organ Part" (CreatableSelect) */}
           <div className="form-field">
+            </div>
             <label className="form-label">Organ Part:</label>
+            <span className="ui-form-title-message warning"> * required </span><div>
             <CreatableSelect
               name="Organ Part"
               value={formData['Organ Part']}
@@ -572,8 +559,9 @@ class MyForm extends Component {
           </div>
 
           {/* "Selected Cell Types" (CreatableSelect) */}
-          <div className="form-field">
+          <div className="form-field"><div>
             <label className="form-label">Selected Cell Types:</label>
+            <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
@@ -664,8 +652,9 @@ class MyForm extends Component {
           </div>
 
           {/* "Disease Status (Specimen)" (CreatableSelect) */}
-          <div className="form-field">
+          <div className="form-field"><div>
             <label className="form-label">Disease Status (Specimen):</label>
+            <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Disease Status (Specimen)"
               value={formData['Disease Status (Specimen)']}
@@ -682,8 +671,9 @@ class MyForm extends Component {
 
 
           {/* "Disease Status (Donor)" (CreatableSelect) */}
-          <div className="form-field">
+          <div className="form-field"><div>
             <label className="form-label">Disease Status (Donor):</label>
+            <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Disease Status (Donor)"
               value={formData['Disease Status (Donor)']}
@@ -770,8 +760,9 @@ class MyForm extends Component {
             {errors['Source Key'] && <p className="error">{errors['Source Key']}</p>}
           </div>
 
-          <div className="form-field">
+          <div className="form-field"><div>
             <label>Submission Date:</label>
+            <span className="ui-form-title-message warning"> * required </span></div>
             <input
               type="date"
               required

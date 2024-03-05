@@ -5,14 +5,17 @@ import ResultsTable from './tableResultsComponent';
 import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
-import SearchBox from '../../Header/searchBar';
+import { useNavigate } from 'react-router-dom';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskData }) => {
+
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, defaultDatasetType, showDatasetDropdown }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
         // ... other styles
     };
+
+    const navigate = useNavigate();
 
     const [visibleFacets, setVisibleFacets] = useState([]); // Will hold the keys of the facets to display
     const [showMoreFacets, setShowMoreFacets] = useState(false); // Toggle state for showing more facets
@@ -22,31 +25,39 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
     const [pagination, setPagination] = useState({});
     const [activeFilters, setActiveFilters] = useState({});
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
-
     const [appliedFilters, setAppliedFilters] = useState([]);
+    const [selectedDatasetTypeInternal, setSelectedDatasetTypeInternal] = useState('benchmarks');
 
-    const onSelectDataset = (dataset) => {
-      // Get a copy of the current selected datasets from the state or props
-      const currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
-      const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
-    
-      if (currentSelectedDatasets[datasetId]) {
-          // Dataset is currently selected, deselect it
-          delete currentSelectedDatasets[datasetId];
-      } else {
-          // Dataset is not selected, select it
-          currentSelectedDatasets[datasetId] = dataset;
-      }
-    
-      // Call onSelect with the updated selected datasets
-      onSelect(currentSelectedDatasets);
+    useEffect(() => {
+      setSelectedDatasetTypeInternal(defaultDatasetType);
+  }, [defaultDatasetType]);
+
+      // Function to reset all state variables
+      const resetState = () => {
+        setFilters({});
+        setResults([]);
+        setPagination({});
+        setActiveFilters({});
+        setGlobalSearchTerm('');
+        setAppliedFilters([]);
     };
+
+    const handleCreateDataset = () => {
+      navigate("/mydata/upload-data/");
+    }
+
+    const handleDatasetTypeChange = (e) => {
+      const datasetType = e.target.value;
+      setSelectedDatasetTypeInternal(datasetType);
+      resetState(); // Reset state whenever dataset type changes
+      fetchData(1, activeFilters , globalSearchTerm);
+  };
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
       try {
-        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}` , {
+        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}&datasetType=${selectedDatasetTypeInternal}` , {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -154,7 +165,16 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
             <div className="dialog-backdrop" onClick={onClose} />
             <div className="dialog">
               <div>
-                
+                {showDatasetDropdown && 
+                  <div className='dataset-type-container'>
+                      <label htmlFor="datasetType">Select Dataset Type:</label>
+                      <select id="datasetType" value={selectedDatasetTypeInternal} onChange={handleDatasetTypeChange}>
+                          <option value="benchmarks">Benchmarks Datasets</option>
+                          <option value="myDatasets">My Datasets</option>
+                      </select>
+                      <button onClick={handleCreateDataset}>Create Dataset</button>
+                  </div>
+                  }
                 <div className='filters-and-search-container'>
                   <div className='metadata-search-wrap filters-container'>
                   <span className="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
@@ -221,7 +241,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                 </div>
                 
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} pagination={pagination}/>
+                     <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
                 </div>
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>

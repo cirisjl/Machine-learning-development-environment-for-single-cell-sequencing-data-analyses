@@ -16,8 +16,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [loading, setLoading] = useState({});
 
-  const [datasets, setDatasets] = useState([]);
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
 
@@ -210,6 +208,23 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       }
     }));
   };
+
+  const onSelectDataset = (dataset) => {
+    // Get a copy of the current selected datasets from the state or props
+    const currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
+    const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
+  
+    if (currentSelectedDatasets[datasetId]) {
+        // Dataset is currently selected, deselect it
+        delete currentSelectedDatasets[datasetId];
+    } else {
+        // Dataset is not selected, select it
+        currentSelectedDatasets[datasetId] = dataset;
+    }
+  
+    // Call onSelect with the updated selected datasets
+    handleSelectDatasets(currentSelectedDatasets);
+  };
   
 
   return (
@@ -222,11 +237,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           </div>
           {isDialogOpen && (
             <DatasetSelectionDialog
-              onSelect={handleSelectDatasets}
+              onSelect={onSelectDataset}
               multiple={selectionMode === 'multiple'}
               onClose={handleCloseDialog}
               isVisible={isDialogOpen !== false}
-              taskData={taskData}
+              selectedDatasets={taskData.task_builder.selectedDatasets}
             />
           )}
         </div>

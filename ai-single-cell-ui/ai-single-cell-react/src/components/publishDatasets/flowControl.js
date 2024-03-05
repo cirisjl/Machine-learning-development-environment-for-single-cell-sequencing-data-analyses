@@ -28,7 +28,8 @@ const FlowControl = () => {
         inputFiles: [],
         seuratFiles: [],
         selectedSeuratFile: null,
-        fileMappings:[]
+        fileMappings:[],
+        token: ''
       },
     quality_control: {
       qc_results: []
