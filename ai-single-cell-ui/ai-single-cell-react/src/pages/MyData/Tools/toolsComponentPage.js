@@ -8,6 +8,8 @@ export default function ToolsComponentPage() {
 
     const [selectedFilter, setSelectedFilter] = useState(null);
     const [category, setCategory] = useState(null);
+    const [showLogs, setShowLogs] = useState(false);
+    const [liveLogs, setLiveLogs]= useState('');
   
     const handleFilterSelection = (category, filter) => {
       setSelectedFilter(category+ "_" + filter);
@@ -30,7 +32,7 @@ export default function ToolsComponentPage() {
                   <p>Please select a tool to run</p>
                   </div>
             )}
-            <div className="right-rail">
+            <div className="right-rail" showLogs={showLogs} liveLogs={liveLogs}>
                 <RightRail />
             </div>
         </div>

@@ -4,7 +4,7 @@ import {
   Route, 
   Routes
 } from 'react-router-dom'
-
+import React, { useState } from 'react';
 
 // import Layouts
 import RootLayout from './../layouts/rootLayout'
@@ -28,7 +28,6 @@ import ToolsComponentPage from '../pages/MyData/Tools/toolsComponentPage';
 import MyTasks from '../pages/myTasks';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
-import BasicFormComponent from './Form/Components/BasicForm';
 import NewApp from './Form/Components/component2';
 import MyForm from './Form/Components/customComponent';
 import AccessDenied from './AccessDeniedPage';
@@ -37,10 +36,14 @@ import ManageOptions from './Form/Components/editablePageOptions';
 import FlowControl from './publishDatasets/flowControl';
 import TaskResultsComponent from './Benchmarks/taskResultsComponent';
 import UploadDataset from './MyData/UploadData/uploadDataset';
+import SessionReminder from './Session/sessionManager';
+import { SessionProvider } from './Session/context/sessionContext'; 
 
 function App() {
-
+  
   return (
+    <>
+    <div className="session-manager-component"><SessionReminder/> </div>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RootLayout />}>
@@ -65,7 +68,6 @@ function App() {
           <Route path="routing"         element={<RoutingTemplate/>}/>
           <Route path="myTasks"         element={<MyTasks/>}/>
           <Route path="resultfiles"         element={<ResultFiles/>}/>
-          <Route path="basicForm"         element={<BasicFormComponent/>}/>
           <Route path="new"         element={<NewApp/>}/>
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
@@ -75,6 +77,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 

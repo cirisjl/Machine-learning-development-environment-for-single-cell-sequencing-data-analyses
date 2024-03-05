@@ -250,6 +250,8 @@ services:
       - HOST=oscb_mysql # NAME OF THE SERVICE
       - HOST_URL=node-0.c6320-server.biomizzou-pg0.clemson.cloudlab.us # $(hostname)
       - SSH_CONNECTION=${SSH_CONNECTION}
+    env_file:
+      - ./ai-single-cell-ui/ai-single-cell-node/.env  
     depends_on:
       - oscb_mysql
     volumes:

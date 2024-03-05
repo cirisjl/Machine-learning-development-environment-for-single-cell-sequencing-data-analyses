@@ -46,7 +46,8 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             ...prevTaskData,
             validation: {
               ...prevTaskData.validation,
-              inputFiles: inputFiles
+              inputFiles: inputFiles,
+              token: authData.username
             },
           }));
 
