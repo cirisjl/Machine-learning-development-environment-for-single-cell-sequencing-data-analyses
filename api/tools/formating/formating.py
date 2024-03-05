@@ -548,7 +548,7 @@ def get_md5(path:str):
         raise TypeError("%s does not exist!" % path)
     if os.path.isdir(path):
         for file in os.listdir(path):
-            md5.append(get_file_md5(file))
+            md5.append(get_file_md5(path+file))
     else:
         md5.append(get_file_md5(path))
     return md5
