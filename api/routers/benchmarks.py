@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
 from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, BenchmarksRequest
-from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata
+from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
@@ -74,21 +74,8 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(file, assay=assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
-                layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap = get_metadata_from_seurat(file)
 
-                # Return metadata in the API response
-                metadata =  {
-                    "layers": layers,
-                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
-                    "gene_metadata": gene_metadata.to_dict(),
-                    "nCells": nCells,
-                    "nGenes": nGenes,
-                    "genes": genes,
-                    "cells": cells,
-                    "embeddings": embeddings,
-                    "message": "Quality control completed successfully"
-                }
                 if assay_names is None:
                     assay_names = []
                 
@@ -96,25 +83,8 @@ async def process_input_files_validation(request: InputFilesRequest):
                         "inputfile": file,
                         "format": "h5seurat",
                         "default_assay": default_assay,
-                        "assay_names": assay_names,
-                        "adata_path": adata_path,
-                        "output": output,
-                        "umap_plot": umap_plot,
-                        "violin_plot": violin_plot,
-                        "scatter_plot": scatter_plot,
-                        "highest_expr_genes_plot": highest_expr_genes_plot,
-                        "metadata": metadata
+                        "assay_names": assay_names
                     })
-            else:
-                # It's a different file, call load_annData method
-                adata = load_anndata(file)
-                if (os.path.isdir(file)):
-                    file = os.path.join(file, "anndata_object.h5ad")
-
-                adata_path = change_file_extension(file, 'h5ad')
-                adata.write_h5ad(adata_path)
-                result.append({"inputfile": file, "format": "h5ad", "adata_path": adata_path})
-        
         except Exception as e:
             # Handle the exception and return an error response
             raise HTTPException(status_code=500, detail=str(e))
@@ -130,15 +100,53 @@ async def run_quality_control(file_mappings: List[dict]):
             format = mapping.get("format")
             input_path = mapping.get("fileDetails")
             path = mapping.get("adata_path")
+            assay = mapping.get("assay")
+            md5 = get_md5(input_path)
 
-            if format == "h5ad":
+
+            if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
+                # It's an H5Seurat or RDS file, call runQCSeurat method
+                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+
+                # Return metadata in the API response
+                metadata =  {
+                    "layers": layers,
+                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                    "gene_metadata": gene_metadata.to_dict(),
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "embeddings": embeddings
+                }
+                if assay_names is None:
+                    assay_names = []
+                
+                result.append({
+                        "inputfile": input_path,
+                        "info": info,
+                        "format": "h5seurat",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names,
+                        "adata_path": adata_path,
+                        "output": output,
+                        "umap_plot": umap_plot,
+                        "violin_plot": violin_plot,
+                        "scatter_plot": scatter_plot,
+                        "highest_expr_genes_plot": highest_expr_genes_plot,
+                        "md5": md5,
+                        "metadata": metadata,
+                        "message": "Quality control completed successfully."
+                    })
+            else:
                 # Load the annData object
                 adata = load_anndata(path)
 
                 # Run Scanpy QC
                 try:
-                    scanpy_results = run_scanpy_qc(adata)
-                    layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
+                    scanpy_results = run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=40, resolution=1, regress_cell_cycle=False)
+                    info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
                     # Return metadata in the API response
                     metadata =  {
@@ -149,22 +157,26 @@ async def run_quality_control(file_mappings: List[dict]):
                         "nGenes": nGenes,
                         "genes": genes,
                         "cells": cells,
-                        "embeddings": embeddings,
-                        "message": "Quality control completed successfully"
+                        "embeddings": embeddings
                     }
                     
                     result.append({
                         "inputfile": input_path,
+                        "info": info,
                         "format": format,
                         "adata_path": path,
                         "umap_plot": umap_plot,
                         "violin_plot": violin_plot,
                         "scatter_plot": scatter_plot,
                         "highest_expr_genes_plot": highest_expr_genes_plot,
-                        "metadata": metadata
+                        "md5": md5,
+                        "metadata": metadata,
+                        "message": "Quality control completed successfully."
+                        
                     })
                 except Exception as e:
                     # logger.exception("Error during Scanpy QC")
+                    print(e)
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail=f"Error during Scanpy QC: {str(e)}"
@@ -172,7 +184,7 @@ async def run_quality_control(file_mappings: List[dict]):
         return result
 
     except Exception as error:
-        # logger.exception(f"Error during quality control: {error}")
+        print(f"Error during quality control: {error}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during quality control: {str(error)}"

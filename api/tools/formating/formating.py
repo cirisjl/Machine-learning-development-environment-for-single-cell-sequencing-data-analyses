@@ -141,6 +141,7 @@ def get_metadata_from_seurat(path):
     pca = None
     tsne = None
     umap = None
+    info = None
 
     try:
         results = list(GetMetadataFromSeurat_r(path))
@@ -162,10 +163,12 @@ def get_metadata_from_seurat(path):
                 tsne = ro.conversion.rpy2py(results[9])
             if results[10] != ro.rinterface.NULL:
                 umap = ro.conversion.rpy2py(results[10])
+
+        info = list(results[11])[0]
     except Exception as e:
         print(e)
 
-    return default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
+    return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
 def get_metadata_from_anndata(adata):
@@ -181,9 +184,11 @@ def get_metadata_from_anndata(adata):
     violin_plot = None
     scatter_plot = None
     highest_expr_genes_plot = None
+    info = None
 
     print(adata)
     if adata is not None and isinstance(adata, AnnData):
+        info = adata.__str__()
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
         nCells = adata.n_obs # Number of cells
@@ -197,7 +202,7 @@ def get_metadata_from_anndata(adata):
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
-    return layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
+    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
@@ -382,13 +387,16 @@ def list_py_to_r(list):
     list = [x.upper() for x in list if isinstance(x,str)]
     return 'c(' + ','.join(list) + ')'
 
+
 def methods_list(list):
     list = [x.upper() for x in list if isinstance(x,str)]
     return ','.join(list)
 
+
 def list_to_string(list):
     list = [x.upper() for x in list if isinstance(x, str)]
     return ','.join(list)
+
 
 def list_to_string_default(list):
     list = [x for x in list if isinstance(x, str)]
@@ -413,6 +421,7 @@ def read_text_replace_invalid(file_path, delimiter):
     
     df = df.apply(pd.to_numeric, errors='coerce')
     return sc.AnnData(df)
+
 
 def read_text(file_path):
     if file_path.endswith(".gz"):
@@ -531,6 +540,18 @@ def get_file_md5(path: str, split_num=256, get_byte=8):
             place = place + mean_size
 
     return cipher.hexdigest()
+
+
+def get_md5(path:str):
+    md5 = []
+    if not os.path.exists(path):
+        raise TypeError("%s does not exist!" % path)
+    if os.path.isdir(path):
+        for file in os.listdir(path):
+            md5.append(get_file_md5(file))
+    else:
+        md5.append(get_file_md5(path))
+    return md5
 
 
 # def load_annData_dash(path, replace_invalid=False):
