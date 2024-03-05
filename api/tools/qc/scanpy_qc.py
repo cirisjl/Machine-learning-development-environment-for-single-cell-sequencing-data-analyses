@@ -13,7 +13,7 @@ sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=40, resolution=1, regress_cell_cycle=False):
+def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, regress_cell_cycle=False):
         if adata is None:
             raise ValueError("The input is None.")
         

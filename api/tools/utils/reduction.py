@@ -4,7 +4,7 @@ from anndata import AnnData
 
 
 
-def run_dimension_reduction(adata, layer=None, n_neighbors=10, use_rep=None, n_pcs=40, resolution=1):
+def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, resolution=1):
     if layer is not None:
         adata_temp = adata.copy()
         adata_temp.X = adata_temp.layers[layer]
