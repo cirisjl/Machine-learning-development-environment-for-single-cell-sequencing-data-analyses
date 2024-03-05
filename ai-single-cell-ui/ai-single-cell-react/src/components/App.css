@@ -1647,3 +1647,53 @@ width
 .eighty-twenty-grid .main-content .task-builder-task{
   margin-top:2rem;
 }
+
+/* popupmodal.css */
+.session-manager-component .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.session-manager-component .modal-content {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  max-width: 90%;
+  height: inherit;
+}
+
+.session-manager-component .modal-message {
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.session-manager-component .modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.session-manager-component .modal-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.session-manager-component .modal-button.no {
+  background: #f44336;
+}

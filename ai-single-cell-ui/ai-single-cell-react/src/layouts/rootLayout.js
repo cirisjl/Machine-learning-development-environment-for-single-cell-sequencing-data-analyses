@@ -5,7 +5,6 @@ import React, { useState, useEffect } from "react";
 import { deleteCookie, getCookie } from "../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 
-
 export default function RootLayout() {
 
     const navigate = useNavigate();
