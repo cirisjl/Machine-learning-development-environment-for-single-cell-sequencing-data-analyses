@@ -112,9 +112,7 @@ async def run_quality_control(file_mappings: List[dict]):
             resolution = mapping.get("resolution")
             regress_cell_cycle = mapping.get("regress_cell_cycle")
 
-
             md5 = get_md5(input_path)
-
 
             if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
