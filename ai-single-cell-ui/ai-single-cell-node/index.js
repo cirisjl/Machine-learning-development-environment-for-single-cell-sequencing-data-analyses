@@ -70,14 +70,14 @@ function getUserFromToken(token) {
     }
 
     try {
-        const decoded = jwt.verify(token, 'secret');
+        const decoded = jwt.verify(token, process.env.JWT_TOKEN_SECRET);
         if (!decoded.username) {
             return 'Unauthorized';
         }
 
         return decoded.username;
     } catch (err) {
-        console.log('eee ' + err)
+        console.log('Session Expired. Please login again ' + err)
         return 'Unauthorized';
     }
 }
@@ -172,6 +172,21 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     }
   });
 
+  // Refresh token endpoint
+app.get('/api/refresh-token', verifyToken, (req, res) => {
+    jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
+        if(err) {
+            res.sendStatus(403);
+        } else {
+            if(authData.username !== null && authData.username !== undefined) {
+                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+                res.cookie('jwtToken', newToken, { maxAge: 2 * 60 * 1000, path:"/" });
+                res.json({ status:200, message: 'Token refreshed', token: newToken });
+            }
+        }
+    })    
+});
+
 // Route to handle user signup
 app.post('/api/signup', (req, res) => {
     const { username, email, password } = req.body;
@@ -198,7 +213,7 @@ app.post('/api/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({ username, password }, 'secret', { expiresIn: '1h' });
+                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -206,7 +221,7 @@ app.post('/api/signup', (req, res) => {
                     // set the cookie with the JWT token on the response object
                     res.cookie("jwtToken", jwtToken, {
                         //httpOnly: true,
-                        maxAge: 60 * 60 * 1000,
+                        maxAge: 2 * 60 * 1000,
                         path: "/"
                         //secure: process.env.NODE_ENV === "production",
                     });
@@ -252,7 +267,7 @@ app.post('/api/login', (req, res) => {
             }
 
             // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({ username, password }, 'secret', { expiresIn: '1h' });
+            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
 
             // the cookie will be set with the name "jwtToken" and the value of the token
             // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -260,7 +275,7 @@ app.post('/api/login', (req, res) => {
             // set the cookie with the JWT token on the response object
             res.cookie("jwtToken", jwtToken, {
                 //httpOnly: true,
-                maxAge: 60 * 60 * 1000,
+                maxAge: 2 * 60 * 1000,
                 path: "/"
                 //secure: process.env.NODE_ENV === "production",
             });
@@ -272,7 +287,7 @@ app.post('/api/login', (req, res) => {
 
 // Route to handle protected resource
 app.get('/protected', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secret', (err, authData) => {
+    jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
         if (err) {
             res.sendStatus(403);
         } else {
@@ -1373,9 +1388,11 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     let files = formData.files;
     let authToken = formData.userId;
 
-    let username = getUserFromToken(authToken);
+    if(authToken) {
+        let username = getUserFromToken(authToken);
+        formData.userId = username;
+    }
 
-    formData.userId = username;
 
       // Connect to the MongoDB server
       await client.connect();
@@ -1401,7 +1418,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
             try {
                 let dirName = "";
                 const fromPublic = false;
-                if (files.length > 0) {
+                if (files && files.length > 0) {
                     dirName = path.dirname(files[0])
                 } 
     
@@ -1755,7 +1772,8 @@ app.post('/api/datasets/search', async (req, res) => {
         await client.connect();
 
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollection);
+        const datasetType = req.query.datasetType; // New parameter
+        const collection = datasetType === "myDatasets" ?   db.collection(userDatasetsCollection)  : db.collection(datasetCollection);
 
 
       const page = parseInt(req.query.page, 10) || 1;
