@@ -217,6 +217,7 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
     pca <- NULL
     tsne <- NULL
     umap <- NULL
+    info <- NULL
     # suffix <- tolower(GetSuffix(path))
 
     if(!is.null(srat)){
@@ -232,10 +233,11 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
         if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
         if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
         if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
+        info <- print(srat)
     }
     srat <- NULL
     
-    list(default_assay=default_assay, assay_names=assay_names, metadata=metadata, nCells=nCells, nGenes=nGenes, genes=genes, cells=cells, HVGsID=HVGsID, pca=pca, tsne=tsne, umap=umap)
+    list(default_assay=default_assay, assay_names=assay_names, metadata=metadata, nCells=nCells, nGenes=nGenes, genes=genes, cells=cells, HVGsID=HVGsID, pca=pca, tsne=tsne, umap=umap, info=info)
 }
 
 

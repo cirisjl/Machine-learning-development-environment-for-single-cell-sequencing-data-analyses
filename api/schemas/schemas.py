@@ -24,6 +24,7 @@ class Dataset(BaseModel):
     show_error: Optional[bool] = True
     
 
+
 class IntegrationDataset(BaseModel):
     dataset: List[str] = None
     input: List[str] = None
@@ -44,24 +45,36 @@ class IntegrationDataset(BaseModel):
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
    
+
+
 class PathRequest(BaseModel):
     path: str
+
+
 
 # Define data models using Pydantic for request and response bodies
 class ConversionRequest(BaseModel):
     path: str
+
+
 
 class ConversionResponse(BaseModel):
     assay_names: list
     adata_path: str
     message: str
 
+
+
 class InputFile(BaseModel):
     fileDetails: str
     assay: Optional[str] = None
 
+
+
 class InputFilesRequest(BaseModel):
     inputFiles: List[InputFile]
+
+
 
 class AnndataMetadata(BaseModel):
     layers: list
@@ -73,9 +86,13 @@ class AnndataMetadata(BaseModel):
     cells: list
     embeddings: list
 
+
+
 class CombinedQCResult(BaseModel):
     scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
     # dropkick_results: AnndataMetadata
+
+
 
 class DataSplitRequest(BaseModel):
     data: str
@@ -83,14 +100,20 @@ class DataSplitRequest(BaseModel):
     validation_fraction: float
     test_fraction: float
 
+
+
 class TaskDataRequest(BaseModel):
     adata_path: str
     task_label: str
     datasetId: str
 
+
+
 class BenchmarksRequest(BaseModel):
     task_type: str
     data: List[TaskDataRequest]
+
+
 
 class ConvertRequest(BaseModel):
     fileDetails: List[str]
