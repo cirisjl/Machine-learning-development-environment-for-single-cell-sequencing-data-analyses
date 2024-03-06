@@ -1,11 +1,11 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, BenchmarksRequest
+from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
-from tools.utils.datasplit import sc_train_val_test_split
+from tools.utils.datasplit import sc_train_val_test_split, subset_by_obskey
 from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
@@ -282,11 +282,37 @@ async def data_split(user_data: DataSplitRequest):
 
         # Return the path to the compressed archive
         archive_path = data_directory / f"{data_filename}_data_split.zip"
-        return {"result": "Data split successful", "archive_path": archive_path}
+        return {"result": "Data split successfully.", "archive_path": archive_path}
     except Exception as e:
         # Handle any errors
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.post("/api/subset-data")
+async def subset_data(user_data: SubsetDataRequest):
+    try:
+        # Access user data
+        data_filepath = user_data.data
+        obskey = user_data.obskey
+        values = user_data.values
+
+        adata = load_anndata(data_filepath)
+
+        adata_sub = subset_by_obskey(adata, obskey, values)
+       
+       # Extract directory and filename from the data filepath
+        data_directory = Path(data_filepath).parent
+        data_filename = Path(data_filepath).stem
+
+        # Return the path to the compressed archive
+        archive_path = data_directory / f"{data_filename}_sub.h5ad"
+        adata_sub.write(archive_path)
+
+        return {"result": "AnnData is subset successfully.", "archive_path": archive_path}
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 @router.post("/publishDatasets/benchmarks")
 async def process_task_data(data: BenchmarksRequest):

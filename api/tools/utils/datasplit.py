@@ -65,3 +65,22 @@ def sc_train_val_test_split(
     validation, test = sc_train_test_split(validation_test, train_fraction=validation_fraction/(validation_fraction+test_fraction))
 
     return train, validation, test
+
+
+def subset_by_obskey(
+        adata: AnnData,
+        obskey: str,
+        values: list):
+    adata_merge = None
+    if isinstance(adata, AnnData):
+        if obskey in adata.obs.keys() and len(values)>0:
+            adata_list = []
+            for value in values:
+                adata_list.append(adata[adata.obs[obskey] == value])
+            adata_merge = sc.AnnData.concatenate(*adata_list, join='outer')
+            adata_merge.var_names_make_unique()
+            adata_merge.obs_names_make_unique()
+
+    return adata_merge
+
+    
