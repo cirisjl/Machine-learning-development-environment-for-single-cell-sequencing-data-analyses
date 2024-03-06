@@ -222,7 +222,12 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
 
     if(!is.null(srat)){
         assay_names <- names(srat@assays)
-        if(assay != 'RNA' && assay %in% assay_names) DefaultAssay(srat) <- assay
+        if(assay != 'RNA' && assay %in% assay_names){
+            DefaultAssay(srat) <- assay
+        }
+        else if(!(assay %in% assay_names)){
+            assay <- DefaultAssay(srat)
+        }
         default_assay <- DefaultAssay(srat)
         metadata <- srat@meta.data
         nCells <- ncol(srat)
