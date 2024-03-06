@@ -79,7 +79,6 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             # UMAP
             srat <- RunUMAP(srat, dims=dims)
 
-
             assay_names <- names(srat@assays)
 
             # SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
