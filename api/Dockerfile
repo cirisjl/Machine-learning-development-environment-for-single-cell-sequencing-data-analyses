@@ -7,6 +7,11 @@ RUN pip install --upgrade --no-cache \
     # louvain plotly psutil nvidia-ml-py pymde
     # gputil
 
+# Downgrade SeuratObject
+RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'
+RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'
+# RUN R --no-echo --no-restore --no-save -e "install.packages('SeuratObject')"
+
 # RUN mkdir /app
 WORKDIR /app
 COPY . .
