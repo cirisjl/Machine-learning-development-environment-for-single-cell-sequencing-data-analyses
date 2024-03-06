@@ -97,7 +97,7 @@ LoadSeurat <- function(path, project = NULL) {
     srat <- NULL
     suffix <- tolower(GetSuffix(path))
 
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){
+    if(suffix == "h5seurat"){
         print("Inside LoadSeurat")
         srat <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
@@ -123,7 +123,7 @@ LoadSeurat <- function(path, project = NULL) {
         rm(robj)
     } else if(suffix == "robj"){
         robj <- get(load(path))
-        if(class(robj) == 'seurat'){
+        if(tolower(class(robj)) == 'seurat'){
             if (compareVersion(as.character(robj@version), "3.0.0") < 0){
                 srat_v3 <- UpdateSeuratObject(robj)
                 srat <- CreateSeuratObject(counts=srat_v3[['RNA']]@counts, meta.data=srat_v3@meta.data, project = Project(srat_v3))
