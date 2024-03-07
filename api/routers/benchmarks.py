@@ -81,13 +81,15 @@ async def process_input_files_validation(request: InputFilesRequest):
                 
                 result.append({
                         "inputfile": file,
+                        "info": info,
                         "format": "h5seurat",
                         "default_assay": default_assay,
                         "assay_names": assay_names
                     })
         except Exception as e:
             # Handle the exception and return an error response
-            raise HTTPException(status_code=500, detail=str(e))
+            print(str(e))
+            raise HTTPException(status_code=500, detail=str(e))        
 
     return result
 
@@ -132,8 +134,20 @@ async def run_quality_control(file_mappings: List[dict]):
 
             if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
                 # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
+                
+                if ddl_assay_names:
+                    result.append({
+                        "inputfile": input_path,
+                        "format": "h5seurat",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names,
+                        "ddl_assay_names": ddl_assay_names
+                    })
+
+                    return result
+                
                 info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
                 if(use_default):
