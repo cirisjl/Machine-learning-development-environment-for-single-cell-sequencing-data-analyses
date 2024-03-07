@@ -24,6 +24,9 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 
+from typing import Any, List, Optional
+from attrdict import AttrDict
+
 # Ensure that pandas2ri is activated for automatic conversion
 pandas2ri.activate()
 
@@ -164,9 +167,14 @@ def get_metadata_from_seurat(path):
             if results[10] != ro.rinterface.NULL:
                 umap = ro.conversion.rpy2py(results[10])
 
-        info = list(results[11])[0]
+        info = list(results[11])
+
+        # print(convert_from_r(results))
+        # print(default_assay)
+        # print(assay_names)
+
     except Exception as e:
-        print(e)
+        print("Error in get_metadata_from_seurat: ", e)
 
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
@@ -552,6 +560,102 @@ def get_md5(path:str):
     else:
         md5.append(get_file_md5(path))
     return md5
+
+
+def convert_df_dates_from_r(df: pd.DataFrame, date_cols: Optional[List[str]] = None) -> pd.DataFrame:
+    """ convert given date columns into pandas datetime with UTC timezone
+    Args:
+        df (pd.DataFrame): The pandas datframe
+        date_cols (list[str], optional): _description_. Defaults to None.
+    Returns:
+        pd.DataFrame: The dataframe with the converted
+    """
+    result = df.copy()
+    if date_cols is not None:
+        for col in (set(date_cols) & set(result.columns)):
+            result[col] = pd.to_datetime(
+                result[col], unit='D', origin='1970-1-1').dt.tz_localize('UTC')
+    return result
+
+
+def convert_to_r(item: Any) -> Any:
+    """ cpnverts python object into rpy2 format
+    Args:
+        item (Any): native python object
+    Returns:
+        Any: rpy2 object
+    """
+    if item is None:
+        return ro.r("NULL")
+    elif isinstance(item, pd.DataFrame):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            result = ro.conversion.py2rpy(item)
+        return result
+    elif isinstance(item, np.ndarray):
+        return ro.FloatVector(item)
+    elif isinstance(item, (AttrDict, pd.Series)):
+        return convert_to_r(dict(item))
+    elif isinstance(item, dict):
+        temp = {k: convert_to_r(v) for k, v in item.items()
+                if v is not None}
+        temp = {k: v for k, v in temp.items() if v is not None}
+        return ro.ListVector(temp)
+    elif isinstance(item, set):
+        return convert_to_r(list(item))
+    elif isinstance(item, (list, tuple, pd.Index)):
+        if len(item) == 0:
+            return None
+        if isinstance(item[0], float):
+            return ro.FloatVector(item)
+        if isinstance(item[0], (int, np.int0)):
+            return ro.IntVector(item)
+        return ro.StrVector([str(i) for i in item])
+    else:
+        return item
+
+
+def convert_from_r(item: Any, date_cols: Optional[List[str]] = None, name: str = '', reserve_plots: bool = True) -> Any:
+    """convert rpy object into python native object
+    Args:
+        item (Any): rpy2 object to convert
+        date_cols (list[str], optional): define the date colums in R dataframe , in order to conevrt them into pandas datetime. Defaults to None.
+        name (str, optional): name of the object to convert, (not required for external use). Defaults to ''.
+        reserve_plots (bool, optional): if True prserve rpy2 ListVector as rpy2 ListVector if name conatains plot,
+                                        in order to be able to ouput ggplot plots. Defaults to True.
+    Returns:
+        Any: the converted item
+    """
+    result = item
+    remove_list: bool = True
+    if item == ro.vectors.NULL:
+        return None
+    elif 'plot' in name and isinstance(item, ro.vectors.ListVector) and reserve_plots:
+        return item
+    elif isinstance(item, (ro.environments.Environment,
+                           ro.Formula)):
+        return None
+    elif isinstance(item, ro.vectors.DataFrame):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            result = ro.conversion.rpy2py(item)
+        result = convert_df_dates_from_r(result, date_cols)
+        remove_list = False
+    elif isinstance(item, (ro.vectors.StrVector,
+                           ro.vectors.FloatVector,
+                           ro.vectors.BoolVector,
+                           ro.vectors.IntVector)):
+        result = tuple(item)
+    elif isinstance(item, ro.vectors.ListVector):
+        if item.names == ro.vectors.NULL:
+            return None
+        result = {}
+        remove_list = False
+        if len(item) > 0:
+            result = dict(zip(item.names, list(item)))
+            for k, v in result.items():
+                result[k] = convert_from_r(v, date_cols, name=k)
+    if '__len__' in result.__dir__() and len(result) == 1 and remove_list:
+        result = result[0]
+    return result
 
 
 # def load_annData_dash(path, replace_invalid=False):
