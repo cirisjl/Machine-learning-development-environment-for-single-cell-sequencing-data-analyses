@@ -26,10 +26,15 @@ const FlowControl = () => {
     },
     validation: {
         inputFiles: [],
-        seuratFiles: [],
-        selectedSeuratFile: null,
+        seuratFile: {
+          default_assay: '',
+          assay_names: [],
+          file: ''
+        } ,
+        selectedAssayName: '',
         fileMappings:[],
-        token: ''
+        token: '',
+        displayAssayNames: false
       },
     quality_control: {
       qc_results: []

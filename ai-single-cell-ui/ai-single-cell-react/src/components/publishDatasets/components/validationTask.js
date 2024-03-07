@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { FLASK_BACKEND_API,CELERY_BACKEND_API ,STORAGE } from '../../../constants/declarations';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import {ScaleLoader } from 'react-spinners';
 import axios from 'axios';
 
 
 function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
-   const [loading, setLoading] = useState(false);
    const [validationLoading, setValidationLoading] = useState(false);
    const [errorMessage, setErrorMessage] = useState('');
    const [validationStatus, setValidationStatus] = useState('');
@@ -25,245 +24,259 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   useEffect(() => {
     isUserAuth(jwtToken)
-    .then((authData) => {
-      if(authData.isAdmin) {
-        console.log("Data to validate");
-        console.log(taskData.validation.seuratFiles.length === 0);
-        if(taskData.validation.status !== 'completed') {
-          setValidationLoading(true);
-          let username = authData.username;
-          let newDirectoryPath = taskData.upload.newDirectoryPath;
-          let files = taskData.upload.files;
-
-          let inputFiles = [];
-          for(let file of files) {
-            let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
-            inputFiles.push(path);
+      .then((authData) => {
+        if (authData.isAdmin) {
+          if (taskData.validation.status !== 'completed') {
+            setValidationLoading(true);
+            let username = authData.username;
+            let newDirectoryPath = taskData.upload.newDirectoryPath;
+            let files = taskData.upload.files;
+  
+            let inputFiles = [];
+            for (let file of files) {
+              let path = STORAGE + "/" + username + "/" + newDirectoryPath + "/" + file;
+              inputFiles.push(path);
+            }
+  
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                inputFiles: inputFiles,
+                token: authData.username
+              },
+            }));
+  
+            if (inputFiles.length === 1 && (inputFiles[0].toLowerCase().endsWith('.h5seurat') || inputFiles[0].toLowerCase().endsWith('.rds') || inputFiles[0].toLowerCase().endsWith('.robj'))) {
+              let file = inputFiles[0];
+                const requestData = {
+                  inputFiles: [{ fileDetails: file }]
+                };
+  
+                axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
+                  .then(function (response) {
+                    let data = response.data[0];
+                    if (data.format === 'h5seurat') {
+                      if (data.assay_names && data.assay_names.length > 1) {
+                        setTaskData((prevTaskData) => ({
+                          ...prevTaskData,
+                          validation: {
+                            ...prevTaskData.validation,
+                            seuratFile: {
+                              ...prevTaskData.validation.seuratFile,
+                              default_assay: data.default_assay,
+                              assay_names: data.assay_names,
+                              file: data.inputfile
+                            },
+                            displayAssayNames: true
+                          }
+                        }));
+                        setValidationLoading(false);
+                        return;
+                      } else {
+                        let fileDetails = {
+                          fileDetails: data.inputfile,
+                          format: data.format,
+                          adata_path: data.inputfile,
+                          default_assay: data.default_assay
+                        };
+                        // Add the fileDetails directly to the fileMappings
+                        setTaskData((prevTaskData) => ({
+                          ...prevTaskData,
+                          validation: {
+                            ...prevTaskData.validation,
+                            fileMappings: [
+                              ...prevTaskData.validation.fileMappings,
+                              fileDetails,
+                            ],
+                            status: 'completed'
+                          },
+                        }));
+                        setValidationStatus("Dataset has been loaded and validated.")
+                        setValidationLoading(false);
+                        setTaskStatus((prevTaskStatus) => ({
+                          ...prevTaskStatus,
+                          2: true, // Mark Task 2 as completed 
+                        }));
+    
+                        // The current task is finished, so make the next task active
+                        setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+                      }
+                    }
+                  })
+                  .catch(error => {
+                    setValidationStatus("Issue with validating the dataset" + error.response);
+                    console.error('API Error:', error.response);
+                  });
+            } else {
+              let pathToUse;
+  
+          if (inputFiles.length > 1) {
+              const firstFilePath = inputFiles[0]; 
+              pathToUse = firstFilePath.substring(0, firstFilePath.lastIndexOf('/'));
+          } else if (inputFiles.length === 1) {
+              // Only one file, use its complete path
+              pathToUse = inputFiles[0];
           }
-          let hasAddedSeuratFiles = false; // Flag to track if seuratFiles have been added
-
+  
+          let fileDetails = {
+            fileDetails: pathToUse,
+            format: "h5ad",
+            adata_path: pathToUse,
+          };
+          // Add the fileDetails directly to the fileMappings
           setTaskData((prevTaskData) => ({
             ...prevTaskData,
             validation: {
               ...prevTaskData.validation,
-              inputFiles: inputFiles,
-              token: authData.username
+              fileMappings: [
+                ...prevTaskData.validation.fileMappings,
+                fileDetails,
+              ],
             },
           }));
-
-        let pathToUse;
-
-        if (inputFiles.length > 1) {
-            const firstFilePath = inputFiles[0]; 
-            pathToUse = firstFilePath.substring(0, firstFilePath.lastIndexOf('/'));
-        } else if (inputFiles.length === 1) {
-            // Only one file, use its complete path
-            pathToUse = inputFiles[0];
-        }
-
-        const requestData = {
-            inputFiles: [
-              {
-                fileDetails: pathToUse
-              }
-            ]
-        };
-          // // Assuming you have already prepared the inputFiles array
-          // const requestData = {
-          //   inputFiles: inputFiles.map(file => ({
-          //     fileDetails: file
-          //   })),
-          // };
-          // Make the API call
-          axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, requestData)
-          .then(response => {
-
-            // Handle the response from the server
-            const results = response.data;
-            // Handle the response from the server
-            console.log('API Response:', response.data);
-
-                // Iterate over the results array and process the data
-            results.forEach(result => {
-              if (result.inputfile && (result.inputfile.endsWith('.h5Seurat') || result.inputfile.endsWith('.h5seurat') || result.inputfile.endsWith('.rds') || result.inputfile.endsWith('.Robj')) && !taskData.validation.seuratFiles.some((fileInfo) => fileInfo.value === result.inputfile)) {
-                if(result.default_assay !== 'RNA') {
-                  hasAddedSeuratFiles = true; // Update the flag
-                  setTaskData((prevTaskData) => ({
-                    ...prevTaskData,
-                    validation: {
-                      ...prevTaskData.validation,
-                      seuratFiles: [
-                        ...prevTaskData.validation.seuratFiles,
-                        { label: extractFilename(result.inputfile), value: result.inputfile, assayNames: result.assay_names, selectedAssays: [] },
-                      ],
-                    },
-                  }));
-                } else if(result.default_assay && result.default_assay === 'RNA') {
-                  // Add the result directly to the qc_results array
-                  setTaskData(prevTaskData => ({
-                    ...prevTaskData,
-                    quality_control: {
-                      ...prevTaskData.quality_control,
-                      qc_results: [
-                        ...prevTaskData.quality_control.qc_results,
-                        result, // Adding the entire result
-                      ],
-                    },
-                  }));
-                }
-              } else {
-                let fileDetails = {
-                  fileDetails: result.inputfile,
-                  format: result.format,
-                  adata_path: result.adata_path
-                };
-                // Add the fileDetails directly to the fileMappings
-                setTaskData((prevTaskData) => ({
-                  ...prevTaskData,
-                  validation: {
-                    ...prevTaskData.validation,
-                    fileMappings: [
-                      ...prevTaskData.validation.fileMappings,
-                      fileDetails,
-                    ],
-                  },
-                }));
-              }
-            });
-
-            if (!hasAddedSeuratFiles) {
-                // validation step is successful, move to next task as there are no seurat or rds datasets
-                setTaskData((prevTaskData) => ({
-                  ...prevTaskData,
-                  validation: {
-                    ...prevTaskData.validation,
-                    status: 'completed'
-                  },
-                }));
-
-                setTaskStatus((prevTaskStatus) => ({
-                  ...prevTaskStatus,
-                  2: true, // Mark Task 2 as completed 
-                }));
-          
-                // The current task is finished, so make the next task active
-                setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+          setValidationStatus("Dataset has been loaded and validated.")
+  
+            // validation step is successful, move to next task as there are no seurat or rds datasets
+            setTaskData((prevTaskData) => ({
+              ...prevTaskData,
+              validation: {
+                ...prevTaskData.validation,
+                status: 'completed'
+              },
+            }));
+  
+            setTaskStatus((prevTaskStatus) => ({
+              ...prevTaskStatus,
+              2: true, // Mark Task 2 as completed 
+            }));
+      
+            // The current task is finished, so make the next task active
+            setActiveTask(3); // Move to the next task (or update it to the appropriate task)
             }
-            setValidationLoading(false);
-          })
-          .catch(error => {
-            console.error('API Error:', error.response);
-          });
-        } else if(taskData.validation.seuratFiles.length === 0){
-            setValidationStatus("Dataset has been loaded and validated.")
-        }
-      } else {
+          }
+        } else {
           console.warn("Unauthorized - you must be an admin to access this page");
           navigate("/accessDenied");
         }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }, [jwtToken]);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+  
 
+
+  const handleAssaySelection = selectedOption => {
+    setTaskData(prevTaskData => ({
+        ...prevTaskData,
+        validation: {
+            ...prevTaskData.validation,
+            selectedAssayName: (selectedOption ? selectedOption.value : null)
+        },
+    }));
+};
+
+const handleAssaySelectionSubmit = () => {
+console.log("");
+};
 
   useEffect(() => {
     console.log(taskData);
   }, [taskData]);
 
   const handleTaskCompletion = async () => {
-    try {
-        if(taskData.validation.status !== 'completed') {
+  //   try {
+  //       if(taskData.validation.status !== 'completed') {
 
-          // Prepare the data to send to the backend
-          const dataToSend = [];
+  //         // Prepare the data to send to the backend
+  //         const dataToSend = [];
 
-          taskData.validation.seuratFiles.forEach((file) => {
-            // Check if any assays are selected for this file
-            if (file.selectedAssays && file.selectedAssays.length > 0) {
-              file.selectedAssays.forEach((assay) => {
-                // Create an entry with the complete file details and assay name
-                dataToSend.push({
-                  fileDetails: file.value,
-                  assay: assay.value,
-                });
-              });
-            }
-          });
+  //         taskData.validation.seuratFiles.forEach((file) => {
+  //           // Check if any assays are selected for this file
+  //           if (file.selectedAssays && file.selectedAssays.length > 0) {
+  //             file.selectedAssays.forEach((assay) => {
+  //               // Create an entry with the complete file details and assay name
+  //               dataToSend.push({
+  //                 fileDetails: file.value,
+  //                 assay: assay.value,
+  //               });
+  //             });
+  //           }
+  //         });
 
-          const requestData = {
-            "inputFiles": dataToSend
-          }
+  //         const requestData = {
+  //           "inputFiles": dataToSend
+  //         }
 
-          const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => file.selectedAssays && file.selectedAssays.length > 0);
+  //         const hasSelectedAssays = taskData.validation.seuratFiles.every((file) => file.selectedAssays && file.selectedAssays.length > 0);
 
-          if (!hasSelectedAssays) {
-            setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
-            return;
-          }
+  //         if (!hasSelectedAssays) {
+  //           setErrorMessage("Please select at least one assay for each Seurat file within available assays.");
+  //           return;
+  //         }
 
-          // set Validation loading to true.
-          setValidationLoading(true);
+  //         // set Validation loading to true.
+  //         setValidationLoading(true);
 
-        // Send the data to the backend API
-        const response = await fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData),
-        });
+  //       // Send the data to the backend API
+  //       const response = await fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/validation`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify(requestData),
+  //       });
     
-        if (response.ok) {
-        // Handle the response from the API
-        const responseData = await response.json();
+  //       if (response.ok) {
+  //       // Handle the response from the API
+  //       const responseData = await response.json();
 
-        if (responseData && responseData.length > 0) {
-          responseData.forEach((entry) => {
+  //       if (responseData && responseData.length > 0) {
+  //         responseData.forEach((entry) => {
 
-            setTaskData(prevTaskData => ({
-              ...prevTaskData,
-              quality_control: {
-                ...prevTaskData.quality_control,
-                qc_results: [
-                  ...prevTaskData.quality_control.qc_results,
-                  entry, // Adding the entire result
-                ],
-              },
-            }));
+  //           setTaskData(prevTaskData => ({
+  //             ...prevTaskData,
+  //             quality_control: {
+  //               ...prevTaskData.quality_control,
+  //               qc_results: [
+  //                 ...prevTaskData.quality_control.qc_results,
+  //                 entry, // Adding the entire result
+  //               ],
+  //             },
+  //           }));
 
-          });
+  //         });
 
-          // Update the fileMappings state with the new list
-          setTaskData((prevTaskData) => ({
-            ...prevTaskData,
-            validation: {
-              ...prevTaskData.validation,
-              // fileMappings: newFileMappings,
-              status: 'completed'
-            },
-          }));
-          // After the API call is complete, you can update the task status
-          setTaskStatus((prevTaskStatus) => ({
-            ...prevTaskStatus,
-            2: true, // Mark Task 3 as completed (or update it to the appropriate task)
-          }));
+  //         // Update the fileMappings state with the new list
+  //         setTaskData((prevTaskData) => ({
+  //           ...prevTaskData,
+  //           validation: {
+  //             ...prevTaskData.validation,
+  //             // fileMappings: newFileMappings,
+  //             status: 'completed'
+  //           },
+  //         }));
+  //         // After the API call is complete, you can update the task status
+  //         setTaskStatus((prevTaskStatus) => ({
+  //           ...prevTaskStatus,
+  //           2: true, // Mark Task 3 as completed (or update it to the appropriate task)
+  //         }));
     
-          // The current task is finished, so make the next task active
-          setActiveTask(3); // Move to the next task (or update it to the appropriate task)
-          setValidationLoading(false);
-        } else {
-          setValidationLoading(false);
-          console.error('Error making API call:', response.status);
-        }
-      }
-    } else {
-      setActiveTask(3); // Move to the next task (or update it to the appropriate task)
-    }
-  } catch (error) {
-      console.error('Error making API call:', error);
-    }
+  //         // The current task is finished, so make the next task active
+  //         setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+  //         setValidationLoading(false);
+  //       } else {
+  //         setValidationLoading(false);
+  //         console.error('Error making API call:', response.status);
+  //       }
+  //     }
+  //   } else {
+  //     setActiveTask(3); // Move to the next task (or update it to the appropriate task)
+  //   }
+  // } catch (error) {
+  //     console.error('Error making API call:', error);
+  //   }
   };
 
   function transformAssayNames(assayNames) {
@@ -313,38 +326,34 @@ function ValidationTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           <ScaleLoader color="#36d7b7" loading={validationLoading} />
         </div>
       ) : (
-        taskData.validation.seuratFiles.length > 0 ? (
-          <div className='container'>
-            <div>
-              <h1 className="header">Select a Seurat File</h1>
-              <Select
-                options={taskData.validation.seuratFiles.map((fileInfo) => ({ label: fileInfo.label, value: fileInfo.value }))}
-                value={taskData.validation.selectedSeuratFile}
-                onChange={handleSeuratFileChange}
-              />
-              <div>
-                {taskData.validation.selectedSeuratFile && taskData.validation.seuratFiles && (
-                  <>
-                    <h1 className="header">Choose Assay Names</h1>
-                    <Select
-                      isMulti
-                      options={transformAssayNames(taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)?.assayNames || [])}
-                      value={
-                        taskData.validation.seuratFiles.find((file) => file.value === taskData.validation.selectedSeuratFile.value)
-                          ?.selectedAssays || []
-                      }
-                      onChange={handleAssayNamesChange}
-                    />
-                  </>
-                )}
+        taskData.validation.displayAssayNames && (
+        <div>
+            <h3>Default Assay: {taskData.validation.seuratFile.default_assay}</h3>
+            <p>Do you want to change the default assay?</p>
+            <ReactSelect
+            id="assaySelection"
+            placeholder="Select an Assay"
+            options={taskData.validation.seuratFile.assay_names.map(name => ({ value: name, label: name }))}
+            onChange={handleAssaySelection}
+            />
+
+            <div className='navigation-buttons'>
+              <div className="previous">
+                <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                  Previous
+                </button>
+              </div>
+              <div className="next-upon-success">
+                <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>
+                  Next
+                </button>
               </div>
             </div>
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
-          </div>
-        ) : null
-      )}
+        </div>
+        )
+    )}
 
-      { validationStatus && (
+      { validationStatus && !taskData.validation.displayAssayNames && (
       <div>
         <p>{validationStatus}</p>
 
