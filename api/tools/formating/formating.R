@@ -511,13 +511,11 @@ load_metadata <- function(seurat_obj) {
 }
 
 
-AnnotateDroplet <- function(Expression_Matrix){
+AnnotateDroplet <- function(srat){
     set.seed(123)
-    sce = scDblFinder(
-        SingleCellExperiment(
-            list(counts=Expression_Matrix),
+    sce <- scDblFinder(
+        as.SingleCellExperiment(srat)
         ) 
-    )
     doublet_score = sce$scDblFinder.score
     doublet_class = sce$scDblFinder.class
     list(doublet_score=doublet_score, doublet_class=doublet_class)
@@ -525,7 +523,7 @@ AnnotateDroplet <- function(Expression_Matrix){
 
 
 IsNormalized <- function(Expression_Matrix, min_genes){
-    is_normalized <- FALSE
+    is_normalized <- FALSE 
     if (max(Expression_Matrix) < min_genes | min(Expression_Matrix) < 0) {
         is_normalized <- TRUE
     }

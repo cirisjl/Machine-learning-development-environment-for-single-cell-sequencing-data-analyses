@@ -4,8 +4,8 @@ library(dplyr)
 library(celldex)
 library(RColorBrewer)
 library("here")
-source(here::here('tools/formating/formating.R')) # production
-# source("../../formating/formating.R") # test
+# source(here::here('tools/formating/formating.R')) # production
+source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
 RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, regress_cell_cycle=FALSE) {
@@ -53,7 +53,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
             # Add the doublet annotation
             if(! "doublet_class" %in% names(x = srat[[]])){
-                doublet_annnotation <- AnnotateDroplet(srat[[default_assay]]@counts)
+                doublet_annnotation <- AnnotateDroplet(srat)
                 srat[["doublet_score"]] <- doublet_annnotation$doublet_score
                 srat[["doublet_class"]] <- doublet_annnotation$doublet_class
             }
@@ -74,7 +74,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
-                RegressCellCycle(srat)
+                srat <- RegressCellCycle(srat)
             }
 
             srat <- FindNeighbors(srat, dims=dims)

@@ -167,7 +167,7 @@ def get_metadata_from_seurat(path):
             if results[10] != ro.rinterface.NULL:
                 umap = ro.conversion.rpy2py(results[10])
 
-        info = list(results[11])
+        info = convert_from_r(results[11])
 
         # print(convert_from_r(results))
         # print(default_assay)
