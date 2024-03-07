@@ -1,9 +1,13 @@
 # FROM u15ec104/ai-single-cell:celery-backend-base
-FROM stormgod/oscb-api
+# FROM stormgod/oscb-api
+# FROM stormgod/oscb-seurat:5.02
+FROM stormgod/oscb-seurat:4.4
+
+# RUN apt-get update && apt-get install -yq --no-install-recommends libglpk-dev libmagick++-dev
 
 # Install python packages
-RUN pip install --upgrade --no-cache \
-    dash~=2.9.1 pymongo dash-bootstrap-components dash_bootstrap_templates python-multipart numpyro==0.12.1 rarfile loguru wsproto attrdict
+# RUN pip install --upgrade --no-cache \
+#     dash~=2.9.1 pymongo dash-bootstrap-components dash_bootstrap_templates python-multipart numpyro==0.12.1 rarfile loguru wsproto attrdict
     # louvain plotly psutil nvidia-ml-py pymde
     # gputil
 
@@ -11,6 +15,10 @@ RUN pip install --upgrade --no-cache \
 # RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'
 # RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'
 # RUN R --no-echo --no-restore --no-save -e "install.packages('SeuratObject')"
+# RUN R --no-echo --no-restore --no-save -e "install.packages('igraph')"
+# RUN R --no-echo --no-restore --no-save -e "install.packages('irlba', type='source')"
+# RUN R --no-echo --no-restore --no-save -e "install.packages('magick')"
+# RUN Rscript -e 'BiocManager::install("singleCellTK")'
 
 # RUN mkdir /app
 WORKDIR /app
