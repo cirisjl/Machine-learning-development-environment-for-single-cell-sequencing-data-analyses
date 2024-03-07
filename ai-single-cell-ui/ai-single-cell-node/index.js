@@ -179,8 +179,8 @@ app.get('/api/refresh-token', verifyToken, (req, res) => {
             res.sendStatus(403);
         } else {
             if(authData.username !== null && authData.username !== undefined) {
-                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
-                res.cookie('jwtToken', newToken, { maxAge: 2 * 60 * 1000, path:"/" });
+                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+                res.cookie('jwtToken', newToken, { maxAge: 60 * 60 * 1000, path:"/" });
                 res.json({ status:200, message: 'Token refreshed', token: newToken });
             }
         }
@@ -213,7 +213,7 @@ app.post('/api/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -221,7 +221,7 @@ app.post('/api/signup', (req, res) => {
                     // set the cookie with the JWT token on the response object
                     res.cookie("jwtToken", jwtToken, {
                         //httpOnly: true,
-                        maxAge: 2 * 60 * 1000,
+                        maxAge: 60 * 60 * 1000,
                         path: "/"
                         //secure: process.env.NODE_ENV === "production",
                     });
@@ -267,7 +267,7 @@ app.post('/api/login', (req, res) => {
             }
 
             // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
             // the cookie will be set with the name "jwtToken" and the value of the token
             // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -275,7 +275,7 @@ app.post('/api/login', (req, res) => {
             // set the cookie with the JWT token on the response object
             res.cookie("jwtToken", jwtToken, {
                 //httpOnly: true,
-                maxAge: 2 * 60 * 1000,
+                maxAge: 60 * 60 * 1000,
                 path: "/"
                 //secure: process.env.NODE_ENV === "production",
             });

@@ -38,6 +38,7 @@ import TaskResultsComponent from './Benchmarks/taskResultsComponent';
 import UploadDataset from './MyData/UploadData/uploadDataset';
 import SessionReminder from './Session/sessionManager';
 import { SessionProvider } from './Session/context/sessionContext'; 
+import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 
 function App() {
   
@@ -72,6 +73,7 @@ function App() {
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
+          <Route path="testapi"         element={<QualityControlParameters/>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>

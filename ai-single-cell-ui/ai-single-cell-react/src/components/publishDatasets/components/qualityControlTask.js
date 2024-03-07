@@ -9,46 +9,46 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if(taskData.quality_control.status !== 'completed') {
-    // Check the fileMappings state to determine if quality control should be run
-    if (taskData.validation.fileMappings.length > 0) {
-      setLoading(true);
-      try {
-        // Make an API call to run quality control
-        const runQualityControl = async () => {
-          try {
-            // Make an API call to run quality control
-            const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
+  // useEffect(() => {
+  //   if(taskData.quality_control.status !== 'completed') {
+  //   // Check the fileMappings state to determine if quality control should be run
+  //   if (taskData.validation.fileMappings.length > 0) {
+  //     setLoading(true);
+  //     try {
+  //       // Make an API call to run quality control
+  //       const runQualityControl = async () => {
+  //         try {
+  //           // Make an API call to run quality control
+  //           const response = await axios.post(`${CELERY_BACKEND_API}/convert/publishDatasets/run/quality_control`, taskData.validation.fileMappings);
 
-            const qualityControlResults = response.data;
+  //           const qualityControlResults = response.data;
           
-            // Update the qc_results state with the quality control results
-            setTaskData((prevTaskData) => ({
-              ...prevTaskData,
-              quality_control: {
-                ...prevTaskData.quality_control,
-                qc_results: qualityControlResults,
-              },
-            }));
-            setLoading(false);
+  //           // Update the qc_results state with the quality control results
+  //           setTaskData((prevTaskData) => ({
+  //             ...prevTaskData,
+  //             quality_control: {
+  //               ...prevTaskData.quality_control,
+  //               qc_results: qualityControlResults,
+  //             },
+  //           }));
+  //           setLoading(false);
 
-          } catch (error) {
-            console.error('Error running quality control:', error);
-            setLoading(false);
-          }
-        };
+  //         } catch (error) {
+  //           console.error('Error running quality control:', error);
+  //           setLoading(false);
+  //         }
+  //       };
 
-        runQualityControl();
-      } catch (error) {
-        console.error('Error checking fileMappings:', error);
-        setLoading(false);
-      }
-    } else {
-      // No files to run quality control on
-    }
-  }
-  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+  //       runQualityControl();
+  //     } catch (error) {
+  //       console.error('Error checking fileMappings:', error);
+  //       setLoading(false);
+  //     }
+  //   } else {
+  //     // No files to run quality control on
+  //   }
+  // }
+  // }, []); // Empty dependency array ensures this effect runs only once when the component mounts
 
   useEffect(() => {
     console.log(taskData);
