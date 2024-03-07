@@ -102,6 +102,13 @@ class DataSplitRequest(BaseModel):
 
 
 
+class SubsetDataRequest(BaseModel):
+    data: str
+    obskey: str
+    values: list
+
+
+
 class TaskDataRequest(BaseModel):
     adata_path: str
     task_label: str

@@ -4,8 +4,8 @@ library(dplyr)
 library(celldex)
 library(RColorBrewer)
 library("here")
-source(here::here('tools/formating/formating.R'))
-# source("../../formating/formating.R")
+# source(here::here('tools/formating/formating.R')) # production
+source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
 RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, regress_cell_cycle=FALSE) {
@@ -19,11 +19,16 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
     default_assay <- NULL
     assay_names <- NULL
+    ddl_assay_names <- TRUE
 
-    if (!is.null(srat)){
-        # If assay if provided by the user, then set default_assy to assay.
-
-        if(assay!='RNA') DefaultAssay(srat) <- assay
+    if(!is.null(srat)){
+        assay_names <- names(srat@assays)
+        
+        if(length(assay_names)==1){
+            assay <- DefaultAssay(srat) # If there is only one assay, then no matter if assay is provided, set assay to default assay
+        } else if (assay %in% assay_names){
+            DefaultAssay(srat) <- assay # If there is more than one assay, and the user provides assay, then set default assay to assay
+        } 
         default_assay <- DefaultAssay(srat)
         print(default_assay)
 
@@ -32,8 +37,8 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
         }
 
         # Check either the default assay of the Seurat object is "RNA" or the assay is provided by the user.
-        if(default_assay=='RNA' | default_assay==assay){
-            DefaultAssay(srat) <- assay
+        if(default_assay==assay){
+            # DefaultAssay(srat) <- assay
             if(!paste0("nCount_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nCount_", default_assay)]] <- colSums(x = srat[[default_assay]], slot = "counts")  # nCount of the default assay
             if(!paste0("nFeature_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nFeature_", default_assay)]] <- colSums(x = GetAssayData(object = srat[[default_assay]], slot = "counts") > 0)  # nFeature of the default assay
             
@@ -48,7 +53,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
             # Add the doublet annotation
             if(! "doublet_class" %in% names(x = srat[[]])){
-                doublet_annnotation <- AnnotateDroplet(srat[[default_assay]]@counts)
+                doublet_annnotation <- AnnotateDroplet(srat)
                 srat[["doublet_score"]] <- doublet_annnotation$doublet_score
                 srat[["doublet_class"]] <- doublet_annnotation$doublet_class
             }
@@ -69,7 +74,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
-                RegressCellCycle(srat)
+                srat <- RegressCellCycle(srat)
             }
 
             srat <- FindNeighbors(srat, dims=dims)
@@ -79,9 +84,6 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             # UMAP
             srat <- RunUMAP(srat, dims=dims)
 
-
-            assay_names <- names(srat@assays)
-
             # SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             saveRDS(object = srat, file = output)
             print("Seurat object is saved successfully.")
@@ -89,16 +91,13 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             if(!is.null(adata_path)){     
                 annData <- SeuratToAnndata(srat, out_file=adata_path, assay=assay)
             }
-
+            ddl_assay_names <- FALSE
             rm(srat)
             gc()
-        } else {
-            assay_names <- names(srat@assays)
-            default_assay <- DefaultAssay(srat)
-        }  
+        }
     }
     
-    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path)
+    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path, ddl_assay_names=ddl_assay_names)
 }
 
 
