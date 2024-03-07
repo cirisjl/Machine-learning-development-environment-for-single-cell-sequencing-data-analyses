@@ -6,7 +6,7 @@ library(SeuratDisk)
 library(SeuratData)
 library(patchwork)
 library(Signac)
-library(scDblFinder)
+# library(scDblFinder)
 library(BiocParallel)
 # library(loomR)
 
@@ -511,15 +511,15 @@ load_metadata <- function(seurat_obj) {
 }
 
 
-AnnotateDroplet <- function(srat){
-    set.seed(123)
-    sce <- scDblFinder(
-        as.SingleCellExperiment(srat)
-        ) 
-    doublet_score = sce$scDblFinder.score
-    doublet_class = sce$scDblFinder.class
-    list(doublet_score=doublet_score, doublet_class=doublet_class)
-}
+# AnnotateDroplet <- function(srat){
+#     set.seed(123)
+#     sce <- scDblFinder(
+#         as.SingleCellExperiment(srat)
+#         ) 
+#     doublet_score = sce$scDblFinder.score
+#     doublet_class = sce$scDblFinder.class
+#     list(doublet_score=doublet_score, doublet_class=doublet_class)
+# }
 
 
 IsNormalized <- function(Expression_Matrix, min_genes){

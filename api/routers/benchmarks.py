@@ -112,6 +112,7 @@ async def run_quality_control(file_mappings: List[dict]):
             n_neighbors = mapping.get("n_neighbors")
             n_pcs = mapping.get("n_pcs")
             resolution = mapping.get("resolution")
+            doublet_rate = mapping.get("doublet_rate")
             regress_cell_cycle = mapping.get("regress_cell_cycle")
             use_default = mapping.get("use_default")
 
@@ -128,13 +129,14 @@ async def run_quality_control(file_mappings: List[dict]):
                 "n_neighbors": n_neighbors, # default: 15, step:1, range: [2, 100], scale: 1, 5, 10, 15(default), 20, 50, 100
                 "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 
                 "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5
+                "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage
                 "regress_cell_cycle": regress_cell_cycle, # default: false, values: [true, false]
                 "use_default": use_default # default: true, values: [true, false]
             }
 
             if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
                 # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
                 
                 if ddl_assay_names:

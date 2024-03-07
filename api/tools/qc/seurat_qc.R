@@ -3,12 +3,14 @@ library(SingleR)
 library(dplyr)
 library(celldex)
 library(RColorBrewer)
+library(stringr)
+library(DoubletFinder)
 library("here")
-# source(here::here('tools/formating/formating.R')) # production
-source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
+source(here::here('tools/formating/formating.R')) # production
+# source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
-RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -51,20 +53,10 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             if(! "percent.hb" %in% names(x = srat[[]])) srat[["percent.hb"]] <- PercentageFeatureSet(srat, pattern = "^HB[^(P)]")
             if(! "percent.plat" %in% names(x = srat[[]])) srat[["percent.plat"]] <- PercentageFeatureSet(srat, pattern = "PECAM1|PF4")
 
-            # Add the doublet annotation
-            if(! "doublet_class" %in% names(x = srat[[]])){
-                doublet_annnotation <- AnnotateDroplet(srat)
-                srat[["doublet_score"]] <- doublet_annnotation$doublet_score
-                srat[["doublet_class"]] <- doublet_annnotation$doublet_class
-            }
-            
-            # print(head(srat@meta.data))
-
             srat <- subset(srat, subset = paste0("nFeature_", default_assay) > min_genes & paste0("nCount_", default_assay) > min_UMI_count & percent.mt < percent_mt_max)
             if(max_genes != 0) srat <- subset(srat, subset = paste0("nFeature_", default_assay) < max_genes)
             if(max_UMI_count != 0) srat <- subset(srat, subset = paste0("nCount_", default_assay) < max_UMI_count)
             if(percent_rb_min != 0)  srat <- subset(srat, subset = percent.rb > percent_rb_min)
-            srat <- subset(srat, subset = doublet_class == 'singlet')
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
             srat <- FindVariableFeatures(srat, selection.method = "vst")
             srat <- ScaleData(srat, features = rownames(srat))
@@ -83,6 +75,24 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunTSNE(srat, dims=dims)
             # UMAP
             srat <- RunUMAP(srat, dims=dims)
+
+            # Add the doublet annotation
+            if(! "doublet_class" %in% names(x = srat[[]])){
+                ## pK Identification (no ground-truth)
+                set.seed(123)
+                sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
+                sweep.stats <- summarizeSweep(sweep.res.list, GT=FALSE)
+                bcmvn <- find.pK(sweep.stats)
+                ## Homotypic Doublet Proportion Estimate
+                nExp_poi <- round(doublet_rate*nrow(srat@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
+
+                srat <- doubletFinder(srat, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
+                
+                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
+                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
+            }
+
+            # srat <- subset(srat, subset = doublet_class == 'Singlet')
 
             # SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
             saveRDS(object = srat, file = output)
