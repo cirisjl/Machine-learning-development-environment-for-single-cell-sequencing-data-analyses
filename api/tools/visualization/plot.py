@@ -23,12 +23,12 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="cluster.ids", selected_ce
     if layer is None: layer = 'X'
 
     # Validate if the clustering id exists. If not, find a default one.
-    if clustering_plot_type not in obsm.keys():
+    if clustering_plot_type not in obs.keys():
         for cluster_id in ['cluster.ids', 'leiden', 'louvain', 'seurat_clusters']:
-            if cluster_id in obsm.keys():
+            if cluster_id in obs.keys():
                 clustering_plot_type = cluster_id
     else:
-        raise ValueError(f"{clustering_plot_type} does not exist in {obsm.keys()}.")
+        raise ValueError(f"{clustering_plot_type} does not exist in {obs.keys()}.")
 
     # Validate that there is a 3D projection available if that was requested
     if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):

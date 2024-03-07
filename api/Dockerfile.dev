@@ -20,13 +20,13 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     libcurl4-openssl-dev libcairo2-dev libpango1.0-dev tcl-dev tk-dev openjdk-8-jdk \
     gfortran libncurses5-dev libncursesw5-dev procps texlive libv8-dev libgit2-dev \
     default-libmysqlclient-dev libpq-dev libsasl2-dev libsqlite3-dev libssh2-1-dev \
-    unixodbc-dev libpng-dev libfftw3-dev libgsl-dev libhiredis-dev \
+    unixodbc-dev libpng-dev libfftw3-dev libgsl-dev libhiredis-dev libglpk-dev \
     # RStudio dependencies - https://github.com/rstudio/rstudio/tree/master/dependencies/linux
     gdebi-core ant clang cmake debsigs dpkg-sig expect fakeroot gnupg1 libacl1-dev \
     libattr1-dev libcap-dev libclang-6.0-dev libclang-dev libunwind8-dev \
     libegl1-mesa libfuse2 libgl1-mesa-dev libgtk-3-0 libpam-dev \
     libuser1-dev libxslt1-dev lsof ninja-build patchelf pkg-config \
-    psmisc rrdtool software-properties-common uuid-dev \
+    psmisc rrdtool software-properties-common uuid-dev libmagick++-dev \
     # libigraph0-dev libclang-8-dev libclang-6.0-dev llvm-10 \
     # Python packages
     python3-dev python3-pip python3-tk python3-distutils && \	
@@ -88,7 +88,7 @@ RUN Rscript -e 'BiocManager::install(c( \
     "Rhdf5lib", "GenomicRanges", "scater", "IRanges", "scran", "RUVSeq", "sva", "SC3", "TSCAN", "monocle", "destiny", \
     "rtracklayer", "BiocGenerics", "DESeq2", "edgeR", "sctransform", "MAST", "scmap", "biomaRt", "MultiAssayExperiment", "SummarizedExperiment", \
     "Biobase","monocle", "beachmat", "DropletUtils", "EnsDb.Hsapiens.v86", "EnsDb.Mmusculus.v79", "batchelor", "SingleR", "celldex", "singleCellTK", \
-    "convert", "glmGamPoi", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db"))'
+    "convert", "glmGamPoi", "AnnotationDbi", "org.Hs.eg.db", "org.Mm.eg.db", "singleCellTK"))'
 
 # Install github packages
 RUN Rscript -e 'devtools::install_github(c( \
@@ -104,7 +104,7 @@ RUN pip install --upgrade --no-cache \
     torch networkx pandas==1.3.5 seaborn munkres feather-format detect_delimiter hdf5plugin plotly \
     rpy2 anndata2ri bioinfokit fastapi uvicorn[standard] starlette httpx pymongo celery flower redis \
     zmail gevent requests leidenalg mysql-connector-python similarity-index-of-label-graph loompy louvain \
-    rarfile loguru
+    rarfile loguru wsproto attrdict
 RUN pip install --upgrade --no-cache \
     dash~=2.9.1 dash-bootstrap-components dash_bootstrap_templates python-multipart 
 
@@ -123,6 +123,8 @@ RUN Rscript -e 'devtools::install_github("BMEngineeR/scGNNLTMG")'
 
 # Install SIMLR
 RUN Rscript -e 'devtools::install_github("BatzoglouLabSU/SIMLR", ref = "master")'
+
+RUN R --no-echo --no-restore --no-save -e "install.packages('magick')"
 
 # Install scanpy&&dropkick&&scvi-tools
 RUN pip install --upgrade --no-cache numpyro==0.12.1 'scanpy[leiden]' \

@@ -97,7 +97,7 @@ LoadSeurat <- function(path, project = NULL) {
     srat <- NULL
     suffix <- tolower(GetSuffix(path))
 
-    if(suffix == "h5Seurat" || suffix == "h5seurat"){
+    if(suffix == "h5seurat"){
         print("Inside LoadSeurat")
         srat <- LoadH5Seurat(path)
     } else if(suffix == "h5ad"){
@@ -123,7 +123,7 @@ LoadSeurat <- function(path, project = NULL) {
         rm(robj)
     } else if(suffix == "robj"){
         robj <- get(load(path))
-        if(class(robj) == 'seurat'){
+        if(tolower(class(robj)) == 'seurat'){
             if (compareVersion(as.character(robj@version), "3.0.0") < 0){
                 srat_v3 <- UpdateSeuratObject(robj)
                 srat <- CreateSeuratObject(counts=srat_v3[['RNA']]@counts, meta.data=srat_v3@meta.data, project = Project(srat_v3))
@@ -222,7 +222,12 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
 
     if(!is.null(srat)){
         assay_names <- names(srat@assays)
-        if(assay != 'RNA' && assay %in% assay_names) DefaultAssay(srat) <- assay
+        if(assay != 'RNA' && assay %in% assay_names){
+            DefaultAssay(srat) <- assay
+        }
+        else if(!(assay %in% assay_names)){
+            assay <- DefaultAssay(srat)
+        }
         default_assay <- DefaultAssay(srat)
         metadata <- srat@meta.data
         nCells <- ncol(srat)
@@ -506,13 +511,11 @@ load_metadata <- function(seurat_obj) {
 }
 
 
-AnnotateDroplet <- function(Expression_Matrix){
+AnnotateDroplet <- function(srat){
     set.seed(123)
-    sce = scDblFinder(
-        SingleCellExperiment(
-            list(counts=Expression_Matrix),
+    sce <- scDblFinder(
+        as.SingleCellExperiment(srat)
         ) 
-    )
     doublet_score = sce$scDblFinder.score
     doublet_class = sce$scDblFinder.class
     list(doublet_score=doublet_score, doublet_class=doublet_class)
@@ -520,7 +523,7 @@ AnnotateDroplet <- function(Expression_Matrix){
 
 
 IsNormalized <- function(Expression_Matrix, min_genes){
-    is_normalized <- FALSE
+    is_normalized <- FALSE 
     if (max(Expression_Matrix) < min_genes | min(Expression_Matrix) < 0) {
         is_normalized <- TRUE
     }

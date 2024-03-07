@@ -1,11 +1,11 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, BenchmarksRequest
+from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
-from tools.utils.datasplit import sc_train_val_test_split
+from tools.utils.datasplit import sc_train_val_test_split, subset_by_obskey
 from typing import List
 from services.clustering import clustering_task
 from tools.visualization.plot import plot_table
@@ -74,20 +74,22 @@ async def process_input_files_validation(request: InputFilesRequest):
         try:
             if file.endswith('.h5Seurat') or file.endswith('.h5seurat') or file.endswith('.rds') or file.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap = get_metadata_from_seurat(file)
+                info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap = get_metadata_from_seurat(file)
 
                 if assay_names is None:
                     assay_names = []
                 
                 result.append({
                         "inputfile": file,
+                        "info": info,
                         "format": "h5seurat",
                         "default_assay": default_assay,
                         "assay_names": assay_names
                     })
         except Exception as e:
             # Handle the exception and return an error response
-            raise HTTPException(status_code=500, detail=str(e))
+            print(str(e))
+            raise HTTPException(status_code=500, detail=str(e))        
 
     return result
 
@@ -132,8 +134,20 @@ async def run_quality_control(file_mappings: List[dict]):
 
             if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
                 # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
+                default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, regress_cell_cycle=False)
                 # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
+                
+                if ddl_assay_names:
+                    result.append({
+                        "inputfile": input_path,
+                        "format": "h5seurat",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names,
+                        "ddl_assay_names": ddl_assay_names
+                    })
+
+                    return result
+                
                 info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
                 if(use_default):
@@ -282,11 +296,37 @@ async def data_split(user_data: DataSplitRequest):
 
         # Return the path to the compressed archive
         archive_path = data_directory / f"{data_filename}_data_split.zip"
-        return {"result": "Data split successful", "archive_path": archive_path}
+        return {"result": "Data split successfully.", "archive_path": archive_path}
     except Exception as e:
         # Handle any errors
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.post("/api/subset-data")
+async def subset_data(user_data: SubsetDataRequest):
+    try:
+        # Access user data
+        data_filepath = user_data.data
+        obskey = user_data.obskey
+        values = user_data.values
+
+        adata = load_anndata(data_filepath)
+
+        adata_sub = subset_by_obskey(adata, obskey, values)
+       
+       # Extract directory and filename from the data filepath
+        data_directory = Path(data_filepath).parent
+        data_filename = Path(data_filepath).stem
+
+        # Return the path to the compressed archive
+        archive_path = data_directory / f"{data_filename}_sub.h5ad"
+        adata_sub.write(archive_path)
+
+        return {"result": "AnnData is subset successfully.", "archive_path": archive_path}
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 @router.post("/publishDatasets/benchmarks")
 async def process_task_data(data: BenchmarksRequest):
