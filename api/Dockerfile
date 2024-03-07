@@ -20,6 +20,9 @@ FROM stormgod/oscb-seurat:4.4
 # RUN R --no-echo --no-restore --no-save -e "install.packages('magick')"
 # RUN Rscript -e 'BiocManager::install("singleCellTK")'
 
+# Install DoubletFinder
+RUN R --no-echo --no-restore --no-save -e "remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')"
+
 # RUN mkdir /app
 WORKDIR /app
 COPY . .
