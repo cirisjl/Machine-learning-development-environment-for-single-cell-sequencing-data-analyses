@@ -6,7 +6,7 @@ const FlowControl = () => {
 
   const [flow, setFlow] = useState('');
 
-  const [activeTask, setActiveTask] = useState(5); // Initialize with the first task
+  const [activeTask, setActiveTask] = useState(4); // Initialize with the first task
 
   const [taskStatus, setTaskStatus] = useState({
     1: false, // Task 1 is initially not completed
@@ -15,7 +15,6 @@ const FlowControl = () => {
     4: false,
     5: false,
     6: false,
-    7: false
     // Add other tasks here
   });
 
@@ -37,7 +36,8 @@ const FlowControl = () => {
         displayAssayNames: false
       },
     quality_control: {
-      qc_results: []
+      qc_results: [],
+      file_paths: []
     },
     metadata: {
       formData: {
@@ -115,7 +115,7 @@ const FlowControl = () => {
 
   const startFromFourthStep = () => {
     setFlow('taskBuilder');
-    setActiveTask(5);
+    setActiveTask(4);
   };
 
   return (
