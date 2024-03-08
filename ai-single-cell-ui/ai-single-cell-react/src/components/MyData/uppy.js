@@ -11,11 +11,15 @@ import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
 import "@uppy/status-bar/dist/style.css"
 import "@uppy/drag-drop/dist/style.css"
+import { calcMD5Hash } from '../../utils/utilFunctions'
+
+import axios from 'axios';
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
+
 export default function UppyUploader(props) {
 
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError ,setTaskData } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError, setTaskData } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -40,7 +44,24 @@ export default function UppyUploader(props) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    
+
+    const checkIfFileExists = async (file) => {
+        // Generate MD5 for the file
+        let hash = await calcMD5Hash(file.data);
+        console.log("hash")
+        console.log(hash)
+
+        // Check if the hash for the file already exists in the system
+        let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
+
+        if (res.data.exists === true) {
+            alert("File was skipped because it already exists in the system.")
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     const uppy = new Uppy({
         id: 'fileUploader',
         autoProceed: false,
@@ -51,7 +72,9 @@ export default function UppyUploader(props) {
             maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
         },
         debug: true,
+        onBeforeFileAdded: (currentFile, _) => checkIfFileExists(currentFile),
     });
+
     uppy.use(GoogleDrive, {
         companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
     });
@@ -71,22 +94,22 @@ export default function UppyUploader(props) {
     });
 
     uppy.on('upload-success', (file, response) => {
-        if(toPublishDataset) {
+        if (toPublishDataset) {
             // Access the filename of the successfully uploaded file
             setFileError('');
             const filename = file.name;
-        
+
             setTaskData((prevTaskData) => ({
-                        ...prevTaskData,
-                        upload: {
-                            ...prevTaskData.upload,
-                            files: [...(prevTaskData.upload.files || []), file.name],
-                        },
+                ...prevTaskData,
+                upload: {
+                    ...prevTaskData.upload,
+                    files: [...(prevTaskData.upload.files || []), file.name],
+                },
             }));
             console.log('Successfully uploaded file name:', filename);
         }
     });
-      
+
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
             <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
@@ -106,11 +129,11 @@ export default function UppyUploader(props) {
         </div>
         )
 
-        if(toPublishDataset) {
-            return (<div className='uppy-comp'>
-                <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
-            </div>)
-        }
+    if (toPublishDataset) {
+        return (<div className='uppy-comp'>
+            <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
+        </div>)
+    }
 }
 
 

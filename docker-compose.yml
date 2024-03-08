@@ -248,7 +248,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=clnode118.clemson.cloudlab.us # $(hostname)
+      - HOST_URL=node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us #$(hostname)
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./ai-single-cell-ui/ai-single-cell-node/.env  
@@ -268,7 +268,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=clnode118.clemson.cloudlab.us # $(hostname)
+      - HOST_URL=node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us # $(hostname)
     networks:
       - oscb-network
 

@@ -28,7 +28,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.ai-single-cell.biomizzou-pg0.clemson.cloudlab.us:3000'],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.ai-single-cell.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us:3000'],
     credentials: true
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
@@ -975,7 +975,6 @@ app.get('/getDirContents', async (req, res) => {
 
 });
 
-
 app.post('/upload', async (req, res) => {
     let { uploadDir, authToken ,publicDatasetFlag} = req.query;
     let username = getUserFromToken(authToken);
@@ -1335,6 +1334,32 @@ app.get('/getTasks', (req, res) => {
     });
 });
 
+// New endpoint to check if the hash for a file exists or not
+app.get('/mongoDB/api/file-exists', async (req, res) => {
+    const hash = req.query.hash;
+    console.log(hash)
+
+    const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+    // Connect to the MongoDB server
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(userDatasetsCollection);
+
+    // Query MongoDB to check if the hash exists
+    const result = await collection.findOne({ hash: hash })
+
+    console.log(result)
+
+    if (result) {
+        res.status(200).json({ exists: true });
+    } else {
+        res.status(200).json({ exists: false });
+    }
+
+    client.close()
+});
 
 // Connect to MongoDB and retrieve options
 app.get('/mongoDB/api/options', async (req, res) => {

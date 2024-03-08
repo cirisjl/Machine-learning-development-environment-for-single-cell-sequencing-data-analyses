@@ -53,7 +53,7 @@ function LoginPage (props) {
         setErrorMessage(data.message);
       }
     }).catch(error => {
-      setErrorMessage("An error occurred during login");
+    setErrorMessage("An error occurred during login");
     });
   };
   

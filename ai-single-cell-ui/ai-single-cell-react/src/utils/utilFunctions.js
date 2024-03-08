@@ -1,55 +1,98 @@
-import {LOGIN_API_URL, SERVER_URL} from '../constants/declarations'
+import { LOGIN_API_URL, SERVER_URL } from '../constants/declarations'
 import axios from 'axios';
+import SparkMD5 from 'spark-md5';
 
+export function calcMD5Hash(file) {
+  return new Promise((resolve, reject) => {
+    const bufferSize = Math.pow(1024, 2) * 10;
+    const totalParts = Math.ceil(file.size / bufferSize);
+    const spark = new SparkMD5.ArrayBuffer();
+    const reader = new FileReader();
+
+    let currentPart = 0;
+    let startTime = new Date().getTime();
+
+    reader.onload = function (e) {
+      currentPart += 1;
+
+      const buffer = e.target.result;
+      spark.append(buffer);
+
+      if (currentPart < totalParts) {
+        processNextPart();
+        return;
+      }
+
+      resolve({
+        hashResult: spark.end(),
+        duration: new Date().getTime() - startTime,
+      });
+    };
+
+    reader.onerror = function (e) {
+      reject(e);
+    };
+
+    function processNextPart() {
+      const start = currentPart * bufferSize;
+      const end = Math.min(start + bufferSize, file.size);
+      const slice = file.slice || file.mozSlice || file.webkitSlice;
+      const blob = slice.call(file, start, end);
+      reader.readAsArrayBuffer(blob);
+    }
+
+    processNextPart();
+  });
+}
 
 // Get the value of a cookie with a given name
 export function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.startsWith(`${name}=`)) {
-        return cookie.substring(`${name}=`.length, cookie.length);
-      }
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      return cookie.substring(`${name}=`.length, cookie.length);
     }
-    return '';
   }
-  
-  // Set a cookie with a given name, value, and expiration time (in days)
-  export function setCookie(name, value, expiration) {
-    const date = new Date();
-    date.setTime(date.getTime() + (expiration * 60 * 1000));
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = name + "=" + value + ";" + expires + ";path=/";
-  }
+  return '';
+}
+
+// Set a cookie with a given name, value, and expiration time (in days)
+export function setCookie(name, value, expiration) {
+  const date = new Date();
+  date.setTime(date.getTime() + (expiration * 60 * 1000));
+  const expires = "expires=" + date.toUTCString();
+  document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
 
 
-  export function isUserAuth(jwtToken) {
-    return new Promise((resolve, reject) => {
-      if (jwtToken) {
-        fetch(LOGIN_API_URL + "/protected", {
-          method: 'GET',
-          credentials: 'include', // send cookies with the request
-          headers: { 'Authorization': `Bearer ${jwtToken}`},
-        }) 
+export function isUserAuth(jwtToken) {
+  return new Promise((resolve, reject) => {
+    if (jwtToken) {
+      fetch(LOGIN_API_URL + "/protected", {
+        method: 'GET',
+        credentials: 'include', // send cookies with the request
+        headers: { 'Authorization': `Bearer ${jwtToken}` },
+      })
         .then((response) => response.json())
         .then((data) => {
-          if(data.authData !== null) {
-              if (data.authData.username !== null && data.authData.username !== undefined) {
-                console.log("Heeloo from isUserAuth ::: " + data.authData.isAdmin);
-                resolve({isAuth: true, username: data.authData.username, isAdmin: data.authData.isAdmin});
-              } else {
-                resolve({isAuth: false, username: null, isAdmin: false});
-              }
+          if (data.authData !== null) {
+            if (data.authData.username !== null && data.authData.username !== undefined) {
+              console.log("Heeloo from isUserAuth ::: " + data.authData.isAdmin);
+              resolve({ isAuth: true, username: data.authData.username, isAdmin: data.authData.isAdmin });
+            } else {
+              resolve({ isAuth: false, username: null, isAdmin: false });
+            }
           }
         })
         .catch((error) => {
           console.error(error);
           // reject(error);
-          resolve({isAuth: false, username: null, isAdmin: false});
+          resolve({ isAuth: false, username: null, isAdmin: false });
         });
-      }
-    });
-  }
+    }
+  });
+}
 
 
 // Delete a cookie with a given name
@@ -138,7 +181,7 @@ export function prepareTableData(cellMetadataObs) {
   return rows.slice(0, 5);
 };
 
-export async function copyFilesToPrivateStorage(selectedFiles, userId){
+export async function copyFilesToPrivateStorage(selectedFiles, userId) {
   try {
     const response = await axios.post(`${SERVER_URL}/api/copyFiles`, {
       selectedFiles,
@@ -154,8 +197,9 @@ export async function copyFilesToPrivateStorage(selectedFiles, userId){
     console.log('Success:', response.data.message);
     return { success: true, message: response.data.message };
 
-} catch (error) {
+  } catch (error) {
     // Handle error depending on if it's an Axios error or a different error
     let errorMessage = error.response ? error.response.data.message : error.message;
-    return { success: false, message: errorMessage };  }
+    return { success: false, message: errorMessage };
+  }
 };
