@@ -1,6 +1,5 @@
 import numpy as np
 import scanpy as sc
-import scrublet as scr
 import warnings
 warnings.filterwarnings('ignore')
 # sys.path.append('..')
@@ -13,7 +12,7 @@ sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, regress_cell_cycle=False):
+def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, expected_doublet_rate=0.076, regress_cell_cycle=False):
         if adata is None:
             raise ValueError("The input is None.")
         
@@ -69,11 +68,17 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
         else: 
             adata.layers["raw_counts"] = adata.X.copy() # preserve counts
 
-        scrub = scr.Scrublet(adata.X, expected_doublet_rate = 0.076)
-        adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
-                                                                min_gene_variability_pctl=85, n_prin_comps=30)
-        adata.obs['predicted_doublets'].value_counts()
-        # adata=adata[adata.obs.predicted_doublets=="False", :]
+        try:
+            if expected_doublet_rate !=0 and 'predicted_doublets' not in adata.obs.keys():
+                import scrublet as scr
+                scrub = scr.Scrublet(adata.X, expected_doublet_rate=expected_doublet_rate)
+                adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
+                                                                        min_gene_variability_pctl=85, n_prin_comps=30)
+                adata.obs['predicted_doublets'].value_counts()
+                # adata=adata[adata.obs.predicted_doublets=="False", :]
+        except Exception as e:
+            print("An error occurred when running Scrublet. Skipping... ")
+            print(e)
         
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
@@ -87,7 +92,12 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
 
         # Regress both S score and G2M score for cell cycle
         if(regress_cell_cycle):
-             adata = regress_cell_cycle(adata)
+            try:
+                adata = regress_cell_cycle(adata)
+            except Exception as e:
+                print("An error occurred when regressing cell cycle. Skipping... ")
+                print(e)
+
 
         if isinstance(adata.X, np.ndarray):
             adata.X = csr_matrix(adata.X)
