@@ -66,7 +66,12 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
-                srat <- RegressCellCycle(srat)
+                tryCatch({
+                    srat <- RegressCellCycle(srat)
+                }, error = function(e) {
+                print("An error occurred when regressing cell cycle. Skipping... ")
+                print(e$message)
+            }) 
             }
 
             srat <- FindNeighbors(srat, dims=dims)
@@ -209,13 +214,8 @@ RegressCellCycle <- function(srat){
     # g2m.genes <- cc.genes$g2m.genes
 
     # srat <- CellCycleScoring(srat, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
-    tryCatch({
-        srat <- CellCycleScoring(srat, g2m.features = cc.genes$g2m.genes, s.features = cc.genes$s.genes, set.ident = TRUE)
-        srat <- ScaleData(srat, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(srat))
-    }, error = function(e) {
-        print("An error occurred when regressing cell cycle. Skipping... ")
-        print(e$message)
-    }) 
-
+    srat <- CellCycleScoring(srat, g2m.features = cc.genes$g2m.genes, s.features = cc.genes$s.genes, set.ident = TRUE)
+    srat <- ScaleData(srat, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(srat))
+    
     srat
 }
