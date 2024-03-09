@@ -44,25 +44,6 @@ export default function UppyUploader(props) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-
-    // const checkIfFileExists = async (file) => {
-    //     // Generate MD5 for the file
-    //     let hash = await calcMD5Hash(file.data);
-    //     console.log("hash")
-    //     console.log(hash)
-
-    //     // Check if the hash for the file already exists in the system
-    //     let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
-
-    //     if (res.data.exists === true) {
-    //         console.log("Removing file")
-    //         uppy.info(`Removed file ${file.name} because it already exists.`)
-    //         return false;
-    //     } else {
-    //         return true;
-    //     }
-    // }
-
     const uppy = new Uppy({
         id: 'fileUploader',
         autoProceed: false,
