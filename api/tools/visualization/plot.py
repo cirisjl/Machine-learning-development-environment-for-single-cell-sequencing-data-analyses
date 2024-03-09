@@ -11,15 +11,11 @@ import pandas as pd
 import numpy as np
 from anndata import AnnData
 from scipy.sparse import csr_matrix
-
 from tools.visualization.plotConstants import *
 
-def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
-    print("[DEBUG] generating new UMAP plot")
 
-    obs = adata.obs
-    obsm = adata.obsm
-    if layer is None: layer = 'X'
+def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+    obs = obs
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
@@ -34,11 +30,7 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
         raise ValueError(f"{clustering_plot_type} does not exist in {obs.keys()}.")
 
     # Validate that there is a 3D projection available if that was requested
-    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
-        coords = pd.DataFrame(obsm[layer+"_umap_3D"], index=obs.index)
-    else:
-        n_dim = 2
-        coords = pd.DataFrame(obsm[layer+"_umap"], index=obs.index)
+    coords = pd.DataFrame(umap, index=obs.index)
     
     traces = []
     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
@@ -51,12 +43,17 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
             for c in selected_cell_intersection:
                 if (c in a.index):
                     s.append(a.index.get_loc(c))
+        text = None
+        if annotation is not None and annotation in obs.keys():
+            text = [str(cell) for cell in a[annotation].astype(str)]
+        else:
+            text = ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)]
         if (n_dim == 2):
             traces.append({
                 "type": "scattergl",
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
-                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
+                "text": text,
                 "selectedpoints": s,
                 "mode":'markers',
                 "marker": {
@@ -78,7 +75,7 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
                 "z": b[2].tolist(),
-                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
+                "text": text,
                 "selectedpoints": s,
                 "mode":'markers',
                 "marker": {
@@ -119,6 +116,25 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
                 #height=3 * scale
             )
         })
+
+
+def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+    print("[DEBUG] generating new UMAP plot")
+    
+    obs = adata.obs
+    obsm = adata.obsm
+    umap = None
+    if layer is None: layer = 'X'
+
+    # Validate that there is a 3D projection available if that was requested
+    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
+        umap = obsm[layer+"_umap_3D"]
+    else:
+        n_dim = 2
+        umap = obsm[layer+"_umap"]
+
+    results = plot_UMAP_obs(obs=obs, umap=umap, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, annotation=annotation, n_dim=n_dim)
+    return results
 
 
 def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_counts_rb'], show_points=False):

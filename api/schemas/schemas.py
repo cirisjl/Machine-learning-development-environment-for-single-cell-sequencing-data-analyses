@@ -136,6 +136,7 @@ class ConvertRequest(BaseModel):
     assay_name: Optional[str] = None
 
 
+
 class QualityControlRequest(BaseModel):
     fileDetails: str
     assay: Optional[str] = None

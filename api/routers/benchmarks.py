@@ -269,7 +269,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
 
 router.post("/api/umap")
 async def plot_umap(user_request: UMAPRequest):
-    from tools.visualization.plot import plot_UMAP
+    from tools.visualization.plot import plot_UMAP_obs, plot_UMAP
     try:
         # Access user data
         adata_path = user_request.adata_path
@@ -374,7 +374,6 @@ async def process_task_data(data: BenchmarksRequest):
 
 @router.post("/api/getTablePlot")
 async def process_files(file_paths: List[str]):
-    
     try:
         results = []
         for file_path in file_paths:

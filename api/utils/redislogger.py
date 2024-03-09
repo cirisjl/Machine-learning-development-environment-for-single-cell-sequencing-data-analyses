@@ -25,6 +25,8 @@ class RedisLogger:
         for log in logs:
             log_lines.append(log.decode('utf-8'))
 
+        self.r.expire(unique_id, 60*30) # key expires in 30 minutes
+
         return log_lines[::-1]
     
 
