@@ -524,9 +524,10 @@ class MyForm extends Component {
 
           {/* "Organ Part" (CreatableSelect) */}
           <div className="form-field">
-            </div>
+            <div>
             <label className="form-label">Organ Part:</label>
-            <span className="ui-form-title-message warning"> * required </span><div>
+            <span className="ui-form-title-message warning"> * required </span>
+            </div>
             <CreatableSelect
               name="Organ Part"
               value={formData['Organ Part']}

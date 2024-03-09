@@ -1697,3 +1697,8 @@ width
 .session-manager-component .modal-button.no {
   background: #f44336;
 }
+
+
+.MuiTypography-h6,.MuiTypography-body1  {
+  font-size: 15px !important;
+}
