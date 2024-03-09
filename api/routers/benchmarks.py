@@ -124,12 +124,12 @@ async def run_quality_control(file_mappings: List[dict]):
                 "max_genes": max_genes, # default: 20000(=No limit, default), step: 25, range: [0, 20000], scale: 200, 1000, 5000, 10000, 15000, 20000(=No limit, default)
                 "min_cells": min_cells, # default: 2, step:1, range: [1, 200], scale: 2(default), 10, 50, 100, 200
                 # "max_cells": max_cells,
-                "target_sum": target_sum, # default: 0(None), step: 1e4, range:[0, 1e6], scale: 0(None, default), 1e4, 1e5, 1e6
+                "target_sum": target_sum, # default: 0(None), step: 1e4, range:[0, 1e6], scale: 0(None, default), 1e4, 1e5, 1e6 (Not applicable for Seurat)
                 "n_top_genes": n_top_genes, # highly variable genes:  default: 2000, step:25, range: [100, 10000], scale: 500, 1000, 2000(default), 5000, 10000
                 "n_neighbors": n_neighbors, # default: 15, step:1, range: [2, 100], scale: 1, 5, 10, 15(default), 20, 50, 100
-                "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 
-                "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5
-                "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage
+                "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 (Not applicable for Seurat)
+                "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5 
+                "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage (Not applicable for scanpy)
                 "regress_cell_cycle": regress_cell_cycle, # default: false, values: [true, false]
                 "use_default": use_default # default: true, values: [true, false]
             }

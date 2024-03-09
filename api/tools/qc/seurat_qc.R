@@ -6,8 +6,8 @@ library(RColorBrewer)
 library(stringr)
 library(DoubletFinder)
 library("here")
-source(here::here('tools/formating/formating.R')) # production
-# source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
+# source(here::here('tools/formating/formating.R')) # production
+source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
 RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, regress_cell_cycle=FALSE) {
@@ -77,19 +77,24 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunUMAP(srat, dims=dims)
 
             # Add the doublet annotation
-            if(! "doublet_class" %in% names(x = srat[[]])){
-                ## pK Identification (no ground-truth)
-                set.seed(123)
-                sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
-                sweep.stats <- summarizeSweep(sweep.res.list, GT=FALSE)
-                bcmvn <- find.pK(sweep.stats)
-                ## Homotypic Doublet Proportion Estimate
-                nExp_poi <- round(doublet_rate*nrow(srat@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
-
-                srat <- doubletFinder(srat, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
-                
-                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
-                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
+            if(doublet_rate!=0 & (! "doublet_class" %in% names(x = srat[[]]))){
+                result = tryCatch({
+                    ## pK Identification (no ground-truth)
+                    set.seed(123)
+                    sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
+                    sweep.stats <- summarizeSweep(sweep.res.list, GT=FALSE)
+                    bcmvn <- find.pK(sweep.stats)
+                    ## Homotypic Doublet Proportion Estimate
+                    nExp_poi <- round(doublet_rate*nrow(srat@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
+                    # Run DoubletFinder with varying classification stringencies
+                    srat <- doubletFinder(srat, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
+                    # Change the column names of doublet for metadata
+                    colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
+                    colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
+                }, error = function(e) {
+                    print("An error occurred when running DoubletFinder. Skipping... ")
+                    print(e$message)
+                })               
             }
 
             # srat <- subset(srat, subset = doublet_class == 'Singlet')
