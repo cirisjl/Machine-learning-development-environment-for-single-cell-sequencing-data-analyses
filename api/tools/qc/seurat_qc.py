@@ -1,4 +1,5 @@
 import os
+import scanpy as sc
 import numpy as np
 import pandas as pd
 import rpy2.robjects as ro
@@ -38,7 +39,12 @@ def run_seurat_qc(input, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=
 
         if os.path.exists(adata_path):
             adata = load_anndata(adata_path)
-            print("AnnData loaded successfully.")
+            adata_3D = sc.tl.umap(adata, random_state=0, 
+                            init_pos="spectral", n_components=3, 
+                            copy=True, maxiter=None)
+            adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+            adata.write_h5ad(adata_path)
+            adata_3D = None
         else:
             print("AnnData file does not exist.")
 

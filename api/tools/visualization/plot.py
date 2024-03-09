@@ -7,7 +7,6 @@
 # import seaborn as sns
 
 import json 
-# import scanpy as sc
 import pandas as pd
 import numpy as np
 from anndata import AnnData

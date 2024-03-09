@@ -12,7 +12,7 @@ sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')
 
 
-def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, expected_doublet_rate=0.076, regress_cell_cycle=False):
+def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, expected_doublet_rate=0.076, regress_cell_cycle=False, random_state=0):
         if adata is None:
             raise ValueError("The input is None.")
         
@@ -104,7 +104,7 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
 
         adata.layers["log10k"] = adata.X.copy()
 
-        adata = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution)
+        adata = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
         # return adata, output
         return adata
