@@ -1,6 +1,6 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest, QualityControlRequest
+from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest, QualityControlRequest, UMAPRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
@@ -147,7 +147,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
 
                 return result
             
-            info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+            info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
             if(use_default):
                 method_id = "seurat_qc"
@@ -186,6 +186,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                     "adata_path": adata_path,
                     "output": output,
                     "umap_plot": umap_plot,
+                    "umap_plot_3d": umap_plot_3d,
                     "violin_plot": violin_plot,
                     "scatter_plot": scatter_plot,
                     "highest_expr_genes_plot": highest_expr_genes_plot,
@@ -202,7 +203,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
             try:
                 scanpy_results = run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, regress_cell_cycle=False)
                 # scanpy_results = run_scanpy_qc(adata, min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, regress_cell_cycle=regress_cell_cycle)
-                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
+                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
                 adata_path = change_file_extension(input_path, 'h5ad')
                 scanpy_results.write_h5ad(adata_path)
@@ -239,6 +240,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                     "format": "h5ad",
                     "adata_path": adata_path,
                     "umap_plot": umap_plot,
+                    "umap_plot_3d": umap_plot_3d,
                     "violin_plot": violin_plot,
                     "scatter_plot": scatter_plot,
                     "highest_expr_genes_plot": highest_expr_genes_plot,
@@ -263,6 +265,27 @@ async def run_quality_control(file_mappings: QualityControlRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during quality control: {str(error)}"
         )
+
+
+router.post("/api/umap")
+async def data_split(user_request: UMAPRequest):
+    from tools.visualization.plot import plot_UMAP
+    try:
+        # Access user data
+        adata_path = user_request.adata_path
+        layer = user_request.layer
+        clustering_plot_type = user_request.clustering_plot_type
+        selected_cell_intersection = user_request.selected_cell_intersection
+        n_dim = user_request.n_dim
+
+        adata = load_anndata(adata_path)
+        umap_json = plot_UMAP(adata, layer=layer, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, n_dim=n_dim)
+    
+        return umap_json
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/api/data-split")
 async def data_split(user_data: DataSplitRequest):

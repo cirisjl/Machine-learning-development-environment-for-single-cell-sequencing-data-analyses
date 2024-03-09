@@ -206,11 +206,12 @@ def get_metadata_from_anndata(adata):
         gene_metadata = adata.var # pandas dataframe
         embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         umap_plot = plot_UMAP(adata)
+        umap_plot_3d = plot_UMAP(adata, n_dim=3)
         violin_plot = plot_violin(adata)
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
-    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
+    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
