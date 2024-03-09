@@ -45,22 +45,23 @@ export default function UppyUploader(props) {
     }, []);
 
 
-    const checkIfFileExists = async (file) => {
-        // Generate MD5 for the file
-        let hash = await calcMD5Hash(file.data);
-        console.log("hash")
-        console.log(hash)
+    // const checkIfFileExists = async (file) => {
+    //     // Generate MD5 for the file
+    //     let hash = await calcMD5Hash(file.data);
+    //     console.log("hash")
+    //     console.log(hash)
 
-        // Check if the hash for the file already exists in the system
-        let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
+    //     // Check if the hash for the file already exists in the system
+    //     let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
 
-        if (res.data.exists === true) {
-            alert("File was skipped because it already exists in the system.")
-            return false;
-        } else {
-            return true;
-        }
-    }
+    //     if (res.data.exists === true) {
+    //         console.log("Removing file")
+    //         uppy.info(`Removed file ${file.name} because it already exists.`)
+    //         return false;
+    //     } else {
+    //         return true;
+    //     }
+    // }
 
     const uppy = new Uppy({
         id: 'fileUploader',
@@ -72,7 +73,7 @@ export default function UppyUploader(props) {
             maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
         },
         debug: true,
-        onBeforeFileAdded: (currentFile, _) => checkIfFileExists(currentFile),
+        // onBeforeFileAdded: (currentFile, _) => checkIfFileExists(currentFile),
     });
 
     uppy.use(GoogleDrive, {
@@ -91,6 +92,22 @@ export default function UppyUploader(props) {
         endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
         formData: true,
         fieldName: 'files'
+    });
+
+    uppy.on('file-added', async (file) => {
+        let hash = await calcMD5Hash(file.data);
+        console.log("hash")
+        console.log(hash)
+
+        // Check if the hash for the file already exists in the system
+        let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
+        console.log(res.data)
+
+        if (res.data.exists === true) {
+            console.log("Removing file")
+            uppy.info(`Removed file ${file.name} because it already exists.`)
+            uppy.removeFile(file.id)
+        }
     });
 
     uppy.on('upload-success', (file, response) => {
