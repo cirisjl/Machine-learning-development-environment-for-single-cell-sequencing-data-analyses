@@ -78,7 +78,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
 
             # Add the doublet annotation
             if(doublet_rate!=0 & (! "doublet_class" %in% names(x = srat[[]]))){
-                result = tryCatch({
+                tryCatch({
                     ## pK Identification (no ground-truth)
                     set.seed(123)
                     sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
@@ -209,8 +209,13 @@ RegressCellCycle <- function(srat){
     # g2m.genes <- cc.genes$g2m.genes
 
     # srat <- CellCycleScoring(srat, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
-    srat <- CellCycleScoring(srat, g2m.features = cc.genes$g2m.genes, s.features = cc.genes$s.genes, set.ident = TRUE)
-    srat <- ScaleData(srat, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(srat))
+    tryCatch({
+        srat <- CellCycleScoring(srat, g2m.features = cc.genes$g2m.genes, s.features = cc.genes$s.genes, set.ident = TRUE)
+        srat <- ScaleData(srat, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(srat))
+    }, error = function(e) {
+        print("An error occurred when regressing cell cycle. Skipping... ")
+        print(e$message)
+    }) 
 
     srat
 }
