@@ -88,6 +88,15 @@ class AnndataMetadata(BaseModel):
 
 
 
+class UMAPRequest(BaseModel):
+    adata_path: str
+    layer: str
+    clustering_plot_type: str
+    selected_cell_intersection: list
+    n_dim: int
+
+
+
 class CombinedQCResult(BaseModel):
     scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
     # dropkick_results: AnndataMetadata
