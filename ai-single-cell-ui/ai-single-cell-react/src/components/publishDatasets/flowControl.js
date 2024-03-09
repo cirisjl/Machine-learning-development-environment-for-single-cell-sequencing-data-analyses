@@ -23,21 +23,31 @@ const FlowControl = () => {
     upload: {
       files:[]
     },
-    validation: {
-        inputFiles: [],
-        seuratFile: {
-          default_assay: '',
-          assay_names: [],
-          file: ''
-        } ,
-        selectedAssayName: '',
-        fileMappings:[],
-        token: '',
-        displayAssayNames: false
-      },
+    // validation: {
+    //     inputFiles: [],
+    //     seuratFile: {
+    //       default_assay: '',
+    //       assay_names: [],
+    //       file: ''
+    //     } ,
+    //     selectedAssayName: '',
+    //     fileMappings:[],
+    //     token: '',
+    //     displayAssayNames: false
+    //   },
     quality_control: {
       qc_results: [],
-      file_paths: []
+      file_paths: [],
+      seurat_meta: {
+        default_assay: '',
+        assay_names: [],
+        file: '',
+        displayAssayNames: false
+      } ,
+      shouldHideForSeurat: false,
+      shouldHideDoubletRateForScanpy : false,
+      token: '',
+      selectedAssayName:''
     },
     metadata: {
       formData: {

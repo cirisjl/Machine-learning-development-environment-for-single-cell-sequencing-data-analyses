@@ -60,7 +60,9 @@
     "socket.io-client": "^4.6.1",
     "styled-components": "^5.3.9",
     "web-vitals": "^2.1.4",
-    "jwt-decode": "*"
+    "jwt-decode": "*",
+    "@emotion/react": "*",
+     "@emotion/styled": "*"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",
