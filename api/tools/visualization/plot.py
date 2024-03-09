@@ -15,19 +15,23 @@ from scipy.sparse import csr_matrix
 
 from tools.visualization.plotConstants import *
 
-def plot_UMAP(adata, layer=None, clustering_plot_type="cluster.ids", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
 
     obs = adata.obs
     obsm = adata.obsm
     if layer is None: layer = 'X'
+    cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
     if clustering_plot_type not in obs.keys():
+        cluster_id_exists = False
         for cluster_id in ['cluster.ids', 'leiden', 'louvain', 'seurat_clusters']:
             if cluster_id in obs.keys():
                 clustering_plot_type = cluster_id
-    else:
+                cluster_id_exists = True
+                
+    if not cluster_id_exists:
         raise ValueError(f"{clustering_plot_type} does not exist in {obs.keys()}.")
 
     # Validate that there is a 3D projection available if that was requested
