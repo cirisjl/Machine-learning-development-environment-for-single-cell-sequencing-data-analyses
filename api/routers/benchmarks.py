@@ -268,7 +268,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
 
 
 router.post("/api/umap")
-async def data_split(user_request: UMAPRequest):
+async def plot_umap(user_request: UMAPRequest):
     from tools.visualization.plot import plot_UMAP
     try:
         # Access user data
