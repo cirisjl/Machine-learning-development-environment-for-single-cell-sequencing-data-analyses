@@ -85,7 +85,7 @@ export default function UppyUploader(props) {
         console.log(res.data)
 
         if (res.data.exists === true) {
-            console.log("Removing file")
+            console.log(`Removed file ${file.name}`)
             uppy.info(`Removed file ${file.name} because it already exists.`)
             uppy.removeFile(file.id)
         }
@@ -106,6 +106,15 @@ export default function UppyUploader(props) {
             }));
             console.log('Successfully uploaded file name:', filename);
         }
+
+        calcMD5Hash(file.data).then((hash) => {
+            console.log("hash from uppy")
+            console.log(hash)
+
+            setTaskData((prevTaskData) => ({
+                fileHashes: [...(prevTaskData.fileHashes || []), hash.hashResult],
+            }));
+        })
     });
 
     if (isUppyModalOpen && !toPublishDataset)

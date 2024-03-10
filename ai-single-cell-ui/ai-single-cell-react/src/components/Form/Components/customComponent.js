@@ -227,6 +227,9 @@ class MyForm extends Component {
         formData.owner = taskData.upload.authToken;
       }
 
+      formData.fileHashes = taskData.fileHashes;
+      console.log("filehashes")
+      console.log(taskData.fileHashes);
       formData.flow = flow;
      
 

@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -28,7 +28,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.ai-single-cell.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us:3000'],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-0.ai-single-cell.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-1.c220g2-sampath.biomizzou-pg0.wisc.cloudlab.us:3000'],
     credentials: true
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
@@ -83,63 +83,63 @@ function getUserFromToken(token) {
 }
 const createDirectoryIfNotExists = async (dirPath) => {
     try {
-      await fs.mkdir(dirPath, { recursive: true });
-      console.log(`Directory "${dirPath}" created successfully.`);
+        await fs.mkdir(dirPath, { recursive: true });
+        console.log(`Directory "${dirPath}" created successfully.`);
     } catch (err) {
-      if (err.code !== 'EEXIST') {
-        console.error('Error creating the directory:', err);
-      }
+        if (err.code !== 'EEXIST') {
+            console.error('Error creating the directory:', err);
+        }
     }
-  };
+};
 
 const createUniqueFolder = (destinationDir, folderName, index = 1) => {
-    const targetFolderName = index === 1 ?  path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
+    const targetFolderName = index === 1 ? path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
     const targetFolderPath = path.join(__dirname, targetFolderName);
-  
+
     if (!fs.existsSync(targetFolderPath)) {
-      try {
-        fs.mkdirSync(targetFolderPath);
-        console.log(`Directory "${targetFolderName}" created successfully.`);
-        return targetFolderName;
-      } catch (err) {
-        console.error('Error creating the directory:', err);
-        return null;
-      }
+        try {
+            fs.mkdirSync(targetFolderPath);
+            console.log(`Directory "${targetFolderName}" created successfully.`);
+            return targetFolderName;
+        } catch (err) {
+            console.error('Error creating the directory:', err);
+            return null;
+        }
     } else {
-      return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
+        return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
     }
-  };
+};
 
 // Function to copy files from source directory to destination directory
 const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
     try {
 
-  
-      for (let file of files) {
-        const sourceFilePath = path.join(sourceDir, file);
-        let destinationFilePath = "";
-        if(fromPublic) {
-            file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
-            destinationFilePath = path.join(destinationDir, file);
-        } else {
-            destinationFilePath = path.join(destinationDir, file);
+
+        for (let file of files) {
+            const sourceFilePath = path.join(sourceDir, file);
+            let destinationFilePath = "";
+            if (fromPublic) {
+                file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
+                destinationFilePath = path.join(destinationDir, file);
+            } else {
+                destinationFilePath = path.join(destinationDir, file);
+            }
+
+            const sourceFileDir = path.dirname(sourceFilePath);
+            const destinationFileDir = path.dirname(destinationFilePath);
+
+            // Ensure the destination directory exists before copying files
+            await createDirectoryIfNotExists(destinationFileDir);
+
+            // Perform the actual file copy
+            await fs.copyFile(sourceFilePath, destinationFilePath);
         }
-
-        const sourceFileDir = path.dirname(sourceFilePath);
-        const destinationFileDir = path.dirname(destinationFilePath);
-  
-        // Ensure the destination directory exists before copying files
-        await createDirectoryIfNotExists(destinationFileDir);
-
-        // Perform the actual file copy
-        await fs.copyFile(sourceFilePath, destinationFilePath);
-      }
     } catch (error) {
-      console.error('Error copying files:', error);
+        console.error('Error copying files:', error);
     }
-  };
+};
 
-  app.post('/api/copyFiles', async (req, res) => {
+app.post('/api/copyFiles', async (req, res) => {
 
     const { selectedFiles, userId } = req.body;
 
@@ -148,43 +148,43 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
         let dirName = ""
 
         // Logic to Copy files from public storage to user private storage if it is a public Dataset.
-        for (const file of selectedFiles) {                      
-          if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
-              filesFromPublic = true;
-              break;
-          }
-      }
-  
-      if(filesFromPublic) {
-  
-          if (selectedFiles.length > 0) {
-              dirName = path.dirname(selectedFiles[0])
-          } 
-  
-          let userPrivateStorageDir = storageDir + userId // Change this to the user's private storage path
-  
-          // Copy files from public dataset directory to user's private storage
-          copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, selectedFiles, filesFromPublic);
-          res.json({ status: 200, message: 'Files copied successfully' });
-      }
+        for (const file of selectedFiles) {
+            if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+                filesFromPublic = true;
+                break;
+            }
+        }
+
+        if (filesFromPublic) {
+
+            if (selectedFiles.length > 0) {
+                dirName = path.dirname(selectedFiles[0])
+            }
+
+            let userPrivateStorageDir = storageDir + userId // Change this to the user's private storage path
+
+            // Copy files from public dataset directory to user's private storage
+            copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, selectedFiles, filesFromPublic);
+            res.json({ status: 200, message: 'Files copied successfully' });
+        }
     } catch (error) {
         res.json({ status: 500, message: 'Error while copying files from source to destination' });
     }
-  });
+});
 
-  // Refresh token endpoint
+// Refresh token endpoint
 app.get('/api/refresh-token', verifyToken, (req, res) => {
     jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
-        if(err) {
+        if (err) {
             res.sendStatus(403);
         } else {
-            if(authData.username !== null && authData.username !== undefined) {
-                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
-                res.cookie('jwtToken', newToken, { maxAge: 2 * 60 * 1000, path:"/" });
-                res.json({ status:200, message: 'Token refreshed', token: newToken });
+            if (authData.username !== null && authData.username !== undefined) {
+                const newToken = jwt.sign({ username: authData.username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+                res.cookie('jwtToken', newToken, { maxAge: 2 * 60 * 1000, path: "/" });
+                res.json({ status: 200, message: 'Token refreshed', token: newToken });
             }
         }
-    })    
+    })
 });
 
 // Route to handle user signup
@@ -213,7 +213,7 @@ app.post('/api/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+                    const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -267,7 +267,7 @@ app.post('/api/login', (req, res) => {
             }
 
             // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+            const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
 
             // the cookie will be set with the name "jwtToken" and the value of the token
             // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -295,18 +295,18 @@ app.get('/protected', verifyToken, (req, res) => {
                 pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
                     if (err) {
                         console.error(err);
-                        res.json({ message: 'Internal Server Error'});
+                        res.json({ message: 'Internal Server Error' });
                         return;
                     }
-            
+
                     if (results.length === 0) {
-                        res.json({ message: 'Invalid credentials'});
+                        res.json({ message: 'Invalid credentials' });
                         return;
                     }
-            
+
                     const adminFlag = results[0].isAdmin;
 
-                    authData.isAdmin = (adminFlag == 1) ? true: false;
+                    authData.isAdmin = (adminFlag == 1) ? true : false;
 
                     res.json({ message: 'You have access to the protected resource', authData });
                 });
@@ -324,18 +324,18 @@ app.post('/createDataset', async (req, res) => {
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-    
-        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+
+        if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
-        } 
+        }
 
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
@@ -389,8 +389,8 @@ app.post('/createDataset', async (req, res) => {
                         const datasetId = datasetResult.insertId;
 
                         for (let file of files) {
-                            if(filesFromPublic) {
-                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            if (filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/');
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
@@ -414,23 +414,23 @@ app.post('/createDataset', async (req, res) => {
         });
     });
 
-    if(makeItpublic) {
+    if (makeItpublic) {
         try {
             let dirName = "";
             const fromPublic = false;
             if (files.length > 0) {
                 dirName = path.dirname(files[0])
-            } 
+            }
 
             let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
             // Copy files from user's private storage to public dataset directory
             await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
 
-         } catch (err) {
+        } catch (err) {
             console.error(err);
         }
-      }
+    }
 });
 
 app.put('/updateDataset', async (req, res) => {
@@ -445,19 +445,19 @@ app.put('/updateDataset', async (req, res) => {
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
+        if (file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
 
 
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
-        } 
+        }
 
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
@@ -524,8 +524,8 @@ app.put('/updateDataset', async (req, res) => {
                             return res.status(500).send('Dataset update error');
                         }
                         for (let file of insertList) {
-                            if(filesFromPublic) {
-                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            if (filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/');
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
@@ -624,10 +624,10 @@ app.delete('/deleteDataset', async (req, res) => {
                         connection.commit(function (err) {
                             if (err) {
                                 console.error('Error committing transaction:', err);
-                                    connection.rollback(function () {
-                                        connection.release();
-                                    });
-                                    return res.status(500).send('Transaction commit error');
+                                connection.rollback(function () {
+                                    connection.release();
+                                });
+                                return res.status(500).send('Transaction commit error');
                             }
 
                             console.log('Transaction completed successfully');
@@ -664,7 +664,7 @@ app.post('/renameFile', async (req, res) => {
             return res.status(409).json({ status: 409, message: 'Directory already exists' });
         } else {
             if (oldName.includes("publicDatasets") && newName.includes("publicDatasets")) {
-                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {    
+                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).json({ status: 500, message: 'Internal Server Error' });
@@ -674,7 +674,7 @@ app.post('/renameFile', async (req, res) => {
                     }
                 });
             } else {
-                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {    
+                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).json({ status: 500, message: 'Internal Server Error' });
@@ -721,7 +721,7 @@ app.post('/download', async (req, res) => {
 
         for (const item of fileList) {
             let filePath = "";
-            if(pwd && pwd.includes("publicDatasets")) {
+            if (pwd && pwd.includes("publicDatasets")) {
                 filePath = path.join(storageDir, item);
             } else {
                 filePath = path.join(storageDir, username, item);
@@ -759,13 +759,13 @@ app.get('/download', async (req, res) => {
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
     }
-    
-    if(pwd && pwd.includes("publicDatasets")) {
+
+    if (pwd && pwd.includes("publicDatasets")) {
         filePath = path.join(storageDir, fileUrl);
     } else {
         filePath = path.join(storageDir, username, fileUrl);
     }
-  
+
 
     const fileStat = await fs.promises.stat(filePath);
 
@@ -862,7 +862,7 @@ app.delete('/deleteFiles', async (req, res) => {
                     return;
                 } else {
                     let filePath = ""
-                    if(pwd.includes("publicDatasets")) {
+                    if (pwd.includes("publicDatasets")) {
                         filePath = `${storageDir}${file}`;
                     } else {
                         filePath = `${storageDir}${uname}/${file}`;
@@ -923,17 +923,17 @@ app.get('/getDirContents', async (req, res) => {
         subdir = req.query.subdir;
         var directoryPath = ""
 
-        
+
         var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
-        
+
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
 
-        if(dirPath == "publicDatasets") {
+        if (dirPath == "publicDatasets") {
             directoryPath = publicStorage;
         }
 
-        if(dirPath.includes("publicDatasets/")) {
+        if (dirPath.includes("publicDatasets/")) {
             directoryPath = "/usr/src/app/storage/" + dirPath;
         }
 
@@ -945,7 +945,7 @@ app.get('/getDirContents', async (req, res) => {
         } else {
             console.log(`Directory "${directoryPath}" already exists.`);
         }
-        
+
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
         const fileList = [];
@@ -976,12 +976,12 @@ app.get('/getDirContents', async (req, res) => {
 });
 
 app.post('/upload', async (req, res) => {
-    let { uploadDir, authToken ,publicDatasetFlag} = req.query;
+    let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
+    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir;
 
-    let tempDir = './uploads'; 
+    let tempDir = './uploads';
 
     let storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -1030,7 +1030,7 @@ app.post('/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
     let folderPath = ""
-    if(pwd.includes("publicDatasets")) {
+    if (pwd.includes("publicDatasets")) {
         folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
     } else {
         folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
@@ -1172,7 +1172,7 @@ app.get('/api/tools/leftnav', function (req, res) {
 });
 
 app.post('/createTask', (req, res) => {
-    const {taskTitle, taskId, method, authToken, outputPath} = req.body;
+    const { taskTitle, taskId, method, authToken, outputPath } = req.body;
     const username = getUserFromToken(authToken);
 
     pool.getConnection(function (err, connection) {
@@ -1348,11 +1348,12 @@ app.get('/mongoDB/api/file-exists', async (req, res) => {
     const collection = db.collection(userDatasetsCollection);
 
     // Query MongoDB to check if the hash exists
-    const result = await collection.findOne({ hash: hash })
+    const result = await collection.count({
+        fileHashes: { $in: [hash] }
+    })
 
-    console.log(result)
 
-    if (result) {
+    if (result >= 1) {
         res.status(200).json({ exists: true });
     } else {
         res.status(200).json({ exists: false });
@@ -1372,8 +1373,8 @@ app.get('/mongoDB/api/options', async (req, res) => {
         const db = client.db(dbName);
         const collection = db.collection(optionsCollectionName);
 
-         // Define the unique compound index on 'field' and 'name'
-         await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
 
         // Use the aggregation framework to group options by field
         const pipeline = [
@@ -1406,130 +1407,130 @@ app.get('/mongoDB/api/options', async (req, res) => {
 
 app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    
+
     try {
-    const formData = req.body; // This assumes you have middleware to parse JSON in the request body
-    const makeItpublic = formData.makeItpublic;
-    let files = formData.files;
-    let authToken = formData.userId;
+        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+        const makeItpublic = formData.makeItpublic;
+        let files = formData.files;
+        let authToken = formData.userId;
 
-    if(authToken) {
-        let username = getUserFromToken(authToken);
-        formData.userId = username;
-    }
-
-
-      // Connect to the MongoDB server
-      await client.connect();
-      const db = client.db(dbName);
-
-       const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
-    
-  
-  
-      // Check if a document with the provided Id already exists
-      const existingDocument = await collection.findOne({ Id: formData.Id });
-  
-      if (existingDocument) {
-        console.log('Document with Id already exists:', formData.Id);
-        res.status(400).json({ error: 'Document with the provided Id already exists' });
-      } else {
-        // Document with the provided Id does not exist, proceed with insertion
-        await collection.insertOne(formData);
-        console.log('Form data submitted successfully');
-
-        if(makeItpublic) {
-            console.log("Transfering files from local to public folder");
-            try {
-                let dirName = "";
-                const fromPublic = false;
-                if (files && files.length > 0) {
-                    dirName = path.dirname(files[0])
-                } 
-    
-                let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
-    
-                // Copy files from user's private storage to public dataset directory
-                await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
-    
-             } catch (err) {
-                console.error(err);
-            }
-          }
-        res.status(200).json({ message: 'Form data submitted successfully' });
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
-    }
-  });
+        if (authToken) {
+            let username = getUserFromToken(authToken);
+            formData.userId = username;
+        }
 
 
-  app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
-    const client = new MongoClient(mongoUrl);
-  
-    try {
-      await client.connect();
-      const db = client.db(dbName);
-      const collection = db.collection(taskBuilderCollectionName);
-  
-      let documents = req.body;
-      // Ensure documents is always an array for consistency
-      if (!Array.isArray(documents)) {
-        documents = [documents];
-      }
-  
-      const insertionResults = [];
-      for (const formData of documents) {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+
+        const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
+
+
+
         // Check if a document with the provided Id already exists
         const existingDocument = await collection.findOne({ Id: formData.Id });
-  
+
         if (existingDocument) {
-          console.log('Document with Id already exists:', formData.Id);
-          insertionResults.push({
-            Id: formData.Id,
-            status: 'error',
-            message: 'Document with the provided Id already exists',
-          });
+            console.log('Document with Id already exists:', formData.Id);
+            res.status(400).json({ error: 'Document with the provided Id already exists' });
         } else {
-          // Document with the provided Id does not exist, proceed with insertion
-          await collection.insertOne(formData);
-          console.log('Form data submitted successfully for Id:', formData.Id);
-          insertionResults.push({
-            Id: formData.Id,
-            status: 'success',
-            message: 'Form data submitted successfully',
-          });
+            // Document with the provided Id does not exist, proceed with insertion
+            await collection.insertOne(formData);
+            console.log('Form data submitted successfully');
+
+            if (makeItpublic) {
+                console.log("Transfering files from local to public folder");
+                try {
+                    let dirName = "";
+                    const fromPublic = false;
+                    if (files && files.length > 0) {
+                        dirName = path.dirname(files[0])
+                    }
+
+                    let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+                    // Copy files from user's private storage to public dataset directory
+                    await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
+
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            res.status(200).json({ message: 'Form data submitted successfully' });
         }
-      }
-  
-      // If handling multiple documents, you might want to aggregate results and respond accordingly
-      if (insertionResults.length > 1) {
-        // Respond with the aggregated results for multiple documents
-        res.status(200).json(insertionResults);
-      } else if (insertionResults.length === 1) {
-        // For a single document, you can respond with the single result
-        const result = insertionResults[0];
-        if (result.status === 'success') {
-          res.status(200).json({ message: result.message });
-        } else {
-          res.status(400).json({ error: result.message });
-        }
-      } else {
-        // No documents were processed
-        res.status(400).json({ error: 'No documents were submitted' });
-      }
     } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     } finally {
-      await client.close();
+        // Ensure the client will close when you finish/error
+        await client.close();
     }
-  });
-  
+});
+
+
+app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(taskBuilderCollectionName);
+
+        let documents = req.body;
+        // Ensure documents is always an array for consistency
+        if (!Array.isArray(documents)) {
+            documents = [documents];
+        }
+
+        const insertionResults = [];
+        for (const formData of documents) {
+            // Check if a document with the provided Id already exists
+            const existingDocument = await collection.findOne({ Id: formData.Id });
+
+            if (existingDocument) {
+                console.log('Document with Id already exists:', formData.Id);
+                insertionResults.push({
+                    Id: formData.Id,
+                    status: 'error',
+                    message: 'Document with the provided Id already exists',
+                });
+            } else {
+                // Document with the provided Id does not exist, proceed with insertion
+                await collection.insertOne(formData);
+                console.log('Form data submitted successfully for Id:', formData.Id);
+                insertionResults.push({
+                    Id: formData.Id,
+                    status: 'success',
+                    message: 'Form data submitted successfully',
+                });
+            }
+        }
+
+        // If handling multiple documents, you might want to aggregate results and respond accordingly
+        if (insertionResults.length > 1) {
+            // Respond with the aggregated results for multiple documents
+            res.status(200).json(insertionResults);
+        } else if (insertionResults.length === 1) {
+            // For a single document, you can respond with the single result
+            const result = insertionResults[0];
+            if (result.status === 'success') {
+                res.status(200).json({ message: result.message });
+            } else {
+                res.status(400).json({ error: result.message });
+            }
+        } else {
+            // No documents were processed
+            res.status(400).json({ error: 'No documents were submitted' });
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
 
 
 
@@ -1565,31 +1566,31 @@ app.post('/mongoDB/api/addNewOption', async (req, res) => {
         field: field,
         name: name,
         username: username
-    };  
+    };
     try {
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-      await client.connect();
-  
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-      
-    // Define the unique compound index on 'field' and 'name'
-    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
-  
-      // Insert the new option into the collection
-      const insertResult = await collection.insertOne(newOption);
-  
-      client.close();
-  
-      res.status(200).json({
-        message: `New option "${name}" added to MongoDB for field "${field}"`,
-        insertedId: insertResult.insertedId,
-      });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+        // Insert the new option into the collection
+        const insertResult = await collection.insertOne(newOption);
+
+        client.close();
+
+        res.status(200).json({
+            message: `New option "${name}" added to MongoDB for field "${field}"`,
+            insertedId: insertResult.insertedId,
+        });
     } catch (error) {
-      console.error('Error adding new option to MongoDB:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error adding new option to MongoDB:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 // Connect to MongoDB and retrieve options
 app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
@@ -1606,7 +1607,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
         const isAdmin = req.query.isAdmin;
 
         // Define the match stage of the aggregation pipeline
-        const matchStage = isAdmin=== 'true' ? {} : { username: username };
+        const matchStage = isAdmin === 'true' ? {} : { username: username };
 
         // Aggregation pipeline stages
         const pipeline = [
@@ -1614,7 +1615,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
             {
                 $group: {
                     _id: '$field',
-                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation:'$abbreviation' } },
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation: '$abbreviation' } },
                 },
             },
         ];
@@ -1641,35 +1642,35 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
 // Define a DELETE route to delete selected options
 app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
     try {
-      const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
+        const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
 
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
-      // Connect to the MongoDB server
-      await client.connect();
+        // Connect to the MongoDB server
+        await client.connect();
 
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-  
-      // Convert optionIds to MongoDB ObjectIDs
-      const objectIds = optionIds.map(id => new ObjectId(id));
-  
-      // Delete the options with the specified ObjectIDs
-      const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
-  
-      client.close();
-  
-      if (deleteResult.deletedCount > 0) {
-        res.status(200).json({ message: 'Options deleted successfully' });
-      } else {
-        res.status(404).json({ message: 'Options not found' });
-      }
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Convert optionIds to MongoDB ObjectIDs
+        const objectIds = optionIds.map(id => new ObjectId(id));
+
+        // Delete the options with the specified ObjectIDs
+        const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
+
+        client.close();
+
+        if (deleteResult.deletedCount > 0) {
+            res.status(200).json({ message: 'Options deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Options not found' });
+        }
     } catch (error) {
-      console.error('Error deleting options:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error deleting options:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  });
-  
+});
+
 
 // Define a route to handle adding a new option for Task field to MongoDB
 app.post('/mongoDB/api/addTaskOption', async (req, res) => {
@@ -1681,60 +1682,60 @@ app.post('/mongoDB/api/addTaskOption', async (req, res) => {
         name: name,
         username: username,
         abbreviation: abbreviation
-    };  
+    };
     try {
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-      await client.connect();
-  
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-      
-    // Define the unique compound index on 'field' and 'name'
-    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
-  
-      // Insert the new option into the collection
-      const insertResult = await collection.insertOne(newOption);
-  
-      client.close();
-  
-      res.status(200).json({
-        message: `New option "${name}" added to MongoDB for field "${field}"`,
-        insertedId: insertResult.insertedId,
-      });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+        // Insert the new option into the collection
+        const insertResult = await collection.insertOne(newOption);
+
+        client.close();
+
+        res.status(200).json({
+            message: `New option "${name}" added to MongoDB for field "${field}"`,
+            insertedId: insertResult.insertedId,
+        });
     } catch (error) {
-      console.error('Error adding new option to MongoDB:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error adding new option to MongoDB:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 
-  //API to move files from one folder to another
-  app.post('/api/move-files', (req, res) => {
+//API to move files from one folder to another
+app.post('/api/move-files', (req, res) => {
     const { newDirectoryPath, jwtToken } = req.body;
     const username = getUserFromToken(jwtToken);
     let destinationPath = ""
-    if(username) {
+    if (username) {
         destinationPath = `${storageDir}/${username}/${newDirectoryPath}`;
     }
     let sourcePath = `${storageDir}/tempStorage`;
 
     if (!fs.existsSync(destinationPath)) {
-      fs.mkdirSync(destinationPath, { recursive: true });
+        fs.mkdirSync(destinationPath, { recursive: true });
     }
-  
-    const files = fs.readdirSync(sourcePath);
-  
-    files.forEach((filename) => {
-      const sourcePathFile = path.join(sourcePath, filename);
-      const destinationPathFile = path.join(destinationPath, filename);
-      
-      fs.renameSync(sourcePathFile, destinationPathFile);
-    });
-  
-    res.sendStatus(200);
-  });
 
-  
+    const files = fs.readdirSync(sourcePath);
+
+    files.forEach((filename) => {
+        const sourcePathFile = path.join(sourcePath, filename);
+        const destinationPathFile = path.join(destinationPath, filename);
+
+        fs.renameSync(sourcePathFile, destinationPathFile);
+    });
+
+    res.sendStatus(200);
+});
+
+
 app.delete('/api/storage/delete-file', (req, res) => {
 
     try {
@@ -1743,10 +1744,10 @@ app.delete('/api/storage/delete-file', (req, res) => {
         const uname = getUserFromToken(authToken);
         if (uname == 'Unauthorized')
             return res.status(403).jsonp('Unauthorized');
-    
+
         let filepath = `${storageDir}/${newDirectoryPath}/${fileName}`;
-        
-    
+
+
         fs.unlink(filepath, (err) => {
             if (err) {
                 console.error("Error deleting file:", err);
@@ -1769,11 +1770,11 @@ app.post('/api/storage/renameFile', async (req, res) => {
         let { authToken } = req.query;
 
         const uname = getUserFromToken(authToken);
-    
+
         if (uname == 'Unauthorized')
             return res.status(403).jsonp('Unauthorized');
 
-        fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {    
+        fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {
             if (err) {
                 console.error(err);
                 res.status(500).json({ error: 'Internal Server Error' });
@@ -1798,18 +1799,18 @@ app.post('/api/datasets/search', async (req, res) => {
 
         const db = client.db(dbName);
         const datasetType = req.query.datasetType; // New parameter
-        const collection = datasetType === "myDatasets" ?   db.collection(userDatasetsCollection)  : db.collection(datasetCollection);
+        const collection = datasetType === "myDatasets" ? db.collection(userDatasetsCollection) : db.collection(datasetCollection);
 
 
-      const page = parseInt(req.query.page, 10) || 1;
-      const pageSize = parseInt(req.query.pageSize, 10) || 10;
-      let globalSearchQuery = req.query.q; 
-      const filters = req.body.filters;
+        const page = parseInt(req.query.page, 10) || 1;
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+        let globalSearchQuery = req.query.q;
+        const filters = req.body.filters;
 
-      //Update this field accordingly whenever you add a new facet 
-      const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+        //Update this field accordingly whenever you add a new facet 
+        const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
 
-      let matchConditions = [];
+        let matchConditions = [];
 
         // Add the global search query to the match conditions
         if (globalSearchQuery) {
@@ -1853,75 +1854,77 @@ app.post('/api/datasets/search', async (req, res) => {
             matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
         }
 
-      // Define the pipeline for facets
-      const facetsPipeline = [
-        { $match: matchStage },
-        { $facet: {
-          'Species': [
-            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Author': [
-            { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Anatomical Entity': [
-            { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Organ Part': [
-            { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Selected Cell Types': [
-            { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Disease Status (Specimen)': [
-            { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Disease Status (Donor)': [
-            { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          // ... add other facets here
-        }},
-      ];
-  
-      // Get the facets
-      const facetsResult = await collection.aggregate(facetsPipeline).toArray();
-  
-      // Pagination: Get total count for the query
-      const totalCount = await collection.countDocuments(matchStage);
-  
-      // Build the pipeline for search results with pagination
-      const searchResultsPipeline = [
-        { $match: matchStage },
-        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
-      ];
-  
-      // Get the paginated search results
-      const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
-  
-      res.json({
-        facets: facetsResult[0],
-        results: searchResults,
-        pagination: {
-          page,
-          pageSize,
-          pageCount: Math.ceil(totalCount / pageSize),
-          totalCount
-        }
-      });
+        // Define the pipeline for facets
+        const facetsPipeline = [
+            { $match: matchStage },
+            {
+                $facet: {
+                    'Species': [
+                        { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Author': [
+                        { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Anatomical Entity': [
+                        { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Organ Part': [
+                        { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Specimen)': [
+                        { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Donor)': [
+                        { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } }
+                    ],
+                    // ... add other facets here
+                }
+            },
+        ];
+
+        // Get the facets
+        const facetsResult = await collection.aggregate(facetsPipeline).toArray();
+
+        // Pagination: Get total count for the query
+        const totalCount = await collection.countDocuments(matchStage);
+
+        // Build the pipeline for search results with pagination
+        const searchResultsPipeline = [
+            { $match: matchStage },
+            // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
+            { $skip: (page - 1) * pageSize },
+            { $limit: pageSize },
+        ];
+
+        // Get the paginated search results
+        const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
+
+        res.json({
+            facets: facetsResult[0],
+            results: searchResults,
+            pagination: {
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalCount / pageSize),
+                totalCount
+            }
+        });
     } catch (error) {
-      console.error('Search failed:', error);
-      res.status(500).send('An error occurred while searching.');
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while searching.');
     } finally {
         // Ensure the MongoDB client is always closed, even if an error occurs
         if (client) {
-          await client.close();
+            await client.close();
         }
-      }
-  });
+    }
+});
 
 
-  app.post('/api/tasks/search', async (req, res) => {
+app.post('/api/tasks/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -1935,7 +1938,7 @@ app.post('/api/datasets/search', async (req, res) => {
         const pageSize = parseInt(req.query.pageSize, 10) || 10;
         const globalSearchQuery = req.query.q || '';
         const filters = req.body.filters;
-      
+
         //Update this field accordingly whenever you add a new facet 
         const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
 
@@ -2011,37 +2014,37 @@ app.post('/api/datasets/search', async (req, res) => {
         const countResults = await tasksCollection.aggregate(countPipeline).toArray();
         const totalTasksCount = countResults.length > 0 ? countResults[0].total : 0;
 
-        
+
         const facetAndDocumentsPipeline = [
             {
                 $facet: {
                     // Each facet is a direct property of the `$facet` object
                     Species: [
-                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     Author: [
-                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Anatomical Entity': [
-                        { $group: { _id: '$datasetDetails.Anatomical Entity.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Anatomical Entity.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Organ Part': [
-                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Disease Status (Specimen)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Disease Status (Donor)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     // Documents facet for pagination
@@ -2069,14 +2072,14 @@ app.post('/api/datasets/search', async (req, res) => {
                 }
             }
         ];
-        
-        
+
+
         const finalPipeline = basePipeline.concat(facetAndDocumentsPipeline);
-        
+
         const aggregatedResults = await tasksCollection.aggregate(finalPipeline).toArray();
 
         console.log(aggregatedResults);
-        
+
         // Extract the first (and only) element of the aggregatedResults, which contains your facets and documents
         const aggregationResult = aggregatedResults[0];
 
@@ -2105,7 +2108,7 @@ app.post('/api/datasets/search', async (req, res) => {
                 pageCount: Math.ceil(totalTasksCount / pageSize),
                 totalCount: totalTasksCount,
             }
-        });    
+        });
     } catch (error) {
         console.error('API request failed:', error);
         res.status(500).send('An error occurred while fetching tasks.');
@@ -2116,7 +2119,7 @@ app.post('/api/datasets/search', async (req, res) => {
     }
 });
 
-  
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
