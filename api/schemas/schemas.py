@@ -151,3 +151,4 @@ class QualityControlRequest(BaseModel):
     regress_cell_cycle: bool
     use_default: bool
     doublet_rate: float
+    unique_id: str

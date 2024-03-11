@@ -10,6 +10,7 @@ import { Button, makeStyles } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
+import { v4 as uuid } from 'uuid';
 
 const defaultValues = {
   min_genes: 200,
@@ -26,6 +27,9 @@ const defaultValues = {
 };
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
+
+  const [plotDimension, setPlotDimension] = useState('2D');
+
 
   const useStyles = makeStyles((theme) => ({
     customButton: {
@@ -51,7 +55,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
     setLoading(true);
 
-    let unique_id = taskData.quality_control.token;
+    const unique_id = uuid()
 
      // Establish WebSocket connection right away
     const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`; 
@@ -63,7 +67,11 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
     webSocketInstance.onmessage = (event) => {
       const message = event.data;
+      console.log(message);
       setWsLogs(message);
+      let logs = document.getElementById("logs");
+        let log_data = event.data;
+        logs.innerHTML = log_data;
     };
 
     webSocketInstance.onerror = (error) => {
@@ -98,7 +106,8 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       resolution : values.resolution,
       regress_cell_cycle : values.regress_cell_cycle,
       use_default : values.use_default,
-      doublet_rate: values.doublet_rate
+      doublet_rate: values.doublet_rate,
+      unique_id: unique_id
     }
 
     try {
@@ -158,19 +167,16 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
           }
 
           let shouldHideForSeurat = false;
-          let shouldHideDoubletRateForScanpy = false;
           if(inputFiles.length === 1 && (inputFiles[0].toLowerCase().endsWith('h5seurat') || inputFiles[0].toLowerCase().endsWith('rds') || inputFiles[0].toLowerCase().endsWith('robj'))) {
             shouldHideForSeurat = true;
-          } else{
-            shouldHideDoubletRateForScanpy = true;
-          }
+          } 
+
           setTaskData((prevTaskData) => ({
             ...prevTaskData,
             quality_control: {
               ...prevTaskData.quality_control,
               file_paths: inputFiles,
               token: authData.username,
-              shouldHideDoubletRateForScanpy: shouldHideDoubletRateForScanpy,
               shouldHideForSeurat: shouldHideForSeurat
             },
           }));   
@@ -306,11 +312,20 @@ const handleAssaySelectionSubmit = async () => {
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
 
       <div>
-        <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideDoubletRateForScanpy={taskData.quality_control.shouldHideDoubletRateForScanpy} shouldHideForSeurat={taskData.quality_control.shouldHideForSeurat}/>
+        <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={taskData.quality_control.shouldHideForSeurat}/>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginLeft: '10px' }}>
         <Button onClick={runQualityControl} variant="contained" className={classes.customButton}>
           Run Quality Control
         </Button>
+        </div>
+      </div>
+
+      <div class="flex items-center py-2 px-3">
+        <div
+          id="logs"
+          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        >
+          reading logs...
         </div>
       </div>
 
@@ -359,7 +374,33 @@ const handleAssaySelectionSubmit = async () => {
                   {result.umap_plot && (
                     <>
                       <h2>UMAP Plot</h2>
-                      <ReactPlotly plot_data={result.umap_plot} />
+                      <div>
+                        <input
+                          type="radio"
+                          value="2D"
+                          name="dimension"
+                          checked={plotDimension === '2D'}
+                          onChange={() => setPlotDimension('2D')}
+                        /> 2D
+                        <input
+                          type="radio"
+                          value="3D"
+                          name="dimension"
+                          checked={plotDimension === '3D'}
+                          onChange={() => setPlotDimension('3D')}
+                        /> 3D
+                      </div>
+
+                      {plotDimension === '2D' && result.umap_plot && (
+                          <>
+                            <ReactPlotly plot_data={result.umap_plot} />
+                          </>
+                        )}
+                        {plotDimension === '3D' && result.umap_plot_3d && (
+                          <>
+                            <ReactPlotly plot_data={result.umap_plot_3d}/>
+                          </>
+                        )}
                     </>
                   )}
                   {result.violin_plot && (
@@ -401,11 +442,16 @@ const handleAssaySelectionSubmit = async () => {
       </div>
       )}
 
-
-      <div style={{ marginTop: '20px' }}>
-          <h3>Live Logs</h3>
-          <textarea value={wsLogs} readOnly style={{ width: '100%', height: '200px' }} />
-      </div>
+{/* {wsLogs && (
+         <div class="flex items-center py-2 px-3">
+         <div
+           id="logs"
+           class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+         >
+           reading logs...
+         </div>
+       </div>
+)} */}
 
     </div>
   );

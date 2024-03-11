@@ -11,7 +11,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { styled } from '@mui/material/styles';
 
 
-const QualityControlParameters = ({values, setValues, defaultValues, shouldHideDoubletRateForScanpy, shouldHideForSeurat}) => {
+const QualityControlParameters = ({values, setValues, defaultValues, shouldHideForSeurat}) => {
 
   const handleSliderChange = (event) => {
     const { name, value } = event.target;
@@ -250,10 +250,12 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideD
                     />
                 </Box>
 
-                {!shouldHideDoubletRateForScanpy && (
                   <Box sx={{ m: 2 }}>
                     <Typography gutterBottom>
-                      Doublet Rate: <b>{`${(values.doublet_rate * 100).toFixed(2)}%`}</b>
+                      Expected Doublet Rate: <b>{`${(values.doublet_rate * 100).toFixed(2)}%`}</b>
+                    </Typography>
+                    <Typography variant="caption" display="block" gutterBottom>
+                      <b>Note:</b> A rate of <b>0%</b> means not to classify doublets.
                     </Typography>
                     <Slider
                       value={values.doublet_rate}
@@ -279,7 +281,6 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideD
                       className={classes.valueLabel}
                     />
                   </Box>
-                )}
 
                 <Box sx={{ m: 2 }}>
 

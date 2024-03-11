@@ -45,7 +45,6 @@ const FlowControl = () => {
         displayAssayNames: false
       } ,
       shouldHideForSeurat: false,
-      shouldHideDoubletRateForScanpy : false,
       token: '',
       selectedAssayName:''
     },

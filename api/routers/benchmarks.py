@@ -99,6 +99,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
     try:
         result = []
         print(file_mappings)
+        unique_id = file_mappings.unique_id
         assay = file_mappings.assay
         doublet_rate = file_mappings.doublet_rate
         input_path = file_mappings.fileDetails
@@ -112,6 +113,12 @@ async def run_quality_control(file_mappings: QualityControlRequest):
         resolution = file_mappings.resolution
         regress_cell_cycle = file_mappings.regress_cell_cycle
         use_default = file_mappings.use_default
+
+        if max_genes == 20000:
+            max_genes = None
+
+        if n_pcs == 0:
+            n_pcs = None
 
         md5 = get_md5(input_path)
         pp_stage = "Raw"
@@ -133,8 +140,8 @@ async def run_quality_control(file_mappings: QualityControlRequest):
 
         if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
             # It's an H5Seurat or RDS file, call runQCSeurat method
-            default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
-            # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
+            # default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, unique_id, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
+            default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, unique_id,assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors,doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
             
             if ddl_assay_names:
                 result.append({
@@ -201,8 +208,8 @@ async def run_quality_control(file_mappings: QualityControlRequest):
 
             # Run Scanpy QC
             try:
-                scanpy_results = run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, regress_cell_cycle=False)
-                # scanpy_results = run_scanpy_qc(adata, min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, regress_cell_cycle=regress_cell_cycle)
+                # scanpy_results = run_scanpy_qc(adata,unique_id, min_genes=min_genes, max_genes=max_genes, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, expected_doublet_rate=doublet_rate, regress_cell_cycle=False, random_state=0)
+                scanpy_results = run_scanpy_qc(adata, unique_id,min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, expected_doublet_rate=doublet_rate,regress_cell_cycle=regress_cell_cycle, random_state=0)
                 info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
                 adata_path = change_file_extension(input_path, 'h5ad')
@@ -267,7 +274,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
         )
 
 
-router.post("/api/umap")
+@router.post("/api/umap")
 async def plot_umap(user_request: UMAPRequest):
     from tools.visualization.plot import plot_UMAP_obs, plot_UMAP
     try:
