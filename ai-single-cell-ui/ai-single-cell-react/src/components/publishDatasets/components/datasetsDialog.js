@@ -99,7 +99,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
   }, [filters]); // This will update visible facets when the filters are fetched
   
   useEffect(()=>{
-    console.log(showview);
+console.log(taskData);
   })
 
 
@@ -242,7 +242,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
                 </div>
                 
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} pagination={pagination} handleShowView={handleShowView}  />
+                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={taskData.task_builder.selectedDatasets} multiple={multiple} pagination={pagination}  />
                 </div>
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>
@@ -251,8 +251,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
               
             </div>
         </div>
-
-        {showview && (
+        {/*--------------------------------– new form here *------------------------------------------*/}
+        {false && (
           <div style={dialogStyle1} className="dialog-container">
           <div className="dialog">
 
@@ -628,7 +628,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, taskDa
            
             </div>
           </div>
-        )}
+        )} 
+
         </div>
 
     );

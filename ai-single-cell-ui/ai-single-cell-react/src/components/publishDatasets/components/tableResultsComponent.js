@@ -13,10 +13,51 @@ import ReactPlotly from './reactPlotly';
 import ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import CreatableSelect from 'react-select/creatable';
+// import { SERVER_URL } from '../../../constants/declarations';
+import {SERVER_URL} from '../../../constants/declarations'
+import axios from 'axios';
 
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination,handleShowView }) => {
+
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
+  useEffect(() => {
+    console.log("data",data);
+  }, [data]);
+
+
+  const [formData, setFormData] = useState({
+    Dataset: '',
+    Downloads: '',
+    Title: '',
+    Author: '',
+    'Reference (paper)': '',
+    Abstract: '',
+    DOI: '',
+    Species: '',
+    'Sample Type': '',
+    'Anatomical Entity': '',
+    'Organ Part': '',
+    'Model Organ': '',
+    'Selected Cell Types': '',
+    'Library Construction Method': '',
+    'Nucleic Acid Source': '',
+    'Paired End': false,
+    'Analysis Protocol': '',
+    'Disease Status (Specimen)': '',
+    'Disease Status (Donor)': '',
+    'Development Stage': '',
+    'Donor Count': 0,
+    'Source': '',
+    'Source Key': '',
+    'Submission Date': '', // Set your initial date placeholder here
+  });
+
+
+
+
+  
+
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -27,8 +68,12 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     const startResult = (page - 1) * pageSize + 1;
     const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
     // const [showView,setShowView]=useState(false);
-
-   
+    const [x,setx]=useState(false);
+    const [currentdataset,setCurrentDataset]=useState(null);
+    useEffect(() => {
+      console.log("curretn dataset",formData);
+    }, [formData]);
+  
     
 
     const [visibleColumns, setVisibleColumns] = useState({
@@ -77,449 +122,86 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             'Source': false,
         });
     };
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        this.setState((prevState) => ({
-          formData: {
-            ...prevState.formData,
-            [name]: value,
-          },
-        }));
-      };
+    const handleChange = (e, fieldName) => {
+      
+      const { name, value } = e.target || { name: fieldName, value: e }; // Use fieldName if name is undefined
+      console.log(name,value);
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    };
+    
       
     const isSelected = datasetId => !!selectedDatasets[datasetId];
     const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
-    const handleEdit = (dataset) => {
-      handleShowView(true);
+    const handleEdit = (dataset,item) => {
+      console.log("dataset----",dataset);
+      console.log("item----",item);
+      setFormData({
+        Dataset:item.Dataset,
+        Downloads:item.Downloads,
+        Title:item.Title,
+        Author:item.Author,
+        'Reference (paper)':item['Reference (paper)'],
+        Abstract:item.Abstract,
+        DOI:item.DOI,
+        Species:item.Species,
+        'Sample Type':item['Sample Type'],
+        'Anatomical Entity': item['Anatomical Entity'],
+        'Organ Part': item['Organ Part'],
+        'Model Organ': item['Model Organ'],
+        'Selected Cell Types': item['Selected Cell Types'],
+        'Library Construction Method': item['Library Construction Method'],
+        'Nucleic Acid Source': item['Nucleic Acid Source'],
+        'Paired End': item['Paired End'],
+        'Analysis Protocol': item['Analysis Protocol'],
+        'Disease Status (Specimen)': item['Disease Status (Specimen)'],
+        'Disease Status (Donor)': item['Disease Status (Donor)'],
+        'Development Stage': item['Development Stage'],
+        'Donor Count': item['Donor Count'],
+        'Source': item['Source'],
+        'Source Key': item['Source Key'],
+        'Submission Date': item['Submission Date']
 
-        // const fieldNames = [
-        //     'Task', 'Species', 'Sample Type', 'Anatomical Entity',
-        //     'Organ Part', 'Model Organ', 'Selected Cell Types', 'Library Construction Method',
-        //     'Nucleic Acid Source', 'Disease Status (Specimen)', 'Disease Status (Donor)',
-        //     'Development Stage', 'Cell Count Estimate', 'Source',
-        // ];
-    
-        // const options = {};
-    
-        // // Assume data and options are provided or initialized somewhere
-        // fieldNames.forEach(fieldName => {
-        //     if (dataset[fieldName]) {
-        //         options[fieldName] = dataset[fieldName].map(option => ({ value: option.abbreviation, label: option.name }));
-        //     }
-        // });
-    
-        // // Create form fields as HTML string
-        // const formFieldsHTML = fieldNames.map(fieldName => `
-        //     <div key="${fieldName}">
-        //         <label>${fieldName}</label>
-        //         <select>
-        //             ${options[fieldName] && options[fieldName].map((option, index) => `
-        //                 <option key="${index}" value="${option.value}">${option.label}</option>
-        //             `).join('')}
-        //         </select>
-        //     </div>
-        // `).join('');
-//--------------------------------------------------------------------------------
-        const formFieldsHTML=                 `
-                <div className="my-form-container">
-        
-                <div>
-                <h2 className="form-title">My Form</h2>
-                <form  className="form">
-                  {/* Dataset */}
-                  <div className="form-field">
-                    <label className="form-label">Dataset:</label>
-                    <input
-                      type="text"
-                      name="Dataset"
-                    //   required
-                    />
-                  </div>
-        
-                  
-        
-                  {/* Downloads */}
-                  <div className="form-field">
-                    <label className="form-label">Downloads:</label>
-                    <input
-                      type="text"
-                      required
-                      name="Downloads"
-                     
-                    />
-        
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Title:</label>
-                    <input
-                      type="text"
-                      name="Title"
-                      
-                      className="form-input"
-                    />
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Author:</label>
-                    <input
-                      type="text"
-                      name="Author"
-                      required
-                      
-                    />
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Reference (paper):</label>
-                    <input
-                      type="text"
-                      name="Reference (paper)"
-                      
-                      className="form-input"
-                    />
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Abstract:</label>
-                    <textarea
-                      name="Abstract"
-                   
-                      className="form-input"
-                    />
-                  </div>
-        
-                  {/* DOI */}
-                  <div className="form-field">
-                    <label className="form-label">DOI:</label>
-                    <input
-                      type="text"
-                      name="DOI"
-                      
-                      placeholder="http://"
-                      className="form-input"
-                    />
-                  </div>
-        
-        
-                  {/* Species (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Species:</label>
-                    <CreatableSelect
-                      name="Species"
-                    //   value={formData.Species}
-                      isClearable
-                      isSearchable
-                      required
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
-                      onCreateOption={(inputValue) => this.handleCreateOption('Species', inputValue)}
-                    //   options={options.Species} // Set options to the fetched options
-                    />
-                  </div>
-        
-                  {/* "Sample Type" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Sample Type:</label>
-                    <CreatableSelect
-                      name="Sample Type"
-                    //   value={formData['Sample Type']}
-                      isClearable
-                      isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
-                       onCreateOption={(inputValue) => this.handleCreateOption('Sample Type', inputValue)}
-                    //   options={options['Sample Type']} // Set options to the fetched options
-                    />
-                  </div>
-        
-        
-                  {/* "Anatomical Entity" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Anatomical Entity:</label>
-                    <CreatableSelect
-                      name="Anatomical Entity"
-                    //   value={formData['Anatomical Entity']}
-                      isClearable
-                      isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
-                    //   options={options['Anatomical Entity']} // Set options to the fetched options
-                    />
-                  </div>
-        
-                  {/* "Organ Part" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Organ Part:</label>
-                    <CreatableSelect
-                      name="Organ Part"
-                    //   value={formData['Organ Part']}
-                      isClearable
-                      isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Organ Part', inputValue)}
-                    //   options={options['Organ Part']} // Set options to the fetched options
-                    />
-]                  </div>
-        
-                  {/* "Model Organ" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Model Organ:</label>
-                    <CreatableSelect
-                      name="Model Organ"
-                    //   value={formData['Model Organ']}
-                      isClearable
-                      isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Model Organ', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Model Organ', inputValue)}
-                    //   options={options['Model Organ']} // Set options to the fetched options
-                      className="form-input"
-                    />
-                  </div>
-        
-                  {/* "Selected Cell Types" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Selected Cell Types:</label>
-                    <CreatableSelect
-                      name="Selected Cell Types"
-                    //   value={formData['Selected Cell Types']}
-                      isClearable
-                      isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
-                    //   options={options['Selected Cell Types']} // Set options to the fetched options
-                    />
-                  </div>
-        
-        
-        
-                  {/* "Library Construction Method" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Library Construction Method:</label>
-                    <CreatableSelect
-                      name="Library Construction Method"
-                    //   value={formData['Library Construction Method']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Library Construction Method', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Library Construction Method', inputValue)}
-                    //   options={options['Library Construction Method']} // Set options to the fetched options
-                      className="form-input"
-                    />
-                  </div>
-        
-        
-                  {/* "Nucleic Acid Source" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Nucleic Acid Source:</label>
-                    <CreatableSelect
-                      name="Nucleic Acid Source"
-                    //   value={formData['Nucleic Acid Source']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Nucleic Acid Source', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Nucleic Acid Source', inputValue)}
-                    //   options={options['Nucleic Acid Source']} // Set options to the fetched options
-                      className="form-input"
-                    />
-                  </div>
-        
-        
-                  <div className="form-field">
-                    <label className="form-label">Paired End:</label>
-                    <div>
-                      <label>
-                        <input
-                          type="radio"
-                          name="Paired End"
-                          value= "true"
-                        //   checked={formData["Paired End"] === "true"}
-                        //   onChange={this.handleChange}
-                          className="form-input"
-                        />
-                        True
-                      </label>
-                      <label className="form-label">
-                        <input
-                          type="radio"
-                          name="Paired End"
-                          value="false"
-                        //   checked={formData["Paired End"] === "false"}
-                        //   onChange={this.handleChange}
-                          className="form-input"
-                        />
-                        False
-                      </label>
-                    </div>
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Analysis Protocol:</label>
-                    <input
-                      type="text"
-                      name="Analysis Protocol"
-                    //   value={formData['Analysis Protocol']}
-                    //   onChange={this.handleChange}
-                      className="form-input"
-                    />
-                  </div>
-        
-                  {/* "Disease Status (Specimen)" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Disease Status (Specimen):</label>
-                    <CreatableSelect
-                      name="Disease Status (Specimen)"
-                    //   value={formData['Disease Status (Specimen)']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
-                    //   options={options['Disease Status (Specimen)']} // Set options to the fetched options
-                    />
-                    {/* {errors['Disease Status (Specimen)'] && <div className="error-tooltip">{errors['Disease Status (Specimen)']}</div>} */}
-                  </div>
-        
-        
-                  {/* "Disease Status (Donor)" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Disease Status (Donor):</label>
-                    <CreatableSelect
-                      name="Disease Status (Donor)"
-                    //   value={formData['Disease Status (Donor)']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
-                    //   options={options['Disease Status (Donor)']} // Set options to the fetched options
-                    />
-                    {/* {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>} */}
-                  </div>
-        
-                  {/* "Development Stage" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Development Stage:</label>
-                    <CreatableSelect
-                      name="Development Stage"
-                    //   value={formData['Development Stage']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}
-                    //   options={options['Development Stage']} // Set options to the fetched options
-                      className="form-input"
-                    />
-                  </div>
-        
-                  <div className="form-field">
-                    <label className="form-label">Donor Count:</label>
-                    <input
-                      type="number"
-                      name="Donor Count"
-                    //   value={formData["Donor Count"]}
-                    //   onChange={this.handleChange}
-                      className="form-input"
-                    />
-                  </div>
-        
-        
-                 
-        
-                  {/* "Source" (CreatableSelect) */}
-                  <div className="form-field">
-                    <label className="form-label">Source:</label>
-                    <CreatableSelect
-                      name="Source"
-                    //   value={formData['Source']}
-                    //   isClearable
-                    //   isSearchable
-                    //   isLoading={isLoading}
-                    //   onChange={(selectedOption) => this.handleSelectChange('Source', selectedOption)} // Use handleSelectChange              
-                    //   onCreateOption={(inputValue) => this.handleCreateOption('Source', inputValue)}
-                    //   options={options['Source']} // Set options to the fetched options
-                      className="form-input"
-                    />
-                  </div>
-        
-                  
-                  {/* Source Key */}
-                  <div className="form-field">
-                    <label className="form-label">Source Key:</label>
-                    <input
-                      type="text"
-                      name="Source Key"
-                    //   value={formData['Source Key']}
-                    //   onChange={this.handleChange}
-                      placeholder="Enter ..."
-                      className="form-input"
-                    />
-                    {/* {errors['Source Key'] && <p className="error">{errors['Source Key']}</p>} */}
-                  </div>
-        
-                  <div className="form-field">
-                    <label>Submission Date:</label>
-                    <input
-                      type="date"
-                      required
-                      name="Submission Date"
-                    //   value={formData["Submission Date"]}
-                    //   onChange={this.handleChange}
-                    />
-                    {/* {errors['Submission Date'] && <div className="error-tooltip">{errors['Submission Date']}</div>} */}
-                  </div>
-        
-                  
-        
-                </form>
-                </div>
-              </div>`;
-        
-    
-        
-
-    //--------------------------------------------------------------------------------
-        // Create popup
-        // const newPopup = window.open('', 'popupWindow', 'width=600,height=400,top=100,left=100,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no');
-        // newPopup.document.body.innerHTML = `
-        //     <html>
-        //         <head>
-        //             <title>Popup Form</title>
-        //             <style>
-        //                 /* Add your custom CSS styles here */
-        //                 body {
-        //                     width: 600px;
-        //                     height: 400px;
-        //                     background-color: white;
-        //                     border: 1px solid #ccc;
-        //                     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        //                     padding: 20px;
-        //                 }
-        //                 /* Add more styles as needed */
-        //             </style>
-        //         </head>
-        //         <body>
-        //             <form>
-        //                 ${formFieldsHTML}
-        //                 <input type="submit" value="Submit">
-        //             </form>
-        //         </body>
-        //     </html>
-        // `;
-    
-        // // Focus the popup window
-        // newPopup.focus();
+      })
+      setx(true);            
     };
-    
-    
+    const optionAlreadyCreated = (fieldName, inputValue) => {
+      return this.state.newOptions.some(
+        (option) => option.field === fieldName && option.name === inputValue
+      );
+    };
+   
+  const handleCreateOption = (fieldName, inputValue) => {
+
+    // Check if the option has already been created to prevent duplicate calls
+    if (! optionAlreadyCreated(fieldName, inputValue)) {
+      this.addNewOptionToMongoDB(fieldName, inputValue);
+    }
+    this.setState((prevState) => {
+      const newOption = { value: inputValue, label: inputValue };
+      const updatedOptions = { ...prevState.options };
+      updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+  
+      const updatedFormData = {
+        ...prevState.formData,
+        [fieldName]: newOption,
+      };
+
+      const updatedNewOptions = [
+        ...prevState.newOptions,
+        { field: fieldName, name: inputValue },
+      ];
+
+      return {
+        options: updatedOptions,
+        formData: updatedFormData,
+        newOptions: updatedNewOptions,
+      };
+    });
+}; 
     const handleVisualize = (dataset) => {
         console.log("Visualizing dataset: ", dataset);
         console.log("resulys", data);
@@ -603,9 +285,64 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }
     };
     
+
+    const handlecloseView=()=>{
+      setx(false);
+    }
+    
+    const submitHandle = (e) => {
+      e.preventDefault();
+      console.log("currrent_dataset",currentdataset);
+      // setFormData( {
+      //   Dataset: currentdataset.Dataset,
+      //   Downloads: currentdataset.Downloads,
+      //   Title: currentdataset.Title,
+      //   Author: currentdataset.Author,
+      //   'Reference (paper)': currentdataset['Reference (paper)'],
+      //   Abstract: currentdataset.Abstract,
+      //   DOI: currentdataset.DOI,
+      //   Species: currentdataset.Species,
+      //   'Sample Type': currentdataset['Sample Type'],
+      //   'Anatomical Entity': currentdataset['Anatomical Entity'],
+      //   'Organ Part': currentdataset['Organ Part'],
+      //   'Model Organ': currentdataset['Model Organ'],
+      //   'Selected Cell Types': currentdataset['Selected Cell Types'],
+      //   'Library Construction Method': currentdataset['Library Construction Method'],
+      //   'Nucleic Acid Source': currentdataset['Nucleic Acid Source'],
+      //   'Paired End': currentdataset['Paired End'],
+      //   'Analysis Protocol': currentdataset['Analysis Protocol'],
+      //   'Disease Status (Specimen)': currentdataset['Disease Status (Specimen)'],
+      //   'Disease Status (Donor)': currentdataset['Disease Status (Donor)'],
+      //   'Development Stage': currentdataset['Development Stage'],
+      //   'Donor Count': currentdataset['Donor Count'],
+      //   'Source': currentdataset.Source,
+      //   'Source Key': currentdataset['Source Key'],
+      //   'Submission Date': currentdataset['Submission Date'],
+      // });
+      
+console.log("in handle submit");
+console.log(formData);
+
+
+axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
+.then(response => {
+  console.log('Form data submitted successfully');
+  this.setState({
+    message: 'Dataset created Successfully!',
+    hasMessage: true, // Set hasMessage to true when a message is set
+  });
+
+
+ 
+})
+.catch(error => {
+  console.error('Error submitting form data:', error.response.data.error);
+});
+
+    }
     
     
-    
+
 
     const columns = React.useMemo(() => {
         if (data.length === 0) {
@@ -653,7 +390,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
                     />
                     <button
-                        onClick={() => handleEdit(item["Id"])}
+                        onClick={() => handleEdit(item["Id"],item)}
                         className="action-button"
                     >
                       
@@ -673,17 +410,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets, visibleColumns]);
 
-  //   const edithandlefunction = () => {
-  //     return (
-  //              <div className="dialog-container">
-  //           <div className="dialog-backdrop" />
-  //               <div className= "dialog">
-  //               <h1>in dialog afte rcf</h1>
-  //               </div>
-                
-  //               </div>
-  //     );
-  // };
 
     const {
         getTableProps,
@@ -694,6 +420,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     } = useTable({ columns, data },useRowSelect);
 
     return (
+      <div>
         <div>
             {/* Dropdown for editing columns */}
             <div className="dropdown">
@@ -768,6 +495,448 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 </tbody>
             </table>
             
+        </div>
+        <div>
+
+        {x && (
+          <div  className="dialog-container">
+          <div className="dialog">
+
+          <div className="my-form-container">
+        
+        <div>
+        <h2 className="form-title">My Form</h2>
+        <form  className="form" >
+          {/* Dataset */}
+          <div className="form-field">
+            <label className="form-label">Dataset:</label>
+            <input
+              type="text"
+              name="Dataset"
+              value={formData.Dataset}
+              onChange={(e) => handleChange(e, 'Dataset')}
+              
+
+            //   required
+            />
+          </div>
+
+          
+
+          {/* Downloads */}
+          <div className="form-field">
+            <label className="form-label">Downloads:</label>
+            <input
+              type="text"
+              required
+              name="Downloads"
+              value={formData.Downloads}
+              onChange={handleChange}
+
+            />
+
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Title:</label>
+            <input
+              type="text"
+              name="Title"
+              value={formData.Title}
+              onChange={handleChange}
+
+              //className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Author:</label>
+            <input
+              type="text"
+              name="Author"
+              value={formData.Author}
+              onChange={handleChange}
+
+              required
+              
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Reference (paper):</label>
+            <input
+              type="text"
+              name="Reference (paper)"
+              value={formData['Reference (paper)']}
+              onChange={handleChange}
+
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Abstract:</label>
+            <textarea
+              name="Abstract"
+              value={formData.Abstract}
+              onChange={handleChange}
+
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">DOI:</label>
+            <input
+              type="text"
+              name="DOI"
+              value={formData.DOI}
+              onChange={handleChange}
+
+              placeholder="http://"
+              className="form-input"
+            //   value={currentdataset.}
+            />
+          </div>
+
+
+          {/* Species (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Species:</label>
+            <CreatableSelect
+              name="Species"
+              value={formData.Species}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+              required
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Species', inputValue)}
+            //   options={options.Species} // Set options to the fetched options
+            />
+          </div>
+
+          {/* "Sample Type" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Sample Type:</label>
+            <CreatableSelect
+              name="Sample Type"
+              value={FormData['Sample Type']}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
+               onCreateOption={(inputValue) => handleCreateOption('Sample Type', inputValue)}
+            //   options={options['Sample Type']} // Set options to the fetched options
+            />
+          </div>
+
+
+          {/* "Anatomical Entity" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Anatomical Entity:</label>
+            <CreatableSelect
+              name="Anatomical Entity"
+              value={formData['Anatomical Entity']}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
+            //   options={options['Anatomical Entity']} // Set options to the fetched options
+            />
+          </div>
+
+          {/* "Organ Part" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Organ Part:</label>
+            <CreatableSelect
+              name="Organ Part"
+              value={formData['Organ Part']}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Organ Part', inputValue)}
+            //   options={options['Organ Part']} // Set options to the fetched options
+            />
+                 </div>
+
+          {/* "Model Organ" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Model Organ:</label>
+            <CreatableSelect
+              name="Model Organ"
+              value={formData['Model Organ']}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Model Organ', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Model Organ', inputValue)}
+            //   options={options['Model Organ']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
+          {/* "Selected Cell Types" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Selected Cell Types:</label>
+            <CreatableSelect
+              name="Selected Cell Types"
+              value={FormData['Selected Cell Types']}
+              onChange={handleChange}
+
+              isClearable
+              isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
+            //   options={options['Selected Cell Types']} // Set options to the fetched options
+            />
+          </div>
+
+
+
+          {/* "Library Construction Method" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Library Construction Method:</label>
+            <CreatableSelect
+              name="Library Construction Method"
+              value={formData['Library Construction Method']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Library Construction Method', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Library Construction Method', inputValue)}
+            //   options={options['Library Construction Method']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
+
+          {/* "Nucleic Acid Source" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Nucleic Acid Source:</label>
+            <CreatableSelect
+              name="Nucleic Acid Source"
+              value={formData['Nucleic Acid Source']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Nucleic Acid Source', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Nucleic Acid Source', inputValue)}
+            //   options={options['Nucleic Acid Source']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
+
+          <div className="form-field">
+            <label className="form-label">Paired End:</label>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="Paired End"
+                  value= "true"
+                  checked={formData["Paired End"] === "true"}
+                onChange={handleChange}
+
+                  className="form-input"
+                />
+                True
+              </label>
+              <label className="form-label">
+                <input
+                  type="radio"
+                  name="Paired End"
+                  value="false"
+                  checked={formData["Paired End"] === "false"}
+                  className="form-input"
+                  onChange={handleChange}
+
+                />
+                False
+              </label>
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Analysis Protocol:</label>
+            <input
+              type="text"
+              name="Analysis Protocol"
+              value={formData['Analysis Protocol']}
+            //   onChange={this.handleChange}
+            onChange={handleChange}
+
+              className="form-input"
+            />
+          </div>
+
+          {/* "Disease Status (Specimen)" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Disease Status (Specimen):</label>
+            <CreatableSelect
+              name="Disease Status (Specimen)"
+              value={formData['Disease Status (Specimen)']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
+            //   options={options['Disease Status (Specimen)']} // Set options to the fetched options
+            />
+            {/* {errors['Disease Status (Specimen)'] && <div className="error-tooltip">{errors['Disease Status (Specimen)']}</div>} */}
+          </div>
+
+
+          {/* "Disease Status (Donor)" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Disease Status (Donor):</label>
+            <CreatableSelect
+              name="Disease Status (Donor)"
+              value={formData['Disease Status (Donor)']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
+            //   options={options['Disease Status (Donor)']} // Set options to the fetched options
+            />
+            {/* {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>} */}
+          </div>
+
+          {/* "Development Stage" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Development Stage:</label>
+            <CreatableSelect
+              name="Development Stage"
+              value={formData['Development Stage']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}
+            //   options={options['Development Stage']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Donor Count:</label>
+            <input
+              type="number"
+              name="Donor Count"
+              value={formData["Donor Count"]}
+            //   onChange={this.handleChange}
+            onChange={handleChange}
+
+              className="form-input"
+            />
+          </div>
+
+
+         
+
+          {/* "Source" (CreatableSelect) */}
+          <div className="form-field">
+            <label className="form-label">Source:</label>
+            <CreatableSelect
+              name="Source"
+              value={formData['Source']}
+              onChange={handleChange}
+
+            //   isClearable
+            //   isSearchable
+            //   isLoading={isLoading}
+            //   onChange={(selectedOption) => this.handleSelectChange('Source', selectedOption)} // Use handleSelectChange              
+            //   onCreateOption={(inputValue) => this.handleCreateOption('Source', inputValue)}
+            //   options={options['Source']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
+          
+          {/* Source Key */}
+          <div className="form-field">
+            <label className="form-label">Source Key:</label>
+            <input
+              type="text"
+              name="Source Key"
+              value={formData['Source Key']}
+            //   onChange={this.handleChange}
+            onChange={handleChange}
+
+              placeholder="Enter ..."
+              className="form-input"
+            />
+            {/* {errors['Source Key'] && <p className="error">{errors['Source Key']}</p>} */}
+          </div>
+
+          <div className="form-field">
+            <label>Submission Date:</label>
+            <input
+              type="date"
+              required
+              name="Submission Date"
+              value={FormData["Submission Date"]}
+              onChange={handleChange}
+
+            //   onChange={this.handleChange}
+            />
+            {/* {errors['Submission Date'] && <div className="error-tooltip">{errors['Submission Date']}</div>} */}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+  <div style={{ marginRight: '10px' }}>
+    <button type="submit" onClick={submitHandle}>Submit</button>
+  </div>
+  <div>
+    <button onClick={handlecloseView}>Close</button>
+  </div>
+</div>
+
+
+
+
+
+         
+
+         
+
+          
+
+        </form>
+        </div>
+      </div>
+           
+
+           
+            </div>
+          </div>
+        )}
+        </div>
         </div>
     );
 };

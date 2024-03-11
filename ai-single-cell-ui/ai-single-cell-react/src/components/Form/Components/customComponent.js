@@ -14,6 +14,7 @@ class MyForm extends Component {
     const {
       taskData,
     } = props;
+    console.log(taskData)
 
     this.state = {
       formData: taskData.metadata.formData,
@@ -26,6 +27,9 @@ class MyForm extends Component {
       isAdmin: false,
       username: ''
     };  
+    console.log(this.state.formData); // Log formData from state
+
+    
   }
 
   componentDidMount() {
