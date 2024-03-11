@@ -62,7 +62,8 @@
     "web-vitals": "^2.1.4",
     "jwt-decode": "*",
     "@emotion/react": "*",
-     "@emotion/styled": "*"
+     "@emotion/styled": "*",
+     "uuid": "*"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",

@@ -7,6 +7,7 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from tools.formating.formating import change_file_extension, load_anndata, convert_from_r, convert_to_r
+from utils.redislogger import RedisLogger
 
 # Ensure that pandas2ri is activated for automatic conversion
 pandas2ri.activate()
@@ -14,7 +15,11 @@ pandas2ri.activate()
 # Defining the R script and loading the instance in Python
 ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
 
-def run_seurat_qc(input, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False):
+def run_seurat_qc(input, unique_id, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False):
+        # Instantiate RedisLogger
+    redislogger = RedisLogger()
+    redislogger.info(unique_id, "Started Seurat Quality Control Process")
+    
     RunSeuratQC_r = ro.globalenv['RunSeuratQC']
     adata = None
     default_assay = None
@@ -34,6 +39,7 @@ def run_seurat_qc(input, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=
             assay_names = list(results[1])
             adata_path = list(results[2])[0]
             ddl_assay_names = convert_from_r(list(results[3])[0])
+        redislogger.info(unique_id, "Completed Seurat Quality Control Process")
 
         print(adata_path)
 
