@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
 import { CELERY_BACKEND_API, STORAGE} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
@@ -11,6 +11,11 @@ import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
 import { v4 as uuid } from 'uuid';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Radio from '@material-ui/core/Radio';
 
 const defaultValues = {
   min_genes: 200,
@@ -27,6 +32,7 @@ const defaultValues = {
 };
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
+  const webSocketInstance = useRef(null);
 
   const [plotDimension, setPlotDimension] = useState('2D');
 
@@ -57,15 +63,16 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
     const unique_id = uuid()
 
-     // Establish WebSocket connection right away
-    const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`; 
-    const webSocketInstance = new WebSocket(websocketURL);
+    
+    // Establish WebSocket connection right away
+    const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`;  
+    webSocketInstance.current = new WebSocket(websocketURL);
 
-    webSocketInstance.onopen = () => {
+    webSocketInstance.current.onopen = () => {
       console.log('WebSocket Connected');
     };
 
-    webSocketInstance.onmessage = (event) => {
+    webSocketInstance.current.onmessage = (event) => {
       const message = event.data;
       console.log(message);
       setWsLogs(message);
@@ -74,11 +81,11 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
         logs.innerHTML = log_data;
     };
 
-    webSocketInstance.onerror = (error) => {
+    webSocketInstance.current.onerror = (error) => {
       console.error('WebSocket Error:', error);
     };
 
-    webSocketInstance.onclose = () => {
+    webSocketInstance.current.onclose = () => {
       console.log('WebSocket Disconnected');
     };
 
@@ -147,9 +154,20 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
       setLoading(false);
+      setHasMessage(true);
+      setMessage("Failed to execute the quality control task.")
     }
-
   };
+
+  useEffect(() => {
+    // This cleanup function will be called on component unmount
+    return () => {
+      if (webSocketInstance.current) {
+        webSocketInstance.current.close();
+        console.log('WebSocket Disconnected');
+      }
+    };
+  }, []); // Empty dependency array ensures this runs on mount and unmount only
 
 
   useEffect(() => {
@@ -216,26 +234,29 @@ const handleAssaySelectionSubmit = async () => {
 
     setLoading(true);
 
-    let unique_id = taskData.quality_control.token;
+    const unique_id = uuid();
 
+    if(!webSocketInstance.current) {
      // Establish WebSocket connection right away
-    const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`; 
-    const webSocketInstance = new WebSocket(websocketURL);
+     const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`; 
+     webSocketInstance.current = new WebSocket(websocketURL);
+    }
 
-    webSocketInstance.onopen = () => {
+
+    webSocketInstance.current.onopen = () => {
       console.log('WebSocket Connected');
     };
 
-    webSocketInstance.onmessage = (event) => {
+    webSocketInstance.current.onmessage = (event) => {
       const message = event.data;
       setWsLogs(message);
     };
 
-    webSocketInstance.onerror = (error) => {
+    webSocketInstance.current.onerror = (error) => {
       console.error('WebSocket Error:', error);
     };
 
-    webSocketInstance.onclose = () => {
+    webSocketInstance.current.onclose = () => {
       console.log('WebSocket Disconnected');
     };
 
@@ -252,7 +273,8 @@ const handleAssaySelectionSubmit = async () => {
       regress_cell_cycle : values.regress_cell_cycle,
       use_default : values.use_default,
       doublet_rate: values.doublet_rate,
-      assay: taskData.quality_control.selectedAssayName
+      assay: taskData.quality_control.selectedAssayName,
+      unique_id: unique_id
     }
 
     try {
@@ -283,27 +305,35 @@ const handleAssaySelectionSubmit = async () => {
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
       setLoading(false);
+      setHasMessage(true);
+      setMessage("Failed to execute the quality control task.")
     }
 };
 
   const handleTaskCompletion = () => {
-      // Update the fileMappings state with the new list
-      setTaskData((prevTaskData) => ({
-        ...prevTaskData,
-        quality_control: {
-          ...prevTaskData.quality_control,
-          status: 'completed'
-        },
+
+      if(taskData.quality_control.qc_results.length > 0) {
+        // Update the fileMappings state with the new list
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          quality_control: {
+            ...prevTaskData.quality_control,
+            status: 'completed'
+          },
+        }));
+
+      // After Task 3 is successfully completed, update the task status
+      setTaskStatus((prevTaskStatus) => ({
+        ...prevTaskStatus,
+        2: true, // Mark Task 3 as completed
       }));
 
-    // After Task 3 is successfully completed, update the task status
-    setTaskStatus((prevTaskStatus) => ({
-      ...prevTaskStatus,
-      2: true, // Mark Task 3 as completed
-    }));
-
-    //The current task is finished, so make the next task active
-    setActiveTask(3);
+      //The current task is finished, so make the next task active
+      setActiveTask(3);
+    } else {
+      setHasMessage(true);
+      setMessage("Run Quality Control Task Before moving to the next step.");
+    }
   };
 
   return (
@@ -374,22 +404,18 @@ const handleAssaySelectionSubmit = async () => {
                   {result.umap_plot && (
                     <>
                       <h2>UMAP Plot</h2>
-                      <div>
-                        <input
-                          type="radio"
-                          value="2D"
-                          name="dimension"
-                          checked={plotDimension === '2D'}
-                          onChange={() => setPlotDimension('2D')}
-                        /> 2D
-                        <input
-                          type="radio"
-                          value="3D"
-                          name="dimension"
-                          checked={plotDimension === '3D'}
-                          onChange={() => setPlotDimension('3D')}
-                        /> 3D
-                      </div>
+                      <FormControl>
+                        <FormLabel id="demo-radio-buttons-group-label">Dimension</FormLabel>
+                        <RadioGroup
+                          aria-labelledby="demo-radio-buttons-group-label"
+                          name="radio-buttons-group"
+                          value={plotDimension}
+                          onChange={(event) => setPlotDimension(event.target.value)}
+                        >
+                          <FormControlLabel value="2D" control={<Radio />} label="2D" />
+                          <FormControlLabel value="3D" control={<Radio />} label="3D" />
+                        </RadioGroup>
+                      </FormControl>
 
                       {plotDimension === '2D' && result.umap_plot && (
                           <>
