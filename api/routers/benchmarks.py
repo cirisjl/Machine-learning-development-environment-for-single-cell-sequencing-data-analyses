@@ -141,7 +141,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
         if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
             # It's an H5Seurat or RDS file, call runQCSeurat method
             # default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, unique_id, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
-            default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, unique_id,assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors,doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
+            default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id,assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors,doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
             
             if ddl_assay_names:
                 result.append({
