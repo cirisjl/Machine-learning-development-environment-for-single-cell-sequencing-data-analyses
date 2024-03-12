@@ -1334,7 +1334,7 @@ app.get('/getTasks', (req, res) => {
     });
 });
 
-// New endpoint to check if the hash for a file exists or not
+//New endpoint to check if the hash for a file exists or not
 app.get('/mongoDB/api/file-exists', async (req, res) => {
     const hash = req.query.hash;
     console.log(hash)
@@ -1361,6 +1361,7 @@ app.get('/mongoDB/api/file-exists', async (req, res) => {
 
     client.close()
 });
+
 
 // Connect to MongoDB and retrieve options
 app.get('/mongoDB/api/options', async (req, res) => {

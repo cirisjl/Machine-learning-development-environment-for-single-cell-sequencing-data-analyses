@@ -24,6 +24,7 @@ export default function UploadDataset() {
           final_files:{},
           displayAssayNames: false,
           assayNames:[],
+          fileHashes:'',
           default_assay: '',
           selectedAssayName: ''
         },

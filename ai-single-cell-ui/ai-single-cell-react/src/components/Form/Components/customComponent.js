@@ -179,9 +179,11 @@ class MyForm extends Component {
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
+
+
+
       if(flow === 'upload') {
         formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
-
          // add data to the formData
          const cellCount = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
 

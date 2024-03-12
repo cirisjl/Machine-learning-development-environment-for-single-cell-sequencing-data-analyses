@@ -11,7 +11,7 @@ import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
 import "@uppy/status-bar/dist/style.css"
 import "@uppy/drag-drop/dist/style.css"
-import { calcMD5Hash } from '../../utils/utilFunctions'
+import { calcMD5Hash } from '../../utils/utilFunctions' 
 
 import axios from 'axios';
 
@@ -108,11 +108,15 @@ export default function UppyUploader(props) {
         }
 
         calcMD5Hash(file.data).then((hash) => {
-            console.log("hash from uppy")
-            console.log(hash)
+            console.log("hash from uppy");
+            console.log(hash);
 
             setTaskData((prevTaskData) => ({
-                fileHashes: [...(prevTaskData.fileHashes || []), hash.hashResult],
+                ...prevTaskData,
+                upload: {
+                    ...prevTaskData.upload,
+                    fileHashes: hash.hashResult,
+                },  
             }));
         })
     });
