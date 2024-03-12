@@ -181,7 +181,7 @@ def get_metadata_from_seurat(path):
 
 def get_metadata_from_anndata(adata):
     layers = None
-    cell_metadata = None
+    cell_metadata_obs = None
     nCells = 0
     nGenes = 0
     genes = None
@@ -189,6 +189,7 @@ def get_metadata_from_anndata(adata):
     gene_metadata = None
     embeddings = None
     umap_plot = None
+    umap_plot_3d = None
     violin_plot = None
     scatter_plot = None
     highest_expr_genes_plot = None
