@@ -29,7 +29,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       6: true, // Mark Task 6 as completed
     }));
     //The current task is finished, so make the next task active
-    setActiveTask(7);
+    setActiveTask(6);
   };
 
   useEffect(() => {
