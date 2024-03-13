@@ -95,7 +95,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   
     if (file_paths.length > 1) {
         const firstFilePath = file_paths[0]; 
-        pathToUse = firstFilePath.substring(0, firstFilePath.lastIndexOf('/'));
+        pathToUse = firstFilePath.substring(0, firstFilePath.lastIndexOf('/')+1);
     } else if (file_paths.length === 1) {
         // Only one file, use its complete path
         pathToUse = file_paths[0];
@@ -404,11 +404,13 @@ const handleAssaySelectionSubmit = async () => {
                   {result.umap_plot && (
                     <>
                       <h2>UMAP Plot</h2>
+
                       <FormControl>
-                        <FormLabel id="demo-radio-buttons-group-label">Dimension</FormLabel>
+                        <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel>
                         <RadioGroup
-                          aria-labelledby="demo-radio-buttons-group-label"
-                          name="radio-buttons-group"
+                          row
+                          aria-labelledby="demo-row-radio-buttons-group-label"
+                          name="row-radio-buttons-group"
                           value={plotDimension}
                           onChange={(event) => setPlotDimension(event.target.value)}
                         >
