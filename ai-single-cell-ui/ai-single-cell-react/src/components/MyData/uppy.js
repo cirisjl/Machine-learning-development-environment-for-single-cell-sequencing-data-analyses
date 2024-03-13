@@ -11,11 +11,12 @@ import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
 import "@uppy/status-bar/dist/style.css"
 import "@uppy/drag-drop/dist/style.css"
-import { calcMD5Hash } from '../../utils/utilFunctions' 
+import { setHashStore, getHashStore, calcMD5Hash } from '../../utils/utilFunctions'
 
 import axios from 'axios';
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
+
 
 export default function UppyUploader(props) {
 
@@ -54,7 +55,6 @@ export default function UppyUploader(props) {
             maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
         },
         debug: true,
-        // onBeforeFileAdded: (currentFile, _) => checkIfFileExists(currentFile),
     });
 
     uppy.use(GoogleDrive, {
@@ -91,11 +91,14 @@ export default function UppyUploader(props) {
         }
     });
 
-    uppy.on('upload-success', (file, response) => {
+    uppy.on('upload-success', async (file, response) => {
         if (toPublishDataset) {
             // Access the filename of the successfully uploaded file
             setFileError('');
-            const filename = file.name;
+
+            const hash = await calcMD5Hash(file.data)
+            console.log("hash from upload-success inside if")
+            console.log(hash)
 
             setTaskData((prevTaskData) => ({
                 ...prevTaskData,
@@ -104,21 +107,13 @@ export default function UppyUploader(props) {
                     files: [...(prevTaskData.upload.files || []), file.name],
                 },
             }));
-            console.log('Successfully uploaded file name:', filename);
+            console.log('Successfully uploaded file name:', file.name);
         }
 
-        calcMD5Hash(file.data).then((hash) => {
-            console.log("hash from uppy");
-            console.log(hash);
+        const hash = await calcMD5Hash(file.data)
+        const hashStore = getHashStore()
 
-            setTaskData((prevTaskData) => ({
-                ...prevTaskData,
-                upload: {
-                    ...prevTaskData.upload,
-                    fileHashes: hash.hashResult,
-                },  
-            }));
-        })
+        setHashStore({ ...hashStore, datasetHashes: [...(hashStore.datasetHashes || []), { file: file.name, hash: hash.hashResult }] })
     });
 
     if (isUppyModalOpen && !toPublishDataset)

@@ -1348,10 +1348,7 @@ app.get('/mongoDB/api/file-exists', async (req, res) => {
     const collection = db.collection(userDatasetsCollection);
 
     // Query MongoDB to check if the hash exists
-    const result = await collection.count({
-        fileHashes: { $in: [hash] }
-    })
-
+    const result = await collection.count({ "hashes": { "$elemMatch": { "hash": hash } } })
 
     if (result >= 1) {
         res.status(200).json({ exists: true });

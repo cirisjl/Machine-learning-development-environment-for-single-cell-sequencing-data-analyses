@@ -1,6 +1,9 @@
 import { LOGIN_API_URL, SERVER_URL } from '../constants/declarations'
 import axios from 'axios';
 import SparkMD5 from 'spark-md5';
+import createStore from 'react-superstore';
+
+export const [useHashStore, setHashStore, getHashStore] = createStore({})
 
 export function calcMD5Hash(file) {
   return new Promise((resolve, reject) => {
