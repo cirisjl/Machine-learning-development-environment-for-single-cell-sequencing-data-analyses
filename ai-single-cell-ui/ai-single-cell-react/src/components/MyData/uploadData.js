@@ -461,7 +461,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         ...prevTaskData.upload,
                         files: selectedFiles,
                         makeItpublic: publicdataset,
-                        authToken: jwtToken,
+                        authToken: authData.username,
                         },
                     }));
 

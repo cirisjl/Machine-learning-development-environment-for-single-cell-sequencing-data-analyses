@@ -19,6 +19,18 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
 
+  const taskOptions = [
+    { label: "Clustering", value: "CL" },
+    { label: "Imputation", value: "IM" },
+    { label: "Marker gene identification", value: "MGI" },
+    { label: "Trajectory", value: "TR" },
+    { label: "Cell-cell communication", value: "CCC" },
+    { label: "Multi-omic data integration", value: "MDI" },
+    { label: "Gene regulatory relations", value: "GRR" },
+    { label: "Cell type identification", value: "CTI" },
+    { label: "Spatial", value: "SP" }
+  ];
+
   const handleOpenDialog = (mode) => {
     if (selectionMode !== mode) {
       // Reset selectedDatasets in taskData when the selection mode changes
@@ -145,7 +157,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         5: true, // Mark Task 5 as completed
       }));
   
-      setActiveTask(6);
+      setActiveTask(5);
     } else {
       setMessage('Please ensure that the task type, labels, and data split for each dataset are valid.');
       setHasMessage(true);
@@ -261,7 +273,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                   <p>Please Choose the Task Type:</p>
                     <Select
                       value={dataset.taskType}
-                      options={dataset.taskOptions}
+                      options={taskOptions}
                       onChange={(selectedOption) => handleTaskTypeChange(key, selectedOption)}
                       />
                 </label>

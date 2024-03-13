@@ -232,10 +232,14 @@ class MyForm extends Component {
       } else {
         const constructedID = `${species}-${tissue}-${author}-${year}`;
         formData.Id = constructedID;
-        formData.inputFiles = taskData.upload.final_files;
+        formData.fileDetails = taskData.upload.final_files;
         formData.files = taskData.upload.files;
         formData.makeItpublic = taskData.upload.makeItpublic;
         formData.owner = taskData.upload.authToken;
+        formData.Category = formData.makeItpublic ? "Shared" : "Private";
+        formData.format = taskData.upload.final_files.format;
+        formData.inputFiles = taskData.upload.final_files.inputFiles;
+        formData.adata_path = taskData.upload.final_files.adata_path;
       }
 
       formData.flow = flow;

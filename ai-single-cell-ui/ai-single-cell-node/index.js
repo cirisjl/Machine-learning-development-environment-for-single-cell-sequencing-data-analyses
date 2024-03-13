@@ -1386,6 +1386,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     const formData = req.body; // This assumes you have middleware to parse JSON in the request body
     const makeItpublic = formData.makeItpublic;
     let files = formData.files;
+    let username = formData.owner;
     
       // Connect to the MongoDB server
       await client.connect();
@@ -1734,12 +1735,6 @@ app.post('/api/storage/renameFile', async (req, res) => {
 
         let { oldName } = req.query;
         let { newName } = req.query;
-        let { authToken } = req.query;
-
-        const uname = getUserFromToken(authToken);
-    
-        if (uname == 'Unauthorized')
-            return res.status(403).jsonp('Unauthorized');
 
         fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {    
             if (err) {
