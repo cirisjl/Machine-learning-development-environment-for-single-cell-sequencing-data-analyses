@@ -102,16 +102,6 @@ export default function UppyUploader(props) {
             console.log(`Removed file ${file.name}`)
             uppy.info(`Removed file ${file.name} because it already exists.`)
             uppy.removeFile(file.id)
-        } else {
-            const payload = {
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                hash: hash,
-                uploadedBy: authToken,
-                createdAt: new Date().toUTCString()
-            }
-            await axios.post(`${SERVER_URL}/mongoDB/api/add-file?authToken=${authToken}`, payload).then(res => { console.log(res) })
         }
     });
 
@@ -138,7 +128,24 @@ export default function UppyUploader(props) {
         const hash = await calcMD5Hash(file.data)
         const hashStore = getHashStore()
 
+        // Add the hash to global store so it can be added as dataset metadata
         setHashStore({ ...hashStore, datasetHashes: [...(hashStore.datasetHashes || []), { file: file.name, hash: hash.hashResult }] })
+
+        // Add file info to file collection for dedup
+        let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
+        console.log(res.data)
+
+        if (res.data.exists === false) {
+            const payload = {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                hash: hash.hashResult,
+                uploadedBy: authToken,
+                createdAt: new Date().toUTCString()
+            }
+            await axios.post(`${SERVER_URL}/mongoDB/api/add-file?authToken=${authToken}`, payload).then(res => { console.log(res) })
+        }
     });
 
     if (isUppyModalOpen && !toPublishDataset)

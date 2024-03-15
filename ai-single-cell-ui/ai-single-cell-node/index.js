@@ -1336,19 +1336,21 @@ app.get('/getTasks', (req, res) => {
 
 //New endpoint for keeping track of uploaded files
 app.post('/mongoDB/api/add-file', async (req, res) => {
+    const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+    // Connect to the MongoDB server
+    await client.connect();
+
     try {
         const authToken = req.query;
+        console.log(authToken)
         const payload = req.body;
         console.log(payload)
 
         const uname = getUserFromToken(authToken);
-        if (uname == 'Unauthorized')
-            return res.status(403).jsonp('Unauthorized');
+        console.log(uname)
+        // if (uname == 'Unauthorized')
+        // return res.status(403).jsonp('Unauthorized');
 
-        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-
-        // Connect to the MongoDB server
-        await client.connect();
 
         const db = client.db(dbName);
         const collection = db.collection(filesCollection);
@@ -1374,10 +1376,10 @@ app.get('/mongoDB/api/file-exists', async (req, res) => {
     await client.connect();
 
     const db = client.db(dbName);
-    const collection = db.collection(userDatasetsCollection);
+    const collection = db.collection(filesCollection);
 
     // Query MongoDB to check if the hash exists
-    const result = await collection.count({ "hashes": { "$elemMatch": { "hash": hash } } })
+    const result = await collection.count({ "hash": hash })
 
     if (result >= 1) {
         res.status(200).json({ exists: true });
