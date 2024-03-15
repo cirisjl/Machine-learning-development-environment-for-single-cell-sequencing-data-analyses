@@ -273,7 +273,7 @@ function getStandardFileName(fileName, fileType) {
                 </div>
             </div>
         </div>}
-        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {true} setFileError={setFileError} setTaskData = {setTaskData}/>
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {true} setFileError={setFileError} setTaskData = {setTaskData} context="benchmarks" />
         {/* {taskData.upload.files && 
           <div className="uploaded-files">
             <h3 className="file-list-heading">Uploaded Files:</h3>

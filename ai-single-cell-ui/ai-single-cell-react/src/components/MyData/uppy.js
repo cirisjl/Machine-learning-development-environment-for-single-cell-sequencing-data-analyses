@@ -17,10 +17,24 @@ import axios from 'axios';
 
 const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 
+const checkIfFileExists = async (file) => {
+    const hashes = getHashStore().datasetHashes;
+    console.log(hashes)
+
+    if (hashes) {
+        for (let item of hashes) {
+            if (item.hasOwnProperty('hash') && item.hash === await calcMD5Hash(file.data)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return true;
+}
 
 export default function UppyUploader(props) {
 
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError, setTaskData } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError, setTaskData, context } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -110,6 +124,7 @@ export default function UppyUploader(props) {
             console.log('Successfully uploaded file name:', file.name);
         }
 
+        // Generate and save file hash on upload success
         const hash = await calcMD5Hash(file.data)
         const hashStore = getHashStore()
 
