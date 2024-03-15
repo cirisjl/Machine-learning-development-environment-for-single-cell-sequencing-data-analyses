@@ -213,7 +213,7 @@ app.post('/api/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '2m' });
+                    const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -1335,10 +1335,15 @@ app.get('/getTasks', (req, res) => {
 });
 
 //New endpoint for keeping track of uploaded files
-app.get('/mongoDB/api/add-file', async (req, res) => {
+app.post('/mongoDB/api/add-file', async (req, res) => {
     try {
+        const authToken = req.query;
         const payload = req.body;
         console.log(payload)
+
+        const uname = getUserFromToken(authToken);
+        if (uname == 'Unauthorized')
+            return res.status(403).jsonp('Unauthorized');
 
         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
@@ -1349,11 +1354,11 @@ app.get('/mongoDB/api/add-file', async (req, res) => {
         const collection = db.collection(filesCollection);
 
         await collection.insertOne(payload);
+
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
-
         client.close()
     }
 });

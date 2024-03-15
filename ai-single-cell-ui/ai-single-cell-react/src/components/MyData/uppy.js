@@ -102,6 +102,16 @@ export default function UppyUploader(props) {
             console.log(`Removed file ${file.name}`)
             uppy.info(`Removed file ${file.name} because it already exists.`)
             uppy.removeFile(file.id)
+        } else {
+            const payload = {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                hash: hash,
+                uploadedBy: authToken,
+                createdAt: new Date().toUTCString()
+            }
+            await axios.post(`${SERVER_URL}/mongoDB/api/add-file?authToken=${authToken}`, payload).then(res => { console.log(res) })
         }
     });
 
