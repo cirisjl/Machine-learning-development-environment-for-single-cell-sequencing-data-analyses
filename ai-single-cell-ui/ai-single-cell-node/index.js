@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection } = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, filesCollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1332,6 +1332,30 @@ app.get('/getTasks', (req, res) => {
             });
         });
     });
+});
+
+//New endpoint for keeping track of uploaded files
+app.get('/mongoDB/api/add-file', async (req, res) => {
+    try {
+        const payload = req.body;
+        console.log(payload)
+
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(filesCollection);
+
+        await collection.insertOne(payload);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+
+        client.close()
+    }
 });
 
 //New endpoint to check if the hash for a file exists or not
