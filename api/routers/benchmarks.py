@@ -147,68 +147,75 @@ async def run_quality_control(file_mappings: QualityControlRequest):
             # default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, unique_id, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
             if max_genes is None:
                 max_genes = 0
-            
-            default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
-            
-            if ddl_assay_names:
+            try:
+                default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
+                
+                if ddl_assay_names:
+                    result.append({
+                        "inputfile": input_path,
+                        "format": "h5seurat",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names,
+                        "ddl_assay_names": ddl_assay_names
+                    })
+
+                    return result
+                
+                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+
+                if(use_default):
+                    method_id = "seurat_qc"
+                else:
+                    method_id = "seurat_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
+
+                pp_results = {
+                    "stage": pp_stage,
+                    "task": "QC",
+                    "method": "seurat",
+                    "method_id": method_id,
+                    "parameters": parameters,
+                    "files": adata_path
+                }
+
+                # Return metadata in the API response
+                metadata =  {
+                    "layers": layers,
+                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                    "gene_metadata": gene_metadata.to_dict(),
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "embeddings": embeddings
+                }
+                if assay_names is None:
+                    assay_names = []
+                
                 result.append({
-                    "inputfile": input_path,
-                    "format": "h5seurat",
-                    "default_assay": default_assay,
-                    "assay_names": assay_names,
-                    "ddl_assay_names": ddl_assay_names
-                })
-
-                return result
-            
-            info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
-
-            if(use_default):
-                method_id = "seurat_qc"
-            else:
-                method_id = "seurat_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
-
-            pp_results = {
-                "stage": pp_stage,
-                "task": "QC",
-                "method": "seurat",
-                "method_id": method_id,
-                "parameters": parameters,
-                "files": adata_path
-            }
-
-            # Return metadata in the API response
-            metadata =  {
-                "layers": layers,
-                "cell_metadata_obs": cell_metadata_obs.to_dict(),
-                "gene_metadata": gene_metadata.to_dict(),
-                "nCells": nCells,
-                "nGenes": nGenes,
-                "genes": genes,
-                "cells": cells,
-                "embeddings": embeddings
-            }
-            if assay_names is None:
-                assay_names = []
-            
-            result.append({
-                    "inputfile": input_path,
-                    "info": info,
-                    "format": "h5seurat",
-                    "default_assay": default_assay,
-                    "assay_names": assay_names,
-                    "adata_path": adata_path,
-                    "output": output,
-                    "umap_plot": umap_plot,
-                    "umap_plot_3d": umap_plot_3d,
-                    "violin_plot": violin_plot,
-                    "scatter_plot": scatter_plot,
-                    "highest_expr_genes_plot": highest_expr_genes_plot,
-                    "md5": md5,
-                    "metadata": metadata,
-                    "pp_results": pp_results,
-                    "message": "Quality control completed successfully."
-                })
+                        "inputfile": input_path,
+                        "info": info,
+                        "format": "h5seurat",
+                        "default_assay": default_assay,
+                        "assay_names": assay_names,
+                        "adata_path": adata_path,
+                        "output": output,
+                        "umap_plot": umap_plot,
+                        "umap_plot_3d": umap_plot_3d,
+                        "violin_plot": violin_plot,
+                        "scatter_plot": scatter_plot,
+                        "highest_expr_genes_plot": highest_expr_genes_plot,
+                        "md5": md5,
+                        "metadata": metadata,
+                        "pp_results": pp_results,
+                        "message": "Quality control completed successfully."
+                    })
+            except Exception as e:
+                # logger.exception("Error during Scanpy QC")
+                print(e)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Error during Scanpy QC: {str(e)}"
+                )
         else:
             # Load the annData object
             adata = load_anndata(input_path)

@@ -273,7 +273,7 @@ def plot_highest_expr_genes(adata, n_top=30):
                 "type": "box",
                 "x": counts_top_genes[i].tolist(), 
                 "y": i, 
-                "boxpoints": "all",
+                "boxpoints": "Wiskers and Outliers",
                 # "jitter": 0.5,
                 # "whiskerwidth": 0.2,
                 "marker": {
