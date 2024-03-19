@@ -114,16 +114,20 @@ async def run_quality_control(file_mappings: QualityControlRequest):
         regress_cell_cycle = file_mappings.regress_cell_cycle
         use_default = file_mappings.use_default
 
+        input_path = unzip_file_if_compressed(input_path)
+
         if max_genes == 20000:
             max_genes = None
-
         if n_pcs == 0:
             n_pcs = None
+        if assay is None:
+            assay = 'RNA'
 
         md5 = get_md5(input_path)
         pp_stage = "Raw"
         method_id = None
         parameters = {
+            "assay": assay,
             "min_genes": min_genes, # default: 200, step: 25, range: [0, 20000], scale: 200(default), 1000, 5000, 10000, 15000, 20000(No limit)
             "max_genes": max_genes, # default: 20000(=No limit, default), step: 25, range: [0, 20000], scale: 200, 1000, 5000, 10000, 15000, 20000(=No limit, default)
             "min_cells": min_cells, # default: 2, step:1, range: [1, 200], scale: 2(default), 10, 50, 100, 200
@@ -141,7 +145,10 @@ async def run_quality_control(file_mappings: QualityControlRequest):
         if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
             # It's an H5Seurat or RDS file, call runQCSeurat method
             # default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, unique_id, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
-            default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id,assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors,doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
+            if max_genes is None:
+                max_genes = 0
+            
+            default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
             
             if ddl_assay_names:
                 result.append({
