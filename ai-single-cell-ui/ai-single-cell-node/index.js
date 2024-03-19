@@ -1365,20 +1365,45 @@ app.post('/mongoDB/api/add-file', async (req, res) => {
     }
 });
 
-//New endpoint to check if the hash for a file exists or not
-app.get('/mongoDB/api/file-exists', async (req, res) => {
+//New endpoint to get metadata from hash
+app.get('/mongodb/api/metadata-from-hash', async (req, res) => {
     const hash = req.query.hash;
     console.log(hash)
 
-    const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+    const client = new MongoClient(mongoUrl, { useunifiedtopology: true });
 
-    // Connect to the MongoDB server
+    // connect to the mongodb server
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(userDatasetsCollection);
+
+    // query mongodb to check if the hash exists
+    const result = await collection.findOne({ hashes: { $elemMatch: { hash: hash } } })
+
+    if (result) {
+        res.status(200).json(result)
+    } else {
+        res.status(400).json({ error: "Couldn't find any dataset for the given hash." })
+    }
+
+    client.close()
+});
+
+// New endpoint to check if the hash for a file exists or not
+app.get('/mongodb/api/file-exists', async (req, res) => {
+    const hash = req.query.hash;
+    console.log(hash)
+
+    const client = new MongoClient(mongoUrl, { useunifiedtopology: true });
+
+    // connect to the mongodb server
     await client.connect();
 
     const db = client.db(dbName);
     const collection = db.collection(filesCollection);
 
-    // Query MongoDB to check if the hash exists
+    // query mongodb to check if the hash exists
     const result = await collection.count({ "hash": hash })
 
     if (result >= 1) {

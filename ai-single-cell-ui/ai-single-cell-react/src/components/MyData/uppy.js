@@ -98,6 +98,10 @@ export default function UppyUploader(props) {
         let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)
         console.log(res.data)
 
+        // Add the hash to global store so it can be added as dataset metadata
+        setHashStore({ ...getHashStore(), datasetHashes: [...(getHashStore().datasetHashes || []), { file: file.name, hash: hash.hashResult, exists: res.data.exists }] })
+
+        // Remove the file so it can't be uploaded
         if (res.data.exists === true) {
             console.log(`Removed file ${file.name}`)
             uppy.info(`Removed file ${file.name} because it already exists.`)
@@ -126,10 +130,6 @@ export default function UppyUploader(props) {
 
         // Generate and save file hash on upload success
         const hash = await calcMD5Hash(file.data)
-        const hashStore = getHashStore()
-
-        // Add the hash to global store so it can be added as dataset metadata
-        setHashStore({ ...hashStore, datasetHashes: [...(hashStore.datasetHashes || []), { file: file.name, hash: hash.hashResult }] })
 
         // Add file info to file collection for dedup
         let res = await axios.get(`${SERVER_URL}/mongoDB/api/file-exists?hash=${hash.hashResult}`)

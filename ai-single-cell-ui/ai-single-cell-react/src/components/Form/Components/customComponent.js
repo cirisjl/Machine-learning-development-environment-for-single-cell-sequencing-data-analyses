@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import AccessDenied from '../../AccessDeniedPage';
 import { getHashStore } from '../../../utils/utilFunctions';
 
+
 class MyForm extends Component {
   constructor(props) {
     super(props);
@@ -55,6 +56,23 @@ class MyForm extends Component {
         }
       })
     }
+
+    // Retrive formdata if hash of dataset file already exists
+    const hashStore = getHashStore()
+
+    if (hashStore?.datasetHashes) {
+      hashStore.datasetHashes.filter(storeItem => storeItem.exists === true).map(storeItem => {
+        console.log("looping for metadata")
+        console.log(storeItem)
+
+        axios.get(`${SERVER_URL}/mongoDB/api/metadata-from-hash?hash=${storeItem.hash}`)
+          .then(res => this.setState(prevState => ({
+            ...prevState,
+            formData: res.data
+          })))
+          .catch(err => console.log(err))
+      })
+    }
   }
 
   async fetchDefaultOptions() {
@@ -85,7 +103,6 @@ class MyForm extends Component {
       console.error('Error fetching default options:', error);
     }
   }
-
 
 
   handleChange = (e) => {
