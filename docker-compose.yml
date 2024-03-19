@@ -3,7 +3,7 @@ version: '3'
 services:
   mongodb:
     container_name: oscbdb
-    image: mongo:4.2.1
+    image: mongo:4.4
     restart: always
     command: mongod --port 65528
     ports:
@@ -248,7 +248,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=node-0.c6420-ai.biomizzou-pg0.clemson.cloudlab.us
+      - HOST_URL=clnode123.clemson.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./ai-single-cell-ui/ai-single-cell-node/.env  
@@ -268,7 +268,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=node-0.c6420-ai.biomizzou-pg0.clemson.cloudlab.us
+      - HOST_URL=clnode123.clemson.cloudlab.us
     networks:
       - oscb-network
 

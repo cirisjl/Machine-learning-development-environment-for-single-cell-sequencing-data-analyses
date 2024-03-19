@@ -16,7 +16,6 @@ def run_seurat_qc(input, unique_id, assay='RNA', min_genes=200, max_genes=0, min
         # Instantiate RedisLogger
     redislogger = RedisLogger()
     redislogger.info(unique_id, "Started Seurat Quality Control Process")
-    print(input)
 
     adata = None
     default_assay = None
