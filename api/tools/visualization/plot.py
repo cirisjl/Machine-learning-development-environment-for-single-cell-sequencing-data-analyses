@@ -71,7 +71,7 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
             })
         elif (n_dim == 3):
             traces.append({
-                "type": "scattergl",
+                "type": "scatter3d",
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
                 "z": b[2].tolist(),
