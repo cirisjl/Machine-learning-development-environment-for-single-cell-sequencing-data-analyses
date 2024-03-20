@@ -26,6 +26,8 @@ from rpy2.robjects.conversion import localconverter
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
+import json_numpy
+
 
 # Ensure that pandas2ri is activated for automatic conversion
 pandas2ri.activate()
@@ -187,7 +189,7 @@ def get_metadata_from_anndata(adata):
     genes = None
     cells = None
     gene_metadata = None
-    embeddings = None
+    embeddings = []
     umap_plot = None
     umap_plot_3d = None
     violin_plot = None
@@ -205,7 +207,10 @@ def get_metadata_from_anndata(adata):
         genes = adata.var_names.to_list() # Cell IDs
         cells = adata.obs_names.to_list() # Gene IDs
         gene_metadata = adata.var # pandas dataframe
-        embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        for name in embedding_names:
+            embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+
         umap_plot = plot_UMAP(adata)
         umap_plot_3d = plot_UMAP(adata, n_dim=3)
         violin_plot = plot_violin(adata)
