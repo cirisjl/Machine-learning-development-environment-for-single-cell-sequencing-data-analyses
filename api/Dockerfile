@@ -23,6 +23,7 @@ FROM stormgod/oscb-seurat:4.4
 # Install DoubletFinder
 # RUN R --no-echo --no-restore --no-save -e "remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')"
 
+# RUN pip install --upgrade --no-cache json-numpy
 
 # RUN mkdir /app
 WORKDIR /app

@@ -214,7 +214,7 @@ class MyForm extends Component {
         "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
         "umap_plot_3d": taskData.quality_control.qc_results[0]?.umap_plot_3d,
         "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
-        // "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
+        "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
       }
 
       formData['PP Stage'] = taskData.quality_control.qc_results[0]?.pp_results?.stage;

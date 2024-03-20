@@ -71,7 +71,7 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
             })
         elif (n_dim == 3):
             traces.append({
-                "type": "scattergl",
+                "type": "scatter3d",
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
                 "z": b[2].tolist(),
@@ -95,9 +95,9 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True
-                #width=4 * scale,
-                #height=3 * scale
+                autosize=True,
+                width=4*scale,
+                height=3*scale
             )
         })
     elif (n_dim == 3):
@@ -111,9 +111,9 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True
-                #width=4 * scale,
-                #height=3 * scale
+                autosize=True,
+                width=4*scale,
+                height=3*scale
             )
         })
 
@@ -129,9 +129,11 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
     # Validate that there is a 3D projection available if that was requested
     if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
         umap = obsm[layer+"_umap_3D"]
+        print("Ploting 3D UMAP...")
     else:
         n_dim = 2
         umap = obsm[layer+"_umap"]
+        print("Ploting 2D UMAP...")
 
     results = plot_UMAP_obs(obs=obs, umap=umap, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, annotation=annotation, n_dim=n_dim)
     return results
@@ -198,9 +200,9 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True
-            #width=4 * scale,
-            #height=3 * scale
+            autosize=True,
+            width=4*scale,
+            height=3*scale
         )
     })
 
@@ -234,9 +236,9 @@ def plot_scatter(adata, feature1 = "n_counts", feature2 = "n_genes"):
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True
-            #width=4 * scale,
-            #height=3 * scale
+            autosize=True,
+            width=4*scale,
+            height=3*scale
         )
     })
 
@@ -273,7 +275,7 @@ def plot_highest_expr_genes(adata, n_top=30):
                 "type": "box",
                 "x": counts_top_genes[i].tolist(), 
                 "y": i, 
-                "boxpoints": "all",
+                "boxpoints": "Wiskers and Outliers",
                 # "jitter": 0.5,
                 # "whiskerwidth": 0.2,
                 "marker": {
@@ -472,7 +474,7 @@ def plot_bar(x=[], y={}, title="Benchmarks"):
             'hovermode': 'closest',
             'transition': {'duration': 100},
             'autosize': True,
-            'width': 4 * scale,
-            'height': 3 * scale
+            'width': 4*scale,
+            'height': 3*scale
         }
     }

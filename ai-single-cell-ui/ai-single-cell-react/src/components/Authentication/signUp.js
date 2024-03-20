@@ -89,7 +89,7 @@ function Signup (props){
     <div className='signup-container comn-container-auth'>
       <div className='inner-container-auth'>
           <h1>Sign Up</h1>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod</p>
+          <p></p>
         
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         <form onSubmit={handleSubmit}>
