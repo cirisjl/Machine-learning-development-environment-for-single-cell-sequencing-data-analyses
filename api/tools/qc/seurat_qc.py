@@ -46,6 +46,7 @@ def run_seurat_qc(input, unique_id, assay='RNA', min_genes=200, max_genes=0, min
 
         if os.path.exists(adata_path):
             adata = load_anndata(adata_path)
+            sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=3, random_state=0)
             adata_3D = sc.tl.umap(adata, random_state=0, 
                             init_pos="spectral", n_components=3, 
                             copy=True, maxiter=None)

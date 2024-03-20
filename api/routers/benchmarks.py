@@ -166,7 +166,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                 if(use_default):
                     method_id = "seurat_qc"
                 else:
-                    method_id = "seurat_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
+                    method_id = f"seurat_qc-{assay}-{min_genes}-{max_genes}-{min_cells}-{n_top_genes}-{doublet_rate}-{n_neighbors}-{resolution}-{regress_cell_cycle}"
 
                 pp_results = {
                     "stage": pp_stage,
@@ -214,7 +214,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                 print(e)
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Error during Scanpy QC: {str(e)}"
+                    detail=f"Error during Seurat QC: {str(e)}"
                 )
         else:
             # Load the annData object
@@ -232,7 +232,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                 if(use_default):
                     method_id = "scanpy_qc"
                 else:
-                    method_id = "scanpy_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
+                    method_id = f"scanpy_qc-{min_genes}-{max_genes}-{min_cells}-{target_sum}-{n_top_genes}-{doublet_rate}-{n_neighbors}-{n_pcs}-{resolution}-{regress_cell_cycle}"
 
                 pp_results = {
                     "stage": pp_stage,
