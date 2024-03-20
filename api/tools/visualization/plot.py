@@ -129,9 +129,11 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
     # Validate that there is a 3D projection available if that was requested
     if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
         umap = obsm[layer+"_umap_3D"]
+        print("Ploting 3D UMAP...")
     else:
         n_dim = 2
         umap = obsm[layer+"_umap"]
+        print("Ploting 2D UMAP...")
 
     results = plot_UMAP_obs(obs=obs, umap=umap, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, annotation=annotation, n_dim=n_dim)
     return results
