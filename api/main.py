@@ -51,44 +51,30 @@ async def add_process_time_header(request, call_next):
     return response
 
 
-@app.websocket("/taskStatus/{taskIdsCommaSeparated}")
-async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
+@app.websocket("/{request_type}/{taskIdsCommaSeparated}")
+async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsCommaSeparated: str):
     await websocket.accept()
-    while True:
-        try:
-            taskIds = taskIdsCommaSeparated.split(',')
-            results = {}
-            for taskId in taskIds:
-                result = AsyncResult(taskId)
-                if result.ready():
-                    if result.successful():
-                        results[taskId] = 'Success'
-                    else:
-                        results[taskId] = 'Failed'
-                else:
-                    results[taskId] = 'Processing'
-            await websocket.send_json(results)
-            await asyncio.sleep(3)
-        except Exception as e:
-            print(e)
-        finally:
-            await websocket.close()
-
-
-@app.websocket("/log/{unique_id}") # unique_id: user_id or task_id
-async def websocket_endpoint_log(websocket: WebSocket, unique_id: str) -> None:
-    """WebSocket endpoint for client connections
-
-    Args:
-        websocket (WebSocket): WebSocket request from client.
-    """
-    await websocket.accept()
-
+    
     try:
         while True:
-            await asyncio.sleep(1)
-            logs = await log_reader(unique_id, 30)
-            await websocket.send_text(logs)
+            if request_type == 'taskStatus':
+                taskIds = taskIdsCommaSeparated.split(',')
+                results = {}
+                for taskId in taskIds:
+                    result = AsyncResult(taskId)
+                    if result.ready():
+                        if result.successful():
+                            results[taskId] = 'Success'
+                        else:
+                            results[taskId] = 'Failed'
+                    else:
+                        results[taskId] = 'Processing'
+                await websocket.send_json(results)
+
+            elif request_type == 'log':
+                logs = await log_reader(taskIdsCommaSeparated, 30)
+                await websocket.send_text(logs)
+            await asyncio.sleep(3)
     except Exception as e:
         print(e)
     finally:

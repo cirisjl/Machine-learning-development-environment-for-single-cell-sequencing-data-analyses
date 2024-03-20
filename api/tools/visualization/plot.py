@@ -95,9 +95,9 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True
-                #width=4 * scale,
-                #height=3 * scale
+                autosize=True,
+                width=4*scale,
+                height=3*scale
             )
         })
     elif (n_dim == 3):
@@ -111,9 +111,9 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True
-                #width=4 * scale,
-                #height=3 * scale
+                autosize=True,
+                width=4*scale,
+                height=3*scale
             )
         })
 
@@ -200,9 +200,9 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True
-            #width=4 * scale,
-            #height=3 * scale
+            autosize=True,
+            width=4*scale,
+            height=3*scale
         )
     })
 
@@ -236,9 +236,9 @@ def plot_scatter(adata, feature1 = "n_counts", feature2 = "n_genes"):
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True
-            #width=4 * scale,
-            #height=3 * scale
+            autosize=True,
+            width=4*scale,
+            height=3*scale
         )
     })
 
@@ -474,7 +474,7 @@ def plot_bar(x=[], y={}, title="Benchmarks"):
             'hovermode': 'closest',
             'transition': {'duration': 100},
             'autosize': True,
-            'width': 4 * scale,
-            'height': 3 * scale
+            'width': 4*scale,
+            'height': 3*scale
         }
     }
