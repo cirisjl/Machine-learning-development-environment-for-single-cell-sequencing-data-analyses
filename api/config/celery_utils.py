@@ -46,5 +46,5 @@ def get_output(output, userID, task_id):
     return the absolute input path for a given input
     """
     if output is not None and userID is not None:
-        output_path = USER_STORAGE + userID + output + "/" + task_id
+        output_path = output + "/" + task_id
         return output_path

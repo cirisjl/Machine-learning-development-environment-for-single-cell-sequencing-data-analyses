@@ -1,6 +1,8 @@
 import React , {useState, useEffect} from 'react';
 
-function AlertMessageComponent({ message, setHasMessage, setMessage }) {
+function AlertMessageComponent({ message, setHasMessage, setMessage, isError }) {
+
+  const backgroundColor = isError ? '#f0c0c0' : '#bdf0c0';
 
 useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -15,7 +17,7 @@ useEffect(() => {
   return (
     <div>
         {message && 
-        <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
+        <div className='message-box' style={{ backgroundColor: backgroundColor}}>
           <div style={{ textAlign: 'center' }}>
             <p>{message}</p>
           </div>

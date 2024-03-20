@@ -7,16 +7,40 @@ import { useNavigate } from 'react-router-dom';
 import { FormHelperText } from '@material-ui/core';
 import Tooltip from '@material-ui/core/Tooltip';
 import DatasetSelectionDialog from '../../publishDatasets/components/datasetsDialog';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
 
+
+
+// Custom styled components
+const ScrollableListContainer = styled('div')(({ theme }) => ({
+    maxHeight: '400px', // Fixed height of the container
+    overflowY: 'auto', // Enable vertical scrolling
+    border: `1px solid ${theme.palette.divider}`, // Add border to distinguish the container
+    borderRadius: theme.shape.borderRadius, // Use theme's border radius
+    marginTop: theme.spacing(2),
+  }));
+  
+  const CustomListItem = styled(ListItem)(({ theme }) => ({
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    cursor: 'pointer', // Change cursor on hover to indicate an item is clickable
+  }));
 
 export default function InputDataComponent(props) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     
-    let jwtToken = getCookie('jwtToken');
-    const [datasets, setDatasets] = useState([]);
     const navigate = useNavigate();
     let selectedDatasets = props.selectedDatasets;
+
+    let onDeleteDataset = props.onDeleteDataset;
 
     const handleMultipleDatasetChange = props.handleMultipleDatasetChange;
     const handleDatasetChange = props.handleDatasetChange;
@@ -29,83 +53,61 @@ export default function InputDataComponent(props) {
         setIsDialogOpen(false);
       };
 
-    useEffect(() => {
-        if (jwtToken) {
-        //   const fetchData = async () => {
-        //     const response = await axios.get(PREVIEW_DATASETS_API + "/preview/datasets?authToken=" + jwtToken);
-        //     setDatasets(Object.values(response.data));
-        //     console.log(Object.values(response.data));
-        //   };
-        //   fetchData();
-        } else {
-          navigate("/routing");
-        }
-      }, [jwtToken, navigate]);
-
       const handleCreateDatasetClick = () => {
         // Navigate to the upload data page
         navigate("/mydata/upload-data/");
     };
 
-    const handleSelectDatasets = () => {
-        console.log("Dataset selected");
-    }
-
   return (
     <div className='inputData-management'>
         <div id="upload-data-div">
-            <div className='common-row-wrap'>
-                <b>Choose the input dataset</b> <span data-v-22825496="" className="ui-form-title-message warning"> * required </span>
-                <br/>
-            </div>
             <div className='wrap-div-row common-row-wrap'>
                 <div className='icons-wrap-input'>
-                    <Tooltip title="Select Datasets">
-                        <button type="button" onClick={handleOpenDialog} fdprocessedid="s89ftr">
-                            <FontAwesomeIcon icon={faDatabase} />
-                        </button>
-                    </Tooltip>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Tooltip title="Select Datasets">
+                            <button className="database-icon-input" type="button" onClick={handleOpenDialog} fdprocessedid="s89ftr">
+                                <FontAwesomeIcon icon={faDatabase} />
+                            </button>
+                        </Tooltip>
+                        <div className='common-row-wrap'>
+                            <b>Choose the input dataset</b> <span data-v-22825496="" className="ui-form-title-message warning"> * required </span>
+                            <br/>
+                        </div>
+                    </div>
                     <div className="task-builder-task">
                         {isDialogOpen && (
                             <DatasetSelectionDialog
-                                onSelect={handleSelectDatasets}
-                                multiple={false}
+                                onSelect={props.onSelectDataset}
+                                multiple={filterCategory === "integration"}
                                 onClose={handleCloseDialog}
                                 isVisible={isDialogOpen !== false}
                                 selectedDatasets={selectedDatasets}
-                                defaultDatasetType= "myDatasets"
-                                showDatasetDropdown={true}
+                                fromToolsPage={true}
                             />
                         )}
                     </div>
+                    
                 </div>
+            </div>
+            
+            {Object.keys(selectedDatasets).length > 0 && 
                 <div className='datasets-input-select'>
-                {filterCategory === "integration" ? (
-                    <select onChange={handleMultipleDatasetChange} multiple>
-                        <option value="">Select the dataset from the list</option>
-                        {datasets.map((dataset) => (
-                            <option value={JSON.stringify(dataset)}>{dataset.title}</option>
+                    <ScrollableListContainer>
+                        <List dense>
+                        {Object.values(selectedDatasets).map((dataset) => (
+                            <CustomListItem key={dataset.Id}>
+                            <IconButton edge="start" aria-label="delete" onClick={() => onDeleteDataset(dataset.Id)}>
+                                <DeleteIcon />
+                            </IconButton>                    
+                            <ListItemText primary={dataset.Title} />
+                            </CustomListItem>
                         ))}
-                    </select>
-                    ) : ( 
-                        <select onChange={handleDatasetChange}>
-                            <option value="">Select the dataset from the list</option>
-                            {datasets.map((dataset) => (
-                                <option value={JSON.stringify(dataset)}>{dataset.title}</option>
-                            ))}
-                        </select>
-                )}
-
+                        </List>
+                    </ScrollableListContainer>
+                
                     {props.formErrors && <FormHelperText>{props.formErrors}</FormHelperText>}
                 </div>
-                {/* <div>
-                    <button type="button" fdprocessedid="s89ftr" className='input-path-button' title='Create Dataset'>
-                        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="folder-open" className="svg-inline--fa fa-folder-open " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-                            <path fill="currentColor" d="M88.7 223.8L0 375.8V96C0 60.7 28.7 32 64 32H181.5c17 0 33.3 6.7 45.3 18.7l26.5 26.5c12 12 28.3 18.7 45.3 18.7H416c35.3 0 64 28.7 64 64v32H144c-22.8 0-43.8 12.1-55.3 31.8zm27.6 16.1C122.1 230 132.6 224 144 224H544c11.5 0 22 6.1 27.7 16.1s5.7 22.2-.1 32.1l-112 192C453.9 474 443.4 480 432 480H32c-11.5 0-22-6.1-27.7-16.1s-5.7-22.2 .1-32.1l112-192z"></path>
-                        </svg>
-                    </button>
-                </div> */}
-            </div>
+            }
         </div>
     </div>
   )

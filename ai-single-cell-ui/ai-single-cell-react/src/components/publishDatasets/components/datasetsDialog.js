@@ -6,14 +6,23 @@ import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } from '@mui/material';
+import { ScaleLoader } from 'react-spinners';
+import { getCookie } from '../../../utils/utilFunctions';
 
-
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, defaultDatasetType, showDatasetDropdown }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, fromToolsPage }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
         // ... other styles
     };
+    const [loading, setLoading] = useState(false);
+
+    const [checkedState, setCheckedState] = useState({
+      private: true,
+      public: false,
+      shared: false,
+    });
 
     const navigate = useNavigate();
 
@@ -26,11 +35,6 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
     const [activeFilters, setActiveFilters] = useState({});
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
     const [appliedFilters, setAppliedFilters] = useState([]);
-    const [selectedDatasetTypeInternal, setSelectedDatasetTypeInternal] = useState('benchmarks');
-
-    useEffect(() => {
-      setSelectedDatasetTypeInternal(defaultDatasetType);
-  }, [defaultDatasetType]);
 
       // Function to reset all state variables
       const resetState = () => {
@@ -46,21 +50,23 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
       navigate("/mydata/upload-data/");
     }
 
-    const handleDatasetTypeChange = (e) => {
-      const datasetType = e.target.value;
-      setSelectedDatasetTypeInternal(datasetType);
-      resetState(); // Reset state whenever dataset type changes
-      fetchData(1, activeFilters , globalSearchTerm);
-  };
-
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
+      setLoading(true);
+      let url = "";
       try {
-        const response = await fetch(`${SERVER_URL}/api/datasets/search?q=${searchQuery}&page=${currentPage}&datasetType=${selectedDatasetTypeInternal}` , {
+        if (fromToolsPage) {
+            url = `${SERVER_URL}/api/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
+        } else {
+            url = `${SERVER_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+        }
+        
+        const response = await fetch( url , {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getCookie('jwtToken')}`,
           },
           body: JSON.stringify({ filters: currentFilters }),
         });
@@ -68,10 +74,16 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
         setFilters(data.facets);
         setResults(data.results);
         setPagination(data.pagination);
+        setLoading(false)
       } catch (error) {
         console.error('Error fetching data:', error);
+        setLoading(false);
       }
     };   
+
+    const handleCheckboxChange = (event) => {
+      setCheckedState({ ...checkedState, [event.target.name]: event.target.checked });
+    };
 
     const handleApplyFilters = async () => {
       setShowMoreFacets(false);
@@ -85,14 +97,15 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
     };
 
     useEffect(() => {   
-      fetchData(pagination.page, activeFilters, globalSearchTerm);
-    }, []); // Refetch when activeFilters change
+      fetchData(1, activeFilters, globalSearchTerm);
+    }, [checkedState]); 
 
     useEffect(() => {
       // Set initial visible facets to the first four, or fewer if there aren't four
-      setVisibleFacets(Object.keys(filters).slice(0, 4));
-  }, [filters]); // This will update visible facets when the filters are fetched
-
+      const filterKeys = Object.keys(filters);
+      setVisibleFacets(filterKeys.length > 0 ? filterKeys.slice(0, 4) : []);
+    }, [filters]); // This will update visible facets when the filters are fetched or changed
+  
 
   const toggleMoreFacets = () => {
     setShowMoreFacets(!showMoreFacets);
@@ -165,84 +178,119 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
             <div className="dialog-backdrop" onClick={onClose} />
             <div className="dialog">
               <div>
-                {showDatasetDropdown && 
+                {fromToolsPage && 
                   <div className='dataset-type-container'>
-                      <label htmlFor="datasetType">Select Dataset Type:</label>
-                      <select id="datasetType" value={selectedDatasetTypeInternal} onChange={handleDatasetTypeChange}>
-                          <option value="benchmarks">Benchmarks Datasets</option>
-                          <option value="myDatasets">My Datasets</option>
-                      </select>
-                      <button onClick={handleCreateDataset}>Create Dataset</button>
+                    <Grid container alignItems="center" spacing={2}>
+                      <Grid item xs={8}>
+                        <Box pl={2}>
+                          <Typography variant="h6" gutterBottom>
+                            <span className="metadata-search search-title">Select Datasets Category<FontAwesomeIcon icon={faQuestionCircle}/></span>
+                          </Typography>
+                          <FormGroup row>
+                            <FormControlLabel
+                              control={<Checkbox checked={checkedState.private} onChange={handleCheckboxChange} name="private" />}
+                              label="My Datasets"
+                            />
+                            <FormControlLabel
+                              control={<Checkbox checked={checkedState.public} onChange={handleCheckboxChange} name="public" />}
+                              label="Benchmarks Datasets"
+                            />
+                            <FormControlLabel
+                              control={<Checkbox checked={checkedState.shared} onChange={handleCheckboxChange} name="shared" />}
+                              label="User Shared Datasets"
+                            />
+                          </FormGroup>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={4} container justifyContent="center">
+                        <Button variant="outlined" color="primary" onClick={handleCreateDataset}>
+                          Create Dataset
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </div>
                   }
-                <div className='filters-and-search-container'>
-                  <div className='metadata-search-wrap filters-container'>
-                  <span className="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
-                      {visibleFacets.map((filterName) => (
-                          <FilterComponent
-                              key={filterName}
-                              name={filterName}
-                              options={filters[filterName]}
-                              activeFilters={activeFilters}
-                              onFilterChange={handleFilterChange}
-                              className="filter"
-                              onApplyFilters={handleApplyFilters}
-                          />
-                      ))}
-                      <div className='filters-toggle-div'>
-                        {Object.keys(filters).length > 4 && (
-                            <button onClick={toggleMoreFacets} className='filters-toggle'>
-                                <FontAwesomeIcon icon={faSliders} /> <p>{showMoreFacets ? 'Less facets' : 'More facets'}</p>
-                            </button>
-                        )}
-                      </div>
-                  </div>
-                  <div className='study-keyword-search'>
-                    <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
-                    <div>
-                      <form onSubmit={handleSearchSubmit}>
-                        <input
-                            type="text"
-                            autoComplete="off"
-                            className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
-                            placeholder="Search..."
-                            value={globalSearchTerm}
-                            onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                        />
-                        
-                        {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
-                            <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
-                        </svg>     */}
 
-                      </form>
+                  {loading ? ( 
+                    <div className="spinner-container">
+                      <ScaleLoader color="#36d7b7" loading={loading} />
                     </div>
-                  </div>
-
-                </div>
-                <div className='applied-filters-container'>
-                  {appliedFilters.length > 0 && (
-                          <div className="applied-filters">
-                            <p>Applied Filters:</p>
-                            {appliedFilters.map((filter, index) => (
-                              <div key={index} className="applied-filter">
-                                {filter.category}: {filter.value}
-                                <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                  ) : results.length > 0 ? ( // Corrected the placement of curly braces around the ternary expression
+                    <div>       
+                        <div className='filters-and-search-container'>
+                          <div className='metadata-search-wrap filters-container'>
+                          <span className="metadata-search search-title">Search by filters <FontAwesomeIcon icon={faQuestionCircle}/></span>
+                              {visibleFacets.map((filterName) => (
+                                  <FilterComponent
+                                      key={filterName}
+                                      name={filterName}
+                                      options={filters[filterName]} // Ensure this is always an array
+                                      activeFilters={activeFilters}
+                                      onFilterChange={handleFilterChange}
+                                      className="filter"
+                                      onApplyFilters={handleApplyFilters}
+                                  />
+                              ))}
+                              <div className='filters-toggle-div'>
+                                {Object.keys(filters).length > 4 && (
+                                    <button onClick={toggleMoreFacets} className='filters-toggle'>
+                                        <FontAwesomeIcon icon={faSliders} /> <p>{showMoreFacets ? 'Less facets' : 'More facets'}</p>
+                                    </button>
+                                )}
                               </div>
-                            ))}
                           </div>
-                  )}
-                </div>
+                          <div className='study-keyword-search'>
+                            <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
+                            <div>
+                              <form onSubmit={handleSearchSubmit}>
+                                <input
+                                    type="text"
+                                    autoComplete="off"
+                                    className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
+                                    placeholder="Search..."
+                                    value={globalSearchTerm}
+                                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                                />
+                                
+                                {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                                    <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
+                                </svg>     */}
 
-                <div className='table-pagination'>
-                  <Pagination
-                    pagination={pagination}
-                    onPageChange={onPageChange}
-                  />
-                </div>
-                
-                <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
-                </div>
+                              </form>
+                            </div>
+                          </div>
+
+                        </div>
+                        <div className='applied-filters-container'>
+                          {appliedFilters.length > 0 && (
+                                  <div className="applied-filters">
+                                    <p>Applied Filters:</p>
+                                    {appliedFilters.map((filter, index) => (
+                                      <div key={index} className="applied-filter">
+                                        {filter.category}: {filter.value}
+                                        <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                          )}
+                        </div>
+
+                        <div className='table-pagination'>
+                          <Pagination
+                            pagination={pagination}
+                            onPageChange={onPageChange}
+                          />
+                        </div>
+                        
+                        <div className='table-results'>
+                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
+                        </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p> No results for you search.</p>
+                    </div>
+                  )}
                 <div className='dialog-close'>
                     <button onClick={onClose}>Close</button>
                 </div>

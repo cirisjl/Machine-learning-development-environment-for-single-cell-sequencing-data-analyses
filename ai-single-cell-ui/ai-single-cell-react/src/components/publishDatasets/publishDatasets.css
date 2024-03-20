@@ -402,6 +402,11 @@
   list-style-type: none;
   padding-left: 0px;
 }
+
+.task-builder-task .dialog-container .facet .filters-options input[type="checkbox"]  {
+  margin-right: 10px;
+}
+
 .task-builder-task .dialog-container .facet .filters-options li {
   list-style-type: none;
 }

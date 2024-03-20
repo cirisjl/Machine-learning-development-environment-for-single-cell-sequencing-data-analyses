@@ -235,7 +235,7 @@ class MyForm extends Component {
         formData.fileDetails = taskData.upload.final_files;
         formData.files = taskData.upload.files;
         formData.makeItpublic = taskData.upload.makeItpublic;
-        formData.owner = taskData.upload.authToken;
+        formData.Owner = taskData.upload.authToken;
         formData.Category = formData.makeItpublic ? "Shared" : "Private";
         formData.format = taskData.upload.final_files.format;
         formData.inputFiles = taskData.upload.final_files.inputFiles;

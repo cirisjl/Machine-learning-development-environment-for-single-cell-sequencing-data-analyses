@@ -3,7 +3,7 @@ version: '3'
 services:
   mongodb:
     container_name: oscbdb
-    image: mongo:4.2.1
+    image: mongo:7.0  # Updated to MongoDB version 7.0
     restart: always
     command: mongod --port 65528
     ports:
