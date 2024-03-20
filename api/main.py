@@ -72,7 +72,7 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsComm
                 await websocket.send_json(results)
 
             elif request_type == 'log':
-                logs = await log_reader(taskIdsCommaSeparated, 30)
+                logs = await log_reader(taskIdsCommaSeparated, 0, 30)
                 await websocket.send_text(logs)
             await asyncio.sleep(3)
     except Exception as e:
