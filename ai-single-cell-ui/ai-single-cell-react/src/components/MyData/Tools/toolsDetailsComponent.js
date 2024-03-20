@@ -49,6 +49,32 @@ export default function ToolsDetailsComponent(props) {
 
     const navigate = useNavigate();
 
+    
+    const onSelectDataset = (dataset) => {
+      let datasetId = dataset.Id; 
+      let currentSelectedDatasets = { ...selectedDatasets};
+  
+      if(currentSelectedDatasets[datasetId]) {
+        delete currentSelectedDatasets[datasetId];
+      } else {
+        if(filterCategory !== "integration") {
+          currentSelectedDatasets = {};
+        }
+        currentSelectedDatasets[datasetId] = dataset;
+      }
+    setSelectedDatasets(currentSelectedDatasets)
+  };
+
+  const onDeleteDataset = (id) => {
+    console.log("Inside onDeleteDataset");
+    const currentSelectedDatasets = { ...selectedDatasets};
+  
+    if (currentSelectedDatasets[id]) {
+        delete currentSelectedDatasets[id];
+    }
+    setSelectedDatasets(currentSelectedDatasets);
+  };
+
     const extractDir =  (inputFile) => {
         const fileLocParts = inputFile.split('/');
         fileLocParts.pop(); // Remove the file name from the array
@@ -71,44 +97,43 @@ export default function ToolsDetailsComponent(props) {
         formData = formData.parameters;
 
         // Perform form validation and set formErrors accordingly
-        if(filterCategory === "integration" && selectedOptions.length < 2) {
+        if(filterCategory === "integration" && Object.keys(selectedDatasets).length < 2) {
           setFormErrors("Please select atleast two datasets for integration before submitting the form");
           console.log("Failed to submit the form");
         }
-        else if(filterCategory !== "integration" && selectedDataset.length === 0) {
+        else if(filterCategory !== "integration" && Object.keys(selectedDatasets).length === 0) {
           setFormErrors("Please select a dataset before submitting the form");
           console.log("Failed to submit the form");
         } else {
           setLoading(true);
           if(filterCategory === "integration") {
-            const parsedObjects = selectedOptions.map(selectedOption => JSON.parse(selectedOption));
-            const titlesArray = parsedObjects.map(parsedObject => parsedObject.title);
+            const datasetsArray = Object.values(selectedDatasets);
+            const titlesArray = datasetsArray.map(dataset => dataset.Title);
             formData.dataset = titlesArray;
-            let inputArray = [];
-            for(let parsedObject of parsedObjects) {
-              if(parsedObject.files.length > 1) {
-                inputArray.push(extractDir(parsedObject.files[0].file_loc));
+
+             let inputArray = datasetsArray.map(dataset => {
+              if (dataset.inputFiles.length > 1) {
+                return extractDir(dataset.inputFiles[0]); // Assuming extractDir is a function defined elsewhere
               } else {
-                inputArray.push(parsedObject.files[0].file_loc);
+                return dataset.inputFiles[0];
               }
-            }
+            });
+
             formData.input = inputArray;
             formData.output = "/IntegrationResults";
-            console.log(parsedObjects);
 
           } else {
-              var parsedSelectedDataset = JSON.parse(selectedDataset);
-              formData.dataset = parsedSelectedDataset.title;
-
-              if (parsedSelectedDataset.files.length > 1) {
-                formData.input = extractDir(parsedSelectedDataset.files[0].file_loc);
+              const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
+              formData.dataset = dataset.Title;
+            
+              if (dataset.inputFiles.length > 1) {
+                formData.input = extractDir(dataset.inputFiles[0]);
                 formData.output = formData.input + "/Results";
-              } else if(parsedSelectedDataset.files.length === 1) {
-                formData.input = parsedSelectedDataset.files[0].file_loc;
+              } else if (dataset.inputFiles.length === 1) {
+                formData.input = dataset.inputFiles[0];
                 const directory = extractDir(formData.input);
                 formData.output = directory + "/Results";
               }
-            console.log(formData);
           }
       
           // Verify the authenticity of the user
@@ -294,7 +319,7 @@ export default function ToolsDetailsComponent(props) {
   return (
     <div className='tools-container common-class-tools-and-workflows'>
          {formErrors && (
-            <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
+            <div className='message-box' style={{ backgroundColor: '#f0c0c0' }}>
               <div style={{ textAlign: 'center' }}>
                 <p>{formErrors}</p>    
               </div>
@@ -317,7 +342,7 @@ export default function ToolsDetailsComponent(props) {
             </div>
           )}
           {errorMessage && (
-            <div className='message-box error' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+            <div className='message-box error' id="tooltip" style={{ backgroundColor: '#f0c0c0' }}>
               <div style={{ textAlign: 'center' }}>
                 <p>{errorMessage}</p>       
               </div>
@@ -331,10 +356,13 @@ export default function ToolsDetailsComponent(props) {
         <div className="stripe"></div>
       </div>
       <div>
-        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}/>
+        <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} 
+        formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}
+        onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset}/>
       </div>
             
         {filterSchema && UIfilterSchema ? (
+          <div className="form-component">
             <Form
             schema={filterSchema}
             formData={formData}
@@ -343,6 +371,7 @@ export default function ToolsDetailsComponent(props) {
             uiSchema={UIfilterSchema}
             onSubmit={onSubmit}
         />
+        </div>
           ) : (
             <div>No Schema for this tool.</div>
           )}

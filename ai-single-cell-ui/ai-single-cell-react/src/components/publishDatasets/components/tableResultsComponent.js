@@ -28,6 +28,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         'TaskId': true,
         'TaskType': true,
         'Title': true,
+        'Category': true,
         'Species': true,
         'Organ Part': true,
         'Cell Count Estimate': true,
@@ -60,6 +61,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             'TaskId': true,
             'TaskType': true,
             'Title': true,
+            'Category': true,
             'Species': true,
             'Organ Part': true,
             'Cell Count Estimate': true,
@@ -70,8 +72,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         });
     };
 
-    const isSelected = datasetId => !!selectedDatasets[datasetId];
-    const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
+    // const isSelected = datasetId => !!selectedDatasets[datasetId];
+    // const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
     const handleEdit = (dataset) => {
         console.log("Editing dataset: ", dataset);
@@ -124,7 +126,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         style={{ cursor:'pointer' }}
                         onChange={() => onSelectDataset(item)}
                         checked={!!selectedDatasets[item["Id"]]}
-                        disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
+                        // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
 
                     />
                     <button

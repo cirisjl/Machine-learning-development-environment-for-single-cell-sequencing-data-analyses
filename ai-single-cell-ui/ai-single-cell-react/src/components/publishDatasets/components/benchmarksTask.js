@@ -10,6 +10,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   const [loading, setLoading] = useState(false);
   const [ message, setMessage ] = useState('');
+  const [ isError, setIsError ] = useState(false);
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
 
   const handleTaskCompletion = () => {
@@ -72,12 +73,14 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
             console.error('Invalid response format');
             setMessage('Invalid response format');
             setHasMessage(true);
+            setIsError(true);
           }
         })
         .catch((error) => {
           console.error('Error during API call:', error);
           setMessage(`Error during API call: ${error}`);
           setHasMessage(true);
+          setIsError(true);
         })
         .finally(() => {
           setLoading(false);
@@ -90,7 +93,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   return (
     <div className='benchmarks-task'>
       
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
       {loading ? (
               <div className="spinner-container">

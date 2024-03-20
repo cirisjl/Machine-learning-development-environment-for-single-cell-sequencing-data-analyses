@@ -64,6 +64,25 @@ function verifyToken(req, res, next) {
     }
 }
 
+// Middleware to verify the token
+const verifyJWTToken = (req, res, next) => {
+    const bearerHeader = req.headers['authorization'];
+    if (bearerHeader) {
+      const bearerToken = bearerHeader.split(' ')[1];
+      jwt.verify(bearerToken, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(403).send({ message: 'Failed to authenticate token.' });
+        }
+        // If token is successfully verified, you can attach decoded info to request
+        req.user = decoded;
+        next();
+      });
+    } else {
+      // If no token is provided
+      res.status(403).send({ message: 'No token provided.' });
+    }
+  };
+
 function getUserFromToken(token) {
     if (typeof token !== 'string') {
         return 'Unauthorized';
@@ -1753,7 +1772,7 @@ app.post('/api/storage/renameFile', async (req, res) => {
 });
 
 // Fetch facets and paginated results
-app.post('/api/datasets/search', async (req, res) => {
+app.post('/api/benchmarks/datasets/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl);
@@ -2079,7 +2098,457 @@ app.post('/api/datasets/search', async (req, res) => {
     }
 });
 
+// app.post('/api/test', async (req, res) => {
+//   let client;
+//   try {
+//     client = new MongoClient(mongoUrl);
+//     await client.connect();
+
+//     const db = client.db(dbName);
+//     const { q: globalSearchQuery, page: queryPage, private: isPrivate, public: isPublic, shared: isShared, pageSize: pagesize } = req.query;
+
+//     const page = parseInt(queryPage, 10) || 1;
+//     const pageSize = parseInt(pagesize, 10) || 1;
+//     const filters = req.body.filters;
+
+//     //Update this field accordingly whenever you add a new facet 
+//     const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+
+//     let matchConditions = [];
+
+//     // Add the global search query to the match conditions
+//     if (globalSearchQuery) {
+//         matchConditions.push({
+//             $or: [
+//                 { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+//             ],
+//         });
+//     }
+
+//     // Apply additional filters
+//     if (filters) {
+//         Object.keys(filters).forEach((filterCategory) => {
+//             const filterValue = filters[filterCategory];
+//             if (Array.isArray(filterValue) && filterValue.length > 0) {
+//                 let condition = {};
+
+//                 // Check if the filter category should use the 'label' property
+//                 if (fieldsWithLabel.includes(filterCategory)) {
+//                     condition[`${filterCategory}.label`] = { $in: filterValue };
+//                 } else {
+//                     // Directly use the filter category for other fields
+//                     condition[filterCategory] = { $in: filterValue };
+//                 }
+
+//                 // Add this condition to the matchConditions array
+//                 matchConditions.push(condition);
+//             }
+//         });
+//     }
+
+//     let collectionQueries = [];
+//     if (isPublic === 'true') {
+//         collectionQueries.push(queryCollection(db.collection(datasetCollection), matchConditions,  page, pageSize));
+//     }
+//     if (isPrivate === 'true' || isShared === 'true') {
+//         // Adjusts the filter to capitalize the first letter to match document values ('Private', 'Shared')
+//         const categories = ['private', 'shared']
+//             .filter(flag => req.query[flag] === 'true')
+//             .map(value => value.charAt(0).toUpperCase() + value.slice(1)); // Transform 'private' to 'Private' and 'shared' to 'Shared'
+        
+//         if (categories.length > 0) {
+//             matchConditions.push({ Category: { $in: categories } });
+//         }
+//         collectionQueries.push(queryCollection(db.collection(userDatasetsCollection), matchConditions,  page, pageSize));
+//     }
+
+//     // Execute all collection queries in parallel
+//     const results = await Promise.all(collectionQueries);
+
+//     const combinedTotalCount = results.reduce((acc, result) => acc + result.totalCount, 0);
+//     const combinedDocuments = results.flatMap(result => result.documents);
+
+//     const mergeFacets = (facetsArray) => {
+//         const combinedFacets = {};
+    
+//         facetsArray.forEach(facets => {
+//             Object.keys(facets).forEach(category => {
+//                 if (!combinedFacets[category]) {
+//                     combinedFacets[category] = {};
+//                 }
+    
+//                 facets[category].forEach(facet => {
+//                     if (!combinedFacets[category][facet._id]) {
+//                         combinedFacets[category][facet._id] = 0;
+//                     }
+//                     combinedFacets[category][facet._id] += facet.count;
+//                 });
+//             });
+//         });
+    
+//         // Convert back to the array structure
+//         const facetsArrayStructure = {};
+//         Object.keys(combinedFacets).forEach(category => {
+//             facetsArrayStructure[category] = Object.entries(combinedFacets[category]).map(([key, value]) => ({
+//                 _id: key,
+//                 count: value
+//             }));
+//         });
+    
+//         return facetsArrayStructure;
+//     };
+    
+//     // Assume results is an array of results from your collection queries
+//     const combinedFacets = mergeFacets(results.map(result => result.facets));
+    
+
+//     const pageCount = Math.ceil(combinedTotalCount / pageSize);
+
+//     res.json({
+//         results: combinedDocuments,
+//         facets: combinedFacets,
+//         pagination: {
+//             page,
+//             pageSize,
+//             pageCount,
+//             totalCount: combinedTotalCount,
+//         }
+//     });
+    
+
+//   } catch (error) {
+//     console.error('Search failed:', error);
+//     res.status(500).send('An error occurred while searching.');
+//   } finally {
+//     if (client) {
+//       await client.close();
+//     }
+//   }
+// });
+
+// async function queryCollection(collection, conditions, page, pageSize) {
+//     // Construct the final match stage using $and, only if there are multiple conditions
+//     let matchStage = {};
+//     if (conditions.length > 0) {
+//         matchStage = conditions.length > 1 ? { $and: conditions } : conditions[0];
+//     }
+
+//     const pipeline = [
+//         { $match: matchStage },
+//         {
+//             $facet: {
+//                 totalCount: [
+//                     { $count: "total" }
+//                 ],
+//                 // Each facet is directly within $facet and maps to its pipeline
+//                 'Species': [
+//                     { $group: { _id: '$Species.label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Category': [
+//                     { $group: { _id: '$Category', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Author': [
+//                     { $group: { _id: '$Author', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Anatomical Entity': [
+//                     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 // More facets as per your requirement
+//                 'Organ Part': [
+//                     { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Selected Cell Types': [
+//                     { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Disease Status (Specimen)': [
+//                     { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 'Disease Status (Donor)': [
+//                     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+//                     { $sort: { count: -1 } }
+//                 ],
+//                 documents: [
+//                     { $skip: (page - 1) * pageSize },
+//                     { $limit: pageSize },
+//                     { $project: 
+//                         {
+//                             Title: "$Title",
+//                             Id: "$Id",
+//                             Category: "$Category",
+//                             Species: "$Species.label",
+//                             'Organ Part': "$Organ Part.label",
+//                             'Cell Count Estimate': "$Cell Count Estimate",
+//                             'Development Stage': "$Development Stage",
+//                             'Anatomical Entity': "$Anatomical Entity.label",
+//                             'Disease Status (Donor)': "$Disease Status (Donor).label",
+//                             Author: "$Author",
+//                             'Source': "$Source",
+//                             'Submission Date': "$Submission Date",
+//                         }
+//                     }
+//                 ]
+//             }
+//         }
+//     ];
+
+//     const [result] = await collection.aggregate(pipeline).toArray();
+
+//     // Extract and transform facets
+//     const facets = Object.keys(result)
+//     .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+//     .reduce((acc, key) => {
+//         // Transform each facet's results for easier consumption
+//         acc[key] = result[key].map(facet => ({
+//             _id: facet._id, // Assuming each object has an _id field
+//             count: facet.count // Assuming each object has a count field
+//         }));
+//         return acc;
+//     }, {});
+//     return {
+//         totalCount: result.totalCount[0] ? result.totalCount[0].total : 0,
+//         documents: result.documents,
+//         facets: facets,
+//     };
+
+// }
+
+app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
+    let client;
+    try {
+      client = new MongoClient(mongoUrl);
+      await client.connect();
+      const db = client.db(dbName);
+      let owner = req.user.username;
+      const {
+        q: globalSearchQuery,
+        page: queryPage = 1,
+        pageSize: queryPageSize = 10,
+        private: isPrivate,
+        public: isPublic,
+        shared: isShared
+      } = req.query;
+
+      const page = parseInt(queryPage, 10);
+      const pageSize = parseInt(queryPageSize, 10);
+      const filters = req.body.filters;
+
+          //Update this field accordingly whenever you add a new facet 
+        const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+
+
+        // If no flags are provided, do not query any collection.
+        if (isPublic === 'false' && isPrivate === 'false' && isShared === 'false') {
+            res.json({ message: "No action performed.", results: [], facets: {}, pagination: {} });
+            return;
+        }
+      let matchConditions = [];
   
+      if (globalSearchQuery) {
+        matchConditions.push({
+            $or: [
+                { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+            ],
+        });
+    }
+
+    // Apply additional filters
+    if (filters) {
+        Object.keys(filters).forEach((filterCategory) => {
+            const filterValue = filters[filterCategory];
+            if (Array.isArray(filterValue) && filterValue.length > 0) {
+                let condition = {};
+
+                // Check if the filter category should use the 'label' property
+                if (fieldsWithLabel.includes(filterCategory)) {
+                    condition[`${filterCategory}.label`] = { $in: filterValue };
+                } else {
+                    // Directly use the filter category for other fields
+                    condition[filterCategory] = { $in: filterValue };
+                }
+
+                // Add this condition to the matchConditions array
+                matchConditions.push(condition);
+            }
+        });
+    }
+
+    let categoryConditions = [];
+
+    if (isPublic === 'true') {
+        categoryConditions.push({ 'Category': 'Public' });
+    }
+    if (isPrivate === 'true') {
+        categoryConditions.push({ 'Owner': owner});
+    }
+    if (isShared === 'true') {
+        categoryConditions.push({ 'Category': 'Shared' });
+    }
+    
+    // Now, use $or to apply these category conditions if more than one flag is true
+    if (categoryConditions.length > 0) {
+        matchConditions.push({ $or: categoryConditions });
+    }
+
+    // Determine the initial collection based on flags
+    let initialCollectionName;
+    
+    if (isPublic === 'true') {
+        initialCollectionName = datasetCollection;
+    } else if (isPrivate === 'true' || isShared === 'true') {
+        initialCollectionName = userDatasetsCollection;
+    }
+
+
+    let matchStage = {};
+    if (matchConditions.length > 0) {
+        matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+    }
+      // Initial aggregation pipeline
+      let pipeline = [
+        { $match: matchStage },
+        { 
+          $facet: {
+            totalCount: [{ $count: "total" }],
+            documents: [
+              { $skip: (page - 1) * pageSize }, 
+              { $limit: pageSize },
+              { $project: {
+                    Title: "$Title",
+                    Id: "$Id",
+                    Category: "$Category",
+                    Owner: "$Owner",
+                    Species: "$Species.label",
+                    'Organ Part': "$Organ Part.label",
+                    'Cell Count Estimate': "$Cell Count Estimate",
+                    'Development Stage': "$Development Stage",
+                    'Anatomical Entity': "$Anatomical Entity.label",
+                    'Disease Status (Donor)': "$Disease Status (Donor).label",
+                    Author: "$Author",
+                    'Source': "$Source",
+                    'Submission Date': "$Submission Date",
+                    'inputFiles': "$inputFiles",
+                    'adata_path': "$adata_path"
+                }
+              }
+            ],
+            // Each facet is directly within $facet and maps to its pipeline
+            'Species': [
+                { $group: { _id: '$Species.label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Category': [
+                { $group: { _id: '$Category', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Author': [
+                { $group: { _id: '$Author', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Anatomical Entity': [
+                { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            // More facets as per your requirement
+            'Organ Part': [
+                { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Selected Cell Types': [
+                { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Disease Status (Specimen)': [
+                { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+            'Disease Status (Donor)': [
+                { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ],
+          }
+        }
+      ];
+
+
+      // If both flags are true, use $unionWith to combine collections
+      if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
+        pipeline.unshift({
+          $unionWith: {
+            coll: userDatasetsCollection,
+          }
+        });
+        // pipeline.push({ $group: { _id: "$Id" }});
+        initialCollectionName = datasetCollection; // Start with the "public" datasets collection
+      }
+  
+      const collection = db.collection(initialCollectionName);
+      
+      const result = await collection.aggregate(pipeline).toArray();
+  
+      // Assuming the first element contains the desired structure
+      const data = result[0];
+      const totalCount = data.totalCount[0] ? data.totalCount[0].total : 0;
+       
+    // Extract and transform facets, excluding facets that would result in an empty array
+    const facets = Object.keys(data)
+    .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+    .reduce((acc, key) => {
+        // Check if data[key] exists, is an array, and has length before mapping
+        if (Array.isArray(data[key]) && data[key].length > 0) {
+            acc[key] = data[key].map(facet => ({
+                _id: facet._id, // Assuming each object has an _id field
+                count: facet.count // Assuming each object has a count field
+            }));
+        }
+        // If data[key] doesn't exist, isn't an array, or is empty, it's not included
+        return acc;
+    }, {});
+
+  
+      res.json({
+        results: data.documents,
+        facets: facets,
+        pagination: {
+          totalCount: totalCount,
+          page,
+          pageSize,
+          pageCount: Math.ceil(totalCount / pageSize),
+        }
+      });
+    } catch (error) {
+      console.error('Search failed:', error);
+      res.status(500).send('An error occurred while searching.');
+    } finally {
+      if (client) {
+        await client.close();
+      }
+    }
+  });
+
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -50,6 +50,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [ isError, setIsError ] = useState(false);
   const classes = useStyles(); // Use the custom styles
   const [loading, setLoading] = useState(false);
   const [values, setValues] = useState(defaultValues);
@@ -156,6 +157,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       setLoading(false);
       setHasMessage(true);
       setMessage("Failed to execute the quality control task.")
+      setIsError(true);
     }
   };
 
@@ -228,6 +230,7 @@ const handleAssaySelectionSubmit = async () => {
     if(!taskData.quality_control.selectedAssayName) {
       setHasMessage(true);
       setMessage("Please select the default assay");
+      setIsError(true);
       return;
     }
     console.log(values);
@@ -307,6 +310,7 @@ const handleAssaySelectionSubmit = async () => {
       setLoading(false);
       setHasMessage(true);
       setMessage("Failed to execute the quality control task.")
+      setIsError(true);
     }
 };
 
@@ -333,13 +337,14 @@ const handleAssaySelectionSubmit = async () => {
     } else {
       setHasMessage(true);
       setMessage("Run Quality Control Task Before moving to the next step.");
+      setIsError(true);
     }
   };
 
   return (
     <div className='quality-control-task'>
 
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
       <div>
         <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={taskData.quality_control.shouldHideForSeurat}/>

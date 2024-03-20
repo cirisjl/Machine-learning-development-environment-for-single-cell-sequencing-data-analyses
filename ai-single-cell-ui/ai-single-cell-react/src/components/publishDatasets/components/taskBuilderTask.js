@@ -14,6 +14,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [ isError, setIsError ] = useState(false);
   const [loading, setLoading] = useState({});
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -95,6 +96,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         setHasMessage(true);
         setMessage("The sum of train, validation, and test fractions must equal 1.");
         setLoading(false);
+        setIsError(true);
         return;
       }
   
@@ -161,6 +163,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     } else {
       setMessage('Please ensure that the task type, labels, and data split for each dataset are valid.');
       setHasMessage(true);
+      setIsError(true);
     }
   };
   
@@ -222,18 +225,18 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
   const onSelectDataset = (dataset) => {
-    // Get a copy of the current selected datasets from the state or props
-    const currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
-    const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
-  
-    if (currentSelectedDatasets[datasetId]) {
-        // Dataset is currently selected, deselect it
-        delete currentSelectedDatasets[datasetId];
+    let datasetId = dataset.Id; 
+    let currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
+
+    if(currentSelectedDatasets[datasetId]) {
+      delete currentSelectedDatasets[datasetId];
     } else {
-        // Dataset is not selected, select it
-        currentSelectedDatasets[datasetId] = dataset;
+      if(selectionMode === "single") {
+        currentSelectedDatasets = {};
+      }
+      currentSelectedDatasets[datasetId] = dataset;
     }
-  
+
     // Call onSelect with the updated selected datasets
     handleSelectDatasets(currentSelectedDatasets);
   };
@@ -258,7 +261,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           )}
         </div>
       </div>
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError} />}
       <div>
 
     {Object.entries(taskData.task_builder.selectedDatasets).length > 0 && (

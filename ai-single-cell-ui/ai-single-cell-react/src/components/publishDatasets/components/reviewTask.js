@@ -18,6 +18,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [ isError, setIsError ] = useState(false);
 
   const toggleSectionVisibility = (section) => {
     setSectionsVisibility((prevVisibility) => ({
@@ -84,6 +85,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         } else {
           console.warn('Some documents were not submitted successfully:', messages);
           setMessage("Some documents encountered errors. Check the console for details.");
+          setIsError(true);
         }
       } else {
         // Handle single document submission response
@@ -97,6 +99,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
       console.error('Error submitting documents:', error.response ? error.response.data.error : error.message);
       setMessage(`Error submitting documents: ${error.response ? error.response.data.error : error.message}`);
       setHasMessage(true);
+      setIsError(true);
     });
   
     // After Task 7 is successfully completed, update the task status
@@ -111,7 +114,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
 
   return (
     <div className='review-task'>
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} />}
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
       <div className='section'>
         <div className='section-heading' onClick={() => toggleSectionVisibility('taskBuilder')}>
           <h3>Task Builder</h3>
