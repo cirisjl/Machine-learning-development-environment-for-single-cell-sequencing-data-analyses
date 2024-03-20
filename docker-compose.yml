@@ -3,11 +3,7 @@ version: '3'
 services:
   mongodb:
     container_name: oscbdb
-<<<<<<< HEAD
     image: mongo:7.0  # Updated to MongoDB version 7.0
-=======
-    image: mongo:4.4
->>>>>>> integration
     restart: always
     command: mongod --port 65528
     ports:
