@@ -55,19 +55,24 @@ async def add_process_time_header(request, call_next):
 async def websocket_endpoint(websocket: WebSocket, taskIdsCommaSeparated: str):
     await websocket.accept()
     while True:
-        taskIds = taskIdsCommaSeparated.split(',')
-        results = {}
-        for taskId in taskIds:
-            result = AsyncResult(taskId)
-            if result.ready():
-                if result.successful():
-                    results[taskId] = 'Success'
+        try:
+            taskIds = taskIdsCommaSeparated.split(',')
+            results = {}
+            for taskId in taskIds:
+                result = AsyncResult(taskId)
+                if result.ready():
+                    if result.successful():
+                        results[taskId] = 'Success'
+                    else:
+                        results[taskId] = 'Failed'
                 else:
-                    results[taskId] = 'Failed'
-            else:
-                results[taskId] = 'Processing'
-        await websocket.send_json(results)
-        await asyncio.sleep(3)
+                    results[taskId] = 'Processing'
+            await websocket.send_json(results)
+            await asyncio.sleep(3)
+        except Exception as e:
+            print(e)
+        finally:
+            await websocket.close()
 
 
 @app.websocket("/log/{unique_id}") # unique_id: user_id or task_id
