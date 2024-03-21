@@ -66,7 +66,12 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
-                srat <- RegressCellCycle(srat)
+                tryCatch({
+                    srat <- RegressCellCycle(srat)
+                }, error = function(e) {
+                print("An error occurred when regressing cell cycle. Skipping... ")
+                print(e$message)
+            }) 
             }
 
             srat <- FindNeighbors(srat, dims=dims)
@@ -77,19 +82,24 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             srat <- RunUMAP(srat, dims=dims)
 
             # Add the doublet annotation
-            if(! "doublet_class" %in% names(x = srat[[]])){
-                ## pK Identification (no ground-truth)
-                set.seed(123)
-                sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
-                sweep.stats <- summarizeSweep(sweep.res.list, GT=FALSE)
-                bcmvn <- find.pK(sweep.stats)
-                ## Homotypic Doublet Proportion Estimate
-                nExp_poi <- round(doublet_rate*nrow(srat@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
-
-                srat <- doubletFinder(srat, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
-                
-                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
-                colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
+            if(doublet_rate!=0 & (! "doublet_class" %in% names(x = srat[[]]))){
+                tryCatch({
+                    ## pK Identification (no ground-truth)
+                    set.seed(123)
+                    sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
+                    sweep.stats <- summarizeSweep(sweep.res.list, GT=FALSE)
+                    bcmvn <- find.pK(sweep.stats)
+                    ## Homotypic Doublet Proportion Estimate
+                    nExp_poi <- round(doublet_rate*nrow(srat@meta.data)) ## Assuming 7.5% doublet formation rate - tailor for your dataset
+                    # Run DoubletFinder with varying classification stringencies
+                    srat <- doubletFinder(srat, PCs = 1:10, pN = 0.25, pK = 0.09, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
+                    # Change the column names of doublet for metadata
+                    colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
+                    colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
+                }, error = function(e) {
+                    print("An error occurred when running DoubletFinder. Skipping... ")
+                    print(e$message)
+                })               
             }
 
             # srat <- subset(srat, subset = doublet_class == 'Singlet')
@@ -206,6 +216,6 @@ RegressCellCycle <- function(srat){
     # srat <- CellCycleScoring(srat, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
     srat <- CellCycleScoring(srat, g2m.features = cc.genes$g2m.genes, s.features = cc.genes$s.genes, set.ident = TRUE)
     srat <- ScaleData(srat, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(srat))
-
+    
     srat
 }

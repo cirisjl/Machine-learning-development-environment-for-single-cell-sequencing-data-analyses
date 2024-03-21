@@ -11,11 +11,15 @@ import pandas as pd
 import numpy as np
 from anndata import AnnData
 from scipy.sparse import csr_matrix
+
 from tools.visualization.plotConstants import *
 
+def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+    print("[DEBUG] generating new UMAP plot")
 
-def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
-    obs = obs
+    obs = adata.obs
+    obsm = adata.obsm
+    if layer is None: layer = 'X'
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
@@ -30,7 +34,11 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
         raise ValueError(f"{clustering_plot_type} does not exist in {obs.keys()}.")
 
     # Validate that there is a 3D projection available if that was requested
-    coords = pd.DataFrame(umap, index=obs.index)
+    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
+        coords = pd.DataFrame(obsm[layer+"_umap_3D"], index=obs.index)
+    else:
+        n_dim = 2
+        coords = pd.DataFrame(obsm[layer+"_umap"], index=obs.index)
     
     traces = []
     for i, val in enumerate(sorted(obs[clustering_plot_type].unique())):
@@ -43,17 +51,12 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
             for c in selected_cell_intersection:
                 if (c in a.index):
                     s.append(a.index.get_loc(c))
-        text = None
-        if annotation is not None and annotation in obs.keys():
-            text = [str(cell) for cell in a[annotation].astype(str)]
-        else:
-            text = ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)]
         if (n_dim == 2):
             traces.append({
                 "type": "scattergl",
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
-                "text": text,
+                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
                 "selectedpoints": s,
                 "mode":'markers',
                 "marker": {
@@ -71,11 +74,11 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
             })
         elif (n_dim == 3):
             traces.append({
-                "type": "scatter3d",
+                "type": "scattergl",
                 "x": b[0].tolist(),
                 "y": b[1].tolist(),
                 "z": b[2].tolist(),
-                "text": text,
+                "text": ["Cell ID: " + str(cell_id) for cell_id in a.index.astype(str)],
                 "selectedpoints": s,
                 "mode":'markers',
                 "marker": {
@@ -95,9 +98,9 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True,
-                width=4*scale,
-                height=3*scale
+                autosize=True
+                #width=4 * scale,
+                #height=3 * scale
             )
         })
     elif (n_dim == 3):
@@ -111,32 +114,11 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 transition = {'duration': 250},
-                autosize=True,
-                width=4*scale,
-                height=3*scale
+                autosize=True
+                #width=4 * scale,
+                #height=3 * scale
             )
         })
-
-
-def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
-    print("[DEBUG] generating new UMAP plot")
-    
-    obs = adata.obs
-    obsm = adata.obsm
-    umap = None
-    if layer is None: layer = 'X'
-
-    # Validate that there is a 3D projection available if that was requested
-    if ((layer+"_umap_3D" in obsm.keys()) and (n_dim == 3)):
-        umap = obsm[layer+"_umap_3D"]
-        print("Ploting 3D UMAP...")
-    else:
-        n_dim = 2
-        umap = obsm[layer+"_umap"]
-        print("Ploting 2D UMAP...")
-
-    results = plot_UMAP_obs(obs=obs, umap=umap, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, annotation=annotation, n_dim=n_dim)
-    return results
 
 
 def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_counts_rb'], show_points=False):
@@ -200,9 +182,9 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True,
-            width=4*scale,
-            height=3*scale
+            autosize=True
+            #width=4 * scale,
+            #height=3 * scale
         )
     })
 
@@ -236,9 +218,9 @@ def plot_scatter(adata, feature1 = "n_counts", feature2 = "n_genes"):
             # legend={'x': 0, 'y': 1},
             hovermode='closest',
             transition = {'duration': 100},
-            autosize=True,
-            width=4*scale,
-            height=3*scale
+            autosize=True
+            #width=4 * scale,
+            #height=3 * scale
         )
     })
 
@@ -275,7 +257,7 @@ def plot_highest_expr_genes(adata, n_top=30):
                 "type": "box",
                 "x": counts_top_genes[i].tolist(), 
                 "y": i, 
-                "boxpoints": "Wiskers and Outliers",
+                "boxpoints": "all",
                 # "jitter": 0.5,
                 # "whiskerwidth": 0.2,
                 "marker": {
@@ -474,7 +456,7 @@ def plot_bar(x=[], y={}, title="Benchmarks"):
             'hovermode': 'closest',
             'transition': {'duration': 100},
             'autosize': True,
-            'width': 4*scale,
-            'height': 3*scale
+            'width': 4 * scale,
+            'height': 3 * scale
         }
     }

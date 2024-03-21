@@ -88,6 +88,15 @@ class AnndataMetadata(BaseModel):
 
 
 
+class UMAPRequest(BaseModel):
+    adata_path: str
+    layer: str
+    clustering_plot_type: str
+    selected_cell_intersection: list
+    n_dim: int
+
+
+
 class CombinedQCResult(BaseModel):
     scanpy_results: AnndataMetadata  # Assuming you have the AnndataMetadata model defined
     # dropkick_results: AnndataMetadata
@@ -125,3 +134,21 @@ class BenchmarksRequest(BaseModel):
 class ConvertRequest(BaseModel):
     fileDetails: List[str]
     assay_name: Optional[str] = None
+
+
+
+class QualityControlRequest(BaseModel):
+    fileDetails: str
+    assay: Optional[str] = None
+    min_genes: int
+    max_genes: int
+    min_cells: int
+    target_sum: float
+    n_top_genes: int
+    n_neighbors: int
+    n_pcs: int
+    resolution: float
+    regress_cell_cycle: bool
+    use_default: bool
+    doublet_rate: float
+    unique_id: str

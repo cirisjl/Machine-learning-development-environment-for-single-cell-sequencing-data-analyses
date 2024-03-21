@@ -1,6 +1,6 @@
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest
+from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest, QualityControlRequest, UMAPRequest
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
@@ -95,49 +95,60 @@ async def process_input_files_validation(request: InputFilesRequest):
 
 
 @router.post("/publishDatasets/run/quality_control")
-async def run_quality_control(file_mappings: List[dict]):
+async def run_quality_control(file_mappings: QualityControlRequest):
     try:
         result = []
-        for mapping in file_mappings:
-            format = mapping.get("format")
-            input_path = mapping.get("fileDetails")
-            # path = mapping.get("adata_path")
-            assay = mapping.get("assay")
-            min_genes = mapping.get("min_genes")
-            max_genes = mapping.get("max_genes")
-            min_cells = mapping.get("min_cells")
-            # max_cells = mapping.get("max_cells")
-            target_sum = mapping.get("target_sum")
-            n_top_genes = mapping.get("n_top_genes")
-            n_neighbors = mapping.get("n_neighbors")
-            n_pcs = mapping.get("n_pcs")
-            resolution = mapping.get("resolution")
-            doublet_rate = mapping.get("doublet_rate")
-            regress_cell_cycle = mapping.get("regress_cell_cycle")
-            use_default = mapping.get("use_default")
+        print(file_mappings)
+        unique_id = file_mappings.unique_id
+        assay = file_mappings.assay
+        doublet_rate = file_mappings.doublet_rate
+        input_path = file_mappings.fileDetails
+        min_genes = file_mappings.min_genes
+        max_genes = file_mappings.max_genes
+        min_cells = file_mappings.min_cells
+        target_sum = file_mappings.target_sum
+        n_top_genes = file_mappings.n_top_genes
+        n_neighbors = file_mappings.n_neighbors
+        n_pcs = file_mappings.n_pcs
+        resolution = file_mappings.resolution
+        regress_cell_cycle = file_mappings.regress_cell_cycle
+        use_default = file_mappings.use_default
 
-            md5 = get_md5(input_path)
-            pp_stage = "Raw"
-            method_id = None
-            parameters = {
-                "min_genes": min_genes, # default: 200, step: 25, range: [0, 20000], scale: 200(default), 1000, 5000, 10000, 15000, 20000(No limit)
-                "max_genes": max_genes, # default: 20000(=No limit, default), step: 25, range: [0, 20000], scale: 200, 1000, 5000, 10000, 15000, 20000(=No limit, default)
-                "min_cells": min_cells, # default: 2, step:1, range: [1, 200], scale: 2(default), 10, 50, 100, 200
-                # "max_cells": max_cells,
-                "target_sum": target_sum, # default: 0(None), step: 1e4, range:[0, 1e6], scale: 0(None, default), 1e4, 1e5, 1e6
-                "n_top_genes": n_top_genes, # highly variable genes:  default: 2000, step:25, range: [100, 10000], scale: 500, 1000, 2000(default), 5000, 10000
-                "n_neighbors": n_neighbors, # default: 15, step:1, range: [2, 100], scale: 1, 5, 10, 15(default), 20, 50, 100
-                "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 
-                "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5
-                "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage
-                "regress_cell_cycle": regress_cell_cycle, # default: false, values: [true, false]
-                "use_default": use_default # default: true, values: [true, false]
-            }
+        input_path = unzip_file_if_compressed(input_path)
 
-            if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
-                # It's an H5Seurat or RDS file, call runQCSeurat method
-                default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
-                # default_assay, assay_names, adata_path, adata, output= run_seurat_qc(input_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, regress_cell_cycle=regress_cell_cycle)
+        if max_genes == 20000:
+            max_genes = None
+        if n_pcs == 0:
+            n_pcs = None
+        if assay is None:
+            assay = 'RNA'
+
+        md5 = get_md5(input_path)
+        pp_stage = "Raw"
+        method_id = None
+        parameters = {
+            "assay": assay,
+            "min_genes": min_genes, # default: 200, step: 25, range: [0, 20000], scale: 200(default), 1000, 5000, 10000, 15000, 20000(No limit)
+            "max_genes": max_genes, # default: 20000(=No limit, default), step: 25, range: [0, 20000], scale: 200, 1000, 5000, 10000, 15000, 20000(=No limit, default)
+            "min_cells": min_cells, # default: 2, step:1, range: [1, 200], scale: 2(default), 10, 50, 100, 200
+            # "max_cells": max_cells,
+            "target_sum": target_sum, # default: 0(None), step: 1e4, range:[0, 1e6], scale: 0(None, default), 1e4, 1e5, 1e6
+            "n_top_genes": n_top_genes, # highly variable genes:  default: 2000, step:25, range: [100, 10000], scale: 500, 1000, 2000(default), 5000, 10000
+            "n_neighbors": n_neighbors, # default: 15, step:1, range: [2, 100], scale: 1, 5, 10, 15(default), 20, 50, 100
+            "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 
+            "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5
+            "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage
+            "regress_cell_cycle": regress_cell_cycle, # default: false, values: [true, false]
+            "use_default": use_default # default: true, values: [true, false]
+        }
+
+        if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
+            # It's an H5Seurat or RDS file, call runQCSeurat method
+            # default_assay, assay_names, adata_path, adata, output, ddl_assay_names = run_seurat_qc(input_path, unique_id, assay=assay, min_genes=200, max_genes=0, min_UMI_count=2, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, doublet_rate=0.075, regress_cell_cycle=False)
+            if max_genes is None:
+                max_genes = 0
+            try:
+                default_assay, assay_names, adata_path, adata, output, ddl_assay_names= run_seurat_qc(input_path, unique_id, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=resolution, dims=n_neighbors, doublet_rate=doublet_rate, regress_cell_cycle=regress_cell_cycle)
                 
                 if ddl_assay_names:
                     result.append({
@@ -150,12 +161,12 @@ async def run_quality_control(file_mappings: List[dict]):
 
                     return result
                 
-                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
+                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(adata)
 
                 if(use_default):
                     method_id = "seurat_qc"
                 else:
-                    method_id = "seurat_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
+                    method_id = f"seurat_qc-{assay}-{min_genes}-{max_genes}-{min_cells}-{n_top_genes}-{doublet_rate}-{n_neighbors}-{resolution}-{regress_cell_cycle}"
 
                 pp_results = {
                     "stage": pp_stage,
@@ -189,6 +200,7 @@ async def run_quality_control(file_mappings: List[dict]):
                         "adata_path": adata_path,
                         "output": output,
                         "umap_plot": umap_plot,
+                        "umap_plot_3d": umap_plot_3d,
                         "violin_plot": violin_plot,
                         "scatter_plot": scatter_plot,
                         "highest_expr_genes_plot": highest_expr_genes_plot,
@@ -197,67 +209,75 @@ async def run_quality_control(file_mappings: List[dict]):
                         "pp_results": pp_results,
                         "message": "Quality control completed successfully."
                     })
-            else:
-                # Load the annData object
-                adata = load_anndata(input_path)
+            except Exception as e:
+                # logger.exception("Error during Scanpy QC")
+                print(e)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Error during Seurat QC: {str(e)}"
+                )
+        else:
+            # Load the annData object
+            adata = load_anndata(input_path)
 
-                # Run Scanpy QC
-                try:
-                    scanpy_results = run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, regress_cell_cycle=False)
-                    # scanpy_results = run_scanpy_qc(adata, min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, regress_cell_cycle=regress_cell_cycle)
-                    info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
+            # Run Scanpy QC
+            try:
+                # scanpy_results = run_scanpy_qc(adata,unique_id, min_genes=min_genes, max_genes=max_genes, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, expected_doublet_rate=doublet_rate, regress_cell_cycle=False, random_state=0)
+                scanpy_results = run_scanpy_qc(adata, unique_id,min_genes=min_genes, max_genes=max_genes, min_cells=min_cells, target_sum=target_sum, n_top_genes=n_top_genes, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, expected_doublet_rate=doublet_rate,regress_cell_cycle=regress_cell_cycle, random_state=0)
+                info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot = get_metadata_from_anndata(scanpy_results)
 
-                    adata_path = change_file_extension(input_path, 'h5ad')
-                    scanpy_results.write_h5ad(adata_path)
+                adata_path = change_file_extension(input_path, 'h5ad')
+                scanpy_results.write_h5ad(adata_path)
 
-                    if(use_default):
-                        method_id = "scanpy_qc"
-                    else:
-                        method_id = "scanpy_qc" + "-" + min_genes + "-" + max_genes + "-" + min_cells + "-" + target_sum + "-" + n_top_genes + "-" + n_neighbors + "-" + n_pcs + "-" + resolution + "-" + regress_cell_cycle
+                if(use_default):
+                    method_id = "scanpy_qc"
+                else:
+                    method_id = f"scanpy_qc-{min_genes}-{max_genes}-{min_cells}-{target_sum}-{n_top_genes}-{doublet_rate}-{n_neighbors}-{n_pcs}-{resolution}-{regress_cell_cycle}"
 
-                    pp_results = {
-                        "stage": pp_stage,
-                        "task": "QC",
-                        "method": "scanpy",
-                        "method_id": method_id,
-                        "parameters": parameters,
-                        "files": adata_path
-                    }
+                pp_results = {
+                    "stage": pp_stage,
+                    "task": "QC",
+                    "method": "scanpy",
+                    "method_id": method_id,
+                    "parameters": parameters,
+                    "files": adata_path
+                }
 
-                    # Return metadata in the API response
-                    metadata =  {
-                        "layers": layers,
-                        "cell_metadata_obs": cell_metadata_obs.to_dict(),
-                        "gene_metadata": gene_metadata.to_dict(),
-                        "nCells": nCells,
-                        "nGenes": nGenes,
-                        "genes": genes,
-                        "cells": cells,
-                        "embeddings": embeddings
-                    }
+                # Return metadata in the API response
+                metadata =  {
+                    "layers": layers,
+                    "cell_metadata_obs": cell_metadata_obs.to_dict(),
+                    "gene_metadata": gene_metadata.to_dict(),
+                    "nCells": nCells,
+                    "nGenes": nGenes,
+                    "genes": genes,
+                    "cells": cells,
+                    "embeddings": embeddings
+                }
+                
+                result.append({
+                    "inputfile": input_path,
+                    "info": info,
+                    "format": "h5ad",
+                    "adata_path": adata_path,
+                    "umap_plot": umap_plot,
+                    "umap_plot_3d": umap_plot_3d,
+                    "violin_plot": violin_plot,
+                    "scatter_plot": scatter_plot,
+                    "highest_expr_genes_plot": highest_expr_genes_plot,
+                    "md5": md5,
+                    "metadata": metadata,
+                    "pp_results": pp_results,
+                    "message": "Quality control completed successfully."
                     
-                    result.append({
-                        "inputfile": input_path,
-                        "info": info,
-                        "format": format,
-                        "adata_path": adata_path,
-                        "umap_plot": umap_plot,
-                        "violin_plot": violin_plot,
-                        "scatter_plot": scatter_plot,
-                        "highest_expr_genes_plot": highest_expr_genes_plot,
-                        "md5": md5,
-                        "metadata": metadata,
-                        "pp_results": pp_results,
-                        "message": "Quality control completed successfully."
-                        
-                    })
-                except Exception as e:
-                    # logger.exception("Error during Scanpy QC")
-                    print(e)
-                    raise HTTPException(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail=f"Error during Scanpy QC: {str(e)}"
-                    )
+                })
+            except Exception as e:
+                # logger.exception("Error during Scanpy QC")
+                print(e)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Error during Scanpy QC: {str(e)}"
+                )
         return result
 
     except Exception as error:
@@ -266,6 +286,26 @@ async def run_quality_control(file_mappings: List[dict]):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during quality control: {str(error)}"
         )
+
+
+@router.post("/api/umap")
+async def plot_umap(user_request: UMAPRequest):
+    from tools.visualization.plot import plot_UMAP_obs, plot_UMAP
+    try:
+        # Access user data
+        adata_path = user_request.adata_path
+        layer = user_request.layer
+        clustering_plot_type = user_request.clustering_plot_type
+        selected_cell_intersection = user_request.selected_cell_intersection
+        n_dim = user_request.n_dim
+
+        adata = load_anndata(adata_path)
+        umap_json = plot_UMAP(adata, layer=layer, clustering_plot_type=clustering_plot_type, selected_cell_intersection=selected_cell_intersection, n_dim=n_dim)
+    
+        return umap_json
+    except Exception as e:
+        # Handle any errors
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/api/data-split")
@@ -355,7 +395,6 @@ async def process_task_data(data: BenchmarksRequest):
 
 @router.post("/api/getTablePlot")
 async def process_files(file_paths: List[str]):
-    
     try:
         results = []
         for file_path in file_paths:

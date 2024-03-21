@@ -1,6 +1,5 @@
 import numpy as np
 import scanpy as sc
-import scrublet as scr
 import warnings
 warnings.filterwarnings('ignore')
 # sys.path.append('..')
@@ -11,11 +10,18 @@ from tools.utils.reduction import run_dimension_reduction
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')
+from utils.redislogger import RedisLogger
 
 
-def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, regress_cell_cycle=False):
+def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, expected_doublet_rate=0.076, regress_cell_cycle=False, random_state=0):
+        
+        # Instantiate RedisLogger
+        redislogger = RedisLogger()
+
         if adata is None:
             raise ValueError("The input is None.")
+        
+        redislogger.info(unique_id, "Started Scanpy Quality Control Process")
         
         if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
             if adata.raw.X is not None:
@@ -50,6 +56,7 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
             | is_outlier(adata, "pct_counts_in_top_20_genes", 5)
         )
         adata.obs.outlier.value_counts()
+        redislogger.info(unique_id, "In Progress Scanpy Quality Control Process")
 
         adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
             adata.obs["pct_counts_mt"] > 8
@@ -69,11 +76,17 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
         else: 
             adata.layers["raw_counts"] = adata.X.copy() # preserve counts
 
-        scrub = scr.Scrublet(adata.X, expected_doublet_rate = 0.076)
-        adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
-                                                                min_gene_variability_pctl=85, n_prin_comps=30)
-        adata.obs['predicted_doublets'].value_counts()
-        # adata=adata[adata.obs.predicted_doublets=="False", :]
+        try:
+            if expected_doublet_rate !=0 and 'predicted_doublets' not in adata.obs.keys():
+                import scrublet as scr
+                scrub = scr.Scrublet(adata.X, expected_doublet_rate=expected_doublet_rate)
+                adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
+                                                                        min_gene_variability_pctl=85, n_prin_comps=30)
+                adata.obs['predicted_doublets'].value_counts()
+                # adata=adata[adata.obs.predicted_doublets=="False", :]
+        except Exception as e:
+            print("An error occurred when running Scrublet. Skipping... ")
+            print(e)
         
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
@@ -87,14 +100,20 @@ def run_scanpy_qc(adata, min_genes=200, max_genes=None, min_cells=3, target_sum=
 
         # Regress both S score and G2M score for cell cycle
         if(regress_cell_cycle):
-             adata = regress_cell_cycle(adata)
+            try:
+                adata = regress_cell_cycle(adata)
+            except Exception as e:
+                print("An error occurred when regressing cell cycle. Skipping... ")
+                print(e)
+
 
         if isinstance(adata.X, np.ndarray):
             adata.X = csr_matrix(adata.X)
 
         adata.layers["log10k"] = adata.X.copy()
 
-        adata = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution)
+        adata = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
+        redislogger.info(unique_id, "Finished Scanpy Quality Control Process")
 
         # return adata, output
         return adata

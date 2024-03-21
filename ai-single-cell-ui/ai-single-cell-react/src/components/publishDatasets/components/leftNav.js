@@ -4,16 +4,16 @@ function LeftNav({ activeTask, setActiveTask, taskStatus, taskData, setTaskData,
 
   const uploadTasks = [
     { id: 1, name: 'Upload', completed: taskStatus[1] },
-    { id: 2, name: 'Validation', completed: taskStatus[2] },
-    { id: 3, name: 'QC', completed: taskStatus[3] },
-    { id: 4, name: 'Metadata', completed: taskStatus[4] },
+    // { id: 2, name: 'Validation', completed: taskStatus[2] },
+    { id: 2, name: 'QC', completed: taskStatus[2] },
+    { id: 3, name: 'Metadata', completed: taskStatus[3] },
     // Add other upload tasks here
   ];
 
   const tbTasks = [
-    { id: 5, name: 'Task Builder', completed: taskStatus[5] },
-    { id: 6, name: 'Benchmarks', completed: taskStatus[6] },
-    { id: 7, name: 'Review', completed: taskStatus[7] },
+    { id: 4, name: 'Task Builder', completed: taskStatus[4] },
+    { id: 5, name: 'Benchmarks', completed: taskStatus[5] },
+    { id: 6, name: 'Review', completed: taskStatus[6] },
     // Add other task builder tasks here
   ];
 

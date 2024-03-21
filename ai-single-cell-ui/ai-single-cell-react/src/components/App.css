@@ -1210,14 +1210,14 @@ Updates Page */
   margin-top: 1rem;
 }
 
-.common-class-tools-and-workflows label {
+.common-class-tools-and-workflows .form-component label {
   display: block;
   margin-bottom: 0.5rem;
 }
 
-.common-class-tools-and-workflows input,
-.common-class-tools-and-workflows select,
-.common-class-tools-and-workflows textarea {
+.common-class-tools-and-workflows .form-component input,
+.common-class-tools-and-workflows .form-component select,
+.common-class-tools-and-workflows .form-component textarea {
     display: block;
     width: 100%;
     padding: 0.375rem 0.75rem;
@@ -1231,26 +1231,30 @@ Updates Page */
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   }
 /* 
-  .common-class-tools-and-workflows select.form-control {
+  .common-class-tools-and-workflows .form-component select.form-control {
     height: 40px;
   } */
 
-  .common-class-tools-and-workflows select option {
+  .common-class-tools-and-workflows .form-component select option {
     padding: 5px; /* Add some padding to each option */
     margin: 5px 0;
   }
 
+  .common-class-tools-and-workflows .inputData-management .datasets-input-select ul {
+    padding-left: 0px;
+  }
+
   .datasets-input-select {
-    width: 80%;
+    width: 100%;
   }
 
   .datasets-input-select select {
     overflow: auto;
   }
 
-  .common-class-tools-and-workflows input:focus,
-  .common-class-tools-and-workflows select:focus,
-  .common-class-tools-and-workflows textarea:focus {
+  .common-class-tools-and-workflows .form-component input:focus,
+  .common-class-tools-and-workflows .form-component select:focus,
+  .common-class-tools-and-workflows .form-component textarea:focus {
     border-color: #80bdff;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -1263,6 +1267,12 @@ Updates Page */
   .inputData-management .icons-wrap-input {
     margin-right: 10px;
   }
+
+  .inputData-management .icons-wrap-input button.database-icon-input{
+    border: 1px solid #bdc6d0;
+    padding: 7px 10px;
+    margin-right: 5px;
+  }
   .inputData-management .icons-wrap-input svg{
     background-color: rgb(218, 236, 248);
   }
@@ -1273,13 +1283,13 @@ Updates Page */
     border: 1px solid #bdc6d0;
   } */
 
-  .inputData-management .icons-wrap-input button{
+  /* .inputData-management .icons-wrap-input button{
     background-color: rgb(218, 236, 248);
     border: 1px solid #bdc6d0;
     padding: 7px 10px;
     margin-left: -1px;
     cursor: pointer;
-  }
+  } */
   .inputData-management button.input-path-button {
     padding: 7px 10px;
     background-color: #dee2e6;
@@ -1319,10 +1329,10 @@ Updates Page */
   }
 
   .inputData-management .common-row-wrap {
-    padding-bottom: 16px;
-  }
+    padding-top: 2px;
+    }
 
-  .common-class-tools-and-workflows button[type="submit"] {
+  .common-class-tools-and-workflows .form-component button[type="submit"] {
     color: #fff;
     background-color: #007bff;
     border-color: #007bff;
@@ -1340,7 +1350,7 @@ Updates Page */
       border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   }
 
-  .common-class-tools-and-workflows button[type="submit"]:hover {
+  .common-class-tools-and-workflows .form-component button[type="submit"]:hover {
     color: #fff;
     background-color: #0069d9;
     border-color: #0062cc;
@@ -1696,4 +1706,9 @@ width
 
 .session-manager-component .modal-button.no {
   background: #f44336;
+}
+
+
+.MuiTypography-h6,.MuiTypography-body1  {
+  font-size: 15px !important;
 }

@@ -17,7 +17,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
     
 
      #Get the absolute path for the given input
-    input = get_input_path(input, userID)
+    # input = get_input_path(input, userID)
     #Get the absolute path for the given output
     output = get_output(output, userID,task_id)
     methods = [x.upper() for x in methods if isinstance(x,str)]
@@ -34,7 +34,7 @@ def run_qc(task_id, dataset, input,userID, output, methods, idtype='SYMBOL', col
         # Scanpy QC
         if "SCANPY" in methods:
             try:
-                adata = run_scanpy_qc(adata)
+                adata = run_scanpy_qc(adata, userID)
                 output_path = get_output_path(dataset, output, method='scanpy')
                  # Save AnnData object
                 adata.write_h5ad(output_path, compression='gzip')

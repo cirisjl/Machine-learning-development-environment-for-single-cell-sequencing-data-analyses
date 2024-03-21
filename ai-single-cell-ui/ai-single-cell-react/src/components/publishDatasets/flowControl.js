@@ -6,7 +6,7 @@ const FlowControl = () => {
 
   const [flow, setFlow] = useState('');
 
-  const [activeTask, setActiveTask] = useState(5); // Initialize with the first task
+  const [activeTask, setActiveTask] = useState(4); // Initialize with the first task
 
   const [taskStatus, setTaskStatus] = useState({
     1: false, // Task 1 is initially not completed
@@ -15,7 +15,6 @@ const FlowControl = () => {
     4: false,
     5: false,
     6: false,
-    7: false
     // Add other tasks here
   });
 
@@ -24,15 +23,30 @@ const FlowControl = () => {
     upload: {
       files:[]
     },
-    validation: {
-        inputFiles: [],
-        seuratFiles: [],
-        selectedSeuratFile: null,
-        fileMappings:[],
-        token: ''
-      },
+    // validation: {
+    //     inputFiles: [],
+    //     seuratFile: {
+    //       default_assay: '',
+    //       assay_names: [],
+    //       file: ''
+    //     } ,
+    //     selectedAssayName: '',
+    //     fileMappings:[],
+    //     token: '',
+    //     displayAssayNames: false
+    //   },
     quality_control: {
-      qc_results: []
+      qc_results: [],
+      file_paths: [],
+      seurat_meta: {
+        default_assay: '',
+        assay_names: [],
+        file: '',
+        displayAssayNames: false
+      } ,
+      shouldHideForSeurat: false,
+      token: '',
+      selectedAssayName:''
     },
     metadata: {
       formData: {
@@ -110,7 +124,7 @@ const FlowControl = () => {
 
   const startFromFourthStep = () => {
     setFlow('taskBuilder');
-    setActiveTask(5);
+    setActiveTask(4);
   };
 
   return (

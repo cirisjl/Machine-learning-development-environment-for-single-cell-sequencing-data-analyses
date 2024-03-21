@@ -8,12 +8,13 @@ import close_icon from '../../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../../assets/close_icon_u86_mouseOver.svg';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from 'react-router-dom';
 
 function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
 
-  let jwtToken = getCookie('jwtToken');
-
   let pwd = "tempStorage/";
+  const navigate = useNavigate();
+
 
   // State to manage error messages
   const [fileError, setFileError] = useState('');
@@ -108,7 +109,7 @@ function getStandardFileName(fileName, fileType) {
   const removeFile = async (item, indexToRemove) => {
     try {
       // Send request to backend to delete the file
-      await axios.delete(`${SERVER_URL}/api/storage/delete-file?fileName=${item}&authToken=${jwtToken}&newDirectoryPath=tempStorage`);
+      await axios.delete(`${SERVER_URL}/api/storage/delete-file?fileName=${item}&authToken=${getCookie('jwtToken')}&newDirectoryPath=tempStorage`);
 
       // If successful, update the state to remove the file from the list
       setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
@@ -157,7 +158,7 @@ function getStandardFileName(fileName, fileType) {
             if (!acceptedMultiFileNames.includes(fileName)) {
                     selectedFiles[i] = selectedAliases[i];
             
-                fetch(`${SERVER_URL}/api/storage/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}&authToken=${jwtToken}`, {
+                fetch(`${SERVER_URL}/api/storage/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -202,21 +203,22 @@ function getStandardFileName(fileName, fileType) {
           // Move the uploaded files from tempStorage to the new directory
           await moveFilesToNewDirectory(newDirectoryPath); 
 
+          // Update the state of the task in the taskData state
+          setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            upload: {
+              ...prevTaskData.upload,
+              status: 'completed',
+              newDirectoryPath: newDirectoryPath,
+              isMultiFileDataset: isMultiFileDataset
+            },
+          }));
+
           setTaskStatus((prevTaskStatus) => ({
             ...prevTaskStatus,
             1: true, // Mark Task 1 as completed
           }));
         
-          // Update the state of the task in the taskData state
-        setTaskData((prevTaskData) => ({
-          ...prevTaskData,
-          upload: {
-            ...prevTaskData.upload,
-            status: 'completed',
-            newDirectoryPath: newDirectoryPath,
-            isMultiFileDataset: isMultiFileDataset
-          },
-        }));
       }
 
       //The current task is finished, so make the next task active
@@ -229,6 +231,23 @@ function getStandardFileName(fileName, fileType) {
     }
     console.log(taskData);
   };
+
+  useEffect(() => {
+    isUserAuth(getCookie('jwtToken'))
+    .then((authData) => {
+      if (authData.isAdmin) {
+        console.log("User is admin and has access to this page");
+
+      }  else {
+        console.warn("Unauthorized - you must be an admin to access this page");
+        navigate("/accessDenied");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }, []);
+
 
   return (
     <div className='upload-task'>
@@ -273,7 +292,7 @@ function getStandardFileName(fileName, fileType) {
                 </div>
             </div>
         </div>}
-        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={jwtToken} publicDatasetFlag= {true} setFileError={setFileError} setTaskData = {setTaskData} context="benchmarks" />
+        <UppyUploader toPublishDataset={true} isUppyModalOpen={true} pwd={pwd} authToken={getCookie('jwtToken')} publicDatasetFlag= {true} setFileError={setFileError} setTaskData = {setTaskData} context="benchmarks" />
         {/* {taskData.upload.files && 
           <div className="uploaded-files">
             <h3 className="file-list-heading">Uploaded Files:</h3>

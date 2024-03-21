@@ -71,7 +71,7 @@ const SessionReminder = () => {
 
     const { exp } = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-    const timeUntilModal = (exp - 60) - currentTime; // Time until 5 minutes before expiration
+    const timeUntilModal = (exp - 300) - currentTime; // Time until 5 minutes before expiration
 
     if (timeUntilModal <= 0 && exp - currentTime > 0) {
         setIsModalOpen(true); // Show the modal immediately if within last 5 minutes

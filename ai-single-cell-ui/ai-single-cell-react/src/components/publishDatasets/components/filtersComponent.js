@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 
 
-const FilterComponent = ({ name, options, activeFilters, onFilterChange, onApplyFilters}) => {
+const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, onApplyFilters}) => {
 
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -13,6 +13,11 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, onApply
     const handleApplyButtonClick = () => {
         onApplyFilters();
     };
+
+    // Ensure options is always treated as an array
+    const filteredOptions = options.filter(option => 
+        option._id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className='facet'>
@@ -47,11 +52,7 @@ const FilterComponent = ({ name, options, activeFilters, onFilterChange, onApply
 
                                 <div className='filters-options'>
                                     <ul>
-                                    {options
-                                        .filter((option) =>
-                                            option._id.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .map((option) => (
+                                    {filteredOptions.map((option) => (
                                             <li key={option._id}>
                                                 <label>
                                                     <input

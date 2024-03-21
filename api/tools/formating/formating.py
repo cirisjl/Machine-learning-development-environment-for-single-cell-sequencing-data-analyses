@@ -26,6 +26,8 @@ from rpy2.robjects.conversion import localconverter
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
+import json_numpy
+
 
 # Ensure that pandas2ri is activated for automatic conversion
 pandas2ri.activate()
@@ -181,14 +183,15 @@ def get_metadata_from_seurat(path):
 
 def get_metadata_from_anndata(adata):
     layers = None
-    cell_metadata = None
+    cell_metadata_obs = None
     nCells = 0
     nGenes = 0
     genes = None
     cells = None
     gene_metadata = None
-    embeddings = None
+    embeddings = []
     umap_plot = None
+    umap_plot_3d = None
     violin_plot = None
     scatter_plot = None
     highest_expr_genes_plot = None
@@ -204,13 +207,17 @@ def get_metadata_from_anndata(adata):
         genes = adata.var_names.to_list() # Cell IDs
         cells = adata.obs_names.to_list() # Gene IDs
         gene_metadata = adata.var # pandas dataframe
-        embeddings = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        for name in embedding_names:
+            embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+
         umap_plot = plot_UMAP(adata)
+        umap_plot_3d = plot_UMAP(adata, n_dim=3)
         violin_plot = plot_violin(adata)
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
-    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
+    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object

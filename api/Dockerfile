@@ -16,12 +16,14 @@ FROM stormgod/oscb-seurat:4.4
 # RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'
 # RUN R --no-echo --no-restore --no-save -e "install.packages('SeuratObject')"
 # RUN R --no-echo --no-restore --no-save -e "install.packages('igraph')"
-# RUN R --no-echo --no-restore --no-save -e "install.packages('irlba', type='source')"
+# RUN R --no-echo --no-restore --no-save -e "install.packages("irlba", type="source", force=TRUE)"
 # RUN R --no-echo --no-restore --no-save -e "install.packages('magick')"
 # RUN Rscript -e 'BiocManager::install("singleCellTK")'
 
 # Install DoubletFinder
-RUN R --no-echo --no-restore --no-save -e "remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')"
+# RUN R --no-echo --no-restore --no-save -e "remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')"
+
+# RUN pip install --upgrade --no-cache json-numpy
 
 # RUN mkdir /app
 WORKDIR /app
