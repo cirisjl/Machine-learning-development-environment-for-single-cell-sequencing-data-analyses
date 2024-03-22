@@ -22,7 +22,7 @@ from tools.run_evaluation import run_evaluation
              name='tools:create_qc_task')
 def create_qc_task(self, dataset, input, userID, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
     task_id = self.request.id
-    results = run_qc(task_id,dataset, input, userID, output, methods, show_error = True)
+    results = run_qc(task_id, dataset, input, userID, output, methods, show_error = True)
     return results
 
 

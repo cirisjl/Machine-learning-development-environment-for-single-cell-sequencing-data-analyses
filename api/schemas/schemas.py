@@ -1,5 +1,21 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+
+class QCParameters(BaseModel):
+    assay: Optional[str] =  Field(default='RNA')
+    doublet_rate: float = Field(default=0)
+    min_genes: int = Field(default=200)
+    max_genes: int = Field(default=0)
+    min_cells: int = Field(default=2)
+    target_sum: int = Field(default=1e4)
+    n_top_genes: int = Field(default=2000)
+    n_neighbors: int = Field(default=15)
+    n_pcs: int = Field(default=1)
+    resolution: float = Field(default=1)
+    regress_cell_cycle: Optional[bool] = False
+    use_default: Optional[bool] = True
 
 
 
@@ -20,6 +36,7 @@ class Dataset(BaseModel):
     colour_by: Optional[str] = None
     shape_by_1: Optional[str] = None
     shape_by_2: Optional[str] = None
+    qc_params: Optional[QCParameters] = None
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
     
