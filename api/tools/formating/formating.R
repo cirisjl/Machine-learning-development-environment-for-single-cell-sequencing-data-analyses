@@ -9,6 +9,11 @@ library(Signac)
 # library(scDblFinder)
 library(BiocParallel)
 # library(loomR)
+library(redux)
+
+
+# Redis connection for logging
+r <- redux::hiredis(redis_config(host='redis', port=6381, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0))
 
 
 # Get suffix of the file
@@ -702,4 +707,20 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   if (!is.null(outFile)) saveRDS(object = srat, file = outFile)
 
   srat
+}
+
+
+# Log functions
+RedisInfo <- function(unique_id, msg){
+    r$LPUSH(unique_id, paste0('INFO     | ', msg))
+}
+
+
+RedisWarning <- function(unique_id, msg){
+    r$LPUSH(unique_id, paste0('WARNING  | ', msg))
+}
+
+
+RedisError <- function(unique_id, msg){
+    r$LPUSH(unique_id, paste0('ERROR    | ', msg))
 }
