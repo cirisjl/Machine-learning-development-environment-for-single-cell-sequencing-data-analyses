@@ -10,19 +10,15 @@ from tools.utils.reduction import run_dimension_reduction
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')
-from utils.redislogger import RedisLogger
+from utils.redislogger import redislogger
 
 
 def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=None, resolution=1, expected_doublet_rate=0.076, regress_cell_cycle=False, random_state=0):
-        
-        # Instantiate RedisLogger
-        redislogger = RedisLogger()
-
         if adata is None:
-            raise ValueError("The input is None.")
-        
-        redislogger.info(unique_id, "Started Scanpy Quality Control Process")
-        
+            raise ValueError("Failed to load AnnData object.")
+        # AnnData information
+        redislogger.info(unique_id, adata.__str__())
+
         if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
             if adata.raw.X is not None:
                 adata.layers["normalized_X"] = adata.X.copy()
@@ -37,36 +33,40 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         adata.var_names_make_unique()
 
         # Filtering low quality reads
+        redislogger.info(unique_id, "Filtering low quality reads.")
         if max_genes is not None:
             sc.pp.filter_cells(adata, min_genes=min_genes, max_genes=max_genes)
         else:
             sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_cells=min_cells)
         # mitochondrial genes
+        redislogger.info(unique_id, "Removing mitochondrial genes.")
         adata.var['mt']=adata.var_names.str.startswith('MT-')
         # ribosomal genes
+        redislogger.info(unique_id, "Removing ribosomal genes.")
         adata.var["ribo"] = adata.var_names.str.startswith(("RPS", "RPL"))
-        # hemoglobin genes.
+        # hemoglobin genes
+        redislogger.info(unique_id, "Removing hemoglobin genes.")
         adata.var["hb"] = adata.var_names.str.contains(("^HB[^(P)]"))
         sc.pp.calculate_qc_metrics(adata, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True)
 
+        redislogger.info(unique_id, "Caculating outliers.")
         adata.obs["outlier"] = (
             is_outlier(adata, "log1p_total_counts", 5)
             | is_outlier(adata, "log1p_n_genes_by_counts", 5)
             | is_outlier(adata, "pct_counts_in_top_20_genes", 5)
         )
-        adata.obs.outlier.value_counts()
-        redislogger.info(unique_id, "In Progress Scanpy Quality Control Process")
-
+        redislogger.info(unique_id, f"Number of outliers: {adata.obs.outlier.value_counts()}")
+    
         adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
             adata.obs["pct_counts_mt"] > 8
-        )
-        adata.obs.mt_outlier.value_counts()
+        )  
+        redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")
 
-        print(f"Total number of cells: {adata.n_obs}")
+        redislogger.info(unique_id, f"Total number of cells: {adata.n_obs}")
         adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
 
-        print(f"Number of cells after filtering of low quality cells: {adata.n_obs}")
+        redislogger.info(unique_id, f"Number of cells after filtering of low quality cells: {adata.n_obs}")
 
         # adata=adata[adata.obs.n_genes_by_counts < 2500, :]
         # adata=adata[adata.obs.pct_counts_mt < 5, :]
@@ -78,6 +78,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
 
         try:
             if expected_doublet_rate !=0 and 'predicted_doublets' not in adata.obs.keys():
+                redislogger.info(unique_id, "Anotating doublelets.")
                 import scrublet as scr
                 scrub = scr.Scrublet(adata.X, expected_doublet_rate=expected_doublet_rate)
                 adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
@@ -85,13 +86,13 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
                 adata.obs['predicted_doublets'].value_counts()
                 # adata=adata[adata.obs.predicted_doublets=="False", :]
         except Exception as e:
-            print("An error occurred when running Scrublet. Skipping... ")
-            print(e)
+            redislogger.warning(unique_id, f"An error occurred when running Scrublet, skipped: {e}")
         
+        redislogger.info(unique_id, f"Normalizing dataset usig log{target_sum}.")
         sc.pp.normalize_total(adata, target_sum=target_sum)
 
         sc.pp.log1p(adata)
-
+        redislogger.info(unique_id, "Finding highly variable genes.")
         sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
 
         adata=adata[:, adata.var.highly_variable] # Do the filtering
@@ -101,19 +102,18 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # Regress both S score and G2M score for cell cycle
         if(regress_cell_cycle):
             try:
+                redislogger.info(unique_id, "Regressing cell cycle.")
                 adata = regress_cell_cycle(adata)
             except Exception as e:
-                print("An error occurred when regressing cell cycle. Skipping... ")
-                print(e)
-
+                redislogger.warning(unique_id, f"An error occurred when regressing cell cycle, skipped: {e}")
 
         if isinstance(adata.X, np.ndarray):
             adata.X = csr_matrix(adata.X)
 
         adata.layers["log10k"] = adata.X.copy()
-
+        redislogger.info(unique_id, "Computing PCA, neighborhood graph, tSNE, UMAP, 3D UMAP and clustering the neighborhood graph.")
         adata = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
-        redislogger.info(unique_id, "Finished Scanpy Quality Control Process")
+        redislogger.info(unique_id, "Scanpy Quality Control is completed.")
 
         # return adata, output
         return adata

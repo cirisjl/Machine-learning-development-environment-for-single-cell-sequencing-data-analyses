@@ -120,6 +120,7 @@ def change_file_extension(file_path, new_extension):
 
     return new_file_path
 
+
 def get_metadata_from_seurat(path):
     import rpy2.rinterface_lib.callbacks as rcb
     import rpy2.robjects as ro
@@ -181,7 +182,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata):
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=None, seurat_path=None, sce_path=None):
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -196,8 +197,8 @@ def get_metadata_from_anndata(adata):
     scatter_plot = None
     highest_expr_genes_plot = None
     info = None
+    pp_results = None
 
-    print(adata)
     if adata is not None and isinstance(adata, AnnData):
         info = adata.__str__()
         layers = list(adata.layers.keys())
@@ -216,8 +217,33 @@ def get_metadata_from_anndata(adata):
         violin_plot = plot_violin(adata)
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
+
+        pp_results = {
+            "process_id": process_id,
+            "stage": pp_stage,
+            "process": process,
+            "method": method,
+            "parameters": parameters,
+            "info": info,
+            "adata_path": adata_path,
+            "seurat_path": seurat_path,
+            "sce_path": sce_path,
+            "layers": layers,
+            "cell_metadata_obs": cell_metadata_obs.to_dict(),
+            "gene_metadata": gene_metadata.to_dict(),
+            "nCells": nCells,
+            "nGenes": nGenes,
+            "genes": genes,
+            "cells": cells,
+            "embeddings": embeddings,
+            "umap_plot": umap_plot,
+            "umap_plot_3d": umap_plot_3d,
+            "violin_plot": violin_plot,
+            "scatter_plot": scatter_plot,
+            "highest_expr_genes_plot": highest_expr_genes_plot
+            }
         
-    return info, layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, umap_plot_3d, violin_plot, scatter_plot, highest_expr_genes_plot
+    return pp_results
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
@@ -360,25 +386,40 @@ def detect_delimiter(file_path):
 #     return output
 
 
-def get_output_path(dataset, output, method = '', format = "AnnData"):
-    output = os.path.abspath(output)
+def get_output_path(path, dataset=None, method = '', format = "AnnData"):
+    output = os.path.abspath(path)
     if method != '': method = '_' + method
-    
-    if not os.path.exists(output):
-        os.makedirs(output)
+    directory, base_name = os.path.split(output.rstrip('/'))
 
-    if format == "AnnData":
-        output_path = os.path.join(output, dataset + method + ".h5ad")
-        print(output_path)
-        print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
-    elif format == "SingleCellExperiment":
-        output_path = os.path.join(output, dataset + method + ".rds")
-        print(output_path)
-        print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
-    elif format == "Seurat":
-        output_path = os.path.join(output, dataset + method + ".h5seurat")
-        print(output_path)
-        print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    if os.path.isdir(output):
+        if dataset is None:
+            dataset = base_name
+        if format == "AnnData":
+            output_path = os.path.join(output, dataset + method + ".h5ad")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
+        elif format == "SingleCellExperiment":
+            output_path = os.path.join(output, dataset + method + ".rds")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
+        elif format == "Seurat":
+            output_path = os.path.join(output, dataset + method + ".h5seurat")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+    else:
+        if format == "AnnData":
+            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5ad")
+            print(output_path)
+        elif format == "SingleCellExperiment":
+            output_path = output.replace(os.path.splitext(output)[-1], method + ".rds")
+            print(output_path)
+        elif format == "Seurat":
+            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5seurat")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
     
     return output_path
 

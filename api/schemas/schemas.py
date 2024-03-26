@@ -3,40 +3,62 @@ from pydantic import BaseModel, Field
 
 
 
+# class QCParameters(BaseModel):
+#     assay: Optional[str] =  Field(default='RNA')
+#     doublet_rate: float = Field(default=0)
+#     min_genes: int = Field(default=200)
+#     max_genes: int = Field(default=0)
+#     min_cells: int = Field(default=2)
+#     target_sum: int = Field(default=1e4)
+#     n_top_genes: int = Field(default=2000)
+#     n_neighbors: int = Field(default=15)
+#     n_pcs: int = Field(default=1)
+#     resolution: float = Field(default=1)
+#     regress_cell_cycle: Optional[bool] = False
+#     use_default: Optional[bool] = True
+
+
+
 class QCParameters(BaseModel):
-    assay: Optional[str] =  Field(default='RNA')
-    doublet_rate: float = Field(default=0)
-    min_genes: int = Field(default=200)
-    max_genes: int = Field(default=0)
-    min_cells: int = Field(default=2)
-    target_sum: int = Field(default=1e4)
-    n_top_genes: int = Field(default=2000)
-    n_neighbors: int = Field(default=15)
-    n_pcs: int = Field(default=1)
-    resolution: float = Field(default=1)
+    min_genes: int = 200
+    max_genes: int = 0
+    min_cells: int = 2
+    target_sum: int =1e4
+    n_top_genes: int = 2000
+    n_neighbors: int = 15
+    n_pcs: int = 1 # Scanpy
+    resolution: float = 1
+    doublet_rate: Optional[float] = 0
     regress_cell_cycle: Optional[bool] = False
     use_default: Optional[bool] = True
+ 
+    # Bioconductor
+    colour_by: Optional[str] = 'NULL' # Color by for plots
+    shape_by_1: Optional[str] = 'NULL'  # Shape by 1 for plots
+    shape_by_2: Optional[str] = 'NULL'  # Shape by 2 for plots
+
+
+
+class imputationParameters(BaseModel):
+    genes: Optional[List[str]]
+    ncores: Optional[int] = 12
 
 
 
 class Dataset(BaseModel):
-    dataset: str
+    dataset: Optional[str] # Tittle of datasets
     input: str
-    output: str
-    userID: str
-    output_format: str
-    methods: List[str] = None
-    default_assay: Optional[str] = 'RNA' # Required for Seurat
-    layer: Optional[str] = None
-    path_of_scrublet_calls: Optional[str] = './scrublet_calls.tsv'
-    species: Optional[str] = None
-    idtype: Optional[str] = None 
-    genes: Optional[List[str]] = None
-    ncores: Optional[int] = 12
-    colour_by: Optional[str] = None
-    shape_by_1: Optional[str] = None
-    shape_by_2: Optional[str] = None
-    qc_params: Optional[QCParameters] = None
+    output: Optional[str]
+    userID: Optional[str]
+    task_id: Optional[str]
+    output_format: Optional[str] = 'AnnData'
+    methods: Optional[List[str]]
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str]
+    species: Optional[str] # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    idtype: Optional[str] # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    qc_params: Optional[QCParameters]
+    imputation_params: Optional[imputationParameters]
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
     
@@ -51,7 +73,6 @@ class IntegrationDataset(BaseModel):
     methods: List[str] = None
     default_assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    path_of_scrublet_calls: Optional[str] = './scrublet_calls.tsv'
     species: Optional[str] = None
     idtype: Optional[str] = None 
     genes: Optional[List[str]] = None

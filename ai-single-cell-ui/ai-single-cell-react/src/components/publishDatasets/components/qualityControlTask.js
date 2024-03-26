@@ -28,7 +28,7 @@ const defaultValues = {
   resolution: 1,
   regress_cell_cycle: false,
   use_default: true,
-  doublet_rate: 0.08
+  doublet_rate: 0
 };
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
