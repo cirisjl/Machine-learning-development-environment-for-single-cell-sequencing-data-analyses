@@ -710,6 +710,18 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
 }
 
 
+SaveSeurat <- function(srat, output){
+    tryCatch({
+        SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
+    }, error = function(e) {
+        print(paste0("Failed to save Seurat object to h5seurat, changing file format to RDS: ", e$message))
+        output = gsub("h5seurat", "rds", output)
+        saveRDS(object=srat, file=output)
+    })
+    output
+}
+
+
 # Log functions
 RedisInfo <- function(unique_id, msg){
     r$LPUSH(unique_id, paste0('INFO     | ', msg))
