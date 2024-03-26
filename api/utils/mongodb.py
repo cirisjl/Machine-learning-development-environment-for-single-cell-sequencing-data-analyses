@@ -25,7 +25,7 @@ def pp_results_exists(process_id):
     return result
 
 
-def create_benchmarks(pp_results):
+def create_pp_results(pp_results):
     pp_results_collection.insert_one(pp_results)
     return
 
