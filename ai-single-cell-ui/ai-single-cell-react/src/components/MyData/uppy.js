@@ -99,7 +99,8 @@ export default function UppyUploader(props) {
         console.log(res.data)
 
         // Add the hash to global store so it can be added as dataset metadata
-        setHashStore({ ...getHashStore(), datasetHashes: [...(getHashStore().datasetHashes || []), { file: file.name, hash: hash.hashResult, exists: res.data.exists }] })
+        // setHashStore({ ...getHashStore(), datasetHashes: [...(getHashStore().datasetHashes || []), { file: file.name, hash: hash.hashResult, exists: res.data.exists }] })
+        setHashStore({ file: file.name, hash: hash.hashResult, exists: res.data.exists })
 
         // Remove the file so it can't be uploaded
         if (res.data.exists === true) {

@@ -316,7 +316,7 @@ const handleAssaySelectionSubmit = async () => {
 
   const handleTaskCompletion = () => {
 
-      if(taskData.quality_control.qc_results.length > 0) {
+      if(taskData.quality_control.qc_results.length >= 0) {
         // Update the fileMappings state with the new list
         setTaskData((prevTaskData) => ({
           ...prevTaskData,

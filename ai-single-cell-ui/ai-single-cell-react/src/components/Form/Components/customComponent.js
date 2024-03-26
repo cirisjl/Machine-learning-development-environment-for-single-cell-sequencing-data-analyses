@@ -60,18 +60,27 @@ class MyForm extends Component {
     // Retrive formdata if hash of dataset file already exists
     const hashStore = getHashStore()
 
-    if (hashStore?.datasetHashes) {
-      hashStore.datasetHashes.filter(storeItem => storeItem.exists === true).map(storeItem => {
-        console.log("looping for metadata")
-        console.log(storeItem)
+    // if (hashStore?.datasetHashes) {
+    //   hashStore.datasetHashes.filter(storeItem => storeItem.exists === true).map(storeItem => {
+    //     console.log("looping for metadata")
+    //     console.log(storeItem)
 
-        axios.get(`${SERVER_URL}/mongoDB/api/metadata-from-hash?hash=${storeItem.hash}`)
-          .then(res => this.setState(prevState => ({
-            ...prevState,
-            formData: res.data
-          })))
-          .catch(err => console.log(err))
-      })
+    //     axios.get(`${SERVER_URL}/mongoDB/api/metadata-from-hash?hash=${storeItem.hash}`)
+    //       .then(res => this.setState(prevState => ({
+    //         ...prevState,
+    //         formData: res.data
+    //       })))
+    //       .catch(err => console.log(err))
+    //   })
+    // }
+
+    if (hashStore?.exists === true) {
+      axios.get(`${SERVER_URL}/mongoDB/api/metadata-from-hash?hash=${hashStore.hash}`)
+        .then(res => this.setState(prevState => ({
+          ...prevState,
+          formData: res.data
+        })))
+        .catch(err => console.log(err))
     }
   }
 
@@ -173,7 +182,7 @@ class MyForm extends Component {
 
   continueToTaskBuilder = (e) => {
     e.preventDefault();
-    const {setFlow, setActiveTask} = this.props;
+    const { setFlow, setActiveTask } = this.props;
     setActiveTask(4);
     setFlow('taskBuilder');
   }
@@ -212,42 +221,42 @@ class MyForm extends Component {
 
         formData.Id = constructedID;
 
-      //Add metadata
-      formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
-      formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
-      formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
-      formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
-      formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cell_metadata_obs);
-      formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
-      formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
-      formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
+        //Add metadata
+        formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
+        formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
+        formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
+        formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
+        formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cell_metadata_obs);
+        formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
+        formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
+        formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
 
-      //Add inputs
-      formData.inputFiles = taskData.quality_control.file_paths;
-      formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
+        //Add inputs
+        formData.inputFiles = taskData.quality_control.file_paths;
+        formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
-      // formData.taskOptions = this.state.options["Task"];
+        // formData.taskOptions = this.state.options["Task"];
 
-      // Add plots
-      formData['QC_Plots'] = {
-        "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
-        "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
-        "umap_plot_3d": taskData.quality_control.qc_results[0]?.umap_plot_3d,
-        "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
-        "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
-      }
+        // Add plots
+        formData['QC_Plots'] = {
+          "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
+          "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
+          "umap_plot_3d": taskData.quality_control.qc_results[0]?.umap_plot_3d,
+          "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
+          "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
+        }
 
-      formData['PP Stage'] = taskData.quality_control.qc_results[0]?.pp_results?.stage;
-      formData['MD5'] = taskData.quality_control.qc_results[0]?.md5;
-      formData['PP Method'] = taskData.quality_control.qc_results[0]?.pp_results?.method_id;
-      formData.Owner = taskData.quality_control.token;
-      formData.Category = "Public";
-      formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
-      formData.info = taskData.quality_control.qc_results[0]?.info;
-      formData.format = taskData.quality_control.qc_results[0]?.format;
-      formData.default_assay = taskData.quality_control.qc_results[0]?.default_assay;
-      formData.assay_names = taskData.quality_control.qc_results[0]?.assay_names;
-      formData.output = taskData.quality_control.qc_results[0]?.output;
+        formData['PP Stage'] = taskData.quality_control.qc_results[0]?.pp_results?.stage;
+        formData['MD5'] = taskData.quality_control.qc_results[0]?.md5;
+        formData['PP Method'] = taskData.quality_control.qc_results[0]?.pp_results?.method_id;
+        formData.Owner = taskData.quality_control.token;
+        formData.Category = "Public";
+        formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
+        formData.info = taskData.quality_control.qc_results[0]?.info;
+        formData.format = taskData.quality_control.qc_results[0]?.format;
+        formData.default_assay = taskData.quality_control.qc_results[0]?.default_assay;
+        formData.assay_names = taskData.quality_control.qc_results[0]?.assay_names;
+        formData.output = taskData.quality_control.qc_results[0]?.output;
 
       } else {
         const constructedID = `${species}-${tissue}-${author}-${year}`;
@@ -264,11 +273,14 @@ class MyForm extends Component {
 
       formData.flow = flow;
 
-      formData.hashes = getHashStore().datasetHashes
+      if (!formData.hashes) formData.hashes = [];
+      if (getHashStore()) formData.hashes.push(getHashStore())
+
       console.log(formData.hashes)
 
       axios.post(`${SERVER_URL}/mongoDB/api/submitDatasetMetadata`, formData)
         .then(response => {
+          console.log('Server Response:', response);
           console.log('Form data submitted successfully');
           this.setState({
             message: 'Dataset created Successfully!',
@@ -561,9 +573,9 @@ class MyForm extends Component {
 
                 {/* "Organ Part" (CreatableSelect) */}
                 <div className="form-field">
-                <div>
-                <label className="form-label">Organ Part:</label>
-                <span className="ui-form-title-message warning"> * required </span></div>
+                  <div>
+                    <label className="form-label">Organ Part:</label>
+                    <span className="ui-form-title-message warning"> * required </span></div>
                   <CreatableSelect
                     name="Organ Part"
                     value={formData['Organ Part']}
