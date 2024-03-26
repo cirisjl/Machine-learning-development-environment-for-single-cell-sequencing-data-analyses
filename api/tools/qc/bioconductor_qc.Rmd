@@ -6,6 +6,7 @@ params:
   dataset: NA
   input_path: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the SingleCellExperiment object.
+  adata_path: NULL # Output file path of the Anndata object.
   species: "human" # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
   idtype: "SYMBOL" # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
   colour_by: NULL # Color by for plots
@@ -228,6 +229,8 @@ sce.qc <- removeAltExps(sce.qc)
 # Name the Main Experiment "RNA"
 mainExpName(sce.qc) <- "RNA"
 saveRDS(sce.qc, file = params$output)
+# Convert and save to AnnData object
+adata <- Convert(from=sce.qc, to="anndata", filename = params$adata_path)
 print("SingleCellExperiment object is saved successfully.")
 sce.qc <- NULL
 ```

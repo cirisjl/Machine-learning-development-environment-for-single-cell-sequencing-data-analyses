@@ -78,7 +78,7 @@ RUN Rscript -e 'install.packages(c( \
     "pbapply", "irlba", "dtw", "plotly", "metap", "lmtest", "fitdistrplus", "Hmisc", "png", \
     "foreach", "vegan", "tidyr", "withr", "magrittr", "rmpi", "knitr", "future", "kableExtra", \
     "statmod", "mvoutlier", "penalized", "mgcv", "corrplot", "scales", "rliger", "pandoc", \
-    "rlang", "R6", "cli", "crayon", "SeuratObject", "stringi", "anndata", "loomR", \
+    "rlang", "R6", "cli", "crayon", "SeuratObject", "stringi", "anndata", "loomR", "redux", \
     "tinytex", "lsa", "uwot", "optparse", "DrImpute", "alluvial", "dplyr", "RColorBrewer", "Signac"))'
 # RUN Rscript -e 'tinytex::install_tinytex()'
 

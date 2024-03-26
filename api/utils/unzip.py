@@ -8,7 +8,7 @@ from utils.redislogger import *
 
 
 # zip files
-def extract_zip_all(zip_file_path):
+def extract_zip_all(unique_id, zip_file_path):
     extract_path = os.path.dirname(zip_file_path)
     try:
         with zipfile.ZipFile(zip_file_path,'r') as zip_ref:
@@ -19,13 +19,13 @@ def extract_zip_all(zip_file_path):
                 
             os.remove(zip_file_path) # Delete the zip file
     except Exception as e:
-        print('An error occurred:', str(e))
+        redislogger.error(unique_id, f'An error occurred: {e}')
         return None
         
     return extract_path
 
 # rar files
-def extract_rar_all(rar_file_path):
+def extract_rar_all(unique_id, rar_file_path):
     extract_path = os.path.dirname(rar_file_path)
     try:
         with rarfile.RarFile(rar_file_path,'r') as rar_ref:
@@ -36,13 +36,13 @@ def extract_rar_all(rar_file_path):
                 
             os.remove(rar_file_path) # Delete the zip file
     except Exception as e:
-        print('An error occurred:', str(e))
+        redislogger.error(unique_id, f'An error occurred: {e}')
         return None
         
     return extract_path
     
 # tar, tar.gz, bz2, xz files
-def extract_tar_all(gz_file_path):
+def extract_tar_all(unique_id, gz_file_path):
     extract_path = os.path.dirname(gz_file_path)
     try:
         with tarfile.open(gz_file_path,'r') as tar_ref:
@@ -55,7 +55,7 @@ def extract_tar_all(gz_file_path):
                 
             os.remove(gz_file_path) # Delete the zip file
     except Exception as e:
-        print('An error occurred:', str(e))
+        redislogger.error(unique_id, f'An error occurred: {e}')
         return None
         
     return extract_path
@@ -73,16 +73,16 @@ def traversal_subfolder(path):
         return list
 
 # Unzip file if it's compressed, toherwise return its original path
-def unzip_file_if_compressed(file_path):
+def unzip_file_if_compressed(unique_id, file_path):
     extract_path = file_path
     if os.path.exists(file_path):
         if file_path.endswith(".zip"):
-            extract_path = extract_zip_all(file_path)
+            extract_path = extract_zip_all(unique_id, file_path)
         elif file_path.endswith(".rar"):
-            extract_path = extract_rar_all(file_path)
+            extract_path = extract_rar_all(unique_id, file_path)
         elif is_tarfile(file_path) or file_path.endswith(".gz"):
-            extract_path = extract_tar_all(file_path)
+            extract_path = extract_tar_all(unique_id, file_path)
         else:
-            print("No compressed file is found in: " + file_path)
+            redislogger.info(unique_id, f"No compressed file is found in: {file_path}")
 
     return extract_path

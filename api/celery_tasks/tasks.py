@@ -6,7 +6,7 @@ from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
 from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
-
+from schemas.schemas import Dataset
 
 
 # def ConvertToAnndata_task(path):
@@ -20,9 +20,9 @@ from tools.run_evaluation import run_evaluation
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_qc_task')
-def create_qc_task(self, dataset, input, userID, output, methods, path_of_scrublet_calls='./scrublet_calls.tsv', show_error=True):
+def create_qc_task(self, ds:Dataset):
     task_id = self.request.id
-    results = run_qc(task_id, dataset, input, userID, output, methods, show_error = True)
+    results = run_qc(task_id, ds)
     return results
 
 

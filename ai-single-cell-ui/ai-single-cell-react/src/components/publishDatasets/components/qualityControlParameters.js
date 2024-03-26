@@ -266,13 +266,13 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                       valueLabelDisplay="auto"
                       valueLabelFormat={(value) => `${(value * 100).toFixed(2)}%`}
                       marks={[
-                        { value: 0, label: '0%' },
+                        { value: 0, label: '0%*' }, // Default
                         // { value: 0.008, label: '0.8%' },
                         // { value: 0.023, label: '2.3%' },
                         // { value: 0.038, label: '3.8%' },
                         // { value: 0.046, label: '4.6%' },
                         // { value: 0.061, label: '6.1%' },
-                        { value: 0.08, label: '8%*' }, // Default
+                        { value: 0.08, label: '8%' }, 
                         { value: 0.125, label: '12.5%' },
                         { value: 0.2, label: '20%' },
                         { value: 0.5, label: '50%' },
