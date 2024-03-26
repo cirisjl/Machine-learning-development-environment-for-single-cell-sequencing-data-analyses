@@ -2,11 +2,12 @@
   "type": "object",
   "properties": {
     "parameters": {
-      "type":"object",
-      "title": "Parameters for Quality Control",  
+      "type": "object",
+      "title": "Parameters for Quality Control",
       "required": [
-        "methods"  ,
-      "output_format"    ],
+          "methods"  ,
+          "output_format"
+        ],
       "properties": {
         "methods": {
           "type": "array",
@@ -17,6 +18,63 @@
           },
           "default": ["Scanpy"],
           "uniqueItems": true
+        },
+        "qualityControl": {
+          "type": "object",
+          "title": "Quality Control Parameters",
+          "description":"Note: An asterisk (*) indicates the default value.",
+          "properties": {
+            "min_cells": {
+              "type": "number",
+              "default": 3
+            },
+            "target_sum": {
+              "type": "number",
+              "default": 1e4
+            },
+            "n_top_genes": {
+              "type": "integer",
+              "default": 2000
+            },
+            "doublet_rate": {
+              "type": "number",
+              "default": 0.08
+            },
+            "regress_cell_cycle": {
+              "type": "boolean",
+              "default": false
+            },
+            "use_default": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "projectionParameters": {
+          "type": "object",
+          "title": "Projection Parameters",
+          "description":"Note: An asterisk (*) indicates the default value.",
+          "properties": {
+            "n_neighbors": {
+              "type": "integer",
+              "default": 15
+            },
+            "n_pcs": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        },
+        "clusteringParameters": {
+          "type": "object",
+          "title": "Clustering Parameters",
+          "description":"Note: An asterisk (*) indicates the default value.",
+          "properties": {
+            "resolution": {
+              "type": "number",
+              "default": 1.0
+            }
+          }
         },
         "output_format": { 
           "type": "string",
@@ -81,7 +139,7 @@
           "default": true,
           "format": "switch",
           "description": "Some description about the boolean flag"
-        }
+        } 
       }
     }
   }
