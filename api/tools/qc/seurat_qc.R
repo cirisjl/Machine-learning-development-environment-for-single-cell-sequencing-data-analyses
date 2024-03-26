@@ -10,14 +10,19 @@ source(here::here('tools/formating/formating.R')) # production
 # source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
-RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
-            stop("The file format is not supported.")
-            print(e)
+            # stop("The file format is not supported.")
+            # print(e)
+            RedisError(unique_id, paste0("The file format is not supported: ", e$message))
+            stop(paste0("The file format is not supported: ", e$message))
         }
     )
+
+    info <- print(srat)
+    RedisInfos(unique_id, info)
 
     default_assay <- NULL
     assay_names <- NULL
@@ -32,10 +37,11 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             DefaultAssay(srat) <- assay # If there is more than one assay, and the user provides assay, then set default assay to assay
         } 
         default_assay <- DefaultAssay(srat)
-        print(default_assay)
+        RedisInfo(unique_id, paste0("Setting default_assay to ", default_assay))
 
         if(IsNormalized(srat[[default_assay]]@counts, min_genes=min_genes)){
-            stop("Seurat QC only take raw counts, not normalized data.")
+            RedisError(unique_id, "Seurat QC only takes raw counts, not normalized data.")
+            stop("Seurat QC only takes raw counts, not normalized data.")
         }
 
         # Check either the default assay of the Seurat object is "RNA" or the assay is provided by the user.
@@ -45,45 +51,58 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
             if(!paste0("nFeature_", default_assay) %in% names(x = srat[[]])) srat[[paste0("nFeature_", default_assay)]] <- colSums(x = GetAssayData(object = srat[[default_assay]], slot = "counts") > 0)  # nFeature of the default assay
             
             # Calculate the percentage of mitocondrial per cell and add to the metadata.
+            RedisInfo(unique_id, "Calculating the percentage of mitocondrial per cell and add to the metadata.")
             if(! "percent.mt" %in% names(x = srat[[]])) srat[["percent.mt"]] <- PercentageFeatureSet(srat, pattern = "^MT-")
             # Calculate the proportion gene expression that comes from ribosomal proteins.
+            RedisInfo(unique_id, "Calculating the proportion gene expression that comes from ribosomal proteins.")
             if(! "percent.rb" %in% names(x = srat[[]])) srat[["percent.rb"]] <- PercentageFeatureSet(srat, pattern = "^RP[SL]")
 
             # Percentage hemoglobin genes - includes all genes starting with HB except HBP.
+            RedisInfo(unique_id, "Calculating the percentage hemoglobin genes - includes all genes starting with HB except HBP.")
             if(! "percent.hb" %in% names(x = srat[[]])) srat[["percent.hb"]] <- PercentageFeatureSet(srat, pattern = "^HB[^(P)]")
             if(! "percent.plat" %in% names(x = srat[[]])) srat[["percent.plat"]] <- PercentageFeatureSet(srat, pattern = "PECAM1|PF4")
 
+            RedisInfo(unique_id, "Filtering low quality genes/cells.")
             srat <- subset(srat, subset = paste0("nFeature_", default_assay) > min_genes & paste0("nCount_", default_assay) > min_UMI_count & percent.mt < percent_mt_max)
             if(max_genes != 0) srat <- subset(srat, subset = paste0("nFeature_", default_assay) < max_genes)
             if(max_UMI_count != 0) srat <- subset(srat, subset = paste0("nCount_", default_assay) < max_UMI_count)
             if(percent_rb_min != 0)  srat <- subset(srat, subset = percent.rb > percent_rb_min)
+            RedisInfo(unique_id, "Normalizing dataset using log10K.")
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
+            RedisInfo(unique_id, "Finding variable features.")
             srat <- FindVariableFeatures(srat, selection.method = "vst")
+            RedisInfo(unique_id, "Scaling dataset.")
             srat <- ScaleData(srat, features = rownames(srat))
 
             # PCA
             # srat <- RunPCA(srat, features = VariableFeatures(srat), ndims.print = 6:10, nfeatures.print = 10)
+            RedisInfo(unique_id, "Running PCA.")
             srat <- RunPCA(srat, features=VariableFeatures(srat))
 
             if(regress_cell_cycle){
                 tryCatch({
+                    RedisInfo(unique_id, "Regressing cell cycle.")
                     srat <- RegressCellCycle(srat)
                 }, error = function(e) {
-                print("An error occurred when regressing cell cycle. Skipping... ")
-                print(e$message)
-            }) 
+                    RedisWarning(unique_id, paste0("An error occurred when regressing cell cycle, skipped: ", e$message))
+                }) 
             }
 
+            RedisInfo(unique_id, "Finding neighbors.")
             srat <- FindNeighbors(srat, dims=dims)
+            RedisInfo(unique_id, "Running clustering.")
             srat <- FindClusters(srat, resolution=resolution)
             # TSNE
+            RedisInfo(unique_id, "Running TSNE.")
             srat <- RunTSNE(srat, dims=dims)
             # UMAP
+            RedisInfo(unique_id, "Running UMAP.")
             srat <- RunUMAP(srat, dims=dims)
 
             # Add the doublet annotation
             if(doublet_rate!=0 & (! "doublet_class" %in% names(x = srat[[]]))){
                 tryCatch({
+                    RedisInfo(unique_id, "Annotating doublets.")
                     ## pK Identification (no ground-truth)
                     set.seed(123)
                     sweep.res.list <- paramSweep(srat, PCs=1:10, sct=FALSE)
@@ -97,18 +116,22 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
                     colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"pANN_")] <- "doublet_score"
                     colnames(srat@meta.data)[str_starts(colnames(srat@meta.data),"DF.classifications_")] <- "doublet_class"
                 }, error = function(e) {
-                    print("An error occurred when running DoubletFinder. Skipping... ")
-                    print(e$message)
+                    RedisWarning(unique_id, paste0("An error occurred when running DoubletFinder, skipped: ", e$message))
                 })               
-            }
+            } 
 
             # srat <- subset(srat, subset = doublet_class == 'Singlet')
-
-            # SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
-            saveRDS(object = srat, file = output)
-            print("Seurat object is saved successfully.")
+            tryCatch({
+                SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
+            }, error = function(e) {
+                RedisWarning(unique_id, paste0("Failed to save Seurat object to h5seurat, changing file format to RDS: ", e$message))
+                output = gsub("h5seurat", "rds", output)
+                saveRDS(object=srat, file=output)
+            })
+            RedisInfo(unique_id, "Seurat object is saved successfully.")
             
-            if(!is.null(adata_path)){     
+            if(!is.null(adata_path)){    
+                RedisInfo(unique_id, "Converting Seurat object to AnnData object.") 
                 annData <- SeuratToAnndata(srat, out_file=adata_path, assay=assay)
             }
             ddl_assay_names <- FALSE
@@ -117,7 +140,7 @@ RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=2
         }
     }
     
-    list(default_assay=default_assay, assay_names=assay_names, adata_path=adata_path, ddl_assay_names=ddl_assay_names)
+    list(default_assay=default_assay, assay_names=assay_names, output=output, adata_path=adata_path, ddl_assay_names=ddl_assay_names)
 }
 
 

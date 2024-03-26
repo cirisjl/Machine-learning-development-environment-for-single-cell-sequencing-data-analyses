@@ -137,7 +137,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
             "n_neighbors": n_neighbors, # default: 15, step:1, range: [2, 100], scale: 1, 5, 10, 15(default), 20, 50, 100
             "n_pcs": n_pcs, # default: 0(None), step:1, range: [0, 200], scale: 0(None, default), 5, 10, 20, 40, 50, 125, 200 
             "resolution": resolution, # default: 1, step:0.05, range: [0, 5], scale: 0, 0.1, 0.25, 0.5, 1(default), 2.5, 5
-            "doublet_rate": doublet_rate, # default: 0.08, step:0.001, range: [0, 0.5], scale: 0, 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%(default), 12.5%, 20_, 50% Please show the scale in the form of percentage
+            "doublet_rate": doublet_rate, # default: 0, step:0.001, range: [0, 0.5], scale: 0(default), 0.8%, 2.3%, 3.8%, 4.6%, 6.1%, 8%, 12.5%, 20_, 50% Please show the scale in the form of percentage
             "regress_cell_cycle": regress_cell_cycle, # default: false, values: [true, false]
             "use_default": use_default # default: true, values: [true, false]
         }

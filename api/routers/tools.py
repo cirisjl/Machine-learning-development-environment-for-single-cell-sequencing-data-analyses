@@ -28,13 +28,22 @@ router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description
 
 #     return JSONResponse({"assay_names": assay_names,"adata_path": adata_path , "message" : "OK"})
 
+# @router.post("/qc")
+# async def create_qc_task_async(ds: Dataset):
+#     """
+#     Create a task for quality control
+#     """
+#     task = create_qc_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
+#     return JSONResponse({"task_id": task.id})
+
+
 @router.post("/qc")
 async def create_qc_task_async(ds: Dataset):
     """
     Create a task for quality control
     """
-    task = create_qc_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    results = create_qc_task.apply_async(args=[ds])
+    return JSONResponse(results)
 
 
 @router.post("/normalize")

@@ -32,6 +32,7 @@ def get_task_info(task_id):
     }
     return result
 
+
 def get_input_path(input, userID):
     """
     return the absolute input path for a given input

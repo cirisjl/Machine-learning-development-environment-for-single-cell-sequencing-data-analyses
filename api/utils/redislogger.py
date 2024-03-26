@@ -20,7 +20,7 @@ class RedisLogger:
     def read_log(self, unique_id, start, end):
         log_lines = []
         logs = self.r.lrange(unique_id, start, end)
-        self.r.ltrim(unique_id, start, end)
+        # self.r.ltrim(unique_id, start, end) # Delete records from the list
 
         for log in logs:
             log_lines.append(log.decode('utf-8'))
