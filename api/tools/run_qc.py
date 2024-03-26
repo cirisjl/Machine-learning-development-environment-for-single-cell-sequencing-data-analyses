@@ -22,6 +22,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
     input_path = unzip_file_if_compressed(ds.input)
     output = ds.output
     md5 = get_md5(input_path)
+    benchmarks_data = False
     if input_path is None:
         return None
 
@@ -41,6 +42,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
     output = get_output(output, ds.userID, task_id) # Tools
 
     if methods is None: # Benchmarks, because benchmarks does not have method paramter
+        benchmarks_data = True
         if input_path.endswith('.h5Seurat') or input_path.endswith('.h5seurat') or input_path.endswith('.rds') or input_path.endswith(".Robj"):
             methods = ["Seurat"]
         else:

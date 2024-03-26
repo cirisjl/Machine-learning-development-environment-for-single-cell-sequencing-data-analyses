@@ -6,9 +6,9 @@ mongo_url = "mongodb://mongodb:65528"
 client = MongoClient(mongo_url)
 # Access your database and collection
 db = client["ai-single-cell"]
-benchmarks = db.datasets
-user_datasets = db.get_collection("user-datasets")
-pp_results = db.get_collection("pp-results")
+datasets_collection = db.datasets
+user_datasets_collection = db.get_collection("user-datasets")
+pp_results_collection = db.get_collection("pp-results")
 
 
 def generate_process_id(file_md5, process, method, parameters):
@@ -21,10 +21,19 @@ def generate_process_id(file_md5, process, method, parameters):
 
 
 def pp_results_exists(process_id):
-    result = pp_results.find_one({'process_id': process_id})
+    result = pp_results_collection.find_one({'process_id': process_id})
     return result
 
 
-def create_pp_results(pp_results):
-    pp_results.find_one(pp_results)
+def create_benchmarks(pp_results):
+    pp_results_collection.insert_one(pp_results)
+    return
+
+
+def create_datasets(datasets):
+    datasets_collection.insert_one(datasets)
+    return
+
+def create_user_datasets(datasets):
+    user_datasets_collection.insert_one(datasets)
     return
