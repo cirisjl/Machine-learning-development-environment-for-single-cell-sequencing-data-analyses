@@ -45,6 +45,14 @@ class imputationParameters(BaseModel):
 
 
 
+class normalizationParameters(BaseModel):
+    n_neighbors: int = 15
+    n_pcs: int = 1 # Scanpy
+    resolution: float = 1
+    use_default: Optional[bool] = True
+
+
+
 class Dataset(BaseModel):
     dataset: Optional[str] # Tittle of datasets
     input: str
@@ -55,9 +63,10 @@ class Dataset(BaseModel):
     methods: Optional[List[str]]
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str]
-    species: Optional[str] # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
-    idtype: Optional[str] # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     qc_params: Optional[QCParameters]
+    normalization_params: Optional[normalizationParameters]
     imputation_params: Optional[imputationParameters]
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
