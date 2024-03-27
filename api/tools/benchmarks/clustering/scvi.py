@@ -8,7 +8,7 @@ from typing import Tuple
 import sys
 sys.path.append('..')
 # from tools.formating.formating import *
-from tools.utils.reduction import run_dimension_reduction
+from tools.reduction.reduction import run_dimension_reduction
 from tools.evaluation.monitor import *
 from tools.evaluation.clustering import clustering_scores
 

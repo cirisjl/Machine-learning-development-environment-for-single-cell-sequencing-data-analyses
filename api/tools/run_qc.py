@@ -10,10 +10,9 @@ from tools.qc.scrublet_calls import predict_scrublet
 from tools.formating.formating import *
 from config.celery_utils import get_output, benchmarks_output_path
 from utils.unzip import unzip_file_if_compressed
-# from utils.mongodb import db
 from fastapi import HTTPException, status
 from utils.redislogger import *
-from tools.utils.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 
 

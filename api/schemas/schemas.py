@@ -52,20 +52,29 @@ class normalizationParameters(BaseModel):
 
 
 
+class reductionParameters(BaseModel):
+    n_neighbors: int = 15
+    n_pcs: int = 1 # Scanpy
+    resolution: float = 1
+    use_default: Optional[bool] = True
+
+
 class Dataset(BaseModel):
     dataset: Optional[str] = None # Tittle of datasets
     input: str
-    output: Optional[str]= None
-    userID: Optional[str]= None
-    task_id: Optional[str]= None
+    output: Optional[str] = None
+    userID: Optional[str] = None
+    task_id: Optional[str] = None
     output_format: Optional[str] = 'AnnData'
     methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
-    layer: Optional[str]= None
-    species: Optional[str]= 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
-    idtype: Optional[str]= 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    layer: Optional[str] = None
+    species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     qc_params: QCParameters = Field(default_factory=QCParameters)
     imputation_params: imputationParameters = Field(default_factory=imputationParameters)
+    normalization_params: normalizationParameters = Field(default_factory=normalizationParameters)
+    reduction_params: reductionParameters = Field(default_factory=reductionParameters)
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True   
     

@@ -1,8 +1,5 @@
 import os
-import subprocess
-import sys
 from tools.formating.formating import *
-from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
@@ -10,7 +7,7 @@ from utils.mongodb import generate_process_id, pp_results_exists, create_pp_resu
 from utils.unzip import unzip_file_if_compressed
     
 
-def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
+def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     results = []
     pp_results = []
     process_ids = []
@@ -21,17 +18,10 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     input = ds.input
     userID = ds.userID
     output = ds.output
-    methods = ds.methods
-    parameters = ds.imputation_params
-    genes = parameters.genes
-    ncores = parameters.ncores
+    parameters = ds.reduction_params
     n_neighbors = parameters.n_neighbors
     n_pcs = parameters.n_pcs
     resolution = parameters.resolution
-    
-    if methods is None:
-        redislogger.warning(task_id, "No imputation method is selected.")
-        return None
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
