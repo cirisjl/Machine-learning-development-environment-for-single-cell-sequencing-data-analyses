@@ -5,7 +5,7 @@ import subprocess
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from tools.utils.reduction import run_dimension_reduction
+from tools.utils.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
 
@@ -76,7 +76,13 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                 for layer in adata.layers.keys():
                     method=layer
                     process_id = generate_process_id(md5, process, method, parameters)
-                    redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, 3D UMAP and clustering the neighborhood graph for layer {layer}.")
+
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
+
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    scanpy_results = run_clustering(scanpy_results, resolution=parameters.resolution, random_state=random_state)
                     adata = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
