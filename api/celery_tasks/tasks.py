@@ -6,7 +6,6 @@ from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
 from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
-from schemas.schemas import Dataset
 
 
 # def ConvertToAnndata_task(path):
@@ -18,17 +17,16 @@ from schemas.schemas import Dataset
 #     print(adata_path)
 #     return adata_path, assay_names
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_qc_task')
 def create_qc_task(self, ds_dict):
     print("inside task")
-    ds = Dataset(**ds_dict)
     task_id = self.request.id
-    results = run_qc(task_id, ds)
+    results = run_qc(task_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_normalization_task')
 def create_normalization_task(self, dataset, input, userID, output, methods,species, default_assay='RNA', output_format='AnnData', idtype='ENSEMBL',show_umap = True, show_error = True):
     task_id = self.request.id
@@ -36,7 +34,7 @@ def create_normalization_task(self, dataset, input, userID, output, methods,spec
     return results
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_imputation_task')
 def create_imputation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     task_id = self.request.id
@@ -44,7 +42,7 @@ def create_imputation_task(self, dataset, input, userID, output, methods, layer=
     return results
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_integration_task')
 def create_integration_task(self, datasets, inputs, userID, output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error = True):
     task_id = self.request.id
@@ -52,7 +50,7 @@ def create_integration_task(self, datasets, inputs, userID, output, methods, spe
     return results
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_evaluation_task')
 def create_evaluation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     task_id = self.request.id

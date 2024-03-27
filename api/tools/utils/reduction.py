@@ -4,10 +4,11 @@ from anndata import AnnData
 
 
 
-def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, resolution=1, random_state=0):
+def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0):
     if layer is not None:
         adata_temp = adata.copy()
         adata_temp.X = adata_temp.layers[layer]
+        msg = None
 
         # Principal component analysis
         sc.tl.pca(adata_temp, svd_solver='arpack', random_state=random_state)
@@ -15,7 +16,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm[layer+'_pca'] = adata_temp.obsm["X_pca"].copy()
 
         if use_rep is not None and adata_temp.obsm[use_rep].shape[1] < n_pcs:
-            print(use_rep + " does not have enough Dimensions. Set n_pcs to " + adata_temp.obsm[use_rep].shape[1])
+            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata_temp.obsm[use_rep].shape[1]}."
             n_pcs = adata_temp.obsm[use_rep].shape[1]
 
         # Computing the neighborhood graph
@@ -43,15 +44,6 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm[layer+"_umap_3D"] = adata_3D.obsm["X_umap"]
         adata_3D = None
 
-        # Clustering the neighborhood graph
-        sc.tl.leiden(adata_temp, resolution=resolution, 
-                    random_state=random_state, n_iterations=3)
-        adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
-        adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
-        sc.tl.louvain(adata_temp, resolution=resolution)
-        adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
-        adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
-        adata_temp = None
     else:
         # Principal component analysis
         sc.tl.pca(adata, svd_solver='arpack', random_state=random_state)
@@ -74,6 +66,21 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
         adata_3D = None
 
+    return adata, msg
+
+
+def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0):
+    if layer is not None:
+        # Clustering the neighborhood graph
+        sc.tl.leiden(adata_temp, resolution=resolution, 
+                    random_state=random_state, n_iterations=3)
+        adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
+        adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
+        sc.tl.louvain(adata_temp, resolution=resolution)
+        adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
+        adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
+        adata_temp = None
+    else:
         # Clustering the neighborhood graph
         leiden_key = "leiden"
         louvain_key = "louvain"

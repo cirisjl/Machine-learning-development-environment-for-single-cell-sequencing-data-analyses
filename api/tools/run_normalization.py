@@ -8,10 +8,9 @@ from utils.redislogger import *
 from tools.utils.reduction import run_dimension_reduction
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
-from schemas.schemas import Dataset
 
 
-def run_normalization(task_id, ds:Dataset, random_state=0, show_error=True):
+def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     results = []
     pp_results = []
     process_ids = []

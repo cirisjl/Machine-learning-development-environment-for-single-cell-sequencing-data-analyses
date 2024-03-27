@@ -13,11 +13,11 @@ from utils.unzip import unzip_file_if_compressed
 # from utils.mongodb import db
 from fastapi import HTTPException, status
 from utils.redislogger import *
+from tools.utils.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
-from schemas.schemas import Dataset
 
 
-def run_qc(task_id, ds:Dataset, random_state=0):
+def run_qc(task_id, ds:dict, random_state=0):
     results = []
     input_path = unzip_file_if_compressed(ds.userID, ds.input)
     methods = ds.methods
@@ -72,12 +72,20 @@ def run_qc(task_id, ds:Dataset, random_state=0):
                 try:
                     redislogger.info(task_id, "Start scanpy QC...")
                     # scanpy_results = run_scanpy_qc(adata,unique_id, min_genes=min_genes, max_genes=max_genes, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, expected_doublet_rate=doublet_rate, regress_cell_cycle=False, random_state=0)
-                    scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, resolution=parameters.resolution, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle, random_state=0)
+                    adata = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
+                    
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
+                    
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
+                    
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    pp_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     output_path = get_output_path(output, ds.dataset, method='scanpy')
-                    scanpy_results.write_h5ad(output_path, compression='gzip')
+                    adata.write_h5ad(output_path, compression='gzip')
                     create_pp_results(pp_results)  # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during scanpy QC: {str(e)}"

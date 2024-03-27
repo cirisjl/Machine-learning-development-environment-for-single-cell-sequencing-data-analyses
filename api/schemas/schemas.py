@@ -31,8 +31,8 @@ class QCParameters(BaseModel):
     doublet_rate: Optional[float] = 0
     regress_cell_cycle: Optional[bool] = False
     use_default: Optional[bool] = True
-    clustering_only: Optional[bool] = True
-    dimension_reduction_only: Optional[bool] = True
+    clustering_only: Optional[bool] = False
+    dimension_reduction_only: Optional[bool] = False
 
  
     # Bioconductor
