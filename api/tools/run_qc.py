@@ -70,20 +70,22 @@ def run_qc(task_id, ds:dict, random_state=0):
                 # Run Scanpy QC
                 try:
                     output_path = get_output_path(output, ds.dataset, method='scanpy')
-                    # scanpy_results = run_scanpy_qc(adata,unique_id, min_genes=min_genes, max_genes=max_genes, min_cells=2, target_sum=1e4, n_top_genes=None, n_neighbors=15, n_pcs=None, resolution=1, expected_doublet_rate=doublet_rate, regress_cell_cycle=False, random_state=0)
+                    # Check if the user only wants to run dimension reduction or clustering, then skip QC
                     if not (parameters.clustering_only and parameters.dimension_reduction_only):
                         redislogger.info(task_id, "Start scanpy QC...")
                         adata = load_anndata(input_path)
                         adata = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
                     else:
                         adata = load_anndata(output_path)
-                    
-                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
-                    if msg is not None: redislogger.warning(task_id, msg)
-                    
-                    redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
+                    # If the user only wants to run clustering, then skip dminension reduction
+                    if not parameters.clustering_only:
+                        redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                        if msg is not None: redislogger.warning(task_id, msg)
+                    # If the user only wants to run dminension reduction, then skip clustering
+                    if not parameters.dimension_reduction_only:
+                        redislogger.info(task_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path)
