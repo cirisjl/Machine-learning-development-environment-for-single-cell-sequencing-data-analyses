@@ -7,6 +7,7 @@ params:
   dataset: NA
   input: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the Seurat object.
+  adata_path: NULL
   methods: NULL # Normalization methods: c("logCP10K", "logCPM", "SCT", "SCT_V2", "scran", "sctransform", "sctransform_v2", "DESeq2", "RLE", "TMM", "upperquartile", "UQ", "TPM", "FPKM", "Pearson_residuals")
   default_assay: RNA # Default assay for each normalization method:  "RNA", "MAGIC_imputed", "SAVER_imputed", "scGNN_imputed"
   output_format: AnnData # Seurat or AnnDate
@@ -50,10 +51,11 @@ if(file.exists(params$output)){
   )
 }
 if(is.null(srat)) stop("The file format is not supported.")
-if(!params$default_assay %in% names(x = srat)) stop(paste(params$default_assay, "does not exist."))
+if(!params$default_assay %in% names(srat@assays)) stop(paste(params$default_assay, "does not exist."))
 DefaultAssay(object = srat) <- params$default_assay
 adata <- SeuratToAnndata(srat, assay=params$default_assay)
-adata_path <- gsub(".h5seurat", ".h5ad", params$output)
+# adata_path <- gsub(".h5seurat", ".h5ad", params$output)
+adata_path <- params$adata_path
 print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
 expression_matrix <- srat[[params$default_assay]]@counts
 # methods <- eval(parse(text = params$methods))
@@ -64,7 +66,7 @@ unique_id <- params$unique_id
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
 ```{r logCP10K, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCP10K" %in% methods){
-  if(!"logCP10K" %in% names(x = srat)){
+  if(!"logCP10K" %in% names(srat@assays)){
     tryCatch({
       RedisInfo(unique_id, "Running logCP10K normalization.")
       srat[['logCP10K']] <- CreateAssayObject(counts = expression_matrix)
@@ -81,10 +83,12 @@ if("LOGCP10K" %in% methods){
     }) 
   } else {
     RedisInfo(unique_id, "logCP10K assay already exists, skipped.")
-    adata$layers["logCP10K"] <- t(as.data.frame(srat[['logCP10K']]@data))
-    RedisInfo(unique_id, "logCP10K layer has been added to AnnData object.")
-    write_h5ad(adata, adata_path, compression = "gzip")
-    RedisInfo(unique_id, "AnnData object for logCP10K is saved successfully.")
+    if(!"logCP10K" %in% names(adata$layers)){
+      adata$layers["logCP10K"] <- t(as.data.frame(srat[['logCP10K']]@data))
+      RedisInfo(unique_id, "logCP10K layer has been added to AnnData object.")
+      write_h5ad(adata, adata_path, compression = "gzip")
+      RedisInfo(unique_id, "AnnData object for logCP10K is saved successfully.")
+    }
   }
   head(srat[['logCP10K']]@data)
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCP10K', title = "logCP10K normalization")
@@ -97,7 +101,7 @@ if("LOGCP10K" %in% methods){
 Load or create a SingleCellExperiment object from a expression matrix where each row corresponds to a gene (or transcript) and each column corresponds to a single cell.
 ```{r logCPM, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCPM"  %in% methods){
-  if(!"logCPM" %in% names(x = srat)){  
+  if(!"logCPM" %in% names(srat@assays)){  
     tryCatch({
       RedisInfo(unique_id, "Running logCPM normalization.")
       srat[['logCPM']] <- CreateAssayObject(counts = expression_matrix)
@@ -114,10 +118,12 @@ if("LOGCPM"  %in% methods){
     }) 
   } else {
     RedisInfo(unique_id, "logCPM assay already exists, skipped.")
-    adata$layers["logCPM"] <- t(as.data.frame(srat[['logCPM']]@data))
-    RedisInfo(unique_id, "logCPM layer has been added to AnnData object.")
-    write_h5ad(adata, adata_path, compression = "gzip")
-    RedisInfo(unique_id, "AnnData object for logCPM is saved successfully.")
+    if(!"logCPM" %in% names(adata$layers)){
+      adata$layers["logCPM"] <- t(as.data.frame(srat[['logCPM']]@data))
+      RedisInfo(unique_id, "logCPM layer has been added to AnnData object.")
+      write_h5ad(adata, adata_path, compression = "gzip")
+      RedisInfo(unique_id, "AnnData object for logCPM is saved successfully.")
+    }
   }
   head(srat[['logCPM']]@data)
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCPM', title = "logCPM normalization")
@@ -131,7 +137,7 @@ SCTransform calculates a model of technical noise in scRNA-seq data using 'regul
 ```{r SCTransform, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
   
-  if(!"SCT" %in% names(x = srat)){
+  if(!"SCT" %in% names(srat@assays)){
     tryCatch({
       library(sctransform)
       if("SCT"  %in% methods){
@@ -178,7 +184,7 @@ if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
 scran deals with the problem of vary large numbers of zero values per cell by pooling cells together calculating a normalization factor (similar to CPM) for the sum of each pool. Since each cell is found in many different pools, cell-specific factors can be deconvoluted from the collection of pool-specific factors using linear algebraic methods.
 ```{r scran, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("SCRAN" %in% methods){
-  if(!"scran" %in% names(x = srat)){
+  if(!"scran" %in% names(srat@assays)){
     tryCatch({
       RedisInfo(unique_id, "Running scran normalization.")
       library(scRNA.seq.funcs)
@@ -204,10 +210,12 @@ if("SCRAN" %in% methods){
     }) 
   } else {
     RedisInfo(unique_id, "scran assay already exists, skipped.")
-    adata$layers["scran"] <- t(as.data.frame(srat[['scran']]@data))
-    RedisInfo(unique_id, "scran layer has been added to AnnData object.")
-    write_h5ad(adata, adata_path, compression = "gzip")
-    RedisInfo(unique_id, "AnnData object for scran is saved successfully.")
+    if(!"scran" %in% names(adata$layers)){
+      adata$layers["scran"] <- t(as.data.frame(srat[['scran']]@data))
+      RedisInfo(unique_id, "scran layer has been added to AnnData object.")
+      write_h5ad(adata, adata_path, compression = "gzip")
+      RedisInfo(unique_id, "AnnData object for scran is saved successfully.")
+    }
   }
   head(srat[['scran']]@data)
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'scran', title = "scran normalization")
@@ -220,7 +228,7 @@ if("SCRAN" %in% methods){
 RLE (Relative Log Expression) 
 ```{r DESeq2, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("DESEQ2" %in% methods){
-  if(!"DESeq2" %in% names(x = srat)){
+  if(!"DESeq2" %in% names(srat@assays)){
     tryCatch({
       RedisInfo(unique_id, "Running DESeq2 normalization.")
       library( "DESeq2" )
@@ -242,10 +250,12 @@ if("DESEQ2" %in% methods){
     }) 
   } else {
     RedisInfo(unique_id, "DESeq2 assay already exists, skipped.")
-    adata$layers["DESeq2"] <- t(as.data.frame(srat[['DESeq2']]@data))
-    RedisInfo(unique_id, "DESeq2 layer has been added to AnnData object.")
-    write_h5ad(adata, adata_path, compression = "gzip")
-    RedisInfo(unique_id, "AnnData object for DESeq2 is saved successfully.")
+    if(!"DESeq2" %in% names(adata$layers)){
+      adata$layers["DESeq2"] <- t(as.data.frame(srat[['DESeq2']]@data))
+      RedisInfo(unique_id, "DESeq2 layer has been added to AnnData object.")
+      write_h5ad(adata, adata_path, compression = "gzip")
+      RedisInfo(unique_id, "AnnData object for DESeq2 is saved successfully.")
+    }
   }
   head(srat[['DESeq2']]@data)
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'DESeq2', title = "DESeq2 normalization")
@@ -261,7 +271,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
   library(edgeR)
   dge <- DGEList(expression_matrix + 1)
   if("TMM" %in% methods){
-    if(!"TMM" %in% names(x = srat)){    
+    if(!"TMM" %in% names(srat@assays)){    
       tryCatch({
         RedisInfo(unique_id, "Running TMM normalization.")
         tmm <- calcNormFactors(dge, method="TMM")
@@ -279,10 +289,12 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
       }) 
     } else {
       RedisInfo(unique_id, "TMM assay already exists, skipped.")
-      adata$layers["TMM"] <- t(as.data.frame(srat[['TMM']]@data))
-      RedisInfo(unique_id, "TMM layer has been added to AnnData object.")
-      write_h5ad(adata, adata_path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for TMM is saved successfully.")
+      if(!"TMM" %in% names(adata$layers)){
+        adata$layers["TMM"] <- t(as.data.frame(srat[['TMM']]@data))
+        RedisInfo(unique_id, "TMM layer has been added to AnnData object.")
+        write_h5ad(adata, adata_path, compression = "gzip")
+        RedisInfo(unique_id, "AnnData object for TMM is saved successfully.")
+      }
     }
     head(srat[['TMM']]@data) 
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'TMM', title = "TMM normalization")
@@ -290,7 +302,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
     print("Not selected by user, skipped.")
   }
   if("RLE" %in% methods){
-    if(!"RLE" %in% names(x = srat)){
+    if(!"RLE" %in% names(srat@assays)){
       tryCatch({
         RedisInfo(unique_id, "Running RLE normalization.")
         rle <- calcNormFactors(dge, method="RLE")
@@ -308,10 +320,12 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
       }) 
     } else {
       RedisInfo(unique_id, "RLE assay already exists, skipped.")
-      adata$layers["RLE"] <- t(as.data.frame(srat[['RLE']]@data))
-      RedisInfo(unique_id, "RLE layer has been added to AnnData object.")
-      write_h5ad(adata, adata_path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for RLE is saved successfully.")
+      if(!"RLE" %in% names(adata$layers)){
+        adata$layers["RLE"] <- t(as.data.frame(srat[['RLE']]@data))
+        RedisInfo(unique_id, "RLE layer has been added to AnnData object.")
+        write_h5ad(adata, adata_path, compression = "gzip")
+        RedisInfo(unique_id, "AnnData object for RLE is saved successfully.")
+      }
     }
     head(srat[['RLE']]@data) 
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'RLE', title = "RLE normalization")
@@ -319,7 +333,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
     print("Not selected by user, skipped.")
   }
   if("UQ" %in% methods || "UPPERQUARTILE" %in% methods){
-    if(!"upperquartile" %in% names(x = srat)){
+    if(!"upperquartile" %in% names(srat@assays)){
       tryCatch({
         RedisInfo(unique_id, "Running upperquartile normalization.")
         uq <- calcNormFactors(dge, method="upperquartile")
@@ -337,10 +351,12 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
       }) 
     } else {
       RedisInfo(unique_id, "upperquartile assay already exists, skipped.")
-      adata$layers["upperquartile"] <- t(as.data.frame(srat[['upperquartile']]@data))
-      RedisInfo(unique_id, "upperquartile layer has been added to AnnData object.")
-      write_h5ad(adata, adata_path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
+      if(!"upperquartile" %in% names(adata$layers)){
+        adata$layers["upperquartile"] <- t(as.data.frame(srat[['upperquartile']]@data))
+        RedisInfo(unique_id, "upperquartile layer has been added to AnnData object.")
+        write_h5ad(adata, adata_path, compression = "gzip")
+        RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
+      }
     }
     head(srat[['upperquartile']]@data) 
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'upperquartile', title = "Upper quartile normalization")
@@ -420,7 +436,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
     # names(lengths) <- g[match(ng,g$ensembl_gene_id),1]
     head(lengths)
     if("TPM" %in% methods){
-      if(!"TPM" %in% names(x = srat)){
+      if(!"TPM" %in% names(srat@assays)){
         RedisInfo(unique_id, "Running TPM normalization.")
         tpm <- counts2TPM(expression_matrix, lengths)  
         tpm_assay <- CreateAssayObject(data = tpm)
@@ -433,11 +449,13 @@ if("TPM" %in% methods || "FPKM" %in% methods){
         write_h5ad(adata, adata_path, compression = "gzip")
         RedisInfo(unique_id, "AnnData object for TPM is saved successfully.")
       } else {
-      RedisInfo(unique_id, "TPM assay already exists, skipped.")
-      adata$layers["TPM"] <- t(as.data.frame(srat[['TPM']]@data))
-      RedisInfo(unique_id, "TPM layer has been added to AnnData object.")
-      write_h5ad(adata, adata_path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for TPM is saved successfully.")
+        RedisInfo(unique_id, "TPM assay already exists, skipped.")
+        if(!"TPM" %in% names(adata$layers)){
+          adata$layers["TPM"] <- t(as.data.frame(srat[['TPM']]@data))
+          RedisInfo(unique_id, "TPM layer has been added to AnnData object.")
+          write_h5ad(adata, adata_path, compression = "gzip")
+          RedisInfo(unique_id, "AnnData object for TPM is saved successfully.")
+        }
       }
       head(srat[['TPM']]@data)
       if(params$show_umap) seurat_cluster_umap(srat, assay = 'TPM', title = "TPM normalization")
@@ -445,7 +463,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
       print("Not selected by user, skipped.")
     } 
     if("FPKM" %in% methods){
-      if(!"FPKM" %in% names(x = srat)){
+      if(!"FPKM" %in% names(srat@assays)){
         RedisInfo(unique_id, "Running FPKM normalization.")
         fpkm <- counts2FPKM(expression_matrix, lengths)    
         fpkm_assay <- CreateAssayObject(data = fpkm)
@@ -458,11 +476,13 @@ if("TPM" %in% methods || "FPKM" %in% methods){
         write_h5ad(adata, adata_path, compression = "gzip")
         RedisInfo(unique_id, "AnnData object for FPKM is saved successfully.")
       } else {
-      RedisInfo(unique_id, "FPKM assay already exists, skipped.")
-      adata$layers["FPKM"] <- t(as.data.frame(srat[['FPKM']]@data))
-      RedisInfo(unique_id, "FPKM layer has been added to AnnData object.")
-      write_h5ad(adata, adata_path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for FPKM is saved successfully.")
+        RedisInfo(unique_id, "FPKM assay already exists, skipped.")
+        if(!"FPKM" %in% names(adata$layers)){
+          adata$layers["FPKM"] <- t(as.data.frame(srat[['FPKM']]@data))
+          RedisInfo(unique_id, "FPKM layer has been added to AnnData object.")
+          write_h5ad(adata, adata_path, compression = "gzip")
+          RedisInfo(unique_id, "AnnData object for FPKM is saved successfully.")
+        }
       }
     } else {
       print("Not selected by user, skipped.")
@@ -481,7 +501,7 @@ expression_matrix <- NULL
 ```{r Formating & Scanpy, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
     if("PEARSON_RESIDUALS" %in% methods){
-      if(!"Pearson_residuals" %in% names(x = srat)){
+      if(!"Pearson_residuals" %in% names(srat@assays)){
         library(reticulate)
         source_python("./scanpy_r.py")
         # adata <- LoadAnndata(adata_path)
@@ -503,10 +523,12 @@ if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% method
         )
       } else {
         RedisInfo(unique_id, "Pearson_residuals assay already exists, skipped.")
-        adata$layers["Pearson_residuals"] <- t(as.data.frame(srat[['Pearson_residuals']]@data))
-        RedisInfo(unique_id, "Pearson_residuals layer has been added to AnnData object.")
-        write_h5ad(adata, adata_path, compression = "gzip")
-        RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
+        if(!"Pearson_residuals" %in% names(adata$layers)){
+          adata$layers["Pearson_residuals"] <- t(as.data.frame(srat[['Pearson_residuals']]@data))
+          RedisInfo(unique_id, "Pearson_residuals layer has been added to AnnData object.")
+          write_h5ad(adata, adata_path, compression = "gzip")
+          RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
+        }
       }
       head(srat[['Pearson_residuals']]@data)
       if(params$show_umap) seurat_cluster_umap(srat, assay = 'Pearson_residuals', title = "Pearson residuals normalization")
