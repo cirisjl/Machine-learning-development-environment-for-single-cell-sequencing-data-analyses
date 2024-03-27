@@ -6,14 +6,16 @@ from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.utils.reduction import run_dimension_reduction, run_clustering
+from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
+from utils.unzip import unzip_file_if_compressed
     
 
-def run_imputation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+def run_imputation(task_id, ds:dict, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True, random_state=0):
     results = []
     pp_results = []
     process_ids = []
-    pp_stage = "Normalized"
-    process = "Normalization"
+    pp_stage = "Corrected"
+    process = "Imputation"
     dataset = ds.dataset
     default_assay = ds.assay
     input = ds.input
@@ -22,7 +24,7 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
     methods = ds.methods
     species = ds.species
     idtype = ds.idtype
-    parameters = ds.normalization_params
+    parameters = ds.imputation_params
     n_neighbors = parameters.n_neighbors
     n_pcs = parameters.n_pcs
     resolution = parameters.resolution
@@ -34,6 +36,8 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
+    input = unzip_file_if_compressed(input)
+    md5 = get_md5(input)
     output = get_output(output, userID, task_id)
     methods = [x.upper() for x in methods if isinstance(x,str)]
     
@@ -42,28 +46,35 @@ def run_imputation(task_id, dataset, input, userID, output, methods, layer=None,
         if adata is None:
             redislogger.error(task_id, f"File format is not supported: {input}")
         elif 'MAGIC_imputed' not in adata.layers.keys(): 
-            try:
-                redislogger.info(task_id, "Start Magic imputation...")
-                counts = adata.X
-                data_magic = magic_impute(counts, genes)
-                adata.layers['MAGIC_imputed'] = data_magic
-                redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
-                if msg is not None: redislogger.warning(task_id, msg)
+            method='Magic'
+            process_id = generate_process_id(md5, process, method, parameters, assay)
+            pp_results = pp_results_exists(process_id)
 
-                redislogger.info(task_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
+            if pp_results is not None:
+                redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
+            else:
+                try:
+                    redislogger.info(task_id, "Start Magic imputation...")
+                    counts = adata.X
+                    data_magic = magic_impute(counts, genes)
+                    adata.layers['MAGIC_imputed'] = data_magic
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
 
-                redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
+
+                    redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
+                    normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
 
 
-                output = get_output_path(dataset, output, method='MAGIC_imputation')
-                adata.write_h5ad(output, compression='gzip')
-                redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
-            except Exception as e:
-                redislogger.error(task_id, "MAGIC imputation is failed.")
-                if show_error: redislogger.error(task_id, f"MAGIC imputation is failed: {e}")
+                    output = get_output_path(dataset, output, method='MAGIC_imputation')
+                    adata.write_h5ad(output, compression='gzip')
+                    redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
+                except Exception as e:
+                    redislogger.error(task_id, "MAGIC imputation is failed.")
+                    if show_error: redislogger.error(task_id, f"MAGIC imputation is failed: {e}")
         else: 
             redislogger.warning(task_id, "'MAGIC_imputed' layer already exists.")
 
