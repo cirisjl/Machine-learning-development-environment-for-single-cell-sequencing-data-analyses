@@ -109,14 +109,15 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
 
 
 def change_file_extension(file_path, new_extension):
-    # Split the file path into directory and filename
-    directory, base_filename = os.path.split(file_path)
-
-    # Split the base filename into name and current extension
-    name, current_extension = os.path.splitext(base_filename)
-
-    # Create the new file path with the desired extension
-    new_file_path = os.path.join(directory, f"{name}.{new_extension}")
+    # Check if the path is a directory
+    if os.path.isdir(file_path):
+        # If it's a directory, specify a default filename 'Anndata' with the new extension
+        new_file_path = os.path.join(file_path, f"Anndata.{new_extension}")
+    else:
+        # If it's a file, proceed with changing the file's extension
+        directory, base_filename = os.path.split(file_path)
+        name, _ = os.path.splitext(base_filename)
+        new_file_path = os.path.join(directory, f"{name}.{new_extension}")
 
     return new_file_path
 
@@ -388,7 +389,7 @@ def detect_delimiter(file_path):
 
 def get_output_path(path, dataset=None, method = '', format = "AnnData"):
     output = os.path.abspath(path)
-    if method != '': method = '_' + method
+    method = '_' + method if method else ''
     directory, base_name = os.path.split(output.rstrip('/'))
 
     if not os.path.exists(directory):

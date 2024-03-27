@@ -5,15 +5,20 @@ import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL, defaultValues } from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-
+import GeneRangeSlider from './components/geneRangeSlider';
+import RangeSlider from './components/sliderComponent';
+import SwitchComponent from './components/switchComponent';
+import UseDefaultSwitch from './components/useDefaultSwitch';
 
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
     const [selectedDatasets, setSelectedDatasets] = useState({});
+    const [values, setValues] = useState(defaultValues);
+    const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
 
     const filterCategoryMap = {
       quality_control: '/tools/qc',
@@ -62,6 +67,16 @@ export default function ToolsDetailsComponent(props) {
         }
         currentSelectedDatasets[datasetId] = dataset;
       }
+      if(filterCategory === "quality_control") {
+        // Check if any of the selected datasets should trigger hiding for Seurat
+        const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
+          dataset.inputFiles.length === 1 &&
+          (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
+          dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
+          dataset.inputFiles[0].toLowerCase().endsWith('robj'))
+        );
+        setShouldHideForSeurat(shouldHideForSeurat);
+      }
     setSelectedDatasets(currentSelectedDatasets)
   };
 
@@ -89,7 +104,14 @@ export default function ToolsDetailsComponent(props) {
             onChange={(e) => props.onChange(e.target.checked)}
           />
         ),
+        GeneRangeSlider: GeneRangeSlider,
+        RangeSlider: RangeSlider,
+        SwitchComponent: SwitchComponent,
+        UseDefaultSwitch: UseDefaultSwitch
       };
+
+      // Map the field name to the custom component
+        // const customFields = { customQualityControl: <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={shouldHideForSeurat}/> };
 
       const onSubmit = ({ formData }) => {
 
@@ -360,6 +382,12 @@ export default function ToolsDetailsComponent(props) {
         formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}
         onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset}/>
       </div>
+
+      {/* {filterCategory === "quality_control" && 
+        <div className="quality-control-paramters">
+          <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={shouldHideForSeurat}/>
+        </div>
+      } */}
             
         {filterSchema && UIfilterSchema ? (
           <div className="form-component">
@@ -367,7 +395,11 @@ export default function ToolsDetailsComponent(props) {
             schema={filterSchema}
             formData={formData}
             widgets={widgets}
-            onChange={({ formData }) => setFormData(formData)}
+            // fields={customFields}
+            onChange={({ formData }) => {
+              setFormData(formData)
+              console.log(formData);
+            }}
             uiSchema={UIfilterSchema}
             onSubmit={onSubmit}
         />

@@ -24,7 +24,7 @@
             "description": "Some more details about the parameter",
             "enum": [".h5ad", ".rds", ".h5Seurat"]
            },
-          "default_assay": { 
+          "assay": { 
             "type": "string",
              "default": "RNA",
              "title": "Default Assay",
@@ -34,12 +34,6 @@
             "type": "string" ,
             "title": "Layer",
             "description": "Some more details about the parameter"
-          },
-          "path_of_scrublet_calls": { 
-            "type": "string", 
-            "default": "./scrublet_calls.tsv",
-            "title": "Path of Scrublet Calls",
-            "description": "Some more details about the parameter" 
           },
           "species": { 
             "type": "string",
@@ -58,15 +52,6 @@
              "items": { 
                 "type": "string"
               }
-          },
-          "ncores": { 
-            "type": "integer",
-            "title": "Cores",
-            "description": "Some more details about the parameter",
-            "default": 12,
-            "minimum": 1,
-            "maximum": 12,
-            "multipleOf": 1
           },
           "show_umap": {
             "type": "boolean",

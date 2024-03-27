@@ -1405,7 +1405,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     const formData = req.body; // This assumes you have middleware to parse JSON in the request body
     const makeItpublic = formData.makeItpublic;
     let files = formData.files;
-    let username = formData.owner;
+    let username = formData.Owner;
     
       // Connect to the MongoDB server
       await client.connect();

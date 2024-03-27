@@ -20,7 +20,9 @@ from schemas.schemas import Dataset
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5},
              name='tools:create_qc_task')
-def create_qc_task(self, ds:Dataset):
+def create_qc_task(self, ds_dict):
+    print("inside task")
+    ds = Dataset(**ds_dict)
     task_id = self.request.id
     results = run_qc(task_id, ds)
     return results

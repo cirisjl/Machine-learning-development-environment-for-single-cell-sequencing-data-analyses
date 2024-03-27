@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
-import { CELERY_BACKEND_API, STORAGE} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
 import {isUserAuth, getCookie} from '../../../utils/utilFunctions';
@@ -11,25 +11,11 @@ import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
 import { v4 as uuid } from 'uuid';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Radio from '@material-ui/core/Radio';
-
-const defaultValues = {
-  min_genes: 200,
-  max_genes: 20000, // No limit
-  min_cells: 2,
-  target_sum: 1e4,
-  n_top_genes: 2000,
-  n_neighbors: 15,
-  n_pcs: 0, // None
-  resolution: 1,
-  regress_cell_cycle: false,
-  use_default: true,
-  doublet_rate: 0
-};
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
   const webSocketInstance = useRef(null);
@@ -411,7 +397,7 @@ const handleAssaySelectionSubmit = async () => {
                       <h2>UMAP Plot</h2>
 
                       <FormControl>
-                        <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel>
+                        {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
                         <RadioGroup
                           row
                           aria-labelledby="demo-row-radio-buttons-group-label"
@@ -419,8 +405,8 @@ const handleAssaySelectionSubmit = async () => {
                           value={plotDimension}
                           onChange={(event) => setPlotDimension(event.target.value)}
                         >
-                          <FormControlLabel value="2D" control={<Radio />} label="2D" />
-                          <FormControlLabel value="3D" control={<Radio />} label="3D" />
+                          <FormControlLabel value="2D" control={<Radio color="secondary"/>} label="2D" />
+                          <FormControlLabel value="3D" control={<Radio color="secondary"/>} label="3D" />
                         </RadioGroup>
                       </FormControl>
 
