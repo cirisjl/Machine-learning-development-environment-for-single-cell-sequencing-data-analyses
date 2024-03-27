@@ -13,7 +13,7 @@ def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None,
         return None
 
     #Get the absolute path for the given input
-    input = get_input_path(input, userID)
+    # input = get_input_path(input, userID)
     #Get the absolute path for the given output
     output = get_output(output, userID, task_id)
 

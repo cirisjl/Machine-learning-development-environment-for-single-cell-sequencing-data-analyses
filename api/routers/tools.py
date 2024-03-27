@@ -42,8 +42,10 @@ async def create_qc_task_async(ds: Dataset):
     """
     Create a task for quality control
     """
-    results = create_qc_task.apply_async(args=[ds])
-    return JSONResponse(results)
+    print("inside the API")
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_qc_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Task submitted successfully"})
 
 
 @router.post("/normalize")

@@ -14,6 +14,14 @@ import axios from 'axios';
 import {CELERY_BACKEND_API} from '../../constants/declarations'
 import ReactSelect from 'react-select';
 import {ScaleLoader } from 'react-spinners';
+import { Select, MenuItem } from '@mui/material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { styled } from '@mui/material/styles';
+import { FormControl, InputLabel } from '@mui/material';
 
 
 import schema from "../../schema/react-json-schema/uploadDataSchema.json";
@@ -60,6 +68,35 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         ['barcodes.tsv', 'features.tsv', 'count_matrix.mtx'],
         ['barcodes.tsv.gz', 'features.tsv.gz', 'count_matrix.mtx.gz']
     ];
+
+    // Custom styled components
+    const ScrollableListContainer = styled('div')(({ theme }) => ({
+        maxHeight: '400px', // Fixed height of the container
+        overflowY: 'auto', // Enable vertical scrolling
+        border: `1px solid ${theme.palette.divider}`, // Add border to distinguish the container
+        borderRadius: theme.shape.borderRadius, // Use theme's border radius
+        marginTop: theme.spacing(2),
+    }));
+
+    const removeFile = async (item, indexToRemove) => {
+        try {
+
+          // If successful, update the state to remove the file from the list
+          setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
+          setSelectedAliases(selectedAliases.filter((_, index) => index !== indexToRemove));
+    
+        } catch (error) {
+          console.error("Error deleting file:", error);
+          // Handle error (e.g., show error message to the user)
+        }
+    };
+    
+    const CustomListItem = styled(ListItem)(({ theme }) => ({
+        '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+        },
+        cursor: 'pointer', // Change cursor on hover to indicate an item is clickable
+    }));
 
     const [publicDatasetFlag, setPublicDatasetFlag] = useState(false);
 
@@ -286,31 +323,6 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
             },
         }));
     };
-
-    // useEffect(() => {
-    //     // Define your default values for taskData.upload here
-    //     const defaultUploadValues = {
-    //       files: [],
-    //       final_files: {},
-    //       displayAssayNames: false,
-    //       assayNames: [],
-    //       makeItpublic: false,
-    //       authToken: '',
-    //     };
-      
-    //     // Reset taskData.upload to default values
-    //     setTaskData(prevTaskData => ({
-    //       ...prevTaskData,
-    //       upload: defaultUploadValues,
-    //     }));
-      
-    //     // This effect depends on selectedFiles, so it runs whenever selectedFiles changes
-    //   }, [selectedFiles]);
-
-      useEffect(() => {
-        console.log(taskData)
-      }, [taskData]);
-      
 
     const handleAssaySelectionSubmit = () => {
 
@@ -731,50 +743,72 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 <FontAwesomeIcon icon={faInfoCircle} size="1.2x" />
                             </div>
                             <b>Choose your files *</b> <br />
-                            <div id="files-selected">
-                                {selectedFiles.length > 1 ? (
-                                    <>
-                                        {selectedFiles.map((item, index) => {
-                                            const itemName = item.substring(item.lastIndexOf('/') + 1);
-                                            const showDropdown = !acceptedMultiFileNames.includes(itemName);
-
-                                            return (
-                                                <div key={index} onClick={() => console.log(item)}>
-                                                    {item}&nbsp;&nbsp;
-                                                    {showDropdown && (
-                                                        <select
-                                                            onChange={(e) => {
-                                                                const updatedAliases = [...selectedAliases];
-                                                                updatedAliases[index] = getStandardFileName(item, e.target.value);
-                                                                setSelectedAliases(updatedAliases);
-                                                            }}
-                                                        >
-                                                            <option selected>Set a standard file type</option>
-                                                            {getAliasOptions(itemName).map((alias, aliasIndex) => (
-                                                                <option key={aliasIndex}>{alias}</option>
-                                                            ))}
-                                                        </select>
-                                                    )}
+                            {selectedFiles && selectedFiles.length > 0 && 
+                                <div id="files-selected">
+                                    <ScrollableListContainer>
+                                    <List dense>
+                                        {selectedFiles.length > 1 ? (
+                                            <>
+                                            {selectedFiles.map((item, index) => {
+                                                const itemName = item.substring(item.lastIndexOf('/') + 1);
+                                                const showDropdown = !acceptedMultiFileNames.includes(itemName);
+                                                return (
+                                                <div key={index} className="file-selections">
+                                                    <CustomListItem key={index}>
+                                                    <IconButton edge="start" aria-label="delete" onClick={() => removeFile(item, index)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                        {showDropdown && (
+                                                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                                                <Select
+                                                                displayEmpty
+                                                                value={selectedAliases[index]}
+                                                                onChange={(e) => {
+                                                                    const updatedAliases = [...selectedAliases];
+                                                                    updatedAliases[index] = getStandardFileName(item, e.target.value);
+                                                                    setSelectedAliases(updatedAliases);
+                                                                }}
+                                                                renderValue={(selected) => {
+                                                                    if (selected && selected.length === 0) {
+                                                                    return <em>Set a standard file type</em>;
+                                                                    }
+                                                                    return selected;
+                                                                }}
+                                                                >
+                                                                {getAliasOptions(item).map((alias, aliasIndex) => (
+                                                                    <MenuItem key={aliasIndex} value={alias}>{alias}</MenuItem>
+                                                                ))}
+                                                                </Select>
+                                                            </FormControl>
+                                                        )}
+                                                    <ListItemText primary={item} />
+                                                    </CustomListItem>
                                                 </div>
-                                            );
-                                        })}
-
-
-                                        <div style={{ color: 'red' }}>
-                                            Notice: Files will be renamed to standard names of their corresponding type.
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div>
-                                        {selectedFiles[0]}
+                                                );
+                                            })}
+                                            </>
+                                        ) : (
+                                            <CustomListItem>
+                                            <IconButton edge="start" aria-label="delete" onClick={() => removeFile(selectedFiles[0], 0)}>
+                                                <DeleteIcon />
+                                            </IconButton>                    
+                                            <ListItemText primary={selectedFiles[0]} />
+                                            </CustomListItem>
+                                        )}
+                                    </List>
+                                    </ScrollableListContainer>
+                                    {selectedFiles && selectedFiles.length > 1 && 
+                                    <div style={{ color: 'red' }}>
+                                        Notice: Files will be renamed to standard names of their corresponding type.
                                     </div>
-                                )}
+                                    }
+                                </div>
+                            }
+                            <div className="folder-button">
+                                <button type="button" onClick={toggleModal} style={{ fontSize: "1em", padding: "10px", borderRadius: "5px" }}>
+                                    <FontAwesomeIcon icon={faFolderOpen} />
+                                </button>
                             </div>
-
-                            <button type="button" onClick={toggleModal} style={{ fontSize: "1em", padding: "10px", borderRadius: "5px" }}>
-                                <FontAwesomeIcon icon={faFolderOpen} />
-                            </button>
-
                         </div>
                         {isAdminuser && 
                             <div className="publish-dataset-div">

@@ -254,6 +254,10 @@
   cursor: pointer;
 }
 
+#files-selected ul {
+  padding-left: 0px;
+}
+
 .task-builder-task .dialog-backdrop {
   position: fixed;
   top: 0;

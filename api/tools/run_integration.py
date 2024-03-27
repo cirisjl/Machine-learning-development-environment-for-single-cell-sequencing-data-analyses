@@ -19,7 +19,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     if inputs is not None:
         for input in inputs:
             if input is not None:
-                abs_inputList.append(get_input_path(input, userID))
+                abs_inputList.append(input)
 
 
     if datasets is not None:
@@ -35,22 +35,16 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     output = get_output(output, userID, task_id)
 
     output = get_output_path(dataset, output, method='Integration', format='Seurat')
-    print("Calling RMD1")
 
 
     try:
         report_path = get_report_path(dataset, output, "integration")
-        print("Calling RMD2")
         # Get the absolute path of the current file
         current_file = os.path.abspath(__file__)
         # Construct the relative path to the desired file
         relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
         # Get the absolute path of the desired file
         rmd_path = os.path.abspath(relative_path)
-        print("Calling RMD")
-        print(datasets)
-        print(methods)
-        print(input)
         print("R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + str(methods) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\"")
         s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', output_format='" + output_format + "', methods='" + str(methods) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', show_error='" + str(show_error) + "'), output_file='" + report_path + "')\""], shell = True)
         redislogger.info(task_id, s)

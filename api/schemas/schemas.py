@@ -43,7 +43,7 @@ class QCParameters(BaseModel):
 
 
 class imputationParameters(BaseModel):
-    genes: Optional[List[str]]
+    genes: Optional[List[str]] = None
     ncores: Optional[int] = 12
 
 
@@ -57,22 +57,21 @@ class normalizationParameters(BaseModel):
 
 
 class Dataset(BaseModel):
-    dataset: Optional[str] # Tittle of datasets
+    dataset: Optional[str] = None # Tittle of datasets
     input: str
-    output: Optional[str]
-    userID: Optional[str]
-    task_id: Optional[str]
+    output: Optional[str]= None
+    userID: Optional[str]= None
+    task_id: Optional[str]= None
     output_format: Optional[str] = 'AnnData'
-    methods: Optional[List[str]]
+    methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
-    layer: Optional[str]
-    species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
-    idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
-    qc_params: Optional[QCParameters]
-    normalization_params: Optional[normalizationParameters]
-    imputation_params: Optional[imputationParameters]
+    layer: Optional[str]= None
+    species: Optional[str]= 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    idtype: Optional[str]= 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    qc_params: QCParameters = Field(default_factory=QCParameters)
+    imputation_params: imputationParameters = Field(default_factory=imputationParameters)
     show_umap: Optional[bool] = True
-    show_error: Optional[bool] = True
+    show_error: Optional[bool] = True   
     
 
 
