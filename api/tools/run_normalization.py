@@ -5,7 +5,7 @@ import subprocess
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from tools.utils.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
 
