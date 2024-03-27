@@ -8,7 +8,7 @@ from tools.qc.seurat_qc import run_seurat_qc
 from tools.qc.scrublet_calls import predict_scrublet
 # sys.path.append('..')
 from tools.formating.formating import *
-from config.celery_utils import get_output
+from config.celery_utils import get_output, benchmarks_output_path
 from utils.unzip import unzip_file_if_compressed
 # from utils.mongodb import db
 from fastapi import HTTPException, status
@@ -19,8 +19,11 @@ from schemas.schemas import Dataset
 
 def run_qc(task_id, ds:Dataset, random_state=0):
     results = []
-    input_path = unzip_file_if_compressed(ds.input)
+    input_path = unzip_file_if_compressed(ds.userID, ds.input)
+    methods = ds.methods
     output = ds.output
+    adata_path = change_file_extension(input_path, 'h5ad')
+    assay = ds.assay
     md5 = get_md5(input_path)
     benchmarks_data = False
     if input_path is None:
@@ -47,7 +50,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
             methods = ["Seurat"]
         else:
             methods = ["scanpy"]
-        output = input_path # Benchmarks
+        output = benchmarks_output_path(input_path, task_id)
 
     # Get the absolute path for the given input
     # input = get_input_path(input, ds.userID)
@@ -55,11 +58,11 @@ def run_qc(task_id, ds:Dataset, random_state=0):
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
     if "SCANPY" in methods or "DROPKICK" in methods:
-        adata = load_anndata(input)
+        adata = load_anndata(input_path)
         # Scanpy QC
         if "SCANPY" in methods:
             method='scanpy'
-            process_id = generate_process_id(md5, process, method, parameters)
+            process_id = generate_process_id(md5, process, method, parameters, assay)
             pp_results = pp_results_exists(process_id)
 
             if pp_results is not None:
@@ -96,7 +99,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
         # Dropkick QC
         elif "DROPKICK" in methods:
             method='Dropkick'
-            process_id = generate_process_id(md5, process, method, parameters)
+            process_id = generate_process_id(md5, process, method, parameters,assay)
             pp_results = pp_results_exists(process_id)
 
             if pp_results is not None:
@@ -108,7 +111,10 @@ def run_qc(task_id, ds:Dataset, random_state=0):
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     pp_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
-                    output_path = get_output_path(output, ds.dataset, method='dropkick')
+                    # output_path = get_output_path(output, ds.dataset, method='dropkick')
+                    output_path = "/usr/src/app/storage/kbcfh/Dataset2/Results/dropkick.h5ad"
+                    redislogger.info(task_id, "output path")
+                    redislogger.info(task_id, output_path)
                     dropkick_results.write_h5ad(output_path, compression='gzip')
                     create_pp_results(pp_results) # Insert pre-process results to database
                 except Exception as e:
@@ -131,7 +137,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
     # Seurat QC
     elif "SEURAT" in methods:
         method='Seurat'
-        process_id = generate_process_id(md5, process, method, parameters)
+        process_id = generate_process_id(md5, process, method, parameters,assay)
         pp_results = pp_results_exists(process_id)
 
         if pp_results is not None:
@@ -178,7 +184,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
     # Bioconductor QC
     elif "BIOCONDUCTOR" in methods:
         method='Bioconductor'
-        process_id = generate_process_id(md5, process, method, parameters)
+        process_id = generate_process_id(md5, process, method, parameters,assay)
         
         pp_results = pp_results_exists(process_id)
 
