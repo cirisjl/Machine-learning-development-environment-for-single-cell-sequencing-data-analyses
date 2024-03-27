@@ -58,7 +58,7 @@ if(is.null(params$layer)) {
     stop(paste(params$layer, "does not exist in AnnData object."))
 }
 
-if(!'SAVER_imputed' %in% names(adata$layers)){
+if(!'SAVER' %in% names(adata$layers)){
     tryCatch(
         {
             counts.saver <- NULL
@@ -68,8 +68,8 @@ if(!'SAVER_imputed' %in% names(adata$layers)){
                 counts.saver <- saver(expression_matrix, ncores = params$ncores, pred.genes = params$genes, estimates.only = TRUE)
             }
             
-            adata$layers["SAVER_imputed"] <- t(counts.saver)
-            head(adata$layers["SAVER_imputed"])
+            adata$layers["SAVER"] <- t(counts.saver)
+            head(adata$layers["SAVER"])
             write_h5ad(adata, params$output, compression = "gzip")
             print("AnnData object for SAVER imputation is saved successfully.")
         },
@@ -79,8 +79,8 @@ if(!'SAVER_imputed' %in% names(adata$layers)){
         }
     )
 } else {
-    head(adata$layers["SAVER_imputed"])
-    print("'SAVER_imputed' layer already exists.")
+    head(adata$layers["SAVER"])
+    print("'SAVER' layer already exists.")
 }
 
 ```

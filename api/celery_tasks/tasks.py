@@ -36,9 +36,9 @@ def create_normalization_task(self, ds_dict:dict):
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_imputation_task')
-def create_imputation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+def create_imputation_task(self, ds_dict:dict):
     task_id = self.request.id
-    results = run_imputation(task_id, dataset, input, userID,  output, methods, layer=None, genes=None, ncores=12, show_error=True)
+    results = run_imputation(task_id, ds_dict)
     return results
 
 

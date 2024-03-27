@@ -19,14 +19,14 @@ from utils.mongodb import generate_process_id, pp_results_exists, create_pp_resu
 
 def run_qc(task_id, ds:dict, random_state=0):
     results = []
+    pp_results = []
+    process_ids = []
     input_path = unzip_file_if_compressed(ds.userID, ds.input)
     methods = ds.methods
     output = ds.output
     adata_path = change_file_extension(input_path, 'h5ad')
     assay = ds.assay
-    # do_qc = ds.do_qc
-    # do_clustering = ds.do_clustering
-    # do_dimension = ds.do_dimension
+    assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
     if input_path is None:
@@ -42,6 +42,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         ds.assay = 'RNA'
     
     parameters = ds.qc_params
+    print(type(parameters))
     redislogger.info(task_id, f"Using QC Parameters: {parameters}")
     
     # Get the absolute path for the given output
@@ -66,9 +67,9 @@ def run_qc(task_id, ds:dict, random_state=0):
         if "SCANPY" in methods:
             method='scanpy'
             process_id = generate_process_id(md5, process, method, parameters, assay)
-            pp_results = pp_results_exists(process_id)
+            qc_results = pp_results_exists(process_id)
 
-            if pp_results is not None:
+            if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
                 # Run Scanpy QC
@@ -91,7 +92,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     scanpy_results = run_clustering(scanpy_results, resolution=parameters.resolution, random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    pp_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     
                     scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -105,21 +106,16 @@ def run_qc(task_id, ds:dict, random_state=0):
                         detail = detail
                     )
                  
-            results.append({
-                "task_id": task_id, 
-                "inputfile": input_path,
-                "md5": md5,
-                "process_id": process_id,
-                "pp_results": pp_results,
-                "message": "Quality control completed successfully."
-            })
+            pp_results.append(qc_results)
+            process_ids.append(process_id)
+
         # Dropkick QC
-        elif "DROPKICK" in methods:
+        if "DROPKICK" in methods:
             method='Dropkick'
             process_id = generate_process_id(md5, process, method, parameters,assay)
-            pp_results = pp_results_exists(process_id)
+            qc_results = pp_results_exists(process_id)
 
-            if pp_results is not None:
+            if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
                 try:
@@ -136,7 +132,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     dropkick_results = run_clustering(dropkick_results, resolution=parameters.resolution, random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    pp_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     # output_path = get_output_path(output, ds.dataset, method='dropkick')
                     output_path = "/usr/src/app/storage/kbcfh/Dataset2/Results/dropkick.h5ad"
@@ -153,24 +149,18 @@ def run_qc(task_id, ds:dict, random_state=0):
                         detail = detail
                     )
                 
-            results.append({
-                "task_id": task_id, 
-                "inputfile": input_path,
-                "md5": md5,
-                "process_id": process_id,
-                "pp_results": pp_results,
-                "message": "Quality control completed successfully." 
-            })
+            pp_results.append(qc_results)
+            process_ids.append(process_id)
             
         adata = None
 
     # Seurat QC
-    elif "SEURAT" in methods:
+    if "SEURAT" in methods:
         method='Seurat'
         process_id = generate_process_id(md5, process, method, parameters,assay)
-        pp_results = pp_results_exists(process_id)
+        qc_results = pp_results_exists(process_id)
 
-        if pp_results is not None:
+        if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
             try:
@@ -188,7 +178,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
                 create_pp_results(pp_results)  # Insert pre-process results to database
                 adata = None         
             except Exception as e:
@@ -201,25 +191,17 @@ def run_qc(task_id, ds:dict, random_state=0):
         if assay_names is None:
             assay_names = []
         
-        results.append({
-            "task_id": task_id, 
-            "inputfile": input_path,
-            "default_assay": default_assay,
-            "assay_names": assay_names,
-            "md5": md5,
-            "process_id": process_id,
-            "pp_results": pp_results,
-            "message": "Quality control completed successfully."
-        })  
+        pp_results.append(qc_results)
+        process_ids.append(process_id)  
 
     # Bioconductor QC
-    elif "BIOCONDUCTOR" in methods:
+    if "BIOCONDUCTOR" in methods:
         method='Bioconductor'
         process_id = generate_process_id(md5, process, method, parameters,assay)
         
-        pp_results = pp_results_exists(process_id)
+        qc_results = pp_results_exists(process_id)
 
-        if pp_results is not None:
+        if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
             try:
@@ -255,7 +237,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
                 adata = None
                 create_pp_results(pp_results)  # Insert pre-process results to database            
             except Exception as e:
@@ -265,14 +247,18 @@ def run_qc(task_id, ds:dict, random_state=0):
                     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail = detail
                 )
-            
-        results.append({
-            "task_id": task_id, 
-            "inputfile": input_path,
-            "md5": md5,
-            "process_id": process_id,
-            "pp_results": pp_results,
-            "message": "Quality control completed successfully."
-        }) 
+        pp_results.append(qc_results)
+        process_ids.append(process_id)    
+
+    results.append({
+        "task_id": task_id, 
+        "inputfile": input_path,
+        "default_assay": assay,
+        "assay_names": assay_names,
+        "md5": md5,
+        "process_id": process_ids,
+        "pp_results": pp_results,
+        "message": "Quality control completed successfully."
+    }) 
 
     return results

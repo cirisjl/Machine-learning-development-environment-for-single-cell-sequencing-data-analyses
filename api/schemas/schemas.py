@@ -66,9 +66,6 @@ class Dataset(BaseModel):
     idtype: Optional[str]= 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     qc_params: QCParameters = Field(default_factory=QCParameters)
     imputation_params: imputationParameters = Field(default_factory=imputationParameters)
-    # do_qc: Optional[bool] = False
-    # do_clustering: Optional[bool] = False
-    # do_dimension: Optional[bool] = False
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True   
     

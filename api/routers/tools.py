@@ -45,7 +45,7 @@ async def create_qc_task_async(ds: Dataset):
     print("inside the API")
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_qc_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Task submitted successfully"})
+    return JSONResponse({"task_id": task.id, "status": "Quality Control task submitted successfully"})
 
 
 @router.post("/normalize")
@@ -55,7 +55,7 @@ async def create_normalization_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_normalization_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Task submitted successfully"})
+    return JSONResponse({"task_id": task.id, "status": "Normalization task submitted successfully"})
 
 
 @router.post("/impute")
@@ -63,8 +63,9 @@ async def create_imputation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    task = create_imputation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_imputation_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Imputation task submitted successfully"})
 
 
 @router.post("/integrate")
