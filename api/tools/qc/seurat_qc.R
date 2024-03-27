@@ -121,13 +121,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
             } 
 
             # srat <- subset(srat, subset = doublet_class == 'Singlet')
-            tryCatch({
-                SaveH5Seurat(srat, filename=output, overwrite=TRUE, verbose=FALSE)
-            }, error = function(e) {
-                RedisWarning(unique_id, paste0("Failed to save Seurat object to h5seurat, changing file format to RDS: ", e$message))
-                output = gsub("h5seurat", "rds", output)
-                saveRDS(object=srat, file=output)
-            })
+            output <- SaveSeurat(srat, output)
             RedisInfo(unique_id, "Seurat object is saved successfully.")
             
             if(!is.null(adata_path)){    
