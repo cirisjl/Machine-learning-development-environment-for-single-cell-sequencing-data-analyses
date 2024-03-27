@@ -24,6 +24,9 @@ def run_qc(task_id, ds:dict, random_state=0):
     output = ds.output
     adata_path = change_file_extension(input_path, 'h5ad')
     assay = ds.assay
+    do_qc = ds.do_qc
+    do_clustering = ds.do_clustering
+    do_dimension = ds.do_dimension
     md5 = get_md5(input_path)
     benchmarks_data = False
     if input_path is None:
@@ -58,6 +61,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
     if "SCANPY" in methods or "DROPKICK" in methods:
+        adata = load_anndata(output_path)
         # Scanpy QC
         if "SCANPY" in methods:
             method='scanpy'
@@ -71,19 +75,19 @@ def run_qc(task_id, ds:dict, random_state=0):
                 try:
                     output_path = get_output_path(output, ds.dataset, method='scanpy')
                     # Check if the user only wants to run dimension reduction or clustering, then skip QC
-                    if not (parameters.clustering_only and parameters.dimension_reduction_only):
+                    if do_qc:
                         redislogger.info(task_id, "Start scanpy QC...")
                         adata = load_anndata(input_path)
                         adata = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
-                    else:
-                        adata = load_anndata(output_path)
+
                     # If the user only wants to run clustering, then skip dminension reduction
-                    if not parameters.clustering_only:
+                    if do_dimension:
                         redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                         adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
                         if msg is not None: redislogger.warning(task_id, msg)
+
                     # If the user only wants to run dminension reduction, then skip clustering
-                    if not parameters.dimension_reduction_only:
+                    if do_clustering:
                         redislogger.info(task_id, "Clustering the neighborhood graph.")
                         adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
                     

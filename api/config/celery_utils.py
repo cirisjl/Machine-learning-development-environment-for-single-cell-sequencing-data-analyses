@@ -56,12 +56,12 @@ def benchmarks_output_path(input, task_id):
     """
     if input is not None and task_id is not None:
         # Check if the input path is a directory
-        if os.path.isdir(input_path):
+        if os.path.isdir(input):
             # If it's a directory, append '/Results' to it
-            output_path = os.path.join(input_path, 'Results', task_id)
+            output_path = os.path.join(input, 'Results', task_id)
         else:
             # If it's a file, get the parent directory and append '/Results'
-            parent_dir = os.path.dirname(input_path)
+            parent_dir = os.path.dirname(input)
             output_path = os.path.join(parent_dir, 'Results', task_id)
     
         return output_path

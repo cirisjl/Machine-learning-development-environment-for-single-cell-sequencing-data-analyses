@@ -30,11 +30,7 @@ class QCParameters(BaseModel):
     resolution: float = 1
     doublet_rate: Optional[float] = 0
     regress_cell_cycle: Optional[bool] = False
-    use_default: Optional[bool] = True
-    clustering_only: Optional[bool] = False
-    dimension_reduction_only: Optional[bool] = False
-
- 
+    use_default: Optional[bool] = True 
     # Bioconductor
     colour_by: Optional[str] = 'NULL' # Color by for plots
     shape_by_1: Optional[str] = 'NULL'  # Shape by 1 for plots
@@ -70,6 +66,9 @@ class Dataset(BaseModel):
     idtype: Optional[str]= 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     qc_params: QCParameters = Field(default_factory=QCParameters)
     imputation_params: imputationParameters = Field(default_factory=imputationParameters)
+    do_qc: Optional[bool] = False
+    do_clustering: Optional[bool] = False
+    do_dimension: Optional[bool] = False
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True   
     
