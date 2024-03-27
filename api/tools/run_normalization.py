@@ -73,17 +73,17 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             redislogger.info(task_id, s)
 
             if os.path.exists(adata_path):
+                adata = load_anndata(adata_path)
                 for layer in adata.layers.keys():
                     method=layer
                     process_id = generate_process_id(md5, process, method, parameters)
 
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
 
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    scanpy_results = run_clustering(scanpy_results, resolution=parameters.resolution, random_state=random_state)
-                    adata = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
+                    adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)

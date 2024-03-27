@@ -61,7 +61,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
     if "SCANPY" in methods or "DROPKICK" in methods:
-        adata = load_anndata(output_path)
+        adata = load_anndata(input_path)
         # Scanpy QC
         if "SCANPY" in methods:
             method='scanpy'
@@ -77,7 +77,6 @@ def run_qc(task_id, ds:dict, random_state=0):
                     # Check if the user only wants to run dimension reduction or clustering, then skip QC
                     # if do_qc:
                     redislogger.info(task_id, "Start scanpy QC...")
-                    adata = load_anndata(input_path)
                     scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
 
                     # If the user only wants to run clustering, then skip dminension reduction
