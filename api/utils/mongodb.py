@@ -11,10 +11,10 @@ user_datasets_collection = db.get_collection("user-datasets")
 pp_results_collection = db.get_collection("pp-results")
 
 
-def generate_process_id(file_md5, process, method, parameters):
+def generate_process_id(file_md5, process, method, parameters, assay):
     process_id = None
     if parameters.use_default:
-        process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters.assay}".encode("utf_8")).hexdigest()
+        process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{assay}".encode("utf_8")).hexdigest()
     else:
         process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters}".encode("utf-8")).hexdigest()
     return process_id

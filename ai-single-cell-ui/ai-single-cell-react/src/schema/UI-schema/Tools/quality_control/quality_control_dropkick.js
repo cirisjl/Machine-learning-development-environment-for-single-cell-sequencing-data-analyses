@@ -18,7 +18,7 @@ export const uiSchema = {
         </div>
           ),
         },
-        "default_assay": {
+        "assay": {
           "classNames": "sub-category",
           'ui:widget': () => (
             <div className='common-row-wrap'>
@@ -30,9 +30,9 @@ export const uiSchema = {
         "layer": {
           "classNames": "sub-category"
         },
-        "path_of_scrublet_calls": {
-          "classNames": "sub-category"
-        },
+        // "path_of_scrublet_calls": {
+        //   "classNames": "sub-category"
+        // },
         "species": {
           "classNames": "sub-category",
           "ui:placeholder": "Select species type"
@@ -43,10 +43,10 @@ export const uiSchema = {
         "genes": {
           "classNames": "sub-category",
         },
-        "ncores": {
-          "classNames": "sub-category",
-          "ui:widget": "range",
-        },
+        // "ncores": {
+        //   "classNames": "sub-category",
+        //   "ui:widget": "range",
+        // },
         "show_umap": {
           "classNames": "sub-category",
           "ui:widget": "toggle"
