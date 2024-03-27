@@ -53,8 +53,9 @@ async def create_normalization_task_async(ds: Dataset):
     """
     Create a task for normalization
     """
-    task = create_normalization_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods, ds.species], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'idtype':ds.idtype, 'show_umap': ds.show_umap, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_normalization_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Task submitted successfully"})
 
 
 @router.post("/impute")
@@ -64,6 +65,7 @@ async def create_imputation_task_async(ds: Dataset):
     """
     task = create_imputation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
+
 
 @router.post("/integrate")
 async def create_integration_task_async(ds: IntegrationDataset):

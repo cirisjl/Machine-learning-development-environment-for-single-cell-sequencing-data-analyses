@@ -24,9 +24,9 @@ def run_qc(task_id, ds:dict, random_state=0):
     output = ds.output
     adata_path = change_file_extension(input_path, 'h5ad')
     assay = ds.assay
-    do_qc = ds.do_qc
-    do_clustering = ds.do_clustering
-    do_dimension = ds.do_dimension
+    # do_qc = ds.do_qc
+    # do_clustering = ds.do_clustering
+    # do_dimension = ds.do_dimension
     md5 = get_md5(input_path)
     benchmarks_data = False
     if input_path is None:
@@ -75,27 +75,28 @@ def run_qc(task_id, ds:dict, random_state=0):
                 try:
                     output_path = get_output_path(output, ds.dataset, method='scanpy')
                     # Check if the user only wants to run dimension reduction or clustering, then skip QC
-                    if do_qc:
-                        redislogger.info(task_id, "Start scanpy QC...")
-                        adata = load_anndata(input_path)
-                        adata = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
+                    # if do_qc:
+                    redislogger.info(task_id, "Start scanpy QC...")
+                    adata = load_anndata(input_path)
+                    scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
 
                     # If the user only wants to run clustering, then skip dminension reduction
-                    if do_dimension:
-                        redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(task_id, msg)
+                    # if do_dimension:
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
 
                     # If the user only wants to run dminension reduction, then skip clustering
-                    if do_clustering:
-                        redislogger.info(task_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=parameters.resolution, random_state=random_state)
+                    # if do_clustering:
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    scanpy_results = run_clustering(scanpy_results, resolution=parameters.resolution, random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path)
+                    pp_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     
-                    adata.write_h5ad(output_path, compression='gzip')
+                    scanpy_results.write_h5ad(output_path, compression='gzip')
+                    scanpy_results = None
                     create_pp_results(pp_results)  # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during scanpy QC: {str(e)}"
@@ -112,8 +113,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 "process_id": process_id,
                 "pp_results": pp_results,
                 "message": "Quality control completed successfully."
-            })      
-
+            })
         # Dropkick QC
         elif "DROPKICK" in methods:
             method='Dropkick'
@@ -126,6 +126,16 @@ def run_qc(task_id, ds:dict, random_state=0):
                 try:
                     redislogger.info(task_id, "Start Dropkick QC...")
                     dropkick_results = run_dropkick_qc(adata, task_id, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, resolution=parameters.resolution, random_state=random_state)
+                    
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
+
+                    # If the user only wants to run dminension reduction, then skip clustering
+                    # if do_clustering:
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    dropkick_results = run_clustering(dropkick_results, resolution=parameters.resolution, random_state=random_state)
+
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     pp_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
@@ -134,6 +144,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
                     dropkick_results.write_h5ad(output_path, compression='gzip')
+                    dropkick_results = None
                     create_pp_results(pp_results) # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during Dropkick QC: {str(e)}"
@@ -151,6 +162,8 @@ def run_qc(task_id, ds:dict, random_state=0):
                 "pp_results": pp_results,
                 "message": "Quality control completed successfully." 
             })
+            
+        adata = None
 
     # Seurat QC
     elif "SEURAT" in methods:
@@ -177,7 +190,8 @@ def run_qc(task_id, ds:dict, random_state=0):
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
-                create_pp_results(pp_results)  # Insert pre-process results to database             
+                create_pp_results(pp_results)  # Insert pre-process results to database
+                adata = None         
             except Exception as e:
                 detail = f"Error during Seurat QC: {str(e)}"
                 redislogger.error(task_id, detail)
@@ -243,6 +257,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 pp_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
+                adata = None
                 create_pp_results(pp_results)  # Insert pre-process results to database            
             except Exception as e:
                 detail = f"Error during Bioconductor QC: {str(e)}"

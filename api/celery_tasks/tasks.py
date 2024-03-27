@@ -19,7 +19,7 @@ from tools.run_evaluation import run_evaluation
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_qc_task')
-def create_qc_task(self, ds_dict):
+def create_qc_task(self, ds_dict:dict):
     print("inside task")
     task_id = self.request.id
     results = run_qc(task_id, ds_dict)
@@ -28,9 +28,9 @@ def create_qc_task(self, ds_dict):
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
              name='tools:create_normalization_task')
-def create_normalization_task(self, dataset, input, userID, output, methods,species, default_assay='RNA', output_format='AnnData', idtype='ENSEMBL',show_umap = True, show_error = True):
+def create_normalization_task(self, ds_dict:dict):
     task_id = self.request.id
-    results = run_normalization(task_id, dataset, input, userID, output, methods,species, default_assay='RNA', output_format='AnnData', idtype='ENSEMBL', show_error = True)
+    results = run_normalization(task_id, ds_dict)
     return results
 
 
