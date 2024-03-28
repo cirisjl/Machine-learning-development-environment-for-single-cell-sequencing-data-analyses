@@ -27,7 +27,7 @@ FROM stormgod/oscb-seurat:4.4
 
 # RUN mkdir /app
 # RUN pip install --upgrade --no-cache celery_once
-# RUN R --no-echo --no-restore --no-save -e "install.packages('redux')"
+RUN R --no-echo --no-restore --no-save -e "install.packages('redux')"
 WORKDIR /app
 COPY . .
 
