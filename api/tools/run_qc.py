@@ -39,7 +39,7 @@ def run_qc(task_id, ds:Dataset, random_state=0):
         ds.assay = 'RNA'
     
     parameters = ds.qc_params
-    redislogger.info(task_id, f"Using QC Parameters: {parameters}")
+    redislogger.info(task_id, f"Using QC Parameters: {parameters.dict()}")
     
     # Get the absolute path for the given output
     output = get_output(output, ds.userID, task_id) # Tools
@@ -111,12 +111,9 @@ def run_qc(task_id, ds:Dataset, random_state=0):
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     pp_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
-                    # output_path = get_output_path(output, ds.dataset, method='dropkick')
-                    output_path = "/usr/src/app/storage/kbcfh/Dataset2/Results/dropkick.h5ad"
-                    redislogger.info(task_id, "output path")
-                    redislogger.info(task_id, output_path)
+                    output_path = get_output_path(output, ds.dataset, method='dropkick')
                     dropkick_results.write_h5ad(output_path, compression='gzip')
-                    create_pp_results(pp_results) # Insert pre-process results to database
+                    create_pp_results(pp_results)
                 except Exception as e:
                     detail = f"Error during Dropkick QC: {str(e)}"
                     redislogger.error(task_id, detail)
@@ -124,7 +121,6 @@ def run_qc(task_id, ds:Dataset, random_state=0):
                         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail = detail
                     )
-                
             results.append({
                 "task_id": task_id, 
                 "inputfile": input_path,

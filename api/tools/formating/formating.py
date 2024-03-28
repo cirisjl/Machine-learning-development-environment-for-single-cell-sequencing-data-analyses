@@ -224,24 +224,24 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "stage": pp_stage,
             "process": process,
             "method": method,
-            "parameters": parameters,
+            "parameters": parameters.dict(),
             "info": info,
             "adata_path": adata_path,
             "seurat_path": seurat_path,
             "sce_path": sce_path,
-            "layers": layers,
-            "cell_metadata_obs": cell_metadata_obs.to_dict(),
-            "gene_metadata": gene_metadata.to_dict(),
-            "nCells": nCells,
-            "nGenes": nGenes,
-            "genes": genes,
-            "cells": cells,
-            "embeddings": embeddings,
-            "umap_plot": umap_plot,
-            "umap_plot_3d": umap_plot_3d,
-            "violin_plot": violin_plot,
-            "scatter_plot": scatter_plot,
-            "highest_expr_genes_plot": highest_expr_genes_plot
+            # "layers": layers,
+            # "cell_metadata_obs": cell_metadata_obs.to_dict(),
+            # "gene_metadata": gene_metadata.to_dict(),
+            # "nCells": nCells,
+            # "nGenes": nGenes,
+            # "genes": genes,
+            # "cells": cells,
+            # "embeddings": embeddings,
+            # "umap_plot": umap_plot,
+            # "umap_plot_3d": umap_plot_3d,
+            # "violin_plot": violin_plot,
+            # "scatter_plot": scatter_plot,
+            # "highest_expr_genes_plot": highest_expr_genes_plot
             }
         
     return pp_results
@@ -389,16 +389,19 @@ def detect_delimiter(file_path):
 
 def get_output_path(path, dataset=None, method = '', format = "AnnData"):
     output = os.path.abspath(path)
-    method = '_' + method if method else ''
-    directory, base_name = os.path.split(output.rstrip('/'))
+    method = '_' + method if method != '' else ''
+    output_path = None
+    directory = output
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(output):
+        os.makedirs(output)
 
     if os.path.isdir(output):
+        print("is a directory")
         if dataset is None:
             dataset = base_name
         if format == "AnnData":
+            print("inside anndata")
             output_path = os.path.join(output, dataset + method + ".h5ad")
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
@@ -411,6 +414,7 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
     else:
+        print("inside file ")
         if format == "AnnData":
             output_path = output.replace(os.path.splitext(output)[-1], method + ".h5ad")
             print(output_path)
@@ -422,6 +426,8 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
     
+    print("final output")
+    print(output_path)
     return output_path
 
 
