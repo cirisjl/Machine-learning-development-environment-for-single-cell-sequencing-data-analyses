@@ -33,10 +33,10 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
 
         # Filtering low quality reads
         redislogger.info(unique_id, "Filtering low quality reads.")
+        sc.pp.filter_cells(adata, min_genes=min_genes)
         if max_genes is not None:
-            sc.pp.filter_cells(adata, min_genes=min_genes, max_genes=max_genes)
-        else:
-            sc.pp.filter_cells(adata, min_genes=min_genes)
+            sc.pp.filter_cells(adata, max_genes=max_genes)
+            
         sc.pp.filter_genes(adata, min_cells=min_cells)
         # mitochondrial genes
         redislogger.info(unique_id, "Removing mitochondrial genes.")
