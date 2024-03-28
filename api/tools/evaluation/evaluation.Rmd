@@ -60,7 +60,7 @@ set.seed(1234)
 
 ## Seurat
 About Seurat evaluation
-```{r Seurat, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r Seurat, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 
 if("SEURAT" %in% methods){
     method_params <- duo_clustering_all_parameter_settings_v2()[[paste0("sce_filteredExpr10_Koh_", 
@@ -118,7 +118,7 @@ if("SEURAT" %in% methods){
 
 ## CIDR
 About CIDR Evaluation
-```{r CIDR, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r CIDR, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 
 if("CIDR" %in% methods){
     L <- lapply(seq_len(n_rep), function(i) {  ## For each run

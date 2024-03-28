@@ -20,7 +20,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     results = []
     pp_results = []
     process_ids = []
-    input_path = unzip_file_if_compressed(ds['userID'], ds['input'])
+    input_path = unzip_file_if_compressed(task_id, ds['input'])
     methods = ds['methods']
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
@@ -257,7 +257,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         "default_assay": assay,
         "assay_names": assay_names,
         "md5": md5,
-        "process_id": process_ids,
+        "process_ids": process_ids,
         "pp_results": pp_results,
         "message": "Quality control completed successfully."
     }) 

@@ -73,6 +73,7 @@ def traversal_subfolder(path):
         return list
 
 # Unzip file if it's compressed, toherwise return its original path
+# unique_id can be task_id, user_id or process_id used for tracking logs
 def unzip_file_if_compressed(unique_id, file_path):
     extract_path = file_path
     if os.path.exists(file_path):
