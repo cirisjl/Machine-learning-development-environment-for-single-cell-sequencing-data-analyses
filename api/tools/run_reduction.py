@@ -62,7 +62,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         "md5": md5,
         "process_id": process_id,
         "pp_results": reduction_results,
-        "message": "Imputation completed successfully."
+        "message": "Dimension reduction completed successfully."
     })
 
     return results
