@@ -22,7 +22,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    input = unzip_file_if_compressed(input)
+    input = unzip_file_if_compressed(task_id, ds['input'])
     output = get_output(output, userID, task_id)
     adata_path = get_output_path(dataset, output)
     seurat_path = get_output_path(dataset, output, format='Seurat')

@@ -35,7 +35,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     
     # Get the absolute path for the given input
     # input = get_input_path(input, userID)
-    input = unzip_file_if_compressed(input)
+    input = unzip_file_if_compressed(task_id, ds['input'])
     md5 = get_md5(input)
     # Get the absolute path for the given output
     output = get_output(output, userID, task_id)

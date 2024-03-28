@@ -25,7 +25,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    input = unzip_file_if_compressed(input)
+    input = unzip_file_if_compressed(task_id, ds['input'])
     md5 = get_md5(input)
     output = get_output(output, userID, task_id)
 
