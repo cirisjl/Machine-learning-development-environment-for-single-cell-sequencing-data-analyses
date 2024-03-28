@@ -34,9 +34,8 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # Filtering low quality reads
         redislogger.info(unique_id, "Filtering low quality reads.")
         sc.pp.filter_cells(adata, min_genes=min_genes)
-        if max_genes is not None or max_genes != 0:
+        if max_genes is not None and max_genes != 0:
             sc.pp.filter_cells(adata, max_genes=max_genes)
-
         sc.pp.filter_genes(adata, min_cells=min_cells)
         # mitochondrial genes
         redislogger.info(unique_id, "Removing mitochondrial genes.")
@@ -47,6 +46,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # hemoglobin genes
         redislogger.info(unique_id, "Removing hemoglobin genes.")
         adata.var["hb"] = adata.var_names.str.contains(("^HB[^(P)]"))
+
         sc.pp.calculate_qc_metrics(adata, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True)
 
         redislogger.info(unique_id, "Caculating outliers.")
