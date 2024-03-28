@@ -93,7 +93,7 @@ async def create_integration_task_async(ds: IntegrationDataset):
     """
     Create a task for integration
     """
-    task = create_integration_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods'], ds['species']], kwargs={'default_assay':ds.default_assay, 'output_format':ds['output']_format, 'genes':ds.genes, 'reference':ds.reference, 'show_error': ds.show_error})
+    task = create_integration_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods'], ds['species']], kwargs={'default_assay':ds.default_assay, 'output_format':ds['outputformat'], 'genes':ds.genes, 'reference':ds.reference, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 
