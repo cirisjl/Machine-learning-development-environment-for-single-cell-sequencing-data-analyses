@@ -208,6 +208,20 @@ LoadSCE <- function(path) {
 # }
 
 
+ConvertToSeurat <- function(input, output){
+    srat <- LoadSeurat(input)
+    output <- SaveSeurat(srat, output)
+    output
+}
+
+
+ConvertToSCE <- function(input, output){
+    sce <- LoadSCE(input)
+    saveRDS(sce, file = output)
+    output
+}
+
+
 # Return metadata and a list of assays if the default assay is not "RNA"
 GetMetadataFromSeurat <- function(path, assay='RNA') {
     srat <- LoadSeurat(path)
@@ -313,9 +327,8 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 
 
 SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", drop_single_values=FALSE, drop_na_values=TRUE) {
-    
-    print("inside s to a")
-    print(out_file)
+    # print("inside s to a")
+    # print(out_file)
     main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
     transfer_layers <- transfer_layers[
         transfer_layers %in% c("data", "counts", "scale.data")
