@@ -391,9 +391,10 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
     output = os.path.abspath(path)
     method = '_' + method if method else ''
     directory, base_name = os.path.split(output.rstrip('/'))
+    output_path = None
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(output):
+        os.makedirs(output)
 
     if os.path.isdir(output):
         if dataset is None:
