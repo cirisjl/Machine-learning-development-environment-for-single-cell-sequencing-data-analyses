@@ -12,12 +12,12 @@ def run_conversion(task_id, ds:dict, show_error=True):
     process_ids = []
     pp_stage = "Raw"
     process = "Formatting"
-    dataset = ds.dataset
-    layer = ds.layer
-    input = ds.input
-    userID = ds.userID
-    output = ds.output
-    output_format = ds.output_format
+    dataset = ds['dataset']
+    layer = ds['layer']
+    input = ds['input']
+    userID = ds['userID']
+    output = ds['output']
+    output_format = ds['output_format']
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)

@@ -20,11 +20,11 @@ def run_qc(task_id, ds:dict, random_state=0):
     results = []
     pp_results = []
     process_ids = []
-    input_path = unzip_file_if_compressed(ds.userID, ds.input)
-    methods = ds.methods
-    output = ds.output
+    input_path = unzip_file_if_compressed(ds['userID'], ds['input'])
+    methods = ds['methods']
+    output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
-    assay = ds.assay
+    assay = ds['assay']
     assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
@@ -33,19 +33,19 @@ def run_qc(task_id, ds:dict, random_state=0):
 
     pp_stage = "Raw"
     process = "QC"
-    if ds.qc_params.max_genes == 20000:
-        ds.qc_params.max_genes = None
-    if ds.qc_params.n_pcs == 0:
-        ds.qc_params.n_pcs = None
-    if ds.assay is None:
-        ds.assay = 'RNA'
+    if ds['qc_params']['max_genes'] == 20000:
+        ds['qc_params']['max_genes'] = None
+    if ds['qc_params']['n_pcs'] == 0:
+        ds['qc_params']['n_pcs'] = None
+    if ds['assay'] is None:
+        ds['assay'] = 'RNA'
     
-    parameters = ds.qc_params
+    parameters = ds['qc_params']
     print(type(parameters))
     redislogger.info(task_id, f"Using QC Parameters: {parameters}")
     
     # Get the absolute path for the given output
-    output = get_output(output, ds.userID, task_id) # Tools
+    output = get_output(output, ds['userID'], task_id) # Tools
 
     if methods is None: # Benchmarks, because benchmarks does not have method paramter
         benchmarks_data = True
@@ -56,7 +56,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         output = benchmarks_output_path(input_path, task_id)
 
     # Get the absolute path for the given input
-    # input = get_input_path(input, ds.userID)
+    # input = get_input_path(input, ds['userID'])
     # Get the absolute path for the given output
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
@@ -73,22 +73,22 @@ def run_qc(task_id, ds:dict, random_state=0):
             else:
                 # Run Scanpy QC
                 try:
-                    output_path = get_output_path(output, ds.dataset, method='scanpy')
+                    output_path = get_output_path(output, ds['dataset'], method='scanpy')
                     # Check if the user only wants to run dimension reduction or clustering, then skip QC
                     # if do_qc:
                     redislogger.info(task_id, "Start scanpy QC...")
-                    scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_cells=parameters.min_cells, target_sum=parameters.target_sum, n_top_genes=parameters.n_top_genes, expected_doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
+                    scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
 
                     # If the user only wants to run clustering, then skip dminension reduction
                     # if do_dimension:
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
 
                     # If the user only wants to run dminension reduction, then skip clustering
                     # if do_clustering:
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    scanpy_results = run_clustering(scanpy_results, resolution=parameters.resolution, random_state=random_state)
+                    scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
@@ -119,21 +119,21 @@ def run_qc(task_id, ds:dict, random_state=0):
             else:
                 try:
                     redislogger.info(task_id, "Start Dropkick QC...")
-                    dropkick_results = run_dropkick_qc(adata, task_id, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, resolution=parameters.resolution, random_state=random_state)
+                    dropkick_results = run_dropkick_qc(adata, task_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
                     
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=random_state)
+                    dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
 
                     # If the user only wants to run dminension reduction, then skip clustering
                     # if do_clustering:
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    dropkick_results = run_clustering(dropkick_results, resolution=parameters.resolution, random_state=random_state)
+                    dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
-                    # output_path = get_output_path(output, ds.dataset, method='dropkick')
+                    # output_path = get_output_path(output, ds['dataset'], method='dropkick')
                     output_path = "/usr/src/app/storage/kbcfh/Dataset2/Results/dropkick.h5ad"
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
@@ -164,8 +164,8 @@ def run_qc(task_id, ds:dict, random_state=0):
         else:
             try:
                 redislogger.info(task_id, "Start Seurat QC...")
-                output_path = get_output_path(output, ds.dataset, method='Seurat', format='Seurat')
-                default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds.assay, min_genes=parameters.min_genes, max_genes=parameters.max_genes, min_UMI_count=parameters.min_cells, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters.resolution, dims=parameters.n_neighbors, n_pcs=parameters.n_pcs, doublet_rate=parameters.doublet_rate, regress_cell_cycle=parameters.regress_cell_cycle)
+                output_path = get_output_path(output, ds['dataset'], method='Seurat', format='Seurat')
+                default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
                 if ddl_assay_names:
                     results.append({
@@ -205,9 +205,9 @@ def run_qc(task_id, ds:dict, random_state=0):
         else:
             try:
                 redislogger.info(task_id, "Start Bioconductor QC...")
-                output_path = get_output_path(output, ds.dataset, method='Bioconductor', format='SingleCellExperiment')
-                adata_path = get_output_path(output, ds.dataset, method='Bioconductor', format='AnnData')
-                report_path = get_report_path(ds.dataset, output_path, "Bioconductor")
+                output_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
+                adata_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='AnnData')
+                report_path = get_report_path(ds['dataset'], output_path, "Bioconductor")
 
                 # Get the absolute path of the current file
                 current_file = os.path.abspath(__file__)
@@ -219,13 +219,13 @@ def run_qc(task_id, ds:dict, random_state=0):
                 bioconductor_path = os.path.abspath(relative_path)
                 
                 # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
-                s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds.dataset}', input_path='{input_path}', idtype='{ds.idtype}', colour_by='{parameters.colour_by}', shape_by_1='{parameters.shape_by_1}', shape_by_2='{parameters.shape_by_2 }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment'), output_file='{report_path}')\""], shell = True)
+                s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment'), output_file='{report_path}')\""], shell = True)
                 redislogger.info(task_id, s)
 
                 if os.path.exists(adata_path):
                     redislogger.info(task_id, "Adding 3D UMAP to AnnData object.")
                     adata = load_anndata(adata_path)
-                    sc.pp.neighbors(adata, n_neighbors=parameters.n_neighbors, n_pcs=parameters.n_pcs, random_state=0)
+                    sc.pp.neighbors(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=0)
                     adata_3D = sc.tl.umap(adata, random_state=0, 
                                     init_pos="spectral", n_components=3, 
                                     copy=True, maxiter=None)

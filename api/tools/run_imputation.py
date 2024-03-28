@@ -16,18 +16,18 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     process_ids = []
     pp_stage = "Corrected"
     process = "Imputation"
-    dataset = ds.dataset
-    layer = ds.layer
-    input = ds.input
-    userID = ds.userID
-    output = ds.output
-    methods = ds.methods
-    parameters = ds.imputation_params
-    genes = parameters.genes
-    ncores = parameters.ncores
-    n_neighbors = parameters.n_neighbors
-    n_pcs = parameters.n_pcs
-    resolution = parameters.resolution
+    dataset = ds['dataset']
+    layer = ds['layer']
+    input = ds['input']
+    userID = ds['userID']
+    output = ds['output']
+    methods = ds['methods']
+    parameters = ds['imputation_params']
+    genes = parameters['genes']
+    ncores = parameters['ncores']
+    n_neighbors = parameters['n_neighbors']
+    n_pcs = parameters['n_pcs']
+    resolution = parameters['resolution']
     
     if methods is None:
         redislogger.warning(task_id, "No imputation method is selected.")
