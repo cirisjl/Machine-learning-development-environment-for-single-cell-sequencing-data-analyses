@@ -27,6 +27,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
     adata_path = get_output_path(dataset, output)
     seurat_path = get_output_path(dataset, output, format='Seurat')
     sce_path = get_output_path(dataset, output, format='SingleCellExperiment')
+    sce_path = get_output_path(dataset, output, format='CSV')
 
     if output_format == "AnnData":
         try:
@@ -53,6 +54,17 @@ def run_conversion(task_id, ds:dict, show_error=True):
             sce_path = convert_to_seurat_sce(input, sce_path, format="SingleCellExperiment") 
             outputs.append({'seurat_path': sce_path})
             redislogger.info(task_id, "SingleCellExperiment object is saved successfully")
+        except Exception as e:
+            redislogger.error(task_id, "Format conversion is failed.")
+            if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
+
+    if output_format == "CSV":
+        try:
+            adata, counts, csv_path = load_anndata_to_csv(input, output, layer=layer)
+            adata = None
+            csv_path =None
+            outputs.append({'csv_path': csv_path})
+            redislogger.info(task_id, "CSV file is saved successfully")
         except Exception as e:
             redislogger.error(task_id, "Format conversion is failed.")
             if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
