@@ -50,7 +50,6 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
             output = get_output_path(dataset, output, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
-            create_pp_results(reduction_results)  # Insert pre-process results to database
             redislogger.info(task_id, "AnnData object for UMAP reduction is saved successfully")
         except Exception as e:
             redislogger.error(task_id, "UMAP reduction is failed.")
@@ -67,6 +66,9 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     })
 
     return results
+
+    
+    
 
         
             

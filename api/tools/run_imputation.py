@@ -79,7 +79,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                 redislogger.warning(task_id, "'MAGIC_imputed' layer already exists.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
 
-            create_pp_results(pp_results)  # Insert pre-process results to database
+            create_pp_results(imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
         process_ids.append(imputation_results)
@@ -150,7 +150,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
             else: 
                 redislogger.warning(task_id, "'SAVER' layer already exists.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
-            create_pp_results(pp_results)  # Insert pre-process results to database
+            create_pp_results(imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
         process_ids.append(imputation_results)
