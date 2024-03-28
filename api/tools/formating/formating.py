@@ -324,7 +324,7 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
+def load_anndata_to_csv(input, output, layer=None, show_error=True, dataset=None):
     adata = None
     adata_path = None
     counts = None
@@ -428,6 +428,10 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             output_path = os.path.join(output, dataset + method + ".h5seurat")
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+        elif format == "CSV":
+            output_path = os.path.join(output, dataset + method + ".csv")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
         if format == "AnnData":
             output_path = output.replace(os.path.splitext(output)[-1], method + ".h5ad")
@@ -439,6 +443,9 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             output_path = output.replace(os.path.splitext(output)[-1], method + ".h5seurat")
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+        elif format == "CSV":
+            output_path = output.replace(os.path.splitext(output)[-1], method + ".csv")
+            print(output_path)
     
     return output_path
 
