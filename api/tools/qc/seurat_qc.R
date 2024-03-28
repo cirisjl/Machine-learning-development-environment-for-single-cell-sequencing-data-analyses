@@ -22,7 +22,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
     )
 
     info <- print(srat)
-    RedisInfos(unique_id, info)
+    RedisInfo(unique_id, info)
 
     default_assay <- NULL
     assay_names <- NULL
