@@ -1,6 +1,5 @@
 from typing import List
 from celery import shared_task
-# from celery_once import QueueOnce
 from tools.formating.formating import *
 from tools.run_qc import run_qc
 from tools.run_normalization import run_normalization
@@ -20,7 +19,7 @@ from tools.run_conversion import run_conversion
 #     print(adata_path)
 #     return adata_path, assay_names
 
-@shared_task(bind=True, name='tools:create_qc_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_qc_task') 
 def create_qc_task(self, ds_dict:dict):
     print("inside task")
     task_id = self.request.id
@@ -28,42 +27,42 @@ def create_qc_task(self, ds_dict:dict):
     return results
 
 
-@shared_task(bind=True, name='tools:create_normalization_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_normalization_task') 
 def create_normalization_task(self, ds_dict:dict):
     task_id = self.request.id
     results = run_normalization(task_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_imputation_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_imputation_task') 
 def create_imputation_task(self, ds_dict:dict):
     task_id = self.request.id
     results = run_imputation(task_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_reduction_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_reduction_task') 
 def create_reduction_task(self, ds_dict:dict):
     task_id = self.request.id
     results = run_reduction(task_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_conversion_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_conversion_task') 
 def create_conversion_task(self, ds_dict:dict):
     task_id = self.request.id
     results = run_conversion(task_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_integration_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_integration_task') 
 def create_integration_task(self, datasets, inputs, userID, output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error = True):
     task_id = self.request.id
     results = run_integration(task_id, datasets, inputs, userID, output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error = True)
     return results
 
 
-@shared_task(bind=True, name='tools:create_evaluation_task') # , base=QueueOnce, once={'graceful': True, 'keys': ['task_id']}, countdown=5)
+@shared_task(bind=True, name='tools:create_evaluation_task') 
 def create_evaluation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     task_id = self.request.id
     results = run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True)

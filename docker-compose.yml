@@ -17,8 +17,9 @@ services:
   mongo-express:
     image: mongo-express:latest
     container_name: mongo-express
+    restart: always
     environment:
-      ME_CONFIG_MONGODB_SERVER: oscbdb
+      ME_CONFIG_MONGODB_SERVER: mongodb
       ME_CONFIG_MONGODB_PORT: "65528"
       ME_CONFIG_BASICAUTH: "true"
       ME_CONFIG_BASICAUTH_USERNAME: "admin"
@@ -26,7 +27,9 @@ services:
     ports:
       - "0.0.0.0:8081:8081"
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_started
+        restart: true
     networks:
       - oscb-network
 
