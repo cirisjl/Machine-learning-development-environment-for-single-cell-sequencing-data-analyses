@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task
+from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task
 from config.celery_utils import get_task_info
 from schemas.schemas import Dataset, IntegrationDataset, PathRequest
 router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description": "API Not found"}})
@@ -66,6 +66,16 @@ async def create_imputation_task_async(ds: Dataset):
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_imputation_task.apply_async(args=[ds_dict])
     return JSONResponse({"task_id": task.id, "status": "Imputation task submitted successfully"})
+
+
+@router.post("/impute")
+async def create_reduction_task_async(ds: Dataset):
+    """
+    Create a task for imputation
+    """
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_imputation_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Dimension reduction task submitted successfully"})
 
 
 @router.post("/integrate")
