@@ -11,16 +11,16 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     results = []
     pp_stage = "Summarized"
     process = "Reduction"
-    dataset = ds.dataset
-    layer = ds.layer
-    input = ds.input
-    userID = ds.userID
-    output = ds.output
+    dataset = ds['dataset']
+    layer = ds['layer']
+    input = ds['input']
+    userID = ds['userID']
+    output = ds['output']
     methods = "UMAP"
-    parameters = ds.reduction_params
-    n_neighbors = parameters.n_neighbors
-    n_pcs = parameters.n_pcs
-    resolution = parameters.resolution
+    parameters = ds['reduction_params']
+    n_neighbors = parameters['n_neighbors']
+    n_pcs = parameters['n_pcs']
+    resolution = parameters['resolution']
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)

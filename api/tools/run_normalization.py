@@ -16,18 +16,19 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     process_ids = []
     pp_stage = "Normalized"
     process = "Normalization"
-    dataset = ds.dataset
-    default_assay = ds.assay
-    input = ds.input
-    userID = ds.userID
-    output = ds.output
-    methods = ds.methods
-    species = ds.species
-    idtype = ds.idtype
-    parameters = ds.normalization_params
-    n_neighbors = parameters.n_neighbors
-    n_pcs = parameters.n_pcs
-    resolution = parameters.resolution
+    dataset = ds['dataset']
+    default_assay = ds['assay']
+    input = ds['input']
+    userID = ds['userID']
+    output = ds['output']
+    methods = ds['methods']
+    species = ds['species']
+    idtype = ds['idtype']
+    output_format = ds['output_format']
+    parameters = ds['normalization_params']
+    n_neighbors = parameters['n_neighbors']
+    n_pcs = parameters['n_pcs']
+    resolution = parameters['resolution']
     if methods is None:
         redislogger.warning(task_id, "No normalization method is selected.")
         return None
