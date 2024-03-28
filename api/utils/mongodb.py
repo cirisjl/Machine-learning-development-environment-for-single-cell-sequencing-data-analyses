@@ -21,7 +21,7 @@ def generate_process_id(file_md5, process, method, parameters, assay=None):
 
 
 def pp_results_exists(process_id):
-    result = pp_results_collection.find_one({'process_id': process_id})
+    result = pp_results_collection.find_one({'process_id': process_id}, {'_id': 0})
     return result
 
 
