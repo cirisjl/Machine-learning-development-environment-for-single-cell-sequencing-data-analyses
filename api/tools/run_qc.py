@@ -133,8 +133,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
-                    # output_path = get_output_path(output, ds['dataset'], method='dropkick')
-                    output_path = "/usr/src/app/storage/kbcfh/Dataset2/Results/dropkick.h5ad"
+                    output_path = get_output_path(output, ds['dataset'], method='dropkick')
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
                     dropkick_results.write_h5ad(output_path, compression='gzip')
