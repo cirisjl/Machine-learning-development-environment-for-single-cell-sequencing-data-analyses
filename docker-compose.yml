@@ -19,7 +19,7 @@ services:
     container_name: mongo-express
     restart: always
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_SERVER: oscbdb
       ME_CONFIG_MONGODB_PORT: "65528"
       ME_CONFIG_BASICAUTH: "true"
       ME_CONFIG_BASICAUTH_USERNAME: "admin"

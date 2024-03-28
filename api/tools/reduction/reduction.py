@@ -5,10 +5,10 @@ from anndata import AnnData
 
 
 def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0):
+    msg = None
     if layer is not None:
         adata_temp = adata.copy()
         adata_temp.X = adata_temp.layers[layer]
-        msg = None
 
         # Principal component analysis
         sc.tl.pca(adata_temp, svd_solver='arpack', random_state=random_state)
