@@ -21,8 +21,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
         }
     )
 
-    info <- print(srat)
-    RedisInfo(unique_id, info)
+    RedisInfo(unique_id, str(srat))
 
     default_assay <- NULL
     assay_names <- NULL
@@ -37,7 +36,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
             DefaultAssay(srat) <- assay # If there is more than one assay, and the user provides assay, then set default assay to assay
         } 
         default_assay <- DefaultAssay(srat)
-        RedisInfo(unique_id, paste0("Setting default_assay to ", default_assay))
+        RedisInfo(unique_id, paste0("Setting default_assay to ", print(default_assay)))
 
         if(IsNormalized(srat[[default_assay]]@counts, min_genes=min_genes)){
             RedisError(unique_id, "Seurat QC only takes raw counts, not normalized data.")
