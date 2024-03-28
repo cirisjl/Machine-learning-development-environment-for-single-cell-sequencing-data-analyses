@@ -6,6 +6,7 @@ from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
 from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
+from tools.run_reduction import run_reduction
 
 
 # def ConvertToAnndata_task(path):
@@ -39,6 +40,14 @@ def create_normalization_task(self, ds_dict:dict):
 def create_imputation_task(self, ds_dict:dict):
     task_id = self.request.id
     results = run_imputation(task_id, ds_dict)
+    return results
+
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 1},
+             name='tools:create_imputation_task')
+def create_reduction_task(self, ds_dict:dict):
+    task_id = self.request.id
+    results = run_reduction(task_id, ds_dict)
     return results
 
 
