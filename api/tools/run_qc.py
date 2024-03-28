@@ -96,6 +96,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     
                     scanpy_results.write_h5ad(output_path, compression='gzip')
                     scanpy_results = None
+                    redislogger.info(task_id, qc_results['info'])
                     create_pp_results(qc_results)  # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during scanpy QC: {str(e)}"
@@ -138,6 +139,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, output_path)
                     dropkick_results.write_h5ad(output_path, compression='gzip')
                     dropkick_results = None
+                    redislogger.info(task_id, qc_results['info'])
                     create_pp_results(qc_results) # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during Dropkick QC: {str(e)}"
@@ -162,7 +164,6 @@ def run_qc(task_id, ds:dict, random_state=0):
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
             try:
-                redislogger.info(task_id, "Start Seurat QC...")
                 output_path = get_output_path(output, ds['dataset'], method='Seurat', format='Seurat')
                 default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
@@ -177,6 +178,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                redislogger.info(task_id, qc_results['info'])
                 create_pp_results(qc_results)  # Insert pre-process results to database
                 adata = None         
             except Exception as e:
@@ -237,6 +239,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
                 adata = None
+                redislogger.info(task_id, qc_results['info'])
                 create_pp_results(qc_results)  # Insert pre-process results to database            
             except Exception as e:
                 detail = f"Error during Bioconductor QC: {str(e)}"
