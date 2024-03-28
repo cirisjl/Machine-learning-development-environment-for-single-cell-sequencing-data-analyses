@@ -122,6 +122,23 @@ def change_file_extension(file_path, new_extension):
     return new_file_path
 
 
+def convert_to_seurat_sce(input, output, format):
+    import rpy2.rinterface_lib.callbacks as rcb
+    import rpy2.robjects as ro
+    ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
+
+    if format == "Seurat":
+        ConvertToSeurat_r = ro.globalenv['ConvertToSeurat']
+        output = ConvertToSeurat_r(input, output)
+        output = convert_from_r(output)
+
+    elif format == "SingleCellExperiment":
+        ConvertToSCE_r = ro.globalenv['ConvertToSCE']
+        ConvertToSCE_r(input, output)
+    
+    return output
+
+
 def get_metadata_from_seurat(path):
     import rpy2.rinterface_lib.callbacks as rcb
     import rpy2.robjects as ro
@@ -307,7 +324,7 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer, show_error, dataset=None):
+def load_anndata_to_csv(input, output, layer=None, show_error=True, dataset=None):
     adata = None
     adata_path = None
     counts = None
@@ -413,6 +430,10 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             output_path = os.path.join(output, dataset + method + ".h5seurat")
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+        elif format == "CSV":
+            output_path = os.path.join(output, dataset + method + ".csv")
+            print(output_path)
+            print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
         print("inside file ")
         if format == "AnnData":
@@ -425,6 +446,9 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
             output_path = output.replace(os.path.splitext(output)[-1], method + ".h5seurat")
             print(output_path)
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+        elif format == "CSV":
+            output_path = output.replace(os.path.splitext(output)[-1], method + ".csv")
+            print(output_path)
     
     print("final output")
     print(output_path)

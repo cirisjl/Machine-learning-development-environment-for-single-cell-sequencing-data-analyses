@@ -5,30 +5,30 @@ import subprocess
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from tools.utils.reduction import run_dimension_reduction
+from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
-from schemas.schemas import Dataset
 
 
-def run_normalization(task_id, ds:Dataset, random_state=0, show_error=True):
+def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     results = []
     pp_results = []
     process_ids = []
     pp_stage = "Normalized"
     process = "Normalization"
-    dataset = ds.dataset
-    default_assay = ds.assay
-    input = ds.input
-    userID = ds.userID
-    output = ds.output
-    methods = ds.methods
-    species = ds.species
-    idtype = ds.idtype
-    parameters = ds.normalization_params
-    n_neighbors = parameters.n_neighbors
-    n_pcs = parameters.n_pcs
-    resolution = parameters.resolution
+    dataset = ds['dataset']
+    default_assay = ds['assay']
+    input = ds['input']
+    userID = ds['userID']
+    output = ds['output']
+    methods = ds['methods']
+    species = ds['species']
+    idtype = ds['idtype']
+    output_format = ds['output_format']
+    parameters = ds['normalization_params']
+    n_neighbors = parameters['n_neighbors']
+    n_pcs = parameters['n_pcs']
+    resolution = parameters['resolution']
     if methods is None:
         redislogger.warning(task_id, "No normalization method is selected.")
         return None
@@ -51,6 +51,7 @@ def run_normalization(task_id, ds:Dataset, random_state=0, show_error=True):
         normalization_results = pp_results_exists(process_id)
 
         if normalization_results is not None:
+            redislogger.info(task_id, f"Found existing pre-process results in database, skip {method} normalization.")
             pp_results.append(normalization_results)
             process_ids.append(process_id)
             methods.remove(method) # Remove method from methods list
@@ -74,11 +75,17 @@ def run_normalization(task_id, ds:Dataset, random_state=0, show_error=True):
             redislogger.info(task_id, s)
 
             if os.path.exists(adata_path):
+                adata = load_anndata(adata_path)
                 for layer in adata.layers.keys():
                     method=layer
                     process_id = generate_process_id(md5, process, method, parameters)
-                    redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, 3D UMAP and clustering the neighborhood graph for layer {layer}.")
-                    adata = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
+
+                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(task_id, msg)
+
+                    redislogger.info(task_id, "Clustering the neighborhood graph.")
+                    adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
@@ -96,7 +103,7 @@ def run_normalization(task_id, ds:Dataset, random_state=0, show_error=True):
             "md5": md5,
             "process_id": process_ids,
             "pp_results": pp_results,
-            "message": "Normalization control completed successfully."
+            "message": "Normalization completed successfully."
         })  
 
     return results

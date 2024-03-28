@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task
+from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task
 from config.celery_utils import get_task_info
 from schemas.schemas import Dataset, IntegrationDataset, PathRequest
 router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description": "API Not found"}})
@@ -33,7 +33,7 @@ router = APIRouter(prefix='/tools', tags=['tool'], responses={404: {"description
 #     """
 #     Create a task for quality control
 #     """
-#     task = create_qc_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
+#     task = create_qc_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
 #     return JSONResponse({"task_id": task.id})
 
 
@@ -44,7 +44,7 @@ async def create_qc_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_qc_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Task submitted successfully"})
+    return JSONResponse({"task_id": task.id, "status": "Quality Control task submitted successfully"})
 
 
 @router.post("/normalize")
@@ -52,8 +52,9 @@ async def create_normalization_task_async(ds: Dataset):
     """
     Create a task for normalization
     """
-    task = create_normalization_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods, ds.species], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'idtype':ds.idtype, 'show_umap': ds.show_umap, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_normalization_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Normalization task submitted successfully"})
 
 
 @router.post("/impute")
@@ -61,15 +62,37 @@ async def create_imputation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    task = create_imputation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_imputation_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Imputation task submitted successfully"})
+
+
+@router.post("/reduce")
+async def create_reduction_task_async(ds: Dataset):
+    """
+    Create a task for imputation
+    """
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_reduction_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Dimension reduction task submitted successfully"})
+
+
+@router.post("/convert")
+async def create_conversion_task_async(ds: Dataset):
+    """
+    Create a task for imputation
+    """
+    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    task = create_conversion_task.apply_async(args=[ds_dict])
+    return JSONResponse({"task_id": task.id, "status": "Conversion task submitted successfully"})
+
 
 @router.post("/integrate")
 async def create_integration_task_async(ds: IntegrationDataset):
     """
     Create a task for integration
     """
-    task = create_integration_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods, ds.species], kwargs={'default_assay':ds.default_assay, 'output_format':ds.output_format, 'genes':ds.genes, 'reference':ds.reference, 'show_error': ds.show_error})
+    task = create_integration_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods'], ds['species']], kwargs={'default_assay':ds.default_assay, 'output_format':ds['outputformat'], 'genes':ds.genes, 'reference':ds.reference, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 
@@ -78,7 +101,7 @@ async def create_evaluation_task_async(ds: Dataset):
     """
     Create a task for evaluation
     """
-    task = create_evaluation_task.apply_async(args=[ds.dataset, ds.input, ds.userID, ds.output, ds.methods], kwargs={'layer':ds.layer, 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
+    task = create_evaluation_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'layer':ds['layer'], 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     return JSONResponse({"task_id": task.id})
 
 

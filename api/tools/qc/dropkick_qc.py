@@ -8,7 +8,6 @@ sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), inf
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 from utils.redislogger import redislogger
-from tools.utils.reduction import run_dimension_reduction
 
 
 def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=1, random_state=0):
@@ -37,6 +36,5 @@ def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=1, ra
     # we perform a variable gene selection for 2000 HVGs before further processing
     adata_filtered= dk.recipe_dropkick(adata_filtered, X_final="arcsinh_norm", filter=True, n_hvgs=2000, verbose=True)
     redislogger.info(unique_id, "Computing PCA, neighborhood graph, tSNE, UMAP, 3D UMAP and clustering the neighborhood graph.")
-    adata_filtered = run_dimension_reduction(adata_filtered, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
     return adata_filtered
