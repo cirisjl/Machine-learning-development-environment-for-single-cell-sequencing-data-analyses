@@ -28,7 +28,7 @@ def pp_results_exists(process_id):
 def create_pp_results(pp_results):
     pp_results_collection.insert_one(pp_results)
     pp_results.pop("_id")
-    return pp_results
+    return
 
 
 def create_datasets(datasets):
