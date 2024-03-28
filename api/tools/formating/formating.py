@@ -122,6 +122,23 @@ def change_file_extension(file_path, new_extension):
     return new_file_path
 
 
+def convert_to_seurat_sce(input, output, format):
+    import rpy2.rinterface_lib.callbacks as rcb
+    import rpy2.robjects as ro
+    ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'formating.R')))
+
+    if format == "Seurat":
+        ConvertToSeurat_r = ro.globalenv['ConvertToSeurat']
+        output = ConvertToSeurat_r(input, output)
+        output = convert_from_r(output)
+
+    elif format == "SingleCellExperiment":
+        ConvertToSCE_r = ro.globalenv['ConvertToSCE']
+        ConvertToSCE_r(input, output)
+    
+    return output
+
+
 def get_metadata_from_seurat(path):
     import rpy2.rinterface_lib.callbacks as rcb
     import rpy2.robjects as ro
