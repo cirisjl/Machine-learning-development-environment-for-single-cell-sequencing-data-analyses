@@ -49,6 +49,7 @@ def get_output(output, userID, task_id):
     if output is not None and userID is not None:
         output_path = output + "/" + task_id
         return output_path
+    
 
 def benchmarks_output_path(input, task_id):
     """
