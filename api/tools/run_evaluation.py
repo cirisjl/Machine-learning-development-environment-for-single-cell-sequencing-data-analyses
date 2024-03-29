@@ -15,7 +15,7 @@ def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None,
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, task_id)
 
     # methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(dataset, output, method='evaluation', format='SingleCellExperiment')
