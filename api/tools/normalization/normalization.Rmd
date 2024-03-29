@@ -64,7 +64,7 @@ unique_id <- params$unique_id
 ```
 ## logCP10K
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
-```{r logCP10K, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r logCP10K, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCP10K" %in% methods){
   if(!"logCP10K" %in% names(srat@assays)){
     tryCatch({
@@ -99,7 +99,7 @@ if("LOGCP10K" %in% methods){
 
 ## logCPM
 Load or create a SingleCellExperiment object from a expression matrix where each row corresponds to a gene (or transcript) and each column corresponds to a single cell.
-```{r logCPM, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r logCPM, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCPM"  %in% methods){
   if(!"logCPM" %in% names(srat@assays)){  
     tryCatch({
@@ -134,7 +134,7 @@ if("LOGCPM"  %in% methods){
 
 ## SCT
 SCTransform calculates a model of technical noise in scRNA-seq data using 'regularized negative binomial regression'. The residuals for this model are normalized values, and can be positive or negative. Positive residuals for a given gene in a given cell indicate that we observed more UMIs than expected given the gene’s average expression in the population and cellular sequencing depth, while negative residuals indicate the converse.
-```{r SCTransform, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r SCTransform, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
   
   if(!"SCT" %in% names(srat@assays)){
@@ -182,7 +182,7 @@ if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
 
 ## scran
 scran deals with the problem of vary large numbers of zero values per cell by pooling cells together calculating a normalization factor (similar to CPM) for the sum of each pool. Since each cell is found in many different pools, cell-specific factors can be deconvoluted from the collection of pool-specific factors using linear algebraic methods.
-```{r scran, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r scran, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("SCRAN" %in% methods){
   if(!"scran" %in% names(srat@assays)){
     tryCatch({
@@ -226,7 +226,7 @@ if("SCRAN" %in% methods){
 
 ## DESeq2 (RLE)
 RLE (Relative Log Expression) 
-```{r DESeq2, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r DESeq2, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("DESEQ2" %in% methods){
   if(!"DESeq2" %in% names(srat@assays)){
     tryCatch({
@@ -266,7 +266,7 @@ if("DESEQ2" %in% methods){
 
 ## edgeR (TMM, RLE, upperquartile (UQ))
 
-```{r edgeR, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r edgeR, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTILE" %in% methods){
   library(edgeR)
   dge <- DGEList(expression_matrix + 1)
@@ -369,7 +369,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
 ## biomaRt (TPM, FPKM)
 TPM (Transcripts Per Kilobase Million) is the same as RPKM/FPKM, but it divides the read counts by the gene length (in kilobase) first, then divides the total counts by 106 to make the scaling factor. In essence, that means to normalize gene length first, then sequencing depth. 
 FPKM (Fragments Per Kilobase Million) takes the effect of gene lengths into consideration. These methods divide the RPM by the gene length, in kilobases. The main difference is that FPKM is made for paired-end RNA-seq, in which two reads can come from a single fragment, and FPKM can avoid counting the same fragment twice. 
-```{r biomaRt, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r biomaRt, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 counts2TPM <- function(count=count, efflength=efflen){   
   RPK <- count/(efflength/1000)   # Gene length normalization: reads per kilobase 
   PMSC_rpk <- sum(RPK)/1e6        # Depth normalization: “per million” scaling factor 
@@ -497,8 +497,8 @@ if("TPM" %in% methods || "FPKM" %in% methods){
 expression_matrix <- NULL
 ```
 
-## Formating & Scanpy Pearson residuals normalization
-```{r Formating & Scanpy, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+## scanpy Pearson residuals normalization
+```{r scanpy, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
     if("PEARSON_RESIDUALS" %in% methods){
       if(!"Pearson_residuals" %in% names(srat@assays)){

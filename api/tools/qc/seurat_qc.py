@@ -13,7 +13,7 @@ from utils.redislogger import redislogger
 pandas2ri.activate()
 
 def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, n_pcs=3, doublet_rate=0.075, regress_cell_cycle=False):
-    redislogger.info(unique_id, "Started Seurat Quality Control.")
+    redislogger.info(unique_id, "Start Seurat Quality Control...")
 
     adata = None
     default_assay = None

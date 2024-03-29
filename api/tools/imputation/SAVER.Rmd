@@ -20,7 +20,7 @@ output: html_document
 knitr::opts_chunk$set(echo=params$show_code, include=TRUE, warning=params$show_warning, message=params$show_message)
 ```
 ## SAVER imputation
-```{r SAVER imputation, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r SAVER imputation, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 library(SAVER)
 packageVersion("SAVER")
 

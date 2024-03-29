@@ -200,7 +200,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=None, seurat_path=None, sce_path=None):
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, layer=None, adata_path=None, seurat_path=None, sce_path=None):
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -230,8 +230,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         for name in embedding_names:
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
 
-        umap_plot = plot_UMAP(adata)
-        umap_plot_3d = plot_UMAP(adata, n_dim=3)
+        umap_plot = plot_UMAP(adata, layer=layer)
+        umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
         violin_plot = plot_violin(adata)
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
@@ -404,7 +404,7 @@ def detect_delimiter(file_path):
 #     return output
 
 
-def get_output_path(path, dataset=None, method = '', format = "AnnData"):
+def get_output_path(path, process_id='', dataset=None, method = '', format = "AnnData"):
     output = os.path.abspath(path)
     method = '_' + method if method != '' else ''
     output_path = None
@@ -418,37 +418,27 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
         if dataset is None:
             dataset = base_name
         if format == "AnnData":
-            print("inside anndata")
-            output_path = os.path.join(output, dataset + method + ".h5ad")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".h5ad")
             print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
         elif format == "SingleCellExperiment":
-            output_path = os.path.join(output, dataset + method + ".rds")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".rds")
             print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
         elif format == "Seurat":
-            output_path = os.path.join(output, dataset + method + ".h5seurat")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".h5seurat")
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
         elif format == "CSV":
-            output_path = os.path.join(output, dataset + method + ".csv")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".csv")
             print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
         print("inside file ")
         if format == "AnnData":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5ad")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
         elif format == "SingleCellExperiment":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".rds")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".rds"))
         elif format == "Seurat":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5seurat")
-            print(output_path)
-            print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
         elif format == "CSV":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".csv")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
     
     print("final output")
     print(output_path)

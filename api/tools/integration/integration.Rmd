@@ -55,7 +55,7 @@ names(srats.list) <-datasets
 ```
 ## Seurat
 
-```{r Seurat, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+```{r Seurat, error=TRUE, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("SEURAT" %in% methods) {
   srats.integrated <- NULL
   if(params$default_assay == 'SCT' && !is.null(params$reference)) {
@@ -91,7 +91,7 @@ if("SEURAT" %in% methods) {
 ```
 ## Harmony
 
-```{r Harmony, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+```{r Harmony, error=TRUE, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("HARMONY" %in% methods) {
   library(harmony)
   library(cowplot)
@@ -134,7 +134,7 @@ if("HARMONY" %in% methods) {
 ```
 ## Liger
 
-```{r Liger, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
+```{r Liger, error=TRUE, include=TRUE, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
 if("LIGER" %in% methods) {
   library(rliger)
   srat.liger <- Reduce(merge, srats.list)

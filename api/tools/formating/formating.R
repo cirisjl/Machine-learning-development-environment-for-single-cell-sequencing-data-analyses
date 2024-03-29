@@ -257,7 +257,7 @@ GetMetadataFromSeurat <- function(path, assay='RNA') {
         if('pca' %in% names(srat@reductions)) pca <- Embeddings(object = srat, reduction = "pca")
         if('tsne' %in% names(srat@reductions)) tsne <- Embeddings(object = srat, reduction = "tsne")
         if('umap' %in% names(srat@reductions)) umap <- Embeddings(object = srat, reduction = "umap")
-        info <- print(srat)
+        info <- str(srat)
     }
     srat <- NULL
     
