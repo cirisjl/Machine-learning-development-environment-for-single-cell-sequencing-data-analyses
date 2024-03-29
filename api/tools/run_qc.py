@@ -73,7 +73,7 @@ def run_qc(task_id, ds:dict, random_state=0):
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
-                output_path = get_output_path(output, ds['dataset'], method='scanpy')
+                output_path = get_output_path(output, process_id, ds['dataset'], method='scanpy')
                 if os.path.exists(output): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     scanpy_results = load_anndata(output_path)
@@ -137,7 +137,7 @@ def run_qc(task_id, ds:dict, random_state=0):
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
-                output_path = get_output_path(output, ds['dataset'], method='dropkick')
+                output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
                 if os.path.exists(output): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     dropkick_results = load_anndata(output_path)
@@ -202,7 +202,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
-            output_path = get_output_path(output, ds['dataset'], method='Seurat', format='Seurat')
+            output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
             try:     
                 default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
@@ -245,8 +245,8 @@ def run_qc(task_id, ds:dict, random_state=0):
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
-            output_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
-            adata_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='AnnData')
+            output_path = get_output_path(output, process_id, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
+            adata_path = get_output_path(output, process_id, ds['dataset'], method='Bioconductor', format='AnnData')
             report_path = get_report_path(ds['dataset'], output_path, "Bioconductor")
             try:
                 redislogger.info(task_id, "Start Bioconductor QC...")

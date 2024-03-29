@@ -46,31 +46,32 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     
     if "MAGIC" in methods:
         adata = None
-        output = get_output_path(dataset, output, method='MAGIC_imputation')
-        if os.path.exists(output): # If output exist from the last run, then just pick up it.
-            redislogger.info(task_id, "Output already exists, start from the result of the last run.")
-            adata = load_anndata(output)
-            redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-            if msg is not None: redislogger.warning(task_id, msg)
-
-            redislogger.info(task_id, "Clustering the neighborhood graph.")
-            adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
-
-            redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
-            adata.write_h5ad(output, compression='gzip')
-            adata = None
-            redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
-            create_pp_results(imputation_results)  # Insert pre-process results to database
+        method='MAGIC'
+        process_id = generate_process_id(md5, process, method, parameters)
+        imputation_results = pp_results_exists(process_id)
+        output = get_output_path(output, process_id, dataset, method='MAGIC_imputation')
+        
+        if imputation_results is not None:
+            redislogger.info(task_id, "Found existing pre-process results in database, skip MAGIC imputation.")
         else:
-            adata = load_anndata(input)
-            method='MAGIC'
-            process_id = generate_process_id(md5, process, method, parameters)
-            imputation_results = pp_results_exists(process_id)
-            if imputation_results is not None:
-                redislogger.info(task_id, "Found existing pre-process results in database, skip MAGIC imputation.")
+            if os.path.exists(output): # If output exist from the last run, then just pick up it.
+                redislogger.info(task_id, "Output already exists, start from the result of the last run.")
+                adata = load_anndata(output)
+                redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                if msg is not None: redislogger.warning(task_id, msg)
+
+                redislogger.info(task_id, "Clustering the neighborhood graph.")
+                adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
+
+                redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                adata.write_h5ad(output, compression='gzip')
+                adata = None
+                redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
+                create_pp_results(imputation_results)  # Insert pre-process results to database
             else:
+                adata = load_anndata(input)
                 if adata is None:
                     raise HTTPException(
                         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -117,7 +118,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     # if "scGNN" in methods:
     #     if 'scGNN_imputed' not in adata.layers.keys(): 
     #         try:
-    #             output = get_output_path(dataset, output, method='scGNN_imputation')
+    #             output = get_output_path(output, process_id, dataset, method='scGNN_imputation')
     #             redislogger.info(task_id, "AnnData object for scGNN imputation is saved successfully")          
     #         except Exception as e:
     #             redislogger.error(task_id, "scGNN imputation is failed.")
@@ -131,7 +132,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         process_id = generate_process_id(md5, process, method, parameters)
         imputation_results = pp_results_exists(process_id)
         adata = None
-        output = get_output_path(dataset, output, method='SAVER_imputation')
+        output = get_output_path(output, process_id, dataset, method='SAVER_imputation')
 
         if imputation_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip SAVER imputation.")

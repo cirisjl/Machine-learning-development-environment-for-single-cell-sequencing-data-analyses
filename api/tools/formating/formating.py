@@ -404,7 +404,7 @@ def detect_delimiter(file_path):
 #     return output
 
 
-def get_output_path(path, dataset=None, method = '', format = "AnnData"):
+def get_output_path(path, process_id='', dataset=None, method = '', format = "AnnData"):
     output = os.path.abspath(path)
     method = '_' + method if method else ''
     directory, base_name = os.path.split(output.rstrip('/'))
@@ -417,35 +417,26 @@ def get_output_path(path, dataset=None, method = '', format = "AnnData"):
         if dataset is None:
             dataset = base_name
         if format == "AnnData":
-            output_path = os.path.join(output, dataset + method + ".h5ad")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".h5ad")
             print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
         elif format == "SingleCellExperiment":
-            output_path = os.path.join(output, dataset + method + ".rds")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".rds")
             print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
         elif format == "Seurat":
-            output_path = os.path.join(output, dataset + method + ".h5seurat")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".h5seurat")
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
         elif format == "CSV":
-            output_path = os.path.join(output, dataset + method + ".csv")
-            print(output_path)
+            output_path = os.path.join(output, process_id, dataset + method + ".csv")
             print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
         if format == "AnnData":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5ad")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
         elif format == "SingleCellExperiment":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".rds")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".rds"))
         elif format == "Seurat":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".h5seurat")
-            print(output_path)
-            print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
         elif format == "CSV":
-            output_path = output.replace(os.path.splitext(output)[-1], method + ".csv")
-            print(output_path)
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
     
     return output_path
 
