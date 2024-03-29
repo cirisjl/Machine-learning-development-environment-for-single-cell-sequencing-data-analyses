@@ -25,10 +25,10 @@ def run_conversion(task_id, ds:dict, show_error=True):
     #Get the absolute path for the given output
     input = unzip_file_if_compressed(task_id, ds['input'])
     # output = get_output(output, userID, task_id)
-    adata_path = get_output_path(dataset, output)
-    seurat_path = get_output_path(dataset, output, format='Seurat')
-    sce_path = get_output_path(dataset, output, format='SingleCellExperiment')
-    csv_path = get_output_path(dataset, output, format='CSV')
+    adata_path = get_output_path(output, dataset)
+    seurat_path = get_output_path(output, dataset, format='Seurat')
+    sce_path = get_output_path(output, dataset, format='SingleCellExperiment')
+    csv_path = get_output_path(output, dataset, format='CSV')
 
     if output_format == "AnnData":
         try:
