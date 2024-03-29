@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import hashlib
+import os
 
 mongo_url = "mongodb://mongodb:65528"
 # Connect to MongoDB using the URL
@@ -39,3 +40,7 @@ def create_datasets(datasets):
 def create_user_datasets(datasets):
     user_datasets_collection.insert_one(datasets)
     return
+
+
+def file_size(path): # MB
+    return os.path.getsize(path)/(1024*1024)
