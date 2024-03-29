@@ -207,7 +207,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                         "md5": md5,
                         "metadata": metadata,
                         "pp_results": pp_results,
-                        "message": "Quality control completed successfully."
+                        "status":"Quality control completed successfully."
                     })
             except Exception as e:
                 # logger.exception("Error during Scanpy QC")
@@ -268,7 +268,7 @@ async def run_quality_control(file_mappings: QualityControlRequest):
                     "md5": md5,
                     "metadata": metadata,
                     "pp_results": pp_results,
-                    "message": "Quality control completed successfully."
+                    "status":"Quality control completed successfully."
                     
                 })
             except Exception as e:

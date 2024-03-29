@@ -28,6 +28,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
+
     if input_path is None:
         return None
 
@@ -72,8 +73,8 @@ def run_qc(task_id, ds:dict, random_state=0):
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
                 # Run Scanpy QC
+                output_path = get_output_path(output, ds['dataset'], method='scanpy')
                 try:
-                    output_path = get_output_path(output, ds['dataset'], method='scanpy')
                     # Check if the user only wants to run dimension reduction or clustering, then skip QC
                     # if do_qc:
                     redislogger.info(task_id, "Start scanpy QC...")
@@ -100,6 +101,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     create_pp_results(qc_results)  # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during scanpy QC: {str(e)}"
+                    os.remove(output_path)
                     redislogger.error(task_id, detail)
                     raise HTTPException(
                         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -118,6 +120,7 @@ def run_qc(task_id, ds:dict, random_state=0):
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
+                output_path = get_output_path(output, ds['dataset'], method='dropkick')
                 try:
                     redislogger.info(task_id, "Start Dropkick QC...")
                     dropkick_results = run_dropkick_qc(adata, task_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
@@ -134,7 +137,6 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
                     redislogger.info(task_id, "Saving AnnData object.")
-                    output_path = get_output_path(output, ds['dataset'], method='dropkick')
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
                     dropkick_results.write_h5ad(output_path, compression='gzip')
@@ -144,6 +146,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 except Exception as e:
                     detail = f"Error during Dropkick QC: {str(e)}"
                     redislogger.error(task_id, detail)
+                    os.remove(output_path)
                     raise HTTPException(
                         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail = detail
@@ -163,8 +166,8 @@ def run_qc(task_id, ds:dict, random_state=0):
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
-            try:
-                output_path = get_output_path(output, ds['dataset'], method='Seurat', format='Seurat')
+            output_path = get_output_path(output, ds['dataset'], method='Seurat', format='Seurat')
+            try:     
                 default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
                 if ddl_assay_names:
@@ -184,6 +187,7 @@ def run_qc(task_id, ds:dict, random_state=0):
             except Exception as e:
                 detail = f"Error during Seurat QC: {str(e)}"
                 redislogger.error(task_id, detail)
+                os.remove(output_path)
                 raise HTTPException(
                     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail = detail
@@ -204,11 +208,11 @@ def run_qc(task_id, ds:dict, random_state=0):
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
         else:
+            output_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
+            adata_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='AnnData')
+            report_path = get_report_path(ds['dataset'], output_path, "Bioconductor")
             try:
                 redislogger.info(task_id, "Start Bioconductor QC...")
-                output_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
-                adata_path = get_output_path(output, ds['dataset'], method='Bioconductor', format='AnnData')
-                report_path = get_report_path(ds['dataset'], output_path, "Bioconductor")
 
                 # Get the absolute path of the current file
                 current_file = os.path.abspath(__file__)
@@ -244,6 +248,9 @@ def run_qc(task_id, ds:dict, random_state=0):
             except Exception as e:
                 detail = f"Error during Bioconductor QC: {str(e)}"
                 redislogger.error(task_id, detail)
+                os.remove(output_path)
+                os.remove(adata_path)
+                os.remove(report_path)
                 raise HTTPException(
                     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail = detail
@@ -259,7 +266,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         "md5": md5,
         "process_ids": process_ids,
         "pp_results": pp_results,
-        "message": "Quality control completed successfully."
+        "status":"Quality control completed successfully."
     }) 
 
     return results
