@@ -4,6 +4,7 @@ from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
+from fastapi import HTTPException, status
     
 
 def run_conversion(task_id, ds:dict, show_error=True):
@@ -27,7 +28,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
     adata_path = get_output_path(dataset, output)
     seurat_path = get_output_path(dataset, output, format='Seurat')
     sce_path = get_output_path(dataset, output, format='SingleCellExperiment')
-    sce_path = get_output_path(dataset, output, format='CSV')
+    csv_path = get_output_path(dataset, output, format='CSV')
 
     if output_format == "AnnData":
         try:
@@ -37,8 +38,12 @@ def run_conversion(task_id, ds:dict, show_error=True):
             outputs.append({'adata_path': adata_path})
             redislogger.info(task_id, "AnnData object is saved successfully")
         except Exception as e:
-            redislogger.error(task_id, "Format conversion is failed.")
-            if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
+            detail = f"Format conversion is failed: {e}"
+            os.remove(adata_path)
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
 
     if output_format == "Seurat":
         try:
@@ -46,17 +51,25 @@ def run_conversion(task_id, ds:dict, show_error=True):
             outputs.append({'seurat_path': seurat_path})
             redislogger.info(task_id, "Seurat object is saved successfully")
         except Exception as e:
-            redislogger.error(task_id, "Format conversion is failed.")
-            if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
+            detail = f"Format conversion is failed: {e}"
+            os.remove(seurat_path)
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
 
     if output_format == "SingleCellExperiment":
         try:
             sce_path = convert_to_seurat_sce(input, sce_path, format="SingleCellExperiment") 
-            outputs.append({'seurat_path': sce_path})
+            outputs.append({'sce_path': sce_path})
             redislogger.info(task_id, "SingleCellExperiment object is saved successfully")
         except Exception as e:
-            redislogger.error(task_id, "Format conversion is failed.")
-            if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
+            detail = f"Format conversion is failed: {e}"
+            os.remove(sce_path)
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
 
     if output_format == "CSV":
         try:
@@ -66,14 +79,18 @@ def run_conversion(task_id, ds:dict, show_error=True):
             outputs.append({'csv_path': csv_path})
             redislogger.info(task_id, "CSV file is saved successfully")
         except Exception as e:
-            redislogger.error(task_id, "Format conversion is failed.")
-            if show_error: redislogger.error(task_id, f"Format conversion is failed: {e}")
+            detail = f"Format conversion is failed: {e}"
+            os.remove(csv_path)
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
         
     results.append({
         "task_id": task_id, 
         "inputfile": input,
         "outputs": outputs,
-        "message": "Dimension reduction completed successfully."
+        "status":"Dimension reduction completed successfully."
     })
 
     return results

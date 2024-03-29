@@ -8,6 +8,7 @@ from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
+from fastapi import HTTPException, status
 
 
 def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
@@ -29,6 +30,8 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    status = 'Successful'
+
     if methods is None:
         redislogger.warning(task_id, "No normalization method is selected.")
         return None
@@ -72,7 +75,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
 
             # rmd_path = os.path.abspath("normalization/normalization.Rmd")
             s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + task_id + "', dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', species='" + str(species) + "', idtype='" + str(idtype) + "'), output_file='" + report_path + "')\""], shell = True)
-            redislogger.info(task_id, s)
+            # redislogger.info(task_id, s)
 
             if os.path.exists(adata_path):
                 adata = load_anndata(adata_path)
@@ -93,8 +96,14 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                     process_ids.append(process_id)
                     create_pp_results(normalization_results)  # Insert pre-process results to database  
         except Exception as e:
-            redislogger.error(task_id, "Normalization is failed.")
-            if show_error: redislogger.error(task_id, f"Normalization is failed: {e}")
+            # redislogger.error(task_id, "Normalization is failed.")
+            detail = f"Normalization is failed: {e}"
+            os.remove(output)
+            os.remove(adata_path)
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
 
     results.append({
             "task_id": task_id, 
@@ -103,7 +112,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             "md5": md5,
             "process_id": process_ids,
             "pp_results": pp_results,
-            "message": "Normalization completed successfully."
+            "status":"Normalization completed successfully."
         })  
 
     return results

@@ -8,6 +8,7 @@ from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
 from utils.unzip import unzip_file_if_compressed
+from fastapi import HTTPException, status
     
 
 def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
@@ -28,6 +29,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    status = 'Successful'
     
     if methods is None:
         redislogger.warning(task_id, "No imputation method is selected.")
@@ -73,8 +75,11 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                     adata = None
                     redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
                 except Exception as e:
-                    redislogger.error(task_id, "MAGIC imputation is failed.")
-                    if show_error: redislogger.error(task_id, f"MAGIC imputation is failed: {e}")
+                    detail = f"MAGIC imputation is failed: {e}"
+                    raise HTTPException(
+                        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail = detail
+                    )
             else: 
                 redislogger.warning(task_id, "'MAGIC_imputed' layer already exists.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
@@ -145,8 +150,11 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                         raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
             
                 except Exception as e:
-                    redislogger.error(task_id, "SAVER imputation is failed.")
-                    if show_error: redislogger.error(task_id, f"SAVER imputation is failed: {e}")
+                    detail = f"SAVER imputation is failed: {e}"
+                    raise HTTPException(
+                        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail = detail
+                    )
             else: 
                 redislogger.warning(task_id, "'SAVER' layer already exists.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
@@ -161,7 +169,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         "md5": md5,
         "process_id": process_ids,
         "pp_results": pp_results,
-        "message": "Imputation completed successfully."
+        "status":"Imputation completed successfully."
     })
 
     return results

@@ -72,6 +72,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
 def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0):
     if layer is not None:
         # Clustering the neighborhood graph
+        adata_temp = adata.copy()
         sc.tl.leiden(adata_temp, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
