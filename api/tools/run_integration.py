@@ -32,7 +32,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     # #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, task_id)
 
     output = get_output_path(dataset, output, method='Integration', format='Seurat')
 

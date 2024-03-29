@@ -200,7 +200,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=None, seurat_path=None, sce_path=None):
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, layer=None, adata_path=None, seurat_path=None, sce_path=None):
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -230,8 +230,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         for name in embedding_names:
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
 
-        umap_plot = plot_UMAP(adata)
-        umap_plot_3d = plot_UMAP(adata, n_dim=3)
+        umap_plot = plot_UMAP(adata, layer=layer)
+        umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
         violin_plot = plot_violin(adata)
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)

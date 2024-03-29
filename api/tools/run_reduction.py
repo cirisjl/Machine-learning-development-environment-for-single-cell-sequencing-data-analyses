@@ -29,8 +29,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     #Get the absolute path for the given output
     input = unzip_file_if_compressed(task_id, ds['input'])
     md5 = get_md5(input)
-    output = get_output(output, userID, task_id)
-
+    # output = get_output(output, userID, task_id)
     adata = load_anndata(input)
     method='MAGIC'
     process_id = generate_process_id(md5, process, method, parameters)
@@ -65,6 +64,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         
     results.append({
         "task_id": task_id, 
+        "userID": userID,
         "inputfile": input,
         "layers": reduction_results.layers,
         "md5": md5,

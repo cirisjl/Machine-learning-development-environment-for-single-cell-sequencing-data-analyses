@@ -41,12 +41,16 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     input = unzip_file_if_compressed(task_id, ds['input'])
     md5 = get_md5(input)
     # Get the absolute path for the given output
-    output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, task_id)
 
     # methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(dataset, output, method='normalization', format='Seurat')
     adata_path = get_output_path(dataset, output, method='normalization', format='AnnData')
+    adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
     # methods = list_py_to_r(methods)
+    if os.path.exists(output): # If output exist from the last run, then just pick up it.
+        input = output
+        redislogger.info(task_id, "Output already exists, start from the last run.")
 
     # Check if there is existing pre-process results
     for method in methods:
@@ -77,24 +81,53 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + task_id + "', dataset='" + str(dataset) + "', input='" + input + "', output='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + methods + "', default_assay='" + default_assay + "', species='" + str(species) + "', idtype='" + str(idtype) + "'), output_file='" + report_path + "')\""], shell = True)
             # redislogger.info(task_id, s)
 
-            if os.path.exists(adata_path):
-                adata = load_anndata(adata_path)
-                for layer in adata.layers.keys():
-                    method=layer
+            try:
+                if os.path.exists(adata_path):
+                    adata = load_anndata(adata_path)
+                    for layer in adata.layers.keys():
+                        method = layer
+                        process_id = generate_process_id(md5, process, method, parameters)
+
+                        redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
+                        adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                        if msg is not None: redislogger.warning(task_id, msg)
+
+                        redislogger.info(task_id, f"Clustering the neighborhood graph for layer {layer}.")
+                        adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+
+                        redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
+                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, layer=layer, adata_path=adata_path, seurat_path=output)
+                        pp_results.append(normalization_results)
+                        process_ids.append(process_id)
+                        create_pp_results(normalization_results)  # Insert pre-process results to database
+                    adata.write_h5ad(adata_path, compression='gzip')
+
+                if os.path.exists(adata_sct_path):
+                    adata_sct = load_anndata(adata_sct_path)
+                    method = "SCT"
+                    layer = "SCT"
                     process_id = generate_process_id(md5, process, method, parameters)
 
-                    redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
+                    adata_sct, msg = run_dimension_reduction(adata_sct, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
 
-                    redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+                    redislogger.info(task_id, f"Clustering the neighborhood graph for layer {layer}.")
+                    adata_sct = run_clustering(adata_sct, layer=layer, resolution=resolution, random_state=random_state)
 
-                    redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                    redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
+                    normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, layer=layer, adata_path=adata_sct_path, seurat_path=output)
                     pp_results.append(normalization_results)
                     process_ids.append(process_id)
-                    create_pp_results(normalization_results)  # Insert pre-process results to database  
+                    adata.write_h5ad(adata_sct_path, compression='gzip')
+                    create_pp_results(normalization_results)  # Insert pre-process results to database 
+            except Exception as e:
+                detail = f"UMAP or clustering is failed: {e}"
+                raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail = detail
+            )
+            
         except Exception as e:
             # redislogger.error(task_id, "Normalization is failed.")
             detail = f"Normalization is failed: {e}"
@@ -106,7 +139,8 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             )
 
     results.append({
-            "task_id": task_id, 
+            "task_id": task_id,
+            "userID": userID,
             "inputfile": input,
             "default_assay": default_assay,
             "md5": md5,

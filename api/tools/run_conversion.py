@@ -24,7 +24,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
     input = unzip_file_if_compressed(task_id, ds['input'])
-    output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, task_id)
     adata_path = get_output_path(dataset, output)
     seurat_path = get_output_path(dataset, output, format='Seurat')
     sce_path = get_output_path(dataset, output, format='SingleCellExperiment')
@@ -88,16 +88,10 @@ def run_conversion(task_id, ds:dict, show_error=True):
         
     results.append({
         "task_id": task_id, 
+        "userID": userID,
         "inputfile": input,
         "outputs": outputs,
         "status":"Dimension reduction completed successfully."
     })
 
     return results
-
-    
-    
-
-        
-            
-
