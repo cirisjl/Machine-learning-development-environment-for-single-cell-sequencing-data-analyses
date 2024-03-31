@@ -71,6 +71,7 @@ class Dataset(BaseModel):
     layer: Optional[str] = None
     species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    cluster_label: Optional[str] = None
     qc_params: QCParameters = Field(default_factory=QCParameters)
     imputation_params: imputationParameters = Field(default_factory=imputationParameters)
     normalization_params: normalizationParameters = Field(default_factory=normalizationParameters)
