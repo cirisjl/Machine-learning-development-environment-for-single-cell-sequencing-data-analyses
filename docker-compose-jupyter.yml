@@ -318,6 +318,10 @@ services:
       - oscb-network
     volumes:
       - /ps/code/:/ps/
+      - /ps/code/oscb/results:/ps/data/results
+      - /ps/code/oscb/uploads:/ps/data/upload
+      - /ps/code/oscb/logs:/ps/data/logs
+      - /ps/code/oscb/user_storage:/ps/data/storage/
       
 networks:
   oscb-network:

@@ -8,30 +8,31 @@ params:
   input: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the Seurat object.
   adata_path: NULL
-  methods: NULL # Normalization methods: c("logCP10K", "logCPM", "SCT", "SCT_V2", "scran", "sctransform", "sctransform_v2", "DESeq2", "RLE", "TMM", "upperquartile", "UQ", "TPM", "FPKM", "Pearson_residuals")
+  methods: NULL # Normalization methods: c("logCP10K", "logCPM", "SCT", "SCT_V2", 'sctransform', 'sctransform_v2', "scran", "DESeq2", "RLE", "TMM", "upperquartile", "UQ", "TPM", "FPKM", "Pearson_residuals")
   default_assay: RNA # Default assay for each normalization method:  "RNA", "MAGIC_imputed", "SAVER_imputed", "scGNN_imputed"
   output_format: AnnData # Seurat or AnnDate
   species: NULL # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
   idtype: ENSEMBL # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
-  show_umap: FALSE
+  show_umap: TRUE
   show_code: FALSE
-  show_warning: TRUE
+  show_warning: FALSE
   show_message: TRUE
   show_error: TRUE
 output: html_document
 ---
 ```{r setup, echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message}
-knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_warning, message=params$show_message)
+knitr::opts_chunk$set(echo=params$show_code, include=TRUE, warning=params$show_warning, message=params$show_message)
 ```
 # Normalization
 To accurately normalize the gene expression values to account for differences in sequencing depth and overdispersed count values.
-```{r Load data, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r Load data, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(is.null(params$methods)) stop("No normalization method is selected.")
 if(is.null(params$input)) stop("Inupt_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
 source("../formating/formating.R")
 source("../visualization/visualization.R")
 srat <- NULL
+adata <- NULL
 # Check if output file already exists
 if(file.exists(params$output)){
   srat <- tryCatch(
@@ -53,18 +54,23 @@ if(file.exists(params$output)){
 if(is.null(srat)) stop("The file format is not supported.")
 if(!params$default_assay %in% names(srat@assays)) stop(paste(params$default_assay, "does not exist."))
 DefaultAssay(object = srat) <- params$default_assay
-adata <- SeuratToAnndata(srat, assay=params$default_assay)
-# adata_path <- gsub(".h5seurat", ".h5ad", params$output)
-adata_path <- params$adata_path
 print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
+
+adata_path <- params$adata_path
+if (file.exists("adata_path")){
+  adata <- LoadAnndata(adata_path)
+} else{
+  adata <- SeuratToAnndata(srat, assay=params$default_assay)
+}
 expression_matrix <- srat[[params$default_assay]]@counts
+print(srat)
 # methods <- eval(parse(text = params$methods))
-methods <- strsplit(params$methods, ",")[[1]]
+methods <- strsplit(toupper(params$methods), ",")[[1]]
 unique_id <- params$unique_id
 ```
 ## logCP10K
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
-```{r logCP10K, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r logCP10K, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCP10K" %in% methods){
   if(!"logCP10K" %in% names(srat@assays)){
     tryCatch({
@@ -90,7 +96,7 @@ if("LOGCP10K" %in% methods){
       RedisInfo(unique_id, "AnnData object for logCP10K is saved successfully.")
     }
   }
-  head(srat[['logCP10K']]@data)
+  knitr::kable(head(srat[['logCP10K']]@data), align='cccc', format = "html", caption = 'logCP10K')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCP10K', title = "logCP10K normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -99,7 +105,7 @@ if("LOGCP10K" %in% methods){
 
 ## logCPM
 Load or create a SingleCellExperiment object from a expression matrix where each row corresponds to a gene (or transcript) and each column corresponds to a single cell.
-```{r logCPM, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r logCPM, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LOGCPM"  %in% methods){
   if(!"logCPM" %in% names(srat@assays)){  
     tryCatch({
@@ -125,22 +131,22 @@ if("LOGCPM"  %in% methods){
       RedisInfo(unique_id, "AnnData object for logCPM is saved successfully.")
     }
   }
-  head(srat[['logCPM']]@data)
+  knitr::kable(head(srat[['logCPM']]@data), align='cccc', format = "html", caption = 'logCPM')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCPM', title = "logCPM normalization")
 } else {
   print("Not selected by user, skipped.")
 }
 ```
 
-## SCT
+## SCTransform
 SCTransform calculates a model of technical noise in scRNA-seq data using 'regularized negative binomial regression'. The residuals for this model are normalized values, and can be positive or negative. Positive residuals for a given gene in a given cell indicate that we observed more UMIs than expected given the gene’s average expression in the population and cellular sequencing depth, while negative residuals indicate the converse.
-```{r SCTransform, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
+```{r SCTransform, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in% methods) || ("SCT_V2" %in% methods)){
   
-  if(!"SCT" %in% names(srat@assays)){
+  if(!"SCTRANSFORM" %in% names(srat@assays)){
     tryCatch({
       library(sctransform)
-      if("SCT"  %in% methods){
+      if("SCTRANSFORM"  %in% methods){
         RedisInfo(unique_id, "Running SCTransform normalization.")
         # store mitochondrial percentage in object meta data
         srat <- PercentageFeatureSet(srat, pattern = "^MT-", col.name = "percent.mt")
@@ -157,24 +163,26 @@ if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
         RedisInfo(unique_id, "Seurat object for SCTransform VST V2 is saved successfully.")
       }
 
-      adata_sct <- AnnData(X = t(srat[['SCT']]@data), obs = srat@meta.data, var = srat[['SCT']]@meta.features)
+      #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
       adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-      write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
+      adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCTransform")
+      # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
       RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
       adata_sct <- NULL
     }, error = function(e) {
       RedisWarning(unique_id, paste0("An error happened during SCTransform normalization, skipped: ", e$message))
     })
   } else {
-    RedisInfo(unique_id, "SCT assay already exists, skipped.")
-    adata_sct <- AnnData(X = t(srat[['SCT']]@data), obs = srat@meta.data, var = srat[['SCT']]@meta.features)
+    RedisInfo(unique_id, "SCTransform assay already exists, skipped.")
+    #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
     adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-    write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
+    adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCTransform")
+    # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
     RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
     adata_sct <- NULL
   }
-  head(srat[['SCT']]@data)
-  if(params$show_umap) seurat_cluster_umap(srat, assay = 'SCT', title = "SCT normalization")
+  knitr::kable(head(srat[['SCTransform']]@data), align='cccc', format = "html", caption = 'SCTransform')
+  if(params$show_umap) seurat_cluster_umap(srat, assay = 'SCTransform', title = "SCTransform normalization")
 } else {
   print("Not selected by user, skipped.")
 }
@@ -182,7 +190,7 @@ if(("SCT" %in% methods) || ("SCT_V2" %in% methods)){
 
 ## scran
 scran deals with the problem of vary large numbers of zero values per cell by pooling cells together calculating a normalization factor (similar to CPM) for the sum of each pool. Since each cell is found in many different pools, cell-specific factors can be deconvoluted from the collection of pool-specific factors using linear algebraic methods.
-```{r scran, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r scran, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("SCRAN" %in% methods){
   if(!"scran" %in% names(srat@assays)){
     tryCatch({
@@ -217,7 +225,7 @@ if("SCRAN" %in% methods){
       RedisInfo(unique_id, "AnnData object for scran is saved successfully.")
     }
   }
-  head(srat[['scran']]@data)
+  knitr::kable(head(srat[['scran']]@data), align='cccc', format = "html", caption = 'scran')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'scran', title = "scran normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -226,7 +234,7 @@ if("SCRAN" %in% methods){
 
 ## DESeq2 (RLE)
 RLE (Relative Log Expression) 
-```{r DESeq2, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r DESeq2, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("DESEQ2" %in% methods){
   if(!"DESeq2" %in% names(srat@assays)){
     tryCatch({
@@ -257,7 +265,7 @@ if("DESEQ2" %in% methods){
       RedisInfo(unique_id, "AnnData object for DESeq2 is saved successfully.")
     }
   }
-  head(srat[['DESeq2']]@data)
+  knitr::kable(head(srat[['DESeq2']]@data), align='cccc', format = "html", caption = 'DESeq2')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'DESeq2', title = "DESeq2 normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -265,8 +273,7 @@ if("DESEQ2" %in% methods){
 ```
 
 ## edgeR (TMM, RLE, upperquartile (UQ))
-
-```{r edgeR, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r edgeR, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTILE" %in% methods){
   library(edgeR)
   dge <- DGEList(expression_matrix + 1)
@@ -296,7 +303,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for TMM is saved successfully.")
       }
     }
-    head(srat[['TMM']]@data) 
+    knitr::kable(head(srat[['TMM']]@data), align='cccc', format = "html", caption = 'TMM')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'TMM', title = "TMM normalization")
   } else {
     print("Not selected by user, skipped.")
@@ -327,11 +334,11 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for RLE is saved successfully.")
       }
     }
-    head(srat[['RLE']]@data) 
+    knitr::kable(head(srat[['RLE']]@data), align='cccc', format = "html", caption = 'RLE')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'RLE', title = "RLE normalization")
-  } else {
-    print("Not selected by user, skipped.")
-  }
+    } else {
+      print("Not selected by user, skipped.")
+    }
   if("UQ" %in% methods || "UPPERQUARTILE" %in% methods){
     if(!"upperquartile" %in% names(srat@assays)){
       tryCatch({
@@ -358,18 +365,63 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
       }
     }
-    head(srat[['upperquartile']]@data) 
+    knitr::kable(head(srat[['upperquartile']]@data), align='cccc', format = "html", caption = 'upperquartile')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'upperquartile', title = "Upper quartile normalization")
   } else {
     print("Not selected by user, skipped.")
   }
+}else {
+  print("Not selected by user, skipped.")
 }
+```
+
+## scanpy Pearson residuals normalization
+```{r scanpy, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
+    if("PEARSON_RESIDUALS" %in% methods){
+      if(!"Pearson_residuals" %in% names(srat@assays)){
+        library(reticulate)
+        source_python("./scanpy_r.py")
+        source("../formating/formating.R")
+        # adata <- LoadAnndata(adata_path)
+        tryCatch(
+          {
+            RedisInfo(unique_id, "Running Pearson_residuals normalization.")
+            adata <- py_to_r_ifneedbe(normalize_pearson_residuals(r_to_py(adata, convert = FALSE))) 
+            pr_assay <- CreateAssayObject(data = t(adata$layers["Pearson_residuals"]))
+            RedisInfo(unique_id, "Adding Pearson_residuals assay to Seurat object.")
+            srat[['Pearson_residuals']] <- pr_assay
+            SaveSeurat(srat, params$output)
+            RedisInfo(unique_id, "Seurat object for Pearson_residuals is saved successfully.")
+            write_h5ad(adata, adata_path, compression = "gzip")
+            RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
+          },
+          error = function(e) {
+            RedisWarning(unique_id, paste0("An error happened during Pearson residuals normalization, skipped: ", e$message))
+          }
+        )
+      } else {
+        RedisInfo(unique_id, "Pearson_residuals assay already exists, skipped.")
+        if(!"Pearson_residuals" %in% names(adata$layers)){
+          adata$layers["Pearson_residuals"] <- t(as.data.frame(srat[['Pearson_residuals']]@data))
+          RedisInfo(unique_id, "Pearson_residuals layer has been added to AnnData object.")
+          write_h5ad(adata, adata_path, compression = "gzip")
+          RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
+        }
+      }
+      # knitr::kable(head(srat[['Pearson_residuals']]@data), align='cccc', format = "html", caption = 'Pearson_residuals')
+      if(params$show_umap) seurat_cluster_umap(srat, assay = 'Pearson_residuals', title = "Pearson residuals normalization")
+    } else {
+      print("Not selected by user, skipped.")
+    }
+  }
 ```
 
 ## biomaRt (TPM, FPKM)
 TPM (Transcripts Per Kilobase Million) is the same as RPKM/FPKM, but it divides the read counts by the gene length (in kilobase) first, then divides the total counts by 106 to make the scaling factor. In essence, that means to normalize gene length first, then sequencing depth. 
 FPKM (Fragments Per Kilobase Million) takes the effect of gene lengths into consideration. These methods divide the RPM by the gene length, in kilobases. The main difference is that FPKM is made for paired-end RNA-seq, in which two reads can come from a single fragment, and FPKM can avoid counting the same fragment twice. 
-```{r biomaRt, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r biomaRt, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+source("../formating/formating.R")
 counts2TPM <- function(count=count, efflength=efflen){   
   RPK <- count/(efflength/1000)   # Gene length normalization: reads per kilobase 
   PMSC_rpk <- sum(RPK)/1e6        # Depth normalization: “per million” scaling factor 
@@ -434,7 +486,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
     ng = intersect(feature_ids,g$ensembl_gene_id) 
     lengths = g[match(ng,g$ensembl_gene_id),2]
     # names(lengths) <- g[match(ng,g$ensembl_gene_id),1]
-    head(lengths)
+    knitr::kable(head(lengths), align='cccc', format = "html", caption = 'Lengths')
     if("TPM" %in% methods){
       if(!"TPM" %in% names(srat@assays)){
         RedisInfo(unique_id, "Running TPM normalization.")
@@ -457,7 +509,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
           RedisInfo(unique_id, "AnnData object for TPM is saved successfully.")
         }
       }
-      head(srat[['TPM']]@data)
+      knitr::kable(head(srat[['TPM']]@data), align='cccc', format = "html", caption = 'TPM')
       if(params$show_umap) seurat_cluster_umap(srat, assay = 'TPM', title = "TPM normalization")
     } else {
       print("Not selected by user, skipped.")
@@ -484,59 +536,20 @@ if("TPM" %in% methods || "FPKM" %in% methods){
           RedisInfo(unique_id, "AnnData object for FPKM is saved successfully.")
         }
       }
+      knitr::kable(head(srat[['FPKM']]@data), align='cccc', format = "html", caption = 'FPKM')
+      if(params$show_umap) seurat_cluster_umap(srat, assay = 'FPKM', title = "FPKM normalization")
     } else {
       print("Not selected by user, skipped.")
-    }
-    head(srat[['FPKM']]@data) 
-    if(params$show_umap) seurat_cluster_umap(srat, assay = 'FPKM', title = "FPKM normalization")
+    } 
   }, error = function(e) {
-      RedisWarning(unique_id, paste0("An error happened during TPM/FPKM normalization, skipped: ", e$message))
+    RedisWarning(unique_id, paste0("An error happened during TPM/FPKM normalization normalization, skipped: ", e$message))
   })
 }
-
-expression_matrix <- NULL
 ```
 
-## scanpy Pearson residuals normalization
-```{r scanpy, error=TRUE, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if(toupper(params$output_format) == "ANNDATA" || "PEARSON_RESIDUALS" %in% methods){
-    if("PEARSON_RESIDUALS" %in% methods){
-      if(!"Pearson_residuals" %in% names(srat@assays)){
-        library(reticulate)
-        source_python("./scanpy_r.py")
-        # adata <- LoadAnndata(adata_path)
-        tryCatch(
-          {
-            RedisInfo(unique_id, "Running Pearson_residuals normalization.")
-            adata <- py_to_r_ifneedbe(normalize_pearson_residuals(r_to_py(adata, convert = FALSE))) 
-            pr_assay <- CreateAssayObject(data = t(adata$layers["Pearson_residuals"]))
-            RedisInfo(unique_id, "Adding Pearson_residuals assay to Seurat object.")
-            srat[['Pearson_residuals']] <- pr_assay
-            SaveSeurat(srat, params$output)
-            RedisInfo(unique_id, "Seurat object for Pearson_residuals is saved successfully.")
-            write_h5ad(adata, adata_path, compression = "gzip")
-            RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
-          },
-          error = function(e) {
-            RedisWarning(unique_id, paste0("An error happened during Pearson residuals normalization, skipped: ", e$message))
-          }
-        )
-      } else {
-        RedisInfo(unique_id, "Pearson_residuals assay already exists, skipped.")
-        if(!"Pearson_residuals" %in% names(adata$layers)){
-          adata$layers["Pearson_residuals"] <- t(as.data.frame(srat[['Pearson_residuals']]@data))
-          RedisInfo(unique_id, "Pearson_residuals layer has been added to AnnData object.")
-          write_h5ad(adata, adata_path, compression = "gzip")
-          RedisInfo(unique_id, "AnnData object for Pearson_residuals is saved successfully.")
-        }
-      }
-      head(srat[['Pearson_residuals']]@data)
-      if(params$show_umap) seurat_cluster_umap(srat, assay = 'Pearson_residuals', title = "Pearson residuals normalization")
-    } else {
-      print("Not selected by user, skipped.")
-    }
-    
-    srat <- NULL
-    adata <- NULL
-  }
+## Gabage collection
+```{r gc, error=TRUE, tidy=TRUE, include=FALSE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+srat <- NULL
+adata <- NULL
+expression_matrix <- NULL
 ```

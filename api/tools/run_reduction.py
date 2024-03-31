@@ -46,12 +46,12 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
             adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
 
             redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-            reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+            reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
 
-            output = get_output_path(dataset, output, method='UMAP')
+            output = get_output_path(output, dataset=dataset, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
-            create_pp_results(reduction_results)  # Insert pre-process results to database
+            create_pp_results(process_id, reduction_results)  # Insert pre-process results to database
             redislogger.info(task_id, "AnnData object for UMAP reduction is saved successfully")
         except Exception as e:
             # redislogger.error(task_id, "UMAP reduction is failed.")

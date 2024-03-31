@@ -1,6 +1,8 @@
-from pymongo import MongoClient
 import hashlib
 import os
+from pymongo import MongoClient
+from boltons.iterutils import remap
+
 
 mongo_url = "mongodb://mongodb:65528"
 # Connect to MongoDB using the URL
@@ -26,9 +28,11 @@ def pp_results_exists(process_id):
     return result
 
 
-def create_pp_results(pp_results):
-    pp_results_collection.insert_one(pp_results)
-    pp_results.pop("_id")
+def create_pp_results(process_id, pp_results):
+    pp_results = clear_dict(pp_results)
+    pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
+    if pp_results.has_key("_id"): 
+        pp_results.pop("_id")
     return
 
 
@@ -42,5 +46,7 @@ def create_user_datasets(datasets):
     return
 
 
-def file_size(path): # MB
-    return os.path.getsize(path)/(1024*1024)
+def clear_dict(d):
+    drop_falsey = lambda path, key, value: value is not None and value != [] and value != {} and value != [{}]
+    d = remap(d, visit=drop_falsey)
+    return d
