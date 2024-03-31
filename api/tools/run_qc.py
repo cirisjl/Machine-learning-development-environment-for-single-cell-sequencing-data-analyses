@@ -91,7 +91,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     scanpy_results.write_h5ad(output_path, compression='gzip')
                     scanpy_results = None
                     redislogger.info(task_id, qc_results['info'])
-                    create_pp_results(qc_results)  # Insert pre-process results to database
+                    create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 else:
                     # Run Scanpy QC 
                     try:
@@ -116,7 +116,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         scanpy_results.write_h5ad(output_path, compression='gzip')
                         scanpy_results = None
                         redislogger.info(task_id, qc_results['info'])
-                        create_pp_results(qc_results)  # Insert pre-process results to database
+                        create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                     except Exception as e:
                         detail = f"Error during scanpy QC: {str(e)}"
                         redislogger.error(task_id, detail)
@@ -156,7 +156,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     dropkick_results.write_h5ad(output_path, compression='gzip')
                     dropkick_results = None
                     redislogger.info(task_id, qc_results['info'])
-                    create_pp_results(qc_results) # Insert pre-process results to database
+                    create_pp_results(process_id, qc_results) # Insert pre-process results to database
                 else:
                     try:
                         redislogger.info(task_id, "Start Dropkick QC...")
@@ -178,7 +178,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         dropkick_results.write_h5ad(output_path, compression='gzip')
                         dropkick_results = None
                         redislogger.info(task_id, qc_results['info'])
-                        create_pp_results(qc_results) # Insert pre-process results to database
+                        create_pp_results(process_id, qc_results) # Insert pre-process results to database
                     except Exception as e:
                         detail = f"Error during Dropkick QC: {str(e)}"
                         redislogger.error(task_id, detail)
@@ -216,9 +216,9 @@ def run_qc(task_id, ds:dict, random_state=0):
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path, seurat_path=output)
                 redislogger.info(task_id, qc_results['info'])
-                create_pp_results(qc_results)  # Insert pre-process results to database
+                create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 adata = None         
             except Exception as e:
                 detail = f"Error during Seurat QC: {str(e)}"
@@ -278,10 +278,10 @@ def run_qc(task_id, ds:dict, random_state=0):
                     raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path, sce_path=output_path)
                 adata = None
                 redislogger.info(task_id, qc_results['info'])
-                create_pp_results(qc_results)  # Insert pre-process results to database            
+                create_pp_results(process_id, qc_results)  # Insert pre-process results to database            
             except Exception as e:
                 detail = f"Error during Bioconductor QC: {str(e)}"
                 redislogger.error(task_id, detail)

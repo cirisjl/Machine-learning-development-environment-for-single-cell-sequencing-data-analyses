@@ -34,8 +34,7 @@ def run_integration(task_id, datasets, inputs,userID,output, methods, species, d
     #Get the absolute path for the given output
     # output = get_output(output, userID, task_id)
 
-    output = get_output_path(dataset, output, method='Integration', format='Seurat')
-
+    output = get_output_path(output, dataset=dataset, method='Integration', format='Seurat')
 
     try:
         report_path = get_report_path(dataset, output, "integration")

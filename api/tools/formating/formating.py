@@ -200,7 +200,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, layer=None, adata_path=None, seurat_path=None, sce_path=None):
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None): 
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -216,6 +216,17 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     highest_expr_genes_plot = None
     info = None
     pp_results = None
+    adata_size = None
+    seurat_size = None
+    sce_size = None
+
+    if adata_path is not None and os.path.exists(adata_path):
+        adata_size = file_size(adata_path)
+    if seurat_path is not None and os.path.exists(seurat_path):
+        seurat_size = file_size(seurat_path)
+    if sce_path is not None and os.path.exists(sce_path):
+        sce_size = file_size(sce_path)
+
 
     if adata is not None and isinstance(adata, AnnData):
         info = adata.__str__()
@@ -229,15 +240,18 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
-
-        umap_plot = plot_UMAP(adata, layer=layer)
-        umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
-        violin_plot = plot_violin(adata)
-        scatter_plot = plot_scatter(adata)
-        highest_expr_genes_plot = plot_highest_expr_genes(adata)
+        
+        if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
+            umap_plot = plot_UMAP(adata, layer=layer)
+            umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+        if process == 'QC':
+            violin_plot = plot_violin(adata)
+            scatter_plot = plot_scatter(adata)
+            highest_expr_genes_plot = plot_highest_expr_genes(adata)
 
         pp_results = {
             "process_id": process_id,
+            "md5": md5,
             "stage": pp_stage,
             "process": process,
             "method": method,
@@ -246,6 +260,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "adata_path": adata_path,
             "seurat_path": seurat_path,
             "sce_path": sce_path,
+            "adata_size": adata_size,
+            "seurat_size": seurat_size,
+            "sce_size": sce_size,
             "layers": layers,
             "cell_metadata_obs": cell_metadata_obs.to_dict(),
             "gene_metadata": gene_metadata.to_dict(),
@@ -262,6 +279,10 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             }
         
     return pp_results
+
+
+def file_size(path): # MB
+    return os.path.getsize(path)/(1024*1024)
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
@@ -437,18 +458,26 @@ def get_output_path(path, process_id='', dataset=None, method = '', format = "An
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
         elif format == "CSV":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
+
+    if not os.path.exists(os.path.dirname(output_path)):
+        os.makedirs(os.path.dirname(output_path))
     
     return output_path
 
 
 def get_report_path(dataset, output, method):
     output = os.path.abspath(output)
+    method = '_' + method if method else ''
     report_path = None
+
+    if not os.path.exists(output):
+        os.makedirs(output)
+
     if os.path.isdir(output):
-        report_path = os.path.join(output, dataset + "_" + method + "_report.html")
-        print("The output path is a directory, adding report file " + dataset + "_" + method + "_report.html to report path.")
+        report_path = os.path.join(output, dataset + method + "_report.html")
+        print("The output path is a directory, adding report file " + dataset + method + "_report.html to report path.")
     else:
-        report_path = output.replace(os.path.splitext(output)[-1], "_" + method + "_report.html")
+        report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
 
     if not os.path.exists(os.path.dirname(report_path)):
         os.makedirs(os.path.dirname(report_path))
