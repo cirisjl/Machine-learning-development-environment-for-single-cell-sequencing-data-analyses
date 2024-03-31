@@ -23,6 +23,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
+from tools.evaluation.clustering import clustering_scores
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
@@ -200,7 +201,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None): 
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -219,6 +220,16 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     adata_size = None
     seurat_size = None
     sce_size = None
+    evaluation_results = []
+    asw_score_leiden = None
+    nmi_score_leiden = None
+    ari_score_leiden = None
+    asw_score_louvain = None
+    nmi_score_louvain = None
+    ari_score_louvain = None
+    labels_pred_leiden = None
+    labels_pred_louvain = None
+    cluster_embedding = None
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -226,6 +237,21 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         seurat_size = file_size(seurat_path)
     if sce_path is not None and os.path.exists(sce_path):
         sce_size = file_size(sce_path)
+
+    if layer is None:
+        layer = "X"
+        if 'leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_leiden = adata.adata.obs('leiden')
+        if 'louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_louvain = adata.adata.obs('louvain')
+        cluster_embedding = adata.adata.obsm(layer+'_umap')
+    else:
+        if layer+'_leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_leiden = adata.adata.obs(layer+'_leiden')
+        if layer+'_louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_louvain = adata.adata.obs(layer+'_louvain')
+        cluster_embedding = adata.adata.obsm(layer+'_umap')
+        
 
 
     if adata is not None and isinstance(adata, AnnData):
@@ -248,6 +274,42 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             violin_plot = plot_violin(adata)
             scatter_plot = plot_scatter(adata)
             highest_expr_genes_plot = plot_highest_expr_genes(adata)
+
+        if cluster_label is not None and cluster_label in adata.obs.keys():
+            if labels_pred_leiden is not None:
+                asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_scores(cluster_label, labels_pred_leiden, cluster_embedding)
+                evaluation_results.append(
+                    {
+                        "leiden": {
+                            "asw_score": asw_score_leiden,
+                            "nmi_score": nmi_score_leiden,
+                            "ari_score": ari_score_leiden
+                        }
+                    }
+                )
+            if labels_pred_louvain is not None:
+                asw_score_louvain, nmi_score_louvain, ari_score_louvain = clustering_scores(cluster_label, labels_pred_louvain, cluster_embedding)
+                evaluation_results.append(
+                    {
+                        "louvain": {
+                            "asw_score": asw_score_louvain,
+                            "nmi_score": nmi_score_louvain,
+                            "ari_score": ari_score_louvain
+                        }
+                    }
+                )
+            evaluation_results = {
+                "leiden": {
+                    "asw_score": asw_score_leiden,
+                    "nmi_score": nmi_score_leiden,
+                    "ari_score": ari_score_leiden
+                },
+                "louvain": {
+                    "asw_score": asw_score_louvain,
+                    "nmi_score": nmi_score_louvain,
+                    "ari_score": ari_score_louvain
+                }
+            }
 
         pp_results = {
             "process_id": process_id,
@@ -275,7 +337,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "umap_plot_3d": umap_plot_3d,
             "violin_plot": violin_plot,
             "scatter_plot": scatter_plot,
-            "highest_expr_genes_plot": highest_expr_genes_plot
+            "highest_expr_genes_plot": highest_expr_genes_plot,
+            "evaluation_results": evaluation_results
             }
         
     return pp_results
@@ -401,6 +464,7 @@ def detect_delimiter(file_path):
         first_line = file.readline()
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
+
 
 # def output_path_check(dataset, output, method = '', format = "AnnData"):
 #     output = os.path.abspath(output)

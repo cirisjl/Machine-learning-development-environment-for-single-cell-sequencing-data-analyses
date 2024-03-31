@@ -36,7 +36,7 @@ def scvi_clustering(adata, labels):
         library_size=10e4
     )
 
-    adata = run_dimension_reduction(adata, use_rep='X_scVI')
+    adata, msg = run_dimension_reduction(adata, use_rep='X_scVI')
 
     adata.obsm["X_mde"] = mde(adata.obsm["X_scVI"])
     

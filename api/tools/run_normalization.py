@@ -25,6 +25,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     methods = ds['methods']
     species = ds['species']
     idtype = ds['idtype']
+    cluster_label = ds['cluster_label']
     output_format = ds['output_format']
     parameters = ds['normalization_params']
     n_neighbors = parameters['n_neighbors']
@@ -109,7 +110,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                             adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
 
                             redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
-                            normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output)
+                            normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
                             pp_results.append(normalization_results)
                             process_ids.append(process_id)
                             create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
@@ -130,7 +131,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                                 adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state)
 
                                 redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
-                                normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output)
+                                normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
                                 pp_results.append(normalization_results)
                                 process_ids.append(process_id)
                                 adata.write_h5ad(adata_sct_path, compression='gzip')
