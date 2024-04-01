@@ -8,6 +8,9 @@ from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
 from tools.run_reduction import run_reduction
 from tools.run_conversion import run_conversion
+from benchmarks.run_benchmarks import run_benchmarks
+from benchmarks.run_data_split import run_data_split
+from benchmarks.run_subset_data import run_subset_data
 
 
 # def ConvertToAnndata_task(path):
@@ -21,7 +24,6 @@ from tools.run_conversion import run_conversion
 
 @shared_task(bind=True, name='tools:create_qc_task') 
 def create_qc_task(self, ds_dict:dict):
-    print("inside task")
     task_id = self.request.id
     results = run_qc(task_id, ds_dict)
     return results
@@ -66,4 +68,26 @@ def create_integration_task(self, datasets, inputs, userID, output, methods, spe
 def create_evaluation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     task_id = self.request.id
     results = run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True)
+    return results
+
+
+# Benchmarks
+@shared_task(bind=True, name='tools:create_benchmarks_task') 
+def create_benchmarks_task(self, task_dict:dict):
+    task_id = self.request.id
+    results = run_benchmarks(task_id, task_dict)
+    return results
+
+
+@shared_task(bind=True, name='tools:create_data_split_task') 
+def create_data_split_task(self, task_dict:dict):
+    task_id = self.request.id
+    results = run_data_split(task_id, task_dict)
+    return results
+
+
+@shared_task(bind=True, name='tools:create_subset_data_task') 
+def create_subset_data_task(self, task_dict:dict):
+    task_id = self.request.id
+    results = run_subset_data(task_id, task_dict)
     return results
