@@ -59,6 +59,7 @@ class reductionParameters(BaseModel):
     use_default: Optional[bool] = True
 
 
+
 class Dataset(BaseModel):
     dataset: Optional[str] = None # Tittle of datasets
     input: str
@@ -182,7 +183,10 @@ class TaskDataRequest(BaseModel):
 
 class BenchmarksRequest(BaseModel):
     task_type: str
-    data: List[TaskDataRequest]
+    adata_path: str
+    label: str
+    datasetId: str
+    # data: List[TaskDataRequest]
 
 
 
