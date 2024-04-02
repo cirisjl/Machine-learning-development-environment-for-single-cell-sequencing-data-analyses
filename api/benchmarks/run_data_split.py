@@ -5,13 +5,17 @@ from pathlib import Path
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import generate_process_id
+from utils.mongodb import upsert_benchmarks, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata
 from tools.utils.datasplit import sc_train_val_test_split
 from fastapi import HTTPException, status
 
 def run_data_split(task_id, data_dict:dict):
+    results = []
+    datasetId = data_dict['datasetId']
+    benchmarksId = data_dict['benchmarksId']
+    userID = data_dict['userID']
     adata_path = data_dict['adata_path']
     train_fraction = data_dict['train_fraction']
     validation_fraction = data_dict['validation_fraction']
@@ -51,11 +55,26 @@ def run_data_split(task_id, data_dict:dict):
 
         # Return the path to the compressed archive
         archive_path = data_directory / f"{data_filename}_data_split.zip"
-        return {"archive_path": archive_path,
+
+        upsert_benchmarks(benchmarksId, {"archive_path": archive_path, "train_path": train_path, "validation_path": val_path, "test_path": test_path})
+        
+        results.append(
+            {
+                "taskId": task_id,
+                "owner": userID,
+                "datasetId": datasetId,
+                "benchmarksId": benchmarksId,
+                "archive_path": archive_path,
                 "train_path": train_path, 
                 "validation_path": val_path,
                 "test_path": test_path, 
-                "status": "Data split successfully."}
+                "status": "Success"
+            }
+        )
+       
+        upsert_task_results(results)
+        
+        return results
     except Exception as e:
         # Handle any errors
         raise HTTPException(status_code=500, detail=f"Data split is failed: {str(e)}")

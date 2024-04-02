@@ -12,15 +12,19 @@ db = client["ai-single-cell"]
 datasets_collection = db.datasets
 user_datasets_collection = db.get_collection("user-datasets")
 pp_results_collection = db.get_collection("pp-results")
+task_results_collection = db.get_collection("task-results")
+benchmarks_collection = db.get_collection("benchmarks")
+workflows_collection = db.get_collection("workflows")
 
 
-def generate_process_id(file_md5, process, method, parameters, assay=None):
-    process_id = None
-    if parameters['use_default']:
-        process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{assay}".encode("utf_8")).hexdigest()
-    else:
-        process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters}".encode("utf-8")).hexdigest()
+def generate_process_id(file_md5, process, method, parameters):
+    process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters}".encode("utf-8")).hexdigest()
     return process_id
+
+
+def generate_workflow_id(file_md5, workflow, parameters):
+    workflow_id = hashlib.md5(f"{file_md5}_{workflow}_{parameters}".encode("utf-8")).hexdigest()
+    return workflow_id
 
 
 def pp_results_exists(process_id):
@@ -33,6 +37,31 @@ def create_pp_results(process_id, pp_results):
     pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
     if pp_results.has_key("_id"): 
         pp_results.pop("_id")
+    return
+
+
+def upsert_task_results(results):
+    results = clear_dict(results)
+    task_id = results['taskId']
+    task_results_collection.update_one({'task_id': task_id}, {'$set': results}, upsert=True)
+    if results.has_key("_id"): 
+        results.pop("_id")
+    return
+
+
+def upsert_benchmarks(benchmarks_id, results):
+    results = clear_dict(results)
+    benchmarks_collection.update_one({'benchmarks_id': benchmarks_id}, {'$set': results}, upsert=True)
+    if results.has_key("_id"): 
+        results.pop("_id")
+    return
+
+
+def upsert_workflows(workflows_id, results):
+    results = clear_dict(results)
+    workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results}, upsert=True)
+    if results.has_key("_id"): 
+        results.pop("_id")
     return
 
 

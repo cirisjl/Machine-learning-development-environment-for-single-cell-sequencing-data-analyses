@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 import os
 
 
-router = APIRouter(prefix='/convert', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
+router = APIRouter(prefix='/api/benchmarks', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
 
 
 # @router.post('/api/convert_to_anndata', response_model=ConversionResponse)
@@ -393,7 +393,7 @@ async def plot_umap(user_request: UMAPRequest):
 #         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
 
-@router.post("/benchmarks")
+@router.post("/create")
 async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     """
     Create a task for benchmarks
