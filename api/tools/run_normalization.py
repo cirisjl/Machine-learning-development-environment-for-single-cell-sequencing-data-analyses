@@ -6,7 +6,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
+from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 
@@ -15,19 +15,20 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     results = []
     pp_results = []
     process_ids = []
+    normalization_output = []
     pp_stage = "Normalized"
     process = "Normalization"
     dataset = ds['dataset']
-    default_assay = ds['assay']
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    methods = ds['methods']
     species = ds['species']
     idtype = ds['idtype']
     cluster_label = ds['cluster_label']
     output_format = ds['output_format']
     parameters = ds['normalization_params']
+    methods = parameters['methods']
+    default_assay = parameters['assay']
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
@@ -35,7 +36,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     failed_methods = []
 
     if len(methods) <1:
-        redislogger.warning(task_id, "No normalization method is selected.")
+        redislogger.error(task_id, "No normalization method is selected.")
         raise HTTPException(
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail = 'No normalization method is selected.')
@@ -51,6 +52,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
     seurat_path = get_output_path(output, "normalized", dataset, method='normalization', format='Seurat')
     adata_path = get_output_path(output, "normalized", dataset, method='normalization', format='AnnData')
     adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
+    
     # methods = list_py_to_r(methods)
     if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
         input = seurat_path
@@ -113,6 +115,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                             normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
                             pp_results.append(normalization_results)
                             process_ids.append(process_id)
+                            
                             create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                         except Exception as e:
                             redislogger.error(task_id, f"UMAP or clustering is failed for {layer}: {e}")
@@ -134,6 +137,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                                 normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
                                 pp_results.append(normalization_results)
                                 process_ids.append(process_id)
+                                
                                 adata.write_h5ad(adata_sct_path, compression='gzip')
                                 create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                             except Exception as e:
@@ -150,17 +154,23 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                 status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail = detail
             )
+        normalization_output.append({'adata_path': adata_path})
+        normalization_output.append({'seurat_path': output})
+        if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
     results.append({
-            "task_id": task_id,
-            "userID": userID,
+            "taskId": task_id,
+            "owner": userID,
             "inputfile": input,
+            "output": normalization_output,
             "default_assay": default_assay,
             "md5": md5,
-            "process_id": process_ids,
-            "pp_results": pp_results,
+            "process_ids": process_ids,
+            # "pp_results": pp_results,
             "failed_methods": failed_methods,
-            "status":"Normalization completed successfully."
-        })  
+            "status":"Success"
+        })
+    
+    upsert_task_results(results)
 
     return results

@@ -5,14 +5,18 @@ import tempfile
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import generate_process_id
+from utils.mongodb import upsert_benchmarks, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
-from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata
+from tools.formating.formating import load_anndata
 from tools.utils.datasplit import subset_by_obskey
 from fastapi import HTTPException, status
 
 
 def run_subset_data(task_id, data_dict:dict):
+    results = []
+    datasetId = data_dict['datasetId']
+    benchmarksId = data_dict['benchmarksId']
+    userID = data_dict['userID']
     adata_path = data_dict['adata_path']
     obskey = data_dict['obskey']
     values = data_dict['values']
@@ -38,12 +42,23 @@ def run_subset_data(task_id, data_dict:dict):
             raise HTTPException(
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail = f'File does not exist at {adata_path}')
-
-       
+        
         adata_sub.write(archive_path, compression='gzip')
+        upsert_benchmarks(benchmarksId, {"adata_path": archive_path})
 
-        return {"archive_path": archive_path,
-                "status": "AnnData is subset successfully.",}
+        results.append(
+            {
+                "taskId": task_id,
+                "owner": userID,
+                "datasetId": datasetId,
+                "benchmarksId": benchmarksId,
+                "adata_path": archive_path,
+                "status": "Success"
+            }
+        )
+
+        upsert_task_results(results)
+        return results
     
     except Exception as e:
         # Handle any errors

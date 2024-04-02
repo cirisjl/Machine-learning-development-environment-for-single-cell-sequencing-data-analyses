@@ -11,16 +11,8 @@ from tools.run_conversion import run_conversion
 from benchmarks.run_benchmarks import run_benchmarks
 from benchmarks.run_data_split import run_data_split
 from benchmarks.run_subset_data import run_subset_data
+from workflows.clustering import run_clustering
 
-
-# def ConvertToAnndata_task(path):
-#     adata_path, assay_names = ConvertSeuratSCEtoAnndata(path)
-#     print("Tasks")
-#     print("AssayNames")
-#     print(assay_names)
-#     print("adata_path")
-#     print(adata_path)
-#     return adata_path, assay_names
 
 @shared_task(bind=True, name='tools:create_qc_task') 
 def create_qc_task(self, ds_dict:dict):
@@ -58,9 +50,9 @@ def create_conversion_task(self, ds_dict:dict):
 
 
 @shared_task(bind=True, name='tools:create_integration_task') 
-def create_integration_task(self, datasets, inputs, userID, output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error = True):
+def create_integration_task(self, ids_dict:dict):
     task_id = self.request.id
-    results = run_integration(task_id, datasets, inputs, userID, output, methods, species, default_assay='RNA', output_format='Seurat', genes=None, reference=12, show_error = True)
+    results = run_integration(task_id, ids_dict)
     return results
 
 
@@ -90,4 +82,12 @@ def create_data_split_task(self, task_dict:dict):
 def create_subset_data_task(self, task_dict:dict):
     task_id = self.request.id
     results = run_subset_data(task_id, task_dict)
+    return results
+
+
+# Workflows
+@shared_task(bind=True, name='tools:create_clustering_task') 
+def create_clustering_task(self, ds_dict:dict):
+    task_id = self.request.id
+    results = run_clustering(task_id, ds_dict)
     return results

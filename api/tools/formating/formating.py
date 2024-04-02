@@ -266,8 +266,10 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
-            umap_plot = plot_UMAP(adata, layer=layer)
-            umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+            if layer+'_umap' in adata.adata.obsm.keys():
+                umap_plot = plot_UMAP(adata, layer=layer)
+            if layer+'_umap_3D' in adata.adata.obsm.keys():
+                umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
         if process == 'QC':
             violin_plot = plot_violin(adata)
             scatter_plot = plot_scatter(adata)

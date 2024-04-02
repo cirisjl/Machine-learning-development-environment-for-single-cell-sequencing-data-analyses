@@ -20,6 +20,9 @@ from pydantic import BaseModel, Field
 
 
 class QCParameters(BaseModel):
+    methods: Optional[List[str]]= None
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
     min_genes: int = 200
     max_genes: int = 0
     min_cells: int = 2
@@ -39,12 +42,18 @@ class QCParameters(BaseModel):
 
 
 class imputationParameters(BaseModel):
+    methods: Optional[List[str]]= None
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
     genes: Optional[List[str]] = None
     ncores: Optional[int] = 12
 
 
 
 class normalizationParameters(BaseModel):
+    methods: Optional[List[str]]= None
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
     n_neighbors: int = 15
     n_pcs: int = 1 # Scanpy
     resolution: float = 1
@@ -53,6 +62,8 @@ class normalizationParameters(BaseModel):
 
 
 class reductionParameters(BaseModel):
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
     n_neighbors: int = 15
     n_pcs: int = 1 # Scanpy
     resolution: float = 1
@@ -67,9 +78,6 @@ class Dataset(BaseModel):
     userID: Optional[str] = None
     task_id: Optional[str] = None
     output_format: Optional[str] = 'AnnData'
-    methods: Optional[List[str]]= None
-    assay: Optional[str] = 'RNA' # Required for Seurat
-    layer: Optional[str] = None
     species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
@@ -82,24 +90,29 @@ class Dataset(BaseModel):
     
 
 
-class IntegrationDataset(BaseModel):
-    dataset: List[str] = None
-    input: List[str] = None
-    output: str
-    userID: str
-    output_format: str
-    methods: List[str] = None
+class integrationParameters(BaseModel):
+    dims: Optional[int] = 30
+    npcs: Optional[int] = 30
     default_assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     species: Optional[str] = None
     idtype: Optional[str] = None 
     genes: Optional[List[str]] = None
     reference: Optional[int] = 12
-    colour_by: Optional[str] = None
-    shape_by_1: Optional[str] = None
-    shape_by_2: Optional[str] = None
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True
+
+
+
+class IntegrationDataset(BaseModel):
+    datasetIds: List[str] = None
+    dataset: List[str] = None
+    input: List[str] = None
+    output: str
+    userID: str
+    output_format: str
+    methods: List[str] = None
+    params: integrationParameters = Field(default_factory=integrationParameters)
    
 
 
@@ -160,7 +173,10 @@ class CombinedQCResult(BaseModel):
 
 
 class DataSplitRequest(BaseModel):
-    data: str
+    benchmarksId: str
+    datasetId: str
+    userID: Optional[str] = None
+    adata_path: str
     train_fraction: float
     validation_fraction: float
     test_fraction: float
@@ -168,7 +184,10 @@ class DataSplitRequest(BaseModel):
 
 
 class SubsetDataRequest(BaseModel):
-    data: str
+    benchmarksId: str
+    datasetId: str
+    userID: Optional[str] = None
+    adata_path: str
     obskey: str
     values: list
 
@@ -182,10 +201,12 @@ class TaskDataRequest(BaseModel):
 
 
 class BenchmarksRequest(BaseModel):
+    benchmarksId: str
+    datasetId: str
+    userID: Optional[str] = None
     task_type: str
     adata_path: str
     label: str
-    datasetId: str
     # data: List[TaskDataRequest]
 
 
