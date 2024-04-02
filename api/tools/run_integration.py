@@ -66,40 +66,46 @@ def run_integration(task_id, ids:dict):
         output = get_output_path(output, 'Integration', dataset=dataset, method=method, format='Seurat')
         adata_path = get_output_path(output, 'Integration', dataset=dataset, method=method, format='AnnData')
 
-        try:
-            report_path = get_report_path(dataset, output, "integration")
-            # Get the absolute path of the current file
-            current_file = os.path.abspath(__file__)
-            # Construct the relative path to the desired file
-            relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
-            # Get the absolute path of the desired file
-            rmd_path = os.path.abspath(relative_path)
-            s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + task_id + "', datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + str(methods) + "', dims='" + str(dims) + "', npcs='" + str(npcs) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', genes='" + str(genes) + "'), output_file='" + report_path + "')\""], shell = True)
-            redislogger.info(task_id, s)
+        integration_results = pp_results_exists(process_id)
 
-            if os.path.exists(adata_path):
-                redislogger.info(task_id, "Adding 3D UMAP to AnnData object.")
-                adata = load_anndata(adata_path)
-                sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
-                adata_3D = sc.tl.umap(adata, random_state=0, 
-                                init_pos="spectral", n_components=3, 
-                                copy=True, maxiter=None)
-                adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
-                adata.write_h5ad(adata_path, compression='gzip')
-                adata_3D = None
-            else:
-                raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
-            
-            redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-            integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path, seurat_path=output)
-            integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
-            adata = None
-            redislogger.info(task_id, integration_results['info'])
-            create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
-            process_ids.append(process_id) 
+        if integration_results is not None:
+            redislogger.info(task_id, "Found existing pre-process results in database, skip Integration.")
+            integration_output.append({method: integration_results[method]})
+        else:
+            try:
+                report_path = get_report_path(dataset, output, "integration")
+                # Get the absolute path of the current file
+                current_file = os.path.abspath(__file__)
+                # Construct the relative path to the desired file
+                relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
+                # Get the absolute path of the desired file
+                rmd_path = os.path.abspath(relative_path)
+                s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + task_id + "', datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + str(methods) + "', dims='" + str(dims) + "', npcs='" + str(npcs) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', genes='" + str(genes) + "'), output_file='" + report_path + "')\""], shell = True)
+                redislogger.info(task_id, s)
 
-        except Exception as e:
-            redislogger.error(task_id, f"Integration is failed: {e}")
+                if os.path.exists(adata_path):
+                    redislogger.info(task_id, "Adding 3D UMAP to AnnData object.")
+                    adata = load_anndata(adata_path)
+                    sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
+                    adata_3D = sc.tl.umap(adata, random_state=0, 
+                                    init_pos="spectral", n_components=3, 
+                                    copy=True, maxiter=None)
+                    adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+                    adata.write_h5ad(adata_path, compression='gzip')
+                    adata_3D = None
+                else:
+                    raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
+                
+                redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
+                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path, seurat_path=output)
+                integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
+                adata = None
+                redislogger.info(task_id, integration_results['info'])
+                create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
+                process_ids.append(process_id) 
+
+            except Exception as e:
+                redislogger.error(task_id, f"Integration is failed: {e}")
 
     results.append({
         "taskId": task_id, 
