@@ -23,11 +23,11 @@ export default function ToolsDetailsComponent(props) {
     // useWebSocketManager(taskId, props.setLiveLogs);
 
     const filterCategoryMap = {
-      quality_control: '/tools/qc',
-      normalization: '/tools/normalize',
-      imputation: '/tools/impute',
-      integration: '/tools/integrate',
-      evaluation: '/tools/evaluate'
+      quality_control: '/api/tools/qc',
+      normalization: '/api/tools/normalize',
+      imputation: '/api/tools/impute',
+      integration: '/api/tools/integrate',
+      evaluation: '/api/tools/evaluate'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
