@@ -11,7 +11,7 @@ def scanpy_clustering(adata, labels, layer=None):
     # Start monitoring
     monitor = Monitor(1)
 
-    adata = run_dimension_reduction(adata, layer=layer)
+    adata, msg = run_dimension_reduction(adata, layer=layer)
     
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()

@@ -7,7 +7,7 @@ from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.utils.datasplit import sc_train_val_test_split, subset_by_obskey
 from typing import List
-from services.clustering import clustering_task
+from celery_tasks.tasks import create_benchmarks_task, create_data_split_task, create_subset_data_task
 from tools.visualization.plot import plot_table
 from utils.unzip import unzip_file_if_compressed
 from pathlib import Path
@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 import os
 
 
-router = APIRouter(prefix='/convert', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
+router = APIRouter(prefix='/api/benchmarks', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
 
 
 # @router.post('/api/convert_to_anndata', response_model=ConversionResponse)
@@ -308,106 +308,136 @@ async def plot_umap(user_request: UMAPRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/api/data-split")
-async def data_split(user_data: DataSplitRequest):
-    try:
-        # Access user data
-        data_filepath = user_data.data
-        train_fraction = user_data.train_fraction
-        validation_fraction = user_data.validation_fraction
-        test_fraction = user_data.test_fraction
+# @router.post("/api/data-split")
+# async def data_split(user_data: DataSplitRequest):
+#     try:
+#         # Access user data
+#         data_filepath = user_data.data
+#         train_fraction = user_data.train_fraction
+#         validation_fraction = user_data.validation_fraction
+#         test_fraction = user_data.test_fraction
 
-        adata = load_anndata(data_filepath)
+#         adata = load_anndata(data_filepath)
 
-        train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+#         train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
        
-       # Extract directory and filename from the data filepath
-        data_directory = Path(data_filepath).parent
-        data_filename = Path(data_filepath).stem
+#        # Extract directory and filename from the data filepath
+#         data_directory = Path(data_filepath).parent
+#         data_filename = Path(data_filepath).stem
 
-        # Define a temporary directory to store the files
-        temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
+#         # Define a temporary directory to store the files
+#         temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
 
-        # Write AnnData objects to files with unique filenames in the temporary directory
-        train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
-        validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
-        test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
+#         # Write AnnData objects to files with unique filenames in the temporary directory
+#         train.write(Path(temp_dir.name) / f"{data_filename}_train.h5ad")
+#         validation.write(Path(temp_dir.name) / f"{data_filename}_validation.h5ad")
+#         test.write(Path(temp_dir.name) / f"{data_filename}_test.h5ad")
 
-        # Compress files into a single archive in the same directory
-        shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
+#         # Compress files into a single archive in the same directory
+#         shutil.make_archive(data_directory / f"{data_filename}_data_split", 'zip', temp_dir.name)
 
-        # Return the path to the compressed archive
-        archive_path = data_directory / f"{data_filename}_data_split.zip"
-        return {"result": "Data split successfully.", "archive_path": archive_path}
-    except Exception as e:
-        # Handle any errors
-        raise HTTPException(status_code=500, detail=str(e))
+#         # Return the path to the compressed archive
+#         archive_path = data_directory / f"{data_filename}_data_split.zip"
+#         return {"result": "Data split successfully.", "archive_path": archive_path}
+#     except Exception as e:
+#         # Handle any errors
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/api/subset-data")
-async def subset_data(user_data: SubsetDataRequest):
-    try:
-        # Access user data
-        data_filepath = user_data.data
-        obskey = user_data.obskey
-        values = user_data.values
+# @router.post("/api/subset-data")
+# async def subset_data(user_data: SubsetDataRequest):
+#     try:
+#         # Access user data
+#         data_filepath = user_data.data
+#         obskey = user_data.obskey
+#         values = user_data.values
 
-        adata = load_anndata(data_filepath)
+#         adata = load_anndata(data_filepath)
 
-        adata_sub = subset_by_obskey(adata, obskey, values)
+#         adata_sub = subset_by_obskey(adata, obskey, values)
        
-       # Extract directory and filename from the data filepath
-        data_directory = Path(data_filepath).parent
-        data_filename = Path(data_filepath).stem
+#        # Extract directory and filename from the data filepath
+#         data_directory = Path(data_filepath).parent
+#         data_filename = Path(data_filepath).stem
 
-        # Return the path to the compressed archive
-        archive_path = data_directory / f"{data_filename}_sub.h5ad"
-        adata_sub.write(archive_path)
+#         # Return the path to the compressed archive
+#         archive_path = data_directory / f"{data_filename}_sub.h5ad"
+#         adata_sub.write(archive_path)
 
-        return {"result": "AnnData is subset successfully.", "archive_path": archive_path}
-    except Exception as e:
-        # Handle any errors
-        raise HTTPException(status_code=500, detail=str(e))
+#         return {"result": "AnnData is subset successfully.", "archive_path": archive_path}
+#     except Exception as e:
+#         # Handle any errors
+#         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.post("/publishDatasets/benchmarks")
-async def process_task_data(data: BenchmarksRequest):
-    try:
-        # Access the data received
-        task_type = data.task_type
-        items = data.data
-        results = []
+# @router.post("/publishDatasets/benchmarks")
+# async def process_task_data(data: BenchmarksRequest):
+#     try:
+#         # Access the data received
+#         task_type = data.task_type
+#         items = data.data
+#         results = []
         
-        for item in items:
-            if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
-                adata_path = item.adata_path
-                task_label = item.task_label
-                datasetId = item.datasetId
-                clustering_results = clustering_task(adata_path, task_label, datasetId, task_type)
-                results.append(clustering_results)
+#         for item in items:
+#             if task_type.lower() == 'clustering':  # Check if task_type is 'clustering'
+#                 adata_path = item.adata_path
+#                 task_label = item.task_label
+#                 datasetId = item.datasetId
+#                 clustering_results = clustering_task(adata_path, task_label, datasetId, task_type)
+#                 results.append(clustering_results)
        
-        return results
+#         return results
 
-    except Exception as e:
-        # Handle exceptions as needed
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+#     except Exception as e:
+#         # Handle exceptions as needed
+#         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
 
-@router.post("/api/getTablePlot")
-async def process_files(file_paths: List[str]):
-    try:
-        results = []
-        for file_path in file_paths:
-            adata = load_anndata(file_path)
-            if adata is not None:
-                # Convert AnnData to DataFrame
-                dataframe = adata.to_df()
-                tablePlot = plot_table(dataframe)
-                results.append(tablePlot)
-        return results
-    except Exception as e:
-        # Handle exceptions as needed
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+@router.post("/create")
+async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
+    """
+    Create a task for benchmarks
+    """
+    task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
+    task = create_benchmarks_task.apply_async(args=[task_dict])
+    return JSONResponse({"task_id": task.id, "status": "Benchmarks task submitted successfully"})
+    
+
+@router.post("/data-split")
+async def create_data_split_task_async(data_split_task: DataSplitRequest):
+    """
+    Create a task for data split
+    """
+    data_dict = data_split_task.dict()  # Convert the Pydantic model to a dict
+    task = create_data_split_task.apply_async(args=[data_dict])
+    return JSONResponse({"task_id": task.id, "status": "Data split task submitted successfully"})
+
+
+@router.post("/subset")
+async def create_subset_data_task_async(subset_task: SubsetDataRequest):
+    """
+    Create a task for subsetting data
+    """
+    data_dict = subset_task.dict()  # Convert the Pydantic model to a dict
+    task = create_subset_data_task.apply_async(args=[data_dict])
+    return JSONResponse({"task_id": task.id, "status": "Data subset task submitted successfully"})
+
+
+# @router.post("/api/getTablePlot")
+# async def process_files(file_paths: List[str]):
+#     try:
+#         results = []
+#         for file_path in file_paths:
+#             adata = load_anndata(file_path)
+#             if adata is not None:
+#                 # Convert AnnData to DataFrame
+#                 dataframe = adata.to_df()
+#                 tablePlot = plot_table(dataframe)
+#                 results.append(tablePlot)
+#         return results
+#     except Exception as e:
+#         # Handle exceptions as needed
+#         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
 @router.post('/api/to_adata_or_srat')

@@ -2,7 +2,7 @@ import os
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
+from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
     
@@ -25,10 +25,10 @@ def run_conversion(task_id, ds:dict, show_error=True):
     #Get the absolute path for the given output
     input = unzip_file_if_compressed(task_id, ds['input'])
     # output = get_output(output, userID, task_id)
-    adata_path = get_output_path(output, dataset)
-    seurat_path = get_output_path(output, dataset, format='Seurat')
-    sce_path = get_output_path(output, dataset, format='SingleCellExperiment')
-    csv_path = get_output_path(output, dataset, format='CSV')
+    adata_path = get_output_path(output, dataset=dataset)
+    seurat_path = get_output_path(output, dataset=dataset, format='Seurat')
+    sce_path = get_output_path(output, dataset=dataset, format='SingleCellExperiment')
+    csv_path = get_output_path(output, dataset=dataset, format='CSV')
 
     if output_format == "AnnData":
         try:
@@ -87,11 +87,12 @@ def run_conversion(task_id, ds:dict, show_error=True):
             )
         
     results.append({
-        "task_id": task_id, 
-        "userID": userID,
+        "taskId": task_id, 
+        "owner": userID,
         "inputfile": input,
-        "outputs": outputs,
-        "status":"Dimension reduction completed successfully."
+        "output": outputs,
+        "status":"Success"
     })
+    upsert_task_results(results)
 
     return results
