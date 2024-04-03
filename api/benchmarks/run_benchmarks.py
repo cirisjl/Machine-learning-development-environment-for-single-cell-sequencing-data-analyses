@@ -5,7 +5,6 @@ from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 
 def run_benchmarks(task_id, task_dict:dict):
-    results = []
     adata_path = task_dict['adata_path']
     label = task_dict['label']
     task_type = task_dict['task_type']
@@ -20,14 +19,13 @@ def run_benchmarks(task_id, task_dict:dict):
             if os.path.exists(adata_path):
                 clustering_results = clustering_task(adata_path, label, datasetId, task_id, task_type)
                 upsert_benchmarks(benchmarksId, clustering_results)
-                results.append(clustering_results)
-                results.append({
+                results = {
                     "taskId": task_id,
                     "owner": userID,
                     "datasetId": datasetId,
                     "benchmarksId": benchmarksId,
                     "status":"Success"
-                })
+                }
                 upsert_task_results(results)
                 return results
             else:
