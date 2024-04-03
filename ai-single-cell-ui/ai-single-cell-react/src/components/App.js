@@ -39,6 +39,7 @@ import UploadDataset from './MyData/UploadData/uploadDataset';
 import SessionReminder from './Session/sessionManager';
 import { SessionProvider } from './Session/context/sessionContext'; 
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
+import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 
 function App() {
   
@@ -59,6 +60,7 @@ function App() {
           <Route path="mydata/upload-data"       element={<UploadDataset/>}></Route>
           <Route path="mydata/update-dataset"       element={<UploadData/>}></Route>
           <Route path="mydata/preview-datasets" element={<PreviewDatasets/>}></Route>
+          <Route path="mydata/taskDetails"       element={<TaskDetailsComponent/>}></Route>
           <Route path="mydata/workflows" element={<ClusteringUsingRaceID/>}></Route>
           <Route path="mydata/tools" element={<ToolsComponentPage/>}></Route>
           <Route path="team"         element={<Team/>}/>

@@ -4,5 +4,6 @@
     "optionsCollectionName": "form-options",
     "datasetCollection": "datasets",
     "taskBuilderCollectionName": "tasks",
-    "userDatasetsCollection": "user-datasets"
+    "userDatasetsCollection": "user-datasets",
+    "taskResultsCollection": "task_results"
 }

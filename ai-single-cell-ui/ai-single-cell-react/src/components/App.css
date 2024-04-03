@@ -1712,3 +1712,64 @@ width
 .MuiTypography-h6,.MuiTypography-body1  {
   font-size: 15px !important;
 }
+
+
+
+
+/* Live logs */
+
+.text-red-500 {
+  color: #EF4444; 
+}
+
+.text-yellow-400 {
+  color: #FACC15; 
+}
+
+.text-green-500 {
+  color: #22C55E;
+}
+
+
+
+/* .dark-bg {
+  background-color: #1F2937;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+}
+
+.title {
+  font-size: 1.875rem; 
+  color: #D1D5DB; 
+}
+
+.log-box {
+  display: block;
+  width: 100%;
+  padding: 0.625rem; 
+  font-size: 0.875rem; 
+  color: #1F2937; 
+  background-color: #F9FAFB;
+  border-radius: 0.375rem; 
+  border: 1px solid #E5E7EB;
+}
+
+.log-box:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: #3B82F6; 
+}
+
+.dark .dark-bg {
+  background-color: #374151;
+}
+
+.dark .log-box {
+  background-color: #374151; 
+  border-color: #4B5563; 
+  color: #F9FAFB; 
+} */
