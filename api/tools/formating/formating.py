@@ -238,21 +238,25 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     if sce_path is not None and os.path.exists(sce_path):
         sce_size = file_size(sce_path)
 
-    if layer is None:
-        layer = "X"
-        if 'leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
-            labels_pred_leiden = adata.adata.obs('leiden')
-        if 'louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
-            labels_pred_louvain = adata.adata.obs('louvain')
-        cluster_embedding = adata.adata.obsm(layer+'_umap')
-    else:
-        if layer+'_leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
-            labels_pred_leiden = adata.adata.obs(layer+'_leiden')
-        if layer+'_louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
-            labels_pred_louvain = adata.adata.obs(layer+'_louvain')
-        cluster_embedding = adata.adata.obsm(layer+'_umap')
-
     if adata is not None and isinstance(adata, AnnData):
+        if layer is None:
+            layer = "X"
+            if cluster_label is not None:
+                cluster_label = adata.obs['cluster_label']
+                if 'leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                    labels_pred_leiden = adata.obs['leiden']
+                if 'louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                    labels_pred_louvain = adata.obs['louvain']
+                cluster_embedding = adata.obsm[layer+'_umap']
+        else:
+            if cluster_label is not None:
+                cluster_label = adata.obs['cluster_label']
+                if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                    labels_pred_leiden = adata.obs[layer+'_leiden']
+                if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                    labels_pred_louvain = adata.obs[layer+'_louvain']
+                cluster_embedding = adata.obsm[layer+'_umap']
+                
         info = adata.__str__()
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
@@ -266,9 +270,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
-            if layer+'_umap' in adata.adata.obsm.keys():
+            if layer+'_umap' in adata.obsm.keys():
                 umap_plot = plot_UMAP(adata, layer=layer)
-            if layer+'_umap_3D' in adata.adata.obsm.keys():
+            if layer+'_umap_3D' in adata.obsm.keys():
                 umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
         if process == 'QC':
             violin_plot = plot_violin(adata)

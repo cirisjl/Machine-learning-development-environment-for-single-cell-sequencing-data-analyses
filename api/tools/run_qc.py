@@ -26,7 +26,6 @@ def run_qc(task_id, ds:dict, random_state=0):
     
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
-    assay = ds['assay']
     assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
@@ -37,15 +36,15 @@ def run_qc(task_id, ds:dict, random_state=0):
     pp_stage = "Raw"
     process = "QC"
     parameters = ds['qc_params']
+    assay = parameters['assay']
     if parameters['max_genes'] == 20000:
         parameters['max_genes'] = None
     if parameters['n_pcs'] == 0:
         parameters['n_pcs'] = None
-    if parameters['assay'] is None:
-        parameters['assay'] = 'RNA'
+    if assay is None:
+        assay = 'RNA'
     
     methods =parameters['methods']
-    print(type(parameters))
     redislogger.info(task_id, f"Using QC Parameters: {parameters}")
     
     # Get the absolute path for the given output
@@ -77,7 +76,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 qc_output.append({"scanpy": qc_results["adata_path"]})
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='scanpy')
-                if os.path.exists(output): # If output exist from the last run, then just pick up it.
+                if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     scanpy_results = load_anndata(output_path)
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -135,7 +134,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         # Dropkick QC
         if "DROPKICK" in methods:
             method='Dropkick'
-            process_id = generate_process_id(md5, process, method, parameters,assay)
+            process_id = generate_process_id(md5, process, method, parameters)
             qc_results = pp_results_exists(process_id)
 
             if qc_results is not None:
@@ -143,7 +142,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 qc_output.append({"Dropkick": qc_results["adata_path"]})
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
-                if os.path.exists(output): # If output exist from the last run, then just pick up it.
+                if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     dropkick_results = load_anndata(output_path)
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -202,7 +201,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     # Seurat QC
     if "SEURAT" in methods:
         method='Seurat'
-        process_id = generate_process_id(md5, process, method, parameters,assay)
+        process_id = generate_process_id(md5, process, method, parameters)
         qc_results = pp_results_exists(process_id)
 
         if qc_results is not None:
@@ -211,7 +210,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         else:
             output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
             try:     
-                default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
                 if ddl_assay_names:
                     results.append({
@@ -225,7 +224,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path, seurat_path=output)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path, seurat_path=output_path)
                 redislogger.info(task_id, qc_results['info'])
                 # adata.write_h5ad(adata_path, compression='gzip')
                 qc_output.append({"Seurat": adata_path})
@@ -249,7 +248,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     # Bioconductor QC
     if "BIOCONDUCTOR" in methods:
         method='Bioconductor'
-        process_id = generate_process_id(md5, process, method, parameters,assay)
+        process_id = generate_process_id(md5, process, method, parameters)
         
         qc_results = pp_results_exists(process_id)
 
