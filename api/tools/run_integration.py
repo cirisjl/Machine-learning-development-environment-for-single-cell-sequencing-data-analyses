@@ -29,7 +29,6 @@ def run_integration(task_id, ids:dict):
     dims = parameters['dims']
     npcs = parameters['npcs']
     integration_output = []
-    results = []
 
     if methods is None:
         redislogger.warning(task_id, "No integration method is selected.")
@@ -107,7 +106,7 @@ def run_integration(task_id, ids:dict):
             except Exception as e:
                 redislogger.error(task_id, f"Integration is failed: {e}")
 
-    results.append({
+    results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": inputs,
@@ -117,7 +116,7 @@ def run_integration(task_id, ids:dict):
         "process_ids": process_ids,
         # "pp_results": pp_results,
         "status":"Success"
-    }) 
+    }
 
     upsert_task_results(results)
 

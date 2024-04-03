@@ -8,7 +8,6 @@ from fastapi import HTTPException, status
     
 
 def run_conversion(task_id, ds:dict, show_error=True):
-    results = []
     outputs = []
     process_ids = []
     pp_stage = "Raw"
@@ -86,13 +85,13 @@ def run_conversion(task_id, ds:dict, show_error=True):
                 detail = detail
             )
         
-    results.append({
+    results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input,
         "output": outputs,
         "status":"Success"
-    })
+    }
     upsert_task_results(results)
 
     return results

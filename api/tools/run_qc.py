@@ -17,7 +17,6 @@ from utils.mongodb import generate_process_id, pp_results_exists, create_pp_resu
 
 
 def run_qc(task_id, ds:dict, random_state=0):
-    results = []
     pp_results = []
     process_ids = []
     userID = ds['userID']
@@ -25,7 +24,6 @@ def run_qc(task_id, ds:dict, random_state=0):
     methods = ds['methods']
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
-    assay = ds['assay']
     assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
@@ -35,15 +33,16 @@ def run_qc(task_id, ds:dict, random_state=0):
 
     pp_stage = "Raw"
     process = "QC"
-    if ds['qc_params']['max_genes'] == 20000:
-        ds['qc_params']['max_genes'] = None
-    if ds['qc_params']['n_pcs'] == 0:
-        ds['qc_params']['n_pcs'] = None
-    if ds['assay'] is None:
-        ds['assay'] = 'RNA'
-    
     parameters = ds['qc_params']
-    print(type(parameters))
+    assay = parameters['assay']
+    if parameters['max_genes'] == 20000:
+        parameters['max_genes'] = None
+    if parameters['n_pcs'] == 0:
+        parameters['n_pcs'] = None
+    if assay is None:
+        assay = 'RNA'
+    
+    methods =parameters['methods']
     redislogger.info(task_id, f"Using QC Parameters: {parameters}")
     
     # Get the absolute path for the given output
@@ -63,7 +62,6 @@ def run_qc(task_id, ds:dict, random_state=0):
     methods = [x.upper() for x in methods if isinstance(x,str)]
 
     if "SCANPY" in methods or "DROPKICK" in methods:
-        adata = load_anndata(input_path)
         # Scanpy QC
         if "SCANPY" in methods:
             method='scanpy'
@@ -74,14 +72,14 @@ def run_qc(task_id, ds:dict, random_state=0):
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='scanpy')
-                if os.path.exists(output): # If output exist from the last run, then just pick up it.
+                if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     scanpy_results = load_anndata(output_path)
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
                     scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     
                     scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -91,8 +89,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 else:
                     # Run Scanpy QC 
                     try:
-                        # Check if the user only wants to run dimension reduction or clustering, then skip QC
-                        # if do_qc:
+                        adata = load_anndata(input_path)
                         redislogger.info(task_id, "Start scanpy QC...")
                         scanpy_results = run_scanpy_qc(adata, task_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                         scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -106,7 +103,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                         
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         redislogger.info(task_id, "Saving AnnData object.")
                         
                         scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -127,14 +124,14 @@ def run_qc(task_id, ds:dict, random_state=0):
         # Dropkick QC
         if "DROPKICK" in methods:
             method='Dropkick'
-            process_id = generate_process_id(md5, process, method, parameters,assay)
+            process_id = generate_process_id(md5, process, method, parameters)
             qc_results = pp_results_exists(process_id)
 
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
-                if os.path.exists(output): # If output exist from the last run, then just pick up it.
+                if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     dropkick_results = load_anndata(output_path)
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -145,7 +142,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
@@ -156,6 +153,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 else:
                     try:
                         redislogger.info(task_id, "Start Dropkick QC...")
+                        adata = load_anndata(input_path)
                         dropkick_results = run_dropkick_qc(adata, task_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
                         dropkick_results.write_h5ad(output_path, compression='gzip')
 
@@ -167,7 +165,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
+                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         redislogger.info(task_id, "Saving AnnData object.")
                         redislogger.info(task_id, "output path")
                         redislogger.info(task_id, output_path)
@@ -192,7 +190,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     # Seurat QC
     if "SEURAT" in methods:
         method='Seurat'
-        process_id = generate_process_id(md5, process, method, parameters,assay)
+        process_id = generate_process_id(md5, process, method, parameters)
         qc_results = pp_results_exists(process_id)
 
         if qc_results is not None:
@@ -200,7 +198,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         else:
             output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
             try:     
-                default_assay, assay_names, output, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=ds['assay'], min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
                 if ddl_assay_names:
                     results.append({
@@ -212,7 +210,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, seurat_path=output)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path, seurat_path=output_path)
                 redislogger.info(task_id, qc_results['info'])
                 create_pp_results(qc_results)  # Insert pre-process results to database
                 adata = None         
@@ -234,7 +232,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     # Bioconductor QC
     if "BIOCONDUCTOR" in methods:
         method='Bioconductor'
-        process_id = generate_process_id(md5, process, method, parameters,assay)
+        process_id = generate_process_id(md5, process, method, parameters)
         
         qc_results = pp_results_exists(process_id)
 
@@ -291,16 +289,16 @@ def run_qc(task_id, ds:dict, random_state=0):
         pp_results.append(qc_results)
         process_ids.append(process_id)    
 
-    results.append({
-        "task_id": task_id, 
-        "userID": userID,
+    results = {
+        "taskId": task_id, 
+        "owner": userID,
         "inputfile": input_path,
         "default_assay": assay,
         "assay_names": assay_names,
         "md5": md5,
         "process_ids": process_ids,
-        "pp_results": pp_results,
-        "status":"Quality control completed successfully."
-    }) 
+        # "pp_results": pp_results,
+        "status":"Success"
+    }
 
     return results
