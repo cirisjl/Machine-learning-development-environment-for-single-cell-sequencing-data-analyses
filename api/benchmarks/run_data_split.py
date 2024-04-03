@@ -12,7 +12,6 @@ from tools.utils.datasplit import sc_train_val_test_split
 from fastapi import HTTPException, status
 
 def run_data_split(task_id, data_dict:dict):
-    results = []
     datasetId = data_dict['datasetId']
     benchmarksId = data_dict['benchmarksId']
     userID = data_dict['userID']
@@ -58,19 +57,17 @@ def run_data_split(task_id, data_dict:dict):
 
         upsert_benchmarks(benchmarksId, {"archive_path": archive_path, "train_path": train_path, "validation_path": val_path, "test_path": test_path})
         
-        results.append(
-            {
-                "taskId": task_id,
-                "owner": userID,
-                "datasetId": datasetId,
-                "benchmarksId": benchmarksId,
-                "archive_path": archive_path,
-                "train_path": train_path, 
-                "validation_path": val_path,
-                "test_path": test_path, 
-                "status": "Success"
-            }
-        )
+        results = {
+            "taskId": task_id,
+            "owner": userID,
+            "datasetId": datasetId,
+            "benchmarksId": benchmarksId,
+            "archive_path": archive_path,
+            "train_path": train_path, 
+            "validation_path": val_path,
+            "test_path": test_path, 
+            "status": "Success"
+        }
        
         upsert_task_results(results)
         

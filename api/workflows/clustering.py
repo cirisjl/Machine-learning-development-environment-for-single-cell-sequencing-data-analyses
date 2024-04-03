@@ -8,7 +8,6 @@ from utils.redislogger import *
 from utils.mongodb import generate_workflow_id, upsert_task_results, upsert_workflows
 
 def run_clustering(task_id, ds:dict, random_state=0):
-    results = []
     wf_results = {}
     process_ids = []
     userID = ds['userID']
@@ -36,14 +35,14 @@ def run_clustering(task_id, ds:dict, random_state=0):
             output = imputation_results['ouput']
         upsert_workflows(workflow_id, wf_results)
 
-    results.append({
+    results = {
         "taskId": task_id,
         "owner": userID,
         "inputfile": input,
         "output": output,
         "workflow_id": workflow_id,
         "status":"Success"
-    })
+    }
     
     upsert_task_results(results)
 

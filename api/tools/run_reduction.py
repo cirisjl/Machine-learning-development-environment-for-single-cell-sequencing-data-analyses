@@ -9,7 +9,6 @@ from fastapi import HTTPException, status
     
 
 def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
-    results = []
     pp_stage = "Summarized"
     process = "Reduction"
     dataset = ds['dataset']
@@ -61,7 +60,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
                 detail = detail
             )
         
-    results.append({
+    results.append = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input,
@@ -71,7 +70,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         "process_id": process_id,
         # "pp_results": reduction_results,
         "status":"Success"
-    })
+    }
 
     upsert_task_results(results)
 
