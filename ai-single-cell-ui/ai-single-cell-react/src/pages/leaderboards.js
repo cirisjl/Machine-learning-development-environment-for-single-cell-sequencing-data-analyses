@@ -1,4 +1,5 @@
 // import LeftNav from "../components/leftNav";
+import LeaderCharts from "../components/LeftNavigation/leaderChart";
 import RightRail from "../components/RightNavigation/rightRail";
 
 export default function Leaderboards() {
@@ -8,7 +9,7 @@ export default function Leaderboards() {
                 {/* <LeftNav /> */}
             </div>
             <div className="main-content">
-                <h1>I'm inside Leaderboards page</h1>
+                <LeaderCharts />
             </div>
             <div className="right-rail">
                 <RightRail />
