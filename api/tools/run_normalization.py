@@ -12,7 +12,7 @@ from fastapi import HTTPException, status
 
 
 def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
-    results = []
+
     pp_results = []
     process_ids = []
     normalization_output = []
@@ -158,7 +158,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
         normalization_output.append({'seurat_path': output})
         if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
-    results.append({
+    results = {
             "taskId": task_id,
             "owner": userID,
             "inputfile": input,
@@ -169,7 +169,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             # "pp_results": pp_results,
             "failed_methods": failed_methods,
             "status":"Success"
-        })
+        }
     
     upsert_task_results(results)
 

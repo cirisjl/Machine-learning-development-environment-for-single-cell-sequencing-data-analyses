@@ -35,7 +35,7 @@ def pp_results_exists(process_id):
 def create_pp_results(process_id, pp_results):
     pp_results = clear_dict(pp_results)
     pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
-    if pp_results.has_key("_id"): 
+    if "_id" in pp_results: 
         pp_results.pop("_id")
     return
 
@@ -44,7 +44,7 @@ def upsert_task_results(results):
     results = clear_dict(results)
     task_id = results['taskId']
     task_results_collection.update_one({'task_id': task_id}, {'$set': results}, upsert=True)
-    if results.has_key("_id"): 
+    if "_id" in results: 
         results.pop("_id")
     return
 
@@ -52,7 +52,7 @@ def upsert_task_results(results):
 def upsert_benchmarks(benchmarks_id, results):
     results = clear_dict(results)
     benchmarks_collection.update_one({'benchmarks_id': benchmarks_id}, {'$set': results}, upsert=True)
-    if results.has_key("_id"): 
+    if "_id" in results: 
         results.pop("_id")
     return
 
@@ -60,7 +60,7 @@ def upsert_benchmarks(benchmarks_id, results):
 def upsert_workflows(workflows_id, results):
     results = clear_dict(results)
     workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results}, upsert=True)
-    if results.has_key("_id"): 
+    if "_id" in results: 
         results.pop("_id")
     return
 

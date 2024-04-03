@@ -17,7 +17,6 @@ from utils.mongodb import generate_process_id, pp_results_exists, create_pp_resu
 
 
 def run_qc(task_id, ds:dict, random_state=0):
-    results = []
     pp_results = []
     process_ids = []
     qc_output = []
@@ -87,7 +86,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     
                     scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -113,7 +112,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                         
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, adata_path)
+                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         redislogger.info(task_id, "Saving AnnData object.")
                         
                         scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -153,7 +152,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
+                    qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                     redislogger.info(task_id, "Saving AnnData object.")
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
@@ -175,7 +174,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, adata_path)
+                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         redislogger.info(task_id, "Saving AnnData object.")
                         redislogger.info(task_id, "output path")
                         redislogger.info(task_id, output_path)
@@ -307,7 +306,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         pp_results.append(qc_results)
         process_ids.append(process_id)    
 
-    results.append({
+    results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input_path,
@@ -318,7 +317,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         "process_ids": process_ids,
         # "pp_results": pp_results,
         "status":"Success"
-    }) 
+    }
 
     upsert_task_results(results)
 

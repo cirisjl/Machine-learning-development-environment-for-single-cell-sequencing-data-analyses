@@ -12,7 +12,6 @@ from fastapi import HTTPException, status
     
 
 def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
-    results = []
     pp_results = []
     process_ids = []
     imputation_output = []
@@ -218,7 +217,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         pp_results.append(imputation_results)
         process_ids.append(imputation_results)
         
-    results.append({
+    results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input,
@@ -227,7 +226,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         "process_id": process_ids,
         # "pp_results": pp_results,
         "status":"Success"
-    })
+    }
 
     upsert_task_results(results)
 
