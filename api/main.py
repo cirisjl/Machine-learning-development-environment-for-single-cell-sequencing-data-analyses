@@ -6,7 +6,8 @@ import asyncio
 from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks
+from routers import tools, benchmarks, worlkflows
+from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
@@ -84,6 +85,14 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsComm
 @app.get("/status")
 def get_status():
     return {"status": "ok"}
+
+
+@app.get("/api/task/{task_id}")
+async def get_task_status(task_id: str) -> dict:
+    """
+    Return the status of the submitted Task
+    """
+    return get_task_info(task_id)
 
 
 if __name__ == "__main__":

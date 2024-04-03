@@ -18,7 +18,7 @@ def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None,
     # output = get_output(output, userID, task_id)
 
     # methods = [x.upper() for x in methods if isinstance(x,str)]
-    output = get_output_path(dataset, output, method='evaluation', format='SingleCellExperiment')
+    output = get_output_path(output, dataset=dataset, method='evaluation', format='SingleCellExperiment')
     # methods = list_py_to_r(methods)
     methods = list_to_string(methods)
 

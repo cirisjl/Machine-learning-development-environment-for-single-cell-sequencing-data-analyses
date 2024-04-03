@@ -2,6 +2,7 @@ import scanpy as sc
 import pandas as pd
 import numpy as np
 
+
 def normalize_pearson_residuals(adata):
     print(np.isfinite(_safe_accumulator_op(np.sum, adata.X)))
     adata.layers["Pearson_residuals"] = adata.X.copy()

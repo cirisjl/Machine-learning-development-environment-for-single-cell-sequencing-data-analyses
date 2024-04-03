@@ -23,6 +23,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
+from tools.evaluation.clustering import clustering_scores
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
@@ -200,7 +201,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, layer=None, adata_path=None, seurat_path=None, sce_path=None):
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None): 
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -216,6 +217,40 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     highest_expr_genes_plot = None
     info = None
     pp_results = None
+    adata_size = None
+    seurat_size = None
+    sce_size = None
+    evaluation_results = []
+    asw_score_leiden = None
+    nmi_score_leiden = None
+    ari_score_leiden = None
+    asw_score_louvain = None
+    nmi_score_louvain = None
+    ari_score_louvain = None
+    labels_pred_leiden = None
+    labels_pred_louvain = None
+    cluster_embedding = None
+
+    if adata_path is not None and os.path.exists(adata_path):
+        adata_size = file_size(adata_path)
+    if seurat_path is not None and os.path.exists(seurat_path):
+        seurat_size = file_size(seurat_path)
+    if sce_path is not None and os.path.exists(sce_path):
+        sce_size = file_size(sce_path)
+
+    if layer is None:
+        layer = "X"
+        if 'leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_leiden = adata.adata.obs('leiden')
+        if 'louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_louvain = adata.adata.obs('louvain')
+        cluster_embedding = adata.adata.obsm(layer+'_umap')
+    else:
+        if layer+'_leiden' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_leiden = adata.adata.obs(layer+'_leiden')
+        if layer+'_louvain' in adata.adata.obs.keys() and layer+'_umap' in adata.adata.obsm.keys():
+            labels_pred_louvain = adata.adata.obs(layer+'_louvain')
+        cluster_embedding = adata.adata.obsm(layer+'_umap')
 
     if adata is not None and isinstance(adata, AnnData):
         info = adata.__str__()
@@ -229,15 +264,56 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
             embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+        
+        if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
+            if layer+'_umap' in adata.adata.obsm.keys():
+                umap_plot = plot_UMAP(adata, layer=layer)
+            if layer+'_umap_3D' in adata.adata.obsm.keys():
+                umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+        if process == 'QC':
+            violin_plot = plot_violin(adata)
+            scatter_plot = plot_scatter(adata)
+            highest_expr_genes_plot = plot_highest_expr_genes(adata)
 
-        umap_plot = plot_UMAP(adata, layer=layer)
-        umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
-        violin_plot = plot_violin(adata)
-        scatter_plot = plot_scatter(adata)
-        highest_expr_genes_plot = plot_highest_expr_genes(adata)
+        if cluster_label is not None and cluster_label in adata.obs.keys():
+            if labels_pred_leiden is not None:
+                asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_scores(cluster_label, labels_pred_leiden, cluster_embedding)
+                evaluation_results.append(
+                    {
+                        "leiden": {
+                            "asw_score": asw_score_leiden,
+                            "nmi_score": nmi_score_leiden,
+                            "ari_score": ari_score_leiden
+                        }
+                    }
+                )
+            if labels_pred_louvain is not None:
+                asw_score_louvain, nmi_score_louvain, ari_score_louvain = clustering_scores(cluster_label, labels_pred_louvain, cluster_embedding)
+                evaluation_results.append(
+                    {
+                        "louvain": {
+                            "asw_score": asw_score_louvain,
+                            "nmi_score": nmi_score_louvain,
+                            "ari_score": ari_score_louvain
+                        }
+                    }
+                )
+            evaluation_results = {
+                "leiden": {
+                    "asw_score": asw_score_leiden,
+                    "nmi_score": nmi_score_leiden,
+                    "ari_score": ari_score_leiden
+                },
+                "louvain": {
+                    "asw_score": asw_score_louvain,
+                    "nmi_score": nmi_score_louvain,
+                    "ari_score": ari_score_louvain
+                }
+            }
 
         pp_results = {
             "process_id": process_id,
+            "md5": md5,
             "stage": pp_stage,
             "process": process,
             "method": method,
@@ -246,6 +322,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "adata_path": adata_path,
             "seurat_path": seurat_path,
             "sce_path": sce_path,
+            "adata_size": adata_size,
+            "seurat_size": seurat_size,
+            "sce_size": sce_size,
             "layers": layers,
             "cell_metadata_obs": cell_metadata_obs.to_dict(),
             "gene_metadata": gene_metadata.to_dict(),
@@ -258,10 +337,15 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "umap_plot_3d": umap_plot_3d,
             "violin_plot": violin_plot,
             "scatter_plot": scatter_plot,
-            "highest_expr_genes_plot": highest_expr_genes_plot
+            "highest_expr_genes_plot": highest_expr_genes_plot,
+            "evaluation_results": evaluation_results
             }
         
     return pp_results
+
+
+def file_size(path): # MB
+    return os.path.getsize(path)/(1024*1024)
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
@@ -381,6 +465,7 @@ def detect_delimiter(file_path):
         dialect = csv.Sniffer().sniff(first_line)
         return dialect.delimiter
 
+
 # def output_path_check(dataset, output, method = '', format = "AnnData"):
 #     output = os.path.abspath(output)
 #     if method != '': method = '_' + method
@@ -439,6 +524,9 @@ def get_output_path(path, process_id='', dataset=None, method = '', format = "An
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
         elif format == "CSV":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
+
+    if not os.path.exists(os.path.dirname(output_path)):
+        os.makedirs(os.path.dirname(output_path))
     
     print("final output")
     print(output_path)
@@ -447,12 +535,17 @@ def get_output_path(path, process_id='', dataset=None, method = '', format = "An
 
 def get_report_path(dataset, output, method):
     output = os.path.abspath(output)
+    method = '_' + method if method else ''
     report_path = None
+
+    if not os.path.exists(output):
+        os.makedirs(output)
+
     if os.path.isdir(output):
-        report_path = os.path.join(output, dataset + "_" + method + "_report.html")
-        print("The output path is a directory, adding report file " + dataset + "_" + method + "_report.html to report path.")
+        report_path = os.path.join(output, dataset + method + "_report.html")
+        print("The output path is a directory, adding report file " + dataset + method + "_report.html to report path.")
     else:
-        report_path = output.replace(os.path.splitext(output)[-1], "_" + method + "_report.html")
+        report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
 
     if not os.path.exists(os.path.dirname(report_path)):
         os.makedirs(os.path.dirname(report_path))

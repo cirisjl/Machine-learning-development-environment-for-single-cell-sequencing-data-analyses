@@ -6,7 +6,7 @@ from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results
+from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
     
@@ -15,25 +15,27 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     results = []
     pp_results = []
     process_ids = []
+    imputation_output = []
     pp_stage = "Corrected"
     process = "Imputation"
     dataset = ds['dataset']
-    layer = ds['layer']
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    methods = ds['methods']
     parameters = ds['imputation_params']
+    layer = parameters['layer']
+    methods = parameters['methods']
     genes = parameters['genes']
     ncores = parameters['ncores']
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
-    status = 'Successful'
     
     if methods is None:
-        redislogger.warning(task_id, "No imputation method is selected.")
-        return None
+        redislogger.error(task_id, "No imputation method is selected.")
+        raise HTTPException(
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail = 'No imputation method is selected.')
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -53,6 +55,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         
         if imputation_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip MAGIC imputation.")
+            imputation_output.append({"MAGIC": imputation_results["adata_path"]})
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(task_id, "Output already exists, start from the result of the last run.")
@@ -65,11 +68,12 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                 adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
                 adata.write_h5ad(output, compression='gzip')
+                imputation_output.append({"MAGIC": output})
                 adata = None
                 redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
-                create_pp_results(imputation_results)  # Insert pre-process results to database
+                create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
             else:
                 adata = load_anndata(input)
                 if adata is None:
@@ -93,8 +97,9 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                         adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
 
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
                         adata.write_h5ad(output, compression='gzip')
+                        imputation_output.append({"MAGIC": output})
                         adata = None
                         redislogger.info(task_id, "AnnData object for MAGIC imputation is saved successfully")
 
@@ -107,9 +112,9 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                         )
                 else: 
                     redislogger.warning(task_id, "'MAGIC_imputed' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
 
-            create_pp_results(imputation_results)  # Insert pre-process results to database
+            create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
         process_ids.append(imputation_results)
@@ -136,6 +141,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
 
         if imputation_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip SAVER imputation.")
+            imputation_output.append({"SAVER": imputation_results["adata_path"]})
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(task_id, "Output already exists, start from the last run.")
@@ -148,12 +154,13 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                 adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
 
                 adata.write_h5ad(output, compression='gzip')
+                imputation_output.append({"SAVER": output})
                 adata = None
                 redislogger.info(task_id, "AnnData object for SAVER imputation is saved successfully")
-                create_pp_results(imputation_results)  # Insert pre-process results to database
+                create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
             else:
                 adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)   
                 if adata is None:
@@ -188,9 +195,10 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                             adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
 
                             redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
+                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
 
                             adata.write_h5ad(output, compression='gzip')
+                            imputation_output.append({"SAVER": output})
                             adata = None
                             redislogger.info(task_id, "AnnData object for SAVER imputation is saved successfully")
                         else:
@@ -204,21 +212,24 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                         )
                 else: 
                     redislogger.warning(task_id, "'SAVER' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path=output)
-                create_pp_results(imputation_results)  # Insert pre-process results to database
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
         process_ids.append(imputation_results)
         
     results.append({
-        "task_id": task_id, 
-        "userID": userID,
+        "taskId": task_id, 
+        "owner": userID,
         "inputfile": input,
+        "output": imputation_output,
         "md5": md5,
         "process_id": process_ids,
-        "pp_results": pp_results,
-        "status":"Imputation completed successfully."
+        # "pp_results": pp_results,
+        "status":"Success"
     })
+
+    upsert_task_results(results)
 
     return results
 
