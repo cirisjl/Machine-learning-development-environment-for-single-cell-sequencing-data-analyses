@@ -8,8 +8,6 @@ export default function ToolsComponentPage() {
 
     const [selectedFilter, setSelectedFilter] = useState(null);
     const [category, setCategory] = useState(null);
-    const [showLogs, setShowLogs] = useState(false);
-    const [liveLogs, setLiveLogs]= useState('');
 
     const handleFilterSelection = (category, filter) => {
       setSelectedFilter(category+ "_" + filter);
@@ -24,7 +22,7 @@ export default function ToolsComponentPage() {
             {/* Render the selected filter details in the middle of the page */}
             {selectedFilter && (
               <div className="filter-details-tools main-content">
-                <ToolsDetailsComponent filter={selectedFilter} category={category} setShowLogs={setShowLogs} setLiveLogs={setLiveLogs}/>
+                <ToolsDetailsComponent filter={selectedFilter} category={category}/>
               </div>
             )}
             {!selectedFilter && (
@@ -33,7 +31,7 @@ export default function ToolsComponentPage() {
                   </div>
             )}
             <div className="right-rail">
-                <RightRail showLogs={showLogs} liveLogs={liveLogs}/>
+                <RightRail/>
             </div>
         </div>
     )

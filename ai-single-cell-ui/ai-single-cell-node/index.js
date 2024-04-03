@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1191,72 +1191,60 @@ app.get('/api/tools/leftnav', function (req, res) {
     });
 });
 
-app.post('/createTask', (req, res) => {
-    const {taskTitle, taskId, method, authToken, outputPath} = req.body;
-    const username = getUserFromToken(authToken);
+app.post('/createTask', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+    
+    try {
+        const date = new Date();
+        const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
+        const formData = req.body;
+        formData.creationTime = timestamp;
+        
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
 
-    pool.getConnection(function (err, connection) {
-        if (err) {
-            console.error('Error getting DB connection:', err);
-            return res.status(500).json({ message: 'Database connection error' });
-        }
+        const collection = db.collection(taskResultsCollection);
+        
+        await collection.insertOne(formData);
+        console.log('Form data submitted successfully');
 
-        connection.beginTransaction(function (err) {
-            if (err) {
-                console.error('Error starting transaction:', err);
-                connection.release();
-                return res.status(500).json({ message: 'Transaction error' });
-            }
-
-            connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
-                if (err) {
-                    console.error('Error in SELECT query:', err);
-                    connection.rollback(function () {
-                        connection.release();
-                    });
-                    return res.status(500).json({ message: 'Database query error' });
-                }
-
-                const userId = userRows[0].user_id;
-
-                if (!userId) {
-                    res.status(400).send('User not found');
-                    connection.rollback(function () {
-                        connection.release();
-                    });
-                    return;
-                }
-
-                const date = new Date();
-                const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-                connection.query('INSERT INTO task (task_title, task_id, user_id, tool, results_path, created_datetime) VALUES (?,?, ?, ?, ?, ?)', [taskTitle, taskId, userId, method, outputPath, timestamp], function (err, taskResult) {
-                    if (err) {
-                        console.error('Error in INSERT query:', err);
-                        connection.rollback(function () {
-                            connection.release();
-                        });
-                        return res.status(500).json({ message: 'Database insertion error' });
-                    } else {
-                        // Commit transaction
-                        connection.commit(function (err) {
-                            if (err) {
-                                console.error('Error committing transaction:', err);
-                                connection.rollback(function () {
-                                    connection.release();
-                                });
-                                return res.status(500).json({ message: 'Transaction commit error' });
-                            }
-
-                            console.log('Transaction completed successfully');
-                            connection.release();
-                            res.status(201).jsonp('Task Created.');
-                        });
-                    }
-                });
-            });
-        });
-    });
+        res.status(200).json({ message: 'Form data submitted successfully' });
+        
+    } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ error: err});
+    } finally {
+      // Ensure the client will close when you finish/error
+      await client.close();
+    }
 });
+
+// Route to retrieve documents from task_results collection
+app.get('/api/tools/getTasks', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+  
+    try {
+      // Connect to the MongoDB server
+      await client.connect();
+      const db = client.db(dbName);
+  
+      // Get reference to the task_results collection
+      const collection = db.collection(taskResultsCollection);
+  
+      // Query documents from the collection
+      const tasks = await collection.find({}).toArray();
+  
+      // Respond with the tasks data
+      res.status(200).json(tasks);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'An error occurred while fetching tasks' });
+    } finally {
+      // Ensure the client will close when you finish/error
+      await client.close();
+    }
+  });
 
 app.put('/updateTaskStatus', (req, res) => {
     const { taskIds, status } = req.body;

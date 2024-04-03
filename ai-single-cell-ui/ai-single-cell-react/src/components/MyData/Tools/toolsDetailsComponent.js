@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getCookie, isUserAuth} from '../../../utils/utilFunctions';
 import { useNavigate } from 'react-router-dom';
 import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL, defaultValues } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL } from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GeneRangeSlider from './components/geneRangeSlider';
 import RangeSlider from './components/sliderComponent';
 import SwitchComponent from './components/switchComponent';
 import UseDefaultSwitch from './components/useDefaultSwitch';
+import {useWebSocketManager} from "./components/useWebSocketManager";
 
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
     const [selectedDatasets, setSelectedDatasets] = useState({});
-    const [values, setValues] = useState(defaultValues);
     const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
+
+    // useWebSocketManager(taskId, props.setLiveLogs);
 
     const filterCategoryMap = {
       quality_control: '/tools/qc',
@@ -53,7 +55,6 @@ export default function ToolsDetailsComponent(props) {
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
-
     
     const onSelectDataset = (dataset) => {
       let datasetId = dataset.Id; 
@@ -81,7 +82,6 @@ export default function ToolsDetailsComponent(props) {
   };
 
   const onDeleteDataset = (id) => {
-    console.log("Inside onDeleteDataset");
     const currentSelectedDatasets = { ...selectedDatasets};
   
     if (currentSelectedDatasets[id]) {
@@ -109,9 +109,6 @@ export default function ToolsDetailsComponent(props) {
         SwitchComponent: SwitchComponent,
         UseDefaultSwitch: UseDefaultSwitch
       };
-
-      // Map the field name to the custom component
-        // const customFields = { customQualityControl: <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={shouldHideForSeurat}/> };
 
       const onSubmit = ({ formData }) => {
 
@@ -174,19 +171,13 @@ export default function ToolsDetailsComponent(props) {
               .then(response => {
                 // Check the status code
                 if (response.ok) {
-                  console.log('Request succeeded');
-                  console.log('Status code:', response.status);
                   return response.json();
                 } else {
-                  console.log('Request failed');
-                  console.log('Status code:', response.status);
-                  throw new Error('Error while making a call to the celery API');
+                  throw new Error('Error while making a call to the celery Tools API');
                 }
               })
               .then(response => {
-
-                // Handle the successful response from the API
-                console.log(JSON.stringify(response)); // Log the response data to the console
+                
                 let datasetName = "";
                 if (typeof formData.dataset === 'string') {
                   datasetName = formData.dataset
@@ -198,56 +189,63 @@ export default function ToolsDetailsComponent(props) {
                   }
                 }
 
-                // After a successfull task creation, store the intermediate task information in the database
-                const taskId = response.task_id;
-                const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
-                const method = formData.methods[0];
-                const output = formData.output;
-                      // Make API call to store the task information
+                  // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
+                  const taskId = response.task_id;
+                  // const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
+                  const method = formData.methods[0];
+                  const output = formData.output;
 
-                      const requestBody = {
-                        taskTitle: taskTitle,
-                        taskId: taskId,
-                        method: method,
-                        authToken:jwtToken,
-                        outputPath: output
-                      };
-                      
-                      fetch(`${SERVER_URL}/createTask`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                      })
-                      .then(response => {
-                        if (response.ok && response.status === 201) {
-                          // Response is successful (status code in the 200-299 range)
-                            console.log('Task created successfully!');
-                            setLoading(false);
-                            setSuccessMessage('Form submitted successfully!');
-                            setErrorMessage('');
-                        } else if (response.status === 400) {
-                          // Response is not successful
-                          throw new Error('Please log in first');
-                        }
-                      })
-                      .catch(error => {
-                          if (error.message === 'Please log in first') {
-                            navigate('/routing');
-                            return;
-                        } else {
-                            console.error(error);
-                        }
+                  // Make API call to store the task information
+                  const requestBody = {
+                    datasetTitle: formData.dataset,
+                    taskId: taskId,
+                    method: method,
+                    datasetURL: formData.input,
+                    tool: filterCategory,
+                    outputPath: output,
+                    Owner: authData.username,
+                    status: 'Processing'
+                  };
+
+                  fetch(`${SERVER_URL}/createTask`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      if (response.status === 200) {
+                        console.log('Task created successfully!');
                         setLoading(false);
-                        setSuccessMessage('');
-                        setErrorMessage('An error occurred while submitting the form.');
-                      });
-                    setFormErrors("");
+                        setSuccessMessage('Form submitted successfully!');
+                        setErrorMessage('');
+                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: formData.methods[0], datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
+                      } else if (response.status === 400) {
+                        response.json().then(data => {
+                          console.error('Validation error:', data.error);
+                          setErrorMessage(data.error); // Set specific error message based on response
+                        });
+                      } else {
+                        throw new Error('Unexpected response from server');
+                      }
+                    } else {
+                      throw new Error('Failed to submit form: ' + response.statusText);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('API request failed:', error);
+                    setLoading(false);
+                    setSuccessMessage('');
+                    setErrorMessage('An error occurred while submitting the form: ' + error.message);
+                  });
+
+                  setFormErrors("");
               })
               .catch(error => {
                 // Handle any errors that occur during the API call
-                console.error(error);
+                console.error("Form submission error:", error);
                 setLoading(false);
                 setSuccessMessage('');
                 setErrorMessage('An error occurred while submitting the form.');
@@ -382,12 +380,6 @@ export default function ToolsDetailsComponent(props) {
         formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}
         onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset}/>
       </div>
-
-      {/* {filterCategory === "quality_control" && 
-        <div className="quality-control-paramters">
-          <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={shouldHideForSeurat}/>
-        </div>
-      } */}
             
         {filterSchema && UIfilterSchema ? (
           <div className="form-component">
