@@ -115,7 +115,7 @@ def run_integration(task_id, ids:dict):
         "md5": md5,
         "process_ids": process_ids,
         # "pp_results": pp_results,
-        "status":"Success"
+        "status": "Success"
     }
 
     upsert_task_results(results)
