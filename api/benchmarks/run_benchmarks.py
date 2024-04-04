@@ -24,7 +24,7 @@ def run_benchmarks(task_id, task_dict:dict):
                     "owner": userID,
                     "datasetId": datasetId,
                     "benchmarksId": benchmarksId,
-                    "status":"Success"
+                    "status": "Success"
                 }
                 upsert_task_results(results)
                 return results

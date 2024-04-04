@@ -225,7 +225,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         "md5": md5,
         "process_id": process_ids,
         # "pp_results": pp_results,
-        "status":"Success"
+        "status": "Success"
     }
 
     upsert_task_results(results)
