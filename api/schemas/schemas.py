@@ -72,7 +72,7 @@ class reductionParameters(BaseModel):
 
 
 class Dataset(BaseModel):
-    dataset: Optional[str] = None # Tittle of datasets
+    dataset: Optional[str] = None # Title of datasets
     input: str
     output: Optional[str] = None
     userID: Optional[str] = None
