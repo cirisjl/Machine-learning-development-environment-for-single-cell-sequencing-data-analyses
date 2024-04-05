@@ -12,15 +12,14 @@ import GeneRangeSlider from './components/geneRangeSlider';
 import RangeSlider from './components/sliderComponent';
 import SwitchComponent from './components/switchComponent';
 import UseDefaultSwitch from './components/useDefaultSwitch';
-import {useWebSocketManager} from "./components/useWebSocketManager";
+import MultiSelectComponent from './components/multiselectComponent';
+import SelectComponent from './components/selectComponent';
 
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
     const [selectedDatasets, setSelectedDatasets] = useState({});
     const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
-
-    // useWebSocketManager(taskId, props.setLiveLogs);
 
     const filterCategoryMap = {
       quality_control: '/api/tools/qc',
@@ -98,6 +97,8 @@ export default function ToolsDetailsComponent(props) {
     };
 
       const widgets = {
+        SelectComponent: SelectComponent,
+        MultiSelectComponent: MultiSelectComponent,
         toggle: (props) => (
           <Toggle
             checked={props.value}
@@ -160,6 +161,7 @@ export default function ToolsDetailsComponent(props) {
           .then((authData) => {
             if (authData.isAuth) {
               formData.userID = authData.username;
+
               const RELATIVE_PATH = filterCategoryMap[filterCategory];
               fetch(CELERY_BACKEND_API + RELATIVE_PATH, {
                 method: 'POST',
