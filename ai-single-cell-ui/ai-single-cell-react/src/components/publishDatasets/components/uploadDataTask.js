@@ -11,6 +11,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
 
+  useEffect(() => {
+    console.log("in PublishDataset.css");
+  }); // Dependency array
+
   let jwtToken = getCookie('jwtToken');
 
   let pwd = "tempStorage/";

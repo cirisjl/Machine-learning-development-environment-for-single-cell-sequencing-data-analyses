@@ -13,9 +13,11 @@ import ReactPlotly from './reactPlotly';
 import ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import CreatableSelect from 'react-select/creatable';
-// import { SERVER_URL } from '../../../constants/declarations';
 import {SERVER_URL} from '../../../constants/declarations'
 import axios from 'axios';
+import '../publishDatasets.css';
+import { useNavigate } from 'react-router-dom';
+
 
 
 
@@ -23,7 +25,7 @@ import axios from 'axios';
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
   useEffect(() => {
     console.log("data",data);
-  }, [data]);
+  });
 
 
   const [formData, setFormData] = useState({
@@ -51,9 +53,46 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     'Source': '',
     'Source Key': '',
     'Submission Date': '', // Set your initial date placeholder here
+    'Id':''
   });
 
+  const [options,setOptions]=useState({
+    Task: [], 
+    Author: '',
+    Species: [],
+    'Sample Type':[],
+    'Anatomical Entity': [],
+    'Organ Part': [],
+    'Model Organ': [],
+    'Selected Cell Types': [],
+    'Library Construction Method': [],
+    'Nucleic Acid Source': [],
+    'Disease Status (Specimen)': [],
+    'Disease Status (Donor)': [],
+    'Development Stage': [],
+    'Cell Count Estimate': [],
+    'Source': []
+  })
 
+  const [newOption,setNewOption]= useState([]);
+  useEffect(()=>{
+    console.log(newOption);
+  },[newOption])
+
+  const [message, setMessage] = useState('');
+const [hasMessage, setHasMessage] = useState(false);
+useEffect(() => {
+  if (hasMessage) {
+    clearMessageAfterTimeout();
+  }
+}, [hasMessage]); // Run clearMessageAfterTimeout when hasMessage changes
+
+const clearMessageAfterTimeout = () => {
+  setTimeout(() => {
+    setMessage('');
+    setHasMessage(false);
+  }, 5000); // 5 seconds timeout
+};
 
 
   
@@ -70,9 +109,72 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     // const [showView,setShowView]=useState(false);
     const [x,setx]=useState(false);
     const [currentdataset,setCurrentDataset]=useState(null);
+    const navigate = useNavigate();
+
+
     useEffect(() => {
       console.log("curretn dataset",formData);
     }, [formData]);
+  
+    const [displayVisualize,setDisplayVisualize] = useState(false);
+    const [visualizeDataset, setVisualizeDataset] = useState(null);
+    const [activeTab, setActiveTab] = useState(0);
+
+    const handleTabClick = (tabIndex) => {
+      setActiveTab(tabIndex);
+    };
+
+    
+  const handleCloseButtonClick=()=>{
+    setDisplayVisualize(false);
+  }
+
+
+    useEffect(() => {
+      console.log("visualize dataset",visualizeDataset);
+    }, [visualizeDataset]);
+
+   
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(`${SERVER_URL}/mongoDB/api/options`);
+          
+          if (!response.ok) {
+            console.error('Error fetching default options');
+            return;
+          }
+          
+          const data = await response.json();
+          console.log(data);
+    
+          const optionss = {};
+          const fieldNames = [
+            'Task', 'Species', 'Sample Type', 'Anatomical Entity',
+            'Organ Part', 'Model Organ', 'Selected Cell Types', 'Library Construction Method',
+            'Nucleic Acid Source', 'Disease Status (Specimen)', 'Disease Status (Donor)',
+            'Development Stage', 'Cell Count Estimate', 'Source',
+          ];
+    
+          fieldNames.forEach(fieldName => {
+            if (data[fieldName]) {
+              optionss[fieldName] = data[fieldName].map(option => ({ value: option.abbreviation, label: option.name }));
+            }
+          });
+          console.log(optionss);
+          // Update state with fetched options
+          setOptions(optionss)
+
+    
+        } catch (error) {
+          console.error('Error fetching default options:', error);
+        }
+      };
+    
+      fetchData(); // Call the fetchData function when the component mounts
+    
+    }, []); // Empty dependencies array means this effect runs only once after mounting
+    
   
     
 
@@ -131,6 +233,14 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         [name]: value,
       }));
     };
+
+    const handleSelectChange = (fieldName, selectedOption) => {
+      setFormData((prevState) => ({
+        ...prevState,
+        [fieldName]: selectedOption,
+      }));
+    };
+  
     
       
     const isSelected = datasetId => !!selectedDatasets[datasetId];
@@ -163,184 +273,104 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         'Donor Count': item['Donor Count'],
         'Source': item['Source'],
         'Source Key': item['Source Key'],
-        'Submission Date': item['Submission Date']
+        'Submission Date': item['Submission Date'],
+        'Id':dataset
 
       })
       setx(true);            
     };
+
     const optionAlreadyCreated = (fieldName, inputValue) => {
-      return this.state.newOptions.some(
+      console.log(newOption);
+      return newOption.some(
         (option) => option.field === fieldName && option.name === inputValue
       );
     };
-   
-  const handleCreateOption = (fieldName, inputValue) => {
 
-    // Check if the option has already been created to prevent duplicate calls
-    if (! optionAlreadyCreated(fieldName, inputValue)) {
-      this.addNewOptionToMongoDB(fieldName, inputValue);
-    }
-    this.setState((prevState) => {
-      const newOption = { value: inputValue, label: inputValue };
-      const updatedOptions = { ...prevState.options };
-      updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
-  
-      const updatedFormData = {
-        ...prevState.formData,
-        [fieldName]: newOption,
-      };
-
-      const updatedNewOptions = [
-        ...prevState.newOptions,
-        { field: fieldName, name: inputValue },
-      ];
-
-      return {
-        options: updatedOptions,
-        formData: updatedFormData,
-        newOptions: updatedNewOptions,
-      };
-    });
-}; 
-    const handleVisualize = (dataset) => {
-        console.log("Visualizing dataset: ", dataset);
-        console.log("resulys", data);
-        console.log("hghg",data.QC_Plots)
-        console.log("check2",data[0].QC_Plots);
-        console.log("check2",data[0].QC_Plots.scatter_plot);
-        
-        // Open a new tab/window
-        const newWindow = window.open('', '_blank');
-    
-        if (newWindow) {
-            // Write the necessary HTML structure to the new tab with a spinner
-            newWindow.document.write('<html><head><title>Loading...</title>');
-            newWindow.document.write('<style>');
-            newWindow.document.write(`
-                body { display: flex; flex-direction: column; margin: 0; }
-                .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-                .plot-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: 20px; }
-                .plot-container h2 { margin-bottom: 20px; }
-            `);
-            newWindow.document.write('</style></head>');
-            newWindow.document.write('<body><div class="spinner"></div></body></html>');
-    
-            // Debug statement to check if the spinner HTML is written
-            console.log("Spinner HTML written to the new tab.");
-    
-            setTimeout(() => {
-                if (data && data.length > 0 && data[0].QC_Plots) {
-                    // Debug statement to check the availability of QC_Plots in the data
-                    console.log("QC_Plots found in data.");
-    
-                    // Write the necessary HTML structure to the new tab
-                    newWindow.document.write('<html><head><title>Visualization</title></head><body></body></html>');
-    
-                    // Debug statement to verify the HTML structure is written correctly
-                    console.log("HTML structure written to the new tab.");
-    
-                    // Render your plots in the new window/tab, for example using React components:
-                    if (data[0].QC_Plots.umap_plot) {
-                        const umapPlotContainer = newWindow.document.createElement('div');
-                        umapPlotContainer.className = 'plot-container';
-                        umapPlotContainer.innerHTML = '<h2>UMAP Plot</h2>';
-                        newWindow.document.body.appendChild(umapPlotContainer);
-                        const root = newWindow.document.createElement('div');
-                        umapPlotContainer.appendChild(root);
-                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.umap_plot} />);
-                    }
-    
-                    if (data[0].QC_Plots.scatter_plot) {
-                        const scatterPlotContainer = newWindow.document.createElement('div');
-                        scatterPlotContainer.className = 'plot-container';
-                        scatterPlotContainer.innerHTML = '<h2>Scatter Plot</h2>';
-                        newWindow.document.body.appendChild(scatterPlotContainer);
-                        const root = newWindow.document.createElement('div');
-                        scatterPlotContainer.appendChild(root);
-                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.scatter_plot} />);
-                    }
-    
-                    if (data[0].QC_Plots.violin_plot) {
-                        const violinPlotContainer = newWindow.document.createElement('div');
-                        violinPlotContainer.className = 'plot-container';
-                        violinPlotContainer.innerHTML = '<h2>Violin Plot</h2>';
-                        newWindow.document.body.appendChild(violinPlotContainer);
-                        const root = newWindow.document.createElement('div');
-                        violinPlotContainer.appendChild(root);
-                        createRoot(root).render(<ReactPlotly plot_data={data[0].QC_Plots.violin_plot} />);
-                    }
-                    const spinner = newWindow.document.querySelector(".spinner");
-                spinner.parentNode.removeChild(spinner);
-                } else {
-                    // Error handling if data or QC_Plots is not found
-                    console.error("Data or QC_Plots not found or not in the expected format.");
-                }
-    
-                // For demonstration, let's write a simple message after a delay
-                //newWindow.document.body.innerHTML = '<h1>Data Loaded!</h1>';
-            }, 2000); // Simulating a delay of 2 seconds (2000 milliseconds)
-        } else {
-            // Error handling if newWindow is null (window.open failed)
-            console.error("Failed to open new window. Ensure popup blockers are disabled.");
-        }
+    const addNewOptionToMongoDB = (fieldName, optionName) => {
+      // Make a POST request to your backend to add the new option to MongoDB
+      axios
+        .post(`${SERVER_URL}/mongoDB/api/addNewOption`, { 'field':fieldName, 'name':optionName, 'username':'' })
+        .then((response) => {
+          // console.log(New option "${optionName}" added to MongoDB for field "${fieldName}");
+        })
+        .catch((error) => {
+          console.error('Error adding new option to MongoDB:', error);
+        });
     };
+     
+    const handleCreateOption = (fieldName, inputValue) => {
+
+      // Check if the option has already been created to prevent duplicate calls
+      if (! optionAlreadyCreated(fieldName, inputValue)) {
+        addNewOptionToMongoDB(fieldName, inputValue);    //Have to implement if required ,the similar api call in CustomComponent.js
+      }
+      const newOption = { value: inputValue, label: inputValue };
+      // Update options state
+    const updatedOptions = { ...options };
+    updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+    console.log("updated_opti0ons",updatedOptions);
+  
+  // Update formData state
+  const updatedFormData = {
+    ...formData,
+    [fieldName]: newOption,
+  };
+  setFormData(updatedFormData);
+  console.log(updatedFormData);
+  
+  setOptions(updatedOptions);
+  
+  // const updatedNewOptions = [
+  //   ...newOption,
+  //   { field: fieldName, name: inputValue },
+  // ];
+  // console.log(updatedNewOptions);
+  setNewOption(newOption => [...newOption, { field: fieldName, name: inputValue }]);
+  
+  // setNewOption(updatedNewOptions);
     
+  }; 
+   
+  
+  const handleVisualize = (dataset,id)=>{
+    // setVisualizeDataset(dataset);
+    // setDisplayVisualize(true);
+    // navigate("/handleVisualize/id", { replace: false, state: { newTab: true } });
+    const newRoute = `handleVisualize/${id}`
+    window.open(`${window.location.origin}/${newRoute}`)
+
+
+
+  }
 
     const handlecloseView=()=>{
       setx(false);
     }
     
+  
     const submitHandle = (e) => {
       e.preventDefault();
       console.log("currrent_dataset",currentdataset);
-      // setFormData( {
-      //   Dataset: currentdataset.Dataset,
-      //   Downloads: currentdataset.Downloads,
-      //   Title: currentdataset.Title,
-      //   Author: currentdataset.Author,
-      //   'Reference (paper)': currentdataset['Reference (paper)'],
-      //   Abstract: currentdataset.Abstract,
-      //   DOI: currentdataset.DOI,
-      //   Species: currentdataset.Species,
-      //   'Sample Type': currentdataset['Sample Type'],
-      //   'Anatomical Entity': currentdataset['Anatomical Entity'],
-      //   'Organ Part': currentdataset['Organ Part'],
-      //   'Model Organ': currentdataset['Model Organ'],
-      //   'Selected Cell Types': currentdataset['Selected Cell Types'],
-      //   'Library Construction Method': currentdataset['Library Construction Method'],
-      //   'Nucleic Acid Source': currentdataset['Nucleic Acid Source'],
-      //   'Paired End': currentdataset['Paired End'],
-      //   'Analysis Protocol': currentdataset['Analysis Protocol'],
-      //   'Disease Status (Specimen)': currentdataset['Disease Status (Specimen)'],
-      //   'Disease Status (Donor)': currentdataset['Disease Status (Donor)'],
-      //   'Development Stage': currentdataset['Development Stage'],
-      //   'Donor Count': currentdataset['Donor Count'],
-      //   'Source': currentdataset.Source,
-      //   'Source Key': currentdataset['Source Key'],
-      //   'Submission Date': currentdataset['Submission Date'],
-      // });
-      
 console.log("in handle submit");
 console.log(formData);
-
+setVisualizeDataset(formData);
 
 axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
 .then(response => {
   console.log('Form data submitted successfully');
-  this.setState({
-    message: 'Dataset created Successfully!',
-    hasMessage: true, // Set hasMessage to true when a message is set
-  });
-
-
- 
+  console.log("SERVER_URL",`${SERVER_URL}`)
+  setMessage('Dataset Updated Successfully!');
+  setHasMessage(true);
 })
 .catch(error => {
-  console.error('Error submitting form data:', error.response.data.error);
+  console.error('Error submitting form data:');
+  setMessage('Error submitting form data:');
+  setHasMessage(true);
+
 });
 
     }
-    
     
 
 
@@ -397,7 +427,7 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
                         <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
-                        onClick={() => handleVisualize(item["Id"])}
+                        onClick={() => handleVisualize(item,item["Id"])}
                         className="action-button"
                     >
                         <FontAwesomeIcon icon={faEye} />
@@ -499,17 +529,23 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
         <div>
 
         {x && (
-          <div  className="dialog-container">
-          <div className="dialog">
+          <div className="dialog-container">
+          <div className="dialog1">
 
-          <div className="my-form-container">
+          <div className="my-form-container1"style={{ height: '600px'}}>
+          {hasMessage && (
+        <div className='message-box' style={{ backgroundColor: '#bdf0c0' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p>{message}</p>
+          </div>
+        </div>)}
         
         <div>
         <h2 className="form-title">My Form</h2>
-        <form  className="form" >
+        <form  className="form1" >
           {/* Dataset */}
-          <div className="form-field">
-            <label className="form-label">Dataset:</label>
+          <div className="form-field1">
+            <label className="form-label1">Dataset:</label>
             <input
               type="text"
               name="Dataset"
@@ -524,8 +560,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
           
 
           {/* Downloads */}
-          <div className="form-field">
-            <label className="form-label">Downloads:</label>
+          <div className="form-field1">
+            <label className="form-label1">Downloads:</label>
             <input
               type="text"
               required
@@ -537,8 +573,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
 
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Title:</label>
+          <div className="form-field1">
+            <label className="form-label1">Title:</label>
             <input
               type="text"
               name="Title"
@@ -549,8 +585,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Author:</label>
+          <div className="form-field1">
+            <label className="form-label1">Author:</label>
             <input
               type="text"
               name="Author"
@@ -562,8 +598,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Reference (paper):</label>
+          <div className="form-field1">
+            <label className="form-label1">Reference (paper):</label>
             <input
               type="text"
               name="Reference (paper)"
@@ -574,8 +610,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Abstract:</label>
+          <div className="form-field1">
+            <label className="form-label1">Abstract:</label>
             <textarea
               name="Abstract"
               value={formData.Abstract}
@@ -585,8 +621,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">DOI:</label>
+          <div className="form-field1">
+            <label className="form-label1">DOI:</label>
             <input
               type="text"
               name="DOI"
@@ -601,152 +637,141 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
 
 
           {/* Species (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Species:</label>
+          <div className="form-field1">
+            <label className="form-label1">Species:</label>
             <CreatableSelect
               name="Species"
               value={formData.Species}
-              onChange={handleChange}
-
               isClearable
               isSearchable
               required
-            //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOption) => handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => handleCreateOption('Species', inputValue)}
-            //   options={options.Species} // Set options to the fetched options
+              options={options.Species} // Set options to the fetched options
             />
           </div>
 
           {/* "Sample Type" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Sample Type:</label>
+          <div className="form-field1">
+            <label className="form-label1">Sample Type:</label>
             <CreatableSelect
               name="Sample Type"
-              value={FormData['Sample Type']}
-              onChange={handleChange}
+              value={formData['Sample Type']}
 
               isClearable
               isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
+              onChange={(selectedOption) => handleSelectChange('Sample Type', selectedOption)} // Use handleSelectChange             
                onCreateOption={(inputValue) => handleCreateOption('Sample Type', inputValue)}
-            //   options={options['Sample Type']} // Set options to the fetched options
+              options={options['Sample Type']} // Set options to the fetched options
             />
           </div>
 
 
           {/* "Anatomical Entity" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Anatomical Entity:</label>
+          <div className="form-field1">
+            <label className="form-label1">Anatomical Entity:</label>
             <CreatableSelect
               name="Anatomical Entity"
               value={formData['Anatomical Entity']}
-              onChange={handleChange}
 
               isClearable
               isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
-            //   options={options['Anatomical Entity']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Anatomical Entity', inputValue)}
+              options={options['Anatomical Entity']} // Set options to the fetched options
             />
           </div>
 
           {/* "Organ Part" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Organ Part:</label>
+          <div className="form-field1">
+            <label className="form-label1">Organ Part:</label>
             <CreatableSelect
               name="Organ Part"
               value={formData['Organ Part']}
-              onChange={handleChange}
-
               isClearable
               isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Organ Part', inputValue)}
-            //   options={options['Organ Part']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Organ Part', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Organ Part', inputValue)}
+              options={options['Organ Part']} // Set options to the fetched options
             />
                  </div>
 
           {/* "Model Organ" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Model Organ:</label>
+          <div className="form-field1">
+            <label className="form-label1">Model Organ:</label>
             <CreatableSelect
               name="Model Organ"
               value={formData['Model Organ']}
-              onChange={handleChange}
 
               isClearable
               isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Model Organ', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Model Organ', inputValue)}
-            //   options={options['Model Organ']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Model Organ', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Model Organ', inputValue)}
+              options={options['Model Organ']} // Set options to the fetched options
               className="form-input"
             />
           </div>
 
           {/* "Selected Cell Types" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Selected Cell Types:</label>
+          <div className="form-field1">
+            <label className="form-label1">Selected Cell Types:</label>
             <CreatableSelect
               name="Selected Cell Types"
-              value={FormData['Selected Cell Types']}
-              onChange={handleChange}
+              value={formData['Selected Cell Types']}
 
               isClearable
               isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
-            //   options={options['Selected Cell Types']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Selected Cell Types', inputValue)}
+              options={options['Selected Cell Types']} // Set options to the fetched options
             />
           </div>
 
 
 
           {/* "Library Construction Method" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Library Construction Method:</label>
+          <div className="form-field1">
+            <label className="form-label1">Library Construction Method:</label>
             <CreatableSelect
               name="Library Construction Method"
               value={formData['Library Construction Method']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Library Construction Method', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Library Construction Method', inputValue)}
-            //   options={options['Library Construction Method']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Library Construction Method', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Library Construction Method', inputValue)}
+              options={options['Library Construction Method']} // Set options to the fetched options
               className="form-input"
             />
           </div>
 
 
           {/* "Nucleic Acid Source" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Nucleic Acid Source:</label>
+          <div className="form-field1">
+            <label className="form-label1">Nucleic Acid Source:</label>
             <CreatableSelect
               name="Nucleic Acid Source"
               value={formData['Nucleic Acid Source']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Nucleic Acid Source', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Nucleic Acid Source', inputValue)}
-            //   options={options['Nucleic Acid Source']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Nucleic Acid Source', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Nucleic Acid Source', inputValue)}
+              options={options['Nucleic Acid Source']} // Set options to the fetched options
               className="form-input"
             />
           </div>
 
 
-          <div className="form-field">
-            <label className="form-label">Paired End:</label>
+          <div className="form-field1">
+            <label className="form-label1">Paired End:</label>
             <div>
               <label>
                 <input
@@ -760,7 +785,7 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
                 />
                 True
               </label>
-              <label className="form-label">
+              <label className="form-label1">
                 <input
                   type="radio"
                   name="Paired End"
@@ -775,8 +800,8 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             </div>
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Analysis Protocol:</label>
+          <div className="form-field1">
+            <label className="form-label1">Analysis Protocol:</label>
             <input
               type="text"
               name="Analysis Protocol"
@@ -789,62 +814,59 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
           </div>
 
           {/* "Disease Status (Specimen)" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Disease Status (Specimen):</label>
+          <div className="form-field1">
+            <label className="form-label1">Disease Status (Specimen):</label>
             <CreatableSelect
               name="Disease Status (Specimen)"
               value={formData['Disease Status (Specimen)']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
-            //   options={options['Disease Status (Specimen)']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Disease Status (Specimen)', inputValue)}
+              options={options['Disease Status (Specimen)']} // Set options to the fetched options
             />
             {/* {errors['Disease Status (Specimen)'] && <div className="error-tooltip">{errors['Disease Status (Specimen)']}</div>} */}
           </div>
 
 
           {/* "Disease Status (Donor)" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Disease Status (Donor):</label>
+          <div className="form-field1">
+            <label className="form-label1">Disease Status (Donor):</label>
             <CreatableSelect
               name="Disease Status (Donor)"
               value={formData['Disease Status (Donor)']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
-            //   options={options['Disease Status (Donor)']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Disease Status (Donor)', inputValue)}
+              options={options['Disease Status (Donor)']} // Set options to the fetched options
             />
             {/* {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>} */}
           </div>
 
           {/* "Development Stage" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Development Stage:</label>
+          <div className="form-field1">
+            <label className="form-label1">Development Stage:</label>
             <CreatableSelect
               name="Development Stage"
               value={formData['Development Stage']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}
-            //   options={options['Development Stage']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Development Stage', inputValue)}
+              options={options['Development Stage']} // Set options to the fetched options
               className="form-input"
             />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Donor Count:</label>
+          <div className="form-field1">
+            <label className="form-label1">Donor Count:</label>
             <input
               type="number"
               name="Donor Count"
@@ -860,27 +882,26 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
          
 
           {/* "Source" (CreatableSelect) */}
-          <div className="form-field">
-            <label className="form-label">Source:</label>
+          <div className="form-field1">
+            <label className="form-label1">Source:</label>
             <CreatableSelect
               name="Source"
               value={formData['Source']}
-              onChange={handleChange}
 
-            //   isClearable
-            //   isSearchable
+              isClearable
+              isSearchable
             //   isLoading={isLoading}
-            //   onChange={(selectedOption) => this.handleSelectChange('Source', selectedOption)} // Use handleSelectChange              
-            //   onCreateOption={(inputValue) => this.handleCreateOption('Source', inputValue)}
-            //   options={options['Source']} // Set options to the fetched options
+              onChange={(selectedOption) => handleSelectChange('Source', selectedOption)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => handleCreateOption('Source', inputValue)}
+              options={options['Source']} // Set options to the fetched options
               className="form-input"
             />
           </div>
 
           
           {/* Source Key */}
-          <div className="form-field">
-            <label className="form-label">Source Key:</label>
+          <div className="form-field1">
+            <label className="form-label1">Source Key:</label>
             <input
               type="text"
               name="Source Key"
@@ -894,13 +915,13 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             {/* {errors['Source Key'] && <p className="error">{errors['Source Key']}</p>} */}
           </div>
 
-          <div className="form-field">
+          <div className="form-field1">
             <label>Submission Date:</label>
             <input
               type="date"
               required
               name="Submission Date"
-              value={FormData["Submission Date"]}
+              value={formData["Submission Date"]}
               onChange={handleChange}
 
             //   onChange={this.handleChange}
@@ -910,7 +931,7 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
 
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
   <div style={{ marginRight: '10px' }}>
-    <button type="submit" onClick={submitHandle}>Submit</button>
+    <button type="submit" onClick={submitHandle}>Save</button>
   </div>
   <div>
     <button onClick={handlecloseView}>Close</button>
@@ -935,6 +956,95 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
            
             </div>
           </div>
+        )}
+        {displayVisualize && (
+          <div className="dialog-container">
+          <div className="dialog1">
+          <div className="tab">
+        <button className={activeTab === 0 ? 'active' : ''} onClick={() => handleTabClick(0)}>Summary</button>
+        <button className={activeTab === 1 ? 'active' : ''} onClick={() => handleTabClick(1)}>Explore</button>
+        <button className={activeTab === 2 ? 'active' : ''} onClick={() => handleTabClick(2)}>Download</button>
+         </div>
+      <div className="tab-content">
+        {activeTab === 0 && 
+        <div className="tab-panel">
+           <h2>Title</h2>
+            <p>{visualizeDataset.Title}</p>
+          <hr />
+          <h2>Abstract</h2>
+          <p>{visualizeDataset.Abstract}</p>
+          <hr />
+        <h2>Author</h2>
+        <p>{visualizeDataset.Author}</p>
+        <hr />
+          <h2>Reference (paper)</h2>
+          <p>{visualizeDataset['Reference (paper)']}</p>
+          <hr />
+          <h2>Species</h2>
+          <p>{visualizeDataset['Species'].value}</p>
+          <hr/>
+          <h2>Sample Type</h2>
+          <p>{visualizeDataset['Sample Type'].value}</p>
+          <hr/>
+          <p>{visualizeDataset['Anatomical Entity'].label}</p>
+          <hr/>
+          <h2>Organ Part</h2>
+          <p>{visualizeDataset['Organ Part'].label}</p>
+          <hr/>
+          <h2>Model Organ</h2>
+          <p>{visualizeDataset['Model Organ'].label}</p>
+          <br/>
+          <h2>Selected Cell Types</h2>
+          <p>{visualizeDataset['Selected Cell Types'].label}</p>
+          <hr/>
+          <h2>Library Construction Method</h2>
+          <p>{visualizeDataset['Library Construction Method']}</p>
+          <hr/>
+          <h2>Nucleic Acid Source</h2>
+          <p>{visualizeDataset['Nucleic Acid Source']}</p>
+          <hr/>
+          <h2>Disease Status (Specimen)</h2>
+          <p>{visualizeDataset['Disease Status (Specimen)'].label}</p>
+          <hr/>
+          <h2>Disease Status (Donor)</h2>
+          <p>{visualizeDataset['Disease Status (Donor)'].label}</p>
+          <hr/>
+          <h2>Development Stage</h2>
+          <p>{visualizeDataset['Development Stage']}</p>
+          <hr/>
+          <h2>Donor Count</h2>
+          <p>{visualizeDataset['Donor Count']}</p>
+          <hr/>
+          <h2>Source</h2>
+          <p>{visualizeDataset['Source']}</p>
+          
+          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
+
+          </div>}
+        {activeTab === 1 && <div className="tab-panel">
+          <h2>Scatter Plot</h2>
+          <ReactPlotly plot_data={visualizeDataset.QC_Plots.scatter_plot} />
+
+          <h2>UMAP Plot</h2>
+          <ReactPlotly plot_data={visualizeDataset.QC_Plots.umap_plot} />
+
+
+          <h2>Violin Plot</h2>
+          <ReactPlotly plot_data={visualizeDataset.QC_Plots.violin_plot} />
+
+
+          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
+
+
+          </div>}
+        {activeTab === 2 && <div className="tab-panel">Content for Tab 3
+          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
+</div>}
+      </div>
+
+            </div>
+            </div>
+
         )}
         </div>
         </div>

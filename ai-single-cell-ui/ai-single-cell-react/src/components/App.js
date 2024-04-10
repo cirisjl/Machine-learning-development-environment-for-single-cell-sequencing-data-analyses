@@ -36,6 +36,7 @@ import ManageOptions from './Form/Components/editablePageOptions';
 // import PublishDataset from './publishDatasets/publishDataset';
 import FlowControl from './publishDatasets/flowControl';
 import TaskResultsComponent from './Benchmarks/taskResultsComponent';
+import HandleVisualize from './publishDatasets/components/handleVisualize';
 
 function App() {
 
@@ -70,6 +71,7 @@ function App() {
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
+          <Route path="handleVisualize/:id"           element={<HandleVisualize/>}/>
 
         </Route>
       </Routes>

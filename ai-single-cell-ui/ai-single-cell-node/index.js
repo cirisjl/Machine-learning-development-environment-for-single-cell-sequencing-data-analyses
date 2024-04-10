@@ -1395,6 +1395,33 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     }
 });
 
+app.get('/mongoDB/api/fetchDataforVisualize/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+    
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollectionName);
+
+        const existingDocument = await collection.findOne({ Id: id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
 
   app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
