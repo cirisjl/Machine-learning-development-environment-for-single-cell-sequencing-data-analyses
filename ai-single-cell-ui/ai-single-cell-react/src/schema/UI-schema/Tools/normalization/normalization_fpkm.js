@@ -1,60 +1,128 @@
 export const uiSchema = {
-    "parameters": {
-      "classNames": "category",
-        "output_format": {
-          "classNames": "sub-category",
-          "ui:widget": "select",
-          "ui:placeholder": "Select file format"
-        },
+  "parameters": {
+    "classNames": "category",
+      "output_format": {
+        "classNames": "sub-category",
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          clearable: true ,
+          placeholder: "Select the Output Format",
+          creatable: false,
+          searchable: true,
+          opts:["AnnData", "SingleCellExperiment", "Seurat", "CSV"] 
+        }
+      },
+      "species": {
+        "classNames": "sub-category",
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          clearable: true ,
+          placeholder: "Select the Species type",
+          creatable: false,
+          searchable: true,
+          opts:["human", "mouse"]
+        }
+      },
+      "idtype": {
+        "classNames": "sub-category",
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          clearable: true ,
+          placeholder: "Select the ID type",
+          creatable: false,
+          searchable: true,
+          opts:["SYMBOL", "ENSEMBL", "ENTREZID", "REFSEQ"]
+        }
+      },
+      "cluster_label": {
+        "classNames": "sub-category",
+        "ui:widget": "ClusterLabelInput"
+      },
+      "show_umap": {
+        "classNames": "sub-category",
+        "ui:widget": "toggle"
+      },
+      "show_error": {
+        "classNames": "sub-category",
+        "ui:widget": "toggle"
+      },
+      "normalization_params": {
+        "classNames": "form-subset sub-category",
         "methods": {
           "classNames": "sub-category",
-          // "ui:widget": "select",
-          "ui:placeholder": "Select a method",
-          'ui:widget': () => (
-            <div className='common-row-wrap'>
-              <select>
-                <option value="FPKM">FPKM</option>
-              </select>
-        </div>
-          ),
+          "ui:widget": "MultiSelectComponent",
         },
-        "default_assay": {
+        "assay": {
           "classNames": "sub-category",
-          'ui:widget': () => (
-            <div className='common-row-wrap'>
-              <span data-v-22825496="" class="ui-form-title-message warning"> * Optional </span>
-              <input type='text' />
-        </div>
-          ),
+          "ui:widget": "ClusterLabelInput"
         },
         "layer": {
-          "classNames": "sub-category"
-        },
-        "path_of_scrublet_calls": {
-          "classNames": "sub-category"
-        },
-        "species": {
           "classNames": "sub-category",
-          "ui:placeholder": "Select species type"
+          "ui:widget": "ClusterLabelInput"
         },
-        "idtype": {
-          "classNames": "sub-category"
-        },
-        "genes": {
+        "n_neighbors": {
           "classNames": "sub-category",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'n_neighbors: ', 
+          'ui:options': {
+            title: 'n_neighbors: ', // Title for the slider
+            min: 2,
+            max: 100,
+            step: 1,
+            marks:[
+              { value: 2, label: '2' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 15, label: '15*' },
+              { value: 20, label: '20' },
+              { value: 50, label: '50' },
+              { value: 100, label: '100' },
+            ]
+          }
         },
-        "ncores": {
+        "n_pcs": {
           "classNames": "sub-category",
-          "ui:widget": "range",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'n_pcs: ', 
+          'ui:options': {
+            title: 'n_pcs: ', 
+            min: 0,
+            max: 200,
+            step: 1,
+            marks:[
+              { value: 0, label: '0*' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 20, label: '20' },
+              { value: 40, label: '40' },
+              { value: 50, label: '50' },
+              { value: 125, label: '125' },
+              { value: 200, label: '200' },
+            ]
+          }
         },
-        "show_umap": {
+        "resolution": {
           "classNames": "sub-category",
-          "ui:widget": "toggle"
-        },
-        "show_error": {
-          "classNames": "sub-category",
-          "ui:widget": "toggle"
-        }
-    }
-  };
-  
+          "ui:widget": "RangeSlider",
+          'ui:title': 'Resolution: ', 
+          'ui:options': {
+            title: 'Resolution: ', 
+            min: 0,
+            max: 5,
+            step: 0.05,
+            marks:[
+              { value: 0.1, label: '0.1' },
+              { value: 0.5, label: '0.5' },
+              { value: 1, label: '1*' },
+              { value: 2.5, label: '2.5' },
+              { value: 5, label: '5' },
+            ]
+          }
+        }    
+      },
+      "use_default": {
+        "classNames": "sub-category",
+        "ui:widget": "toggle"
+      }
+  }
+};

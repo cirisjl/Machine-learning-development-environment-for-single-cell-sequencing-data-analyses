@@ -21,7 +21,6 @@ def run_qc(task_id, ds:dict, random_state=0):
     process_ids = []
     userID = ds['userID']
     input_path = unzip_file_if_compressed(task_id, ds['input'])
-    methods = ds['methods']
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
     assay_names = []
