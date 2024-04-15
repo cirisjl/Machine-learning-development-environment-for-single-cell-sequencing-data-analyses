@@ -41,7 +41,7 @@ def run_clustering(task_id, ds:dict, random_state=0):
         "inputfile": input,
         "output": output,
         "workflow_id": workflow_id,
-        "status":"Success"
+        "status": "Success"
     }
     
     upsert_task_results(results)

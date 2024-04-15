@@ -96,7 +96,7 @@ def run_integration(task_id, ids:dict):
                     raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path, seurat_path=output)
+                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output)
                 integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                 adata = None
                 redislogger.info(task_id, integration_results['info'])
@@ -115,7 +115,7 @@ def run_integration(task_id, ids:dict):
         "md5": md5,
         "process_ids": process_ids,
         # "pp_results": pp_results,
-        "status":"Success"
+        "status": "Success"
     }
 
     upsert_task_results(results)
