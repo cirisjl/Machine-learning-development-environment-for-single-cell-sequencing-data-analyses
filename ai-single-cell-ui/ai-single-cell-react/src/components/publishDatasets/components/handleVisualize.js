@@ -105,23 +105,15 @@ function HandleVisualize() {
            <h2>Sample Type</h2>
            <p>{visualizeDataset['Sample Type'].value}</p>
            <hr/>
-          <p>{visualizeDataset['Anatomical Entity'].label}</p>
-           <hr/>
            <h2>Organ Part</h2>
            <p>{visualizeDataset['Organ Part'].label}</p>
            <hr/>
            <h2>Model Organ</h2>
            <p>{visualizeDataset['Model Organ'].label}</p>
-           <br/>
+           <hr/>
            <h2>Selected Cell Types</h2>
           <p>{visualizeDataset['Selected Cell Types'].label}</p>
           <hr/>
-           <h2>Library Construction Method</h2>
-           <p>{visualizeDataset['Library Construction Method']}</p>
-           <hr/>
-           <h2>Nucleic Acid Source</h2>
-           <p>{visualizeDataset['Nucleic Acid Source']}</p>
-           <hr/>
            <h2>Disease Status (Specimen)</h2>
            <p>{visualizeDataset['Disease Status (Specimen)'].label}</p>
            <hr/>
@@ -134,9 +126,7 @@ function HandleVisualize() {
            <h2>Donor Count</h2>
            <p>{visualizeDataset['Donor Count']}</p>
            <hr/>
-           <h2>Source</h2>
-           <p>{visualizeDataset['Source']}</p>
-
+           
 
       </div>
     )}

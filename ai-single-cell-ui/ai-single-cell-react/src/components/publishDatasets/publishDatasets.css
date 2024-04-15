@@ -848,18 +848,21 @@ font-size: 16px;
 .dataset-dialog {
   flex: 2;
   padding: 20px;
+  margin-bottom: 40px;
+
 }
 
 .dataset-tabs {
   display: flex;
+  justify-content: flex-start; /* Align items to the start (left) */
   gap: 10px;
-  margin-bottom: 20px;
-  position: fixed;
-  top: 20px; /* Adjust this value according to your design */
-  left: 50%; /* Position it horizontally centered */
-  transform: translateX(-50%); /* Center it precisely */
+  margin-bottom: 40px;
+  position: absolute;
+  top: 90px; /* Adjust this value according to your design */
+  left: 145px; /* Adjusted left value */
   z-index: 999; /* Ensure it's above other content */
 }
+
 
 
 .dataset-tabs button {
@@ -901,15 +904,15 @@ font-size: 16px;
   border: 2px solid #ccc; 
   border-radius: 5px; 
   padding: 20px; 
-  margin-bottom: 30px; 
-}
+  margin-top: 60px; /* Adjusted margin-top value to move it below the tabs */
+  margin-bottom: 30px;}
 
 .side-panel {
   background-color: #fefefe;
   border: 2px solid #ccc; 
   border-radius: 5px; 
   padding: 20px; 
-  margin-top: 75px !important; 
+  margin-top: 78px !important; 
 
 }
 
