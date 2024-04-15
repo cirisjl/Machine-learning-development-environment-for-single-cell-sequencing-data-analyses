@@ -64,8 +64,7 @@
     "jwt-decode": "*",
     "@emotion/react": "*",
      "@emotion/styled": "*",
-     "uuid": "*",
-     "recharts": "2.12.3"
+     "uuid": "*"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",
