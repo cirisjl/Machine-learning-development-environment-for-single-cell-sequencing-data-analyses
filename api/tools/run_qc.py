@@ -209,7 +209,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path, seurat_path=output_path)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path)
                 redislogger.info(task_id, qc_results['info'])
                 create_pp_results(qc_results)  # Insert pre-process results to database
                 adata = None         
@@ -271,7 +271,8 @@ def run_qc(task_id, ds:dict, random_state=0):
                     raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
-                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, adata_path, sce_path=output_path)
+                qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path)
+                qc_output.append({"Bioconductor": adata_path})
                 adata = None
                 redislogger.info(task_id, qc_results['info'])
                 create_pp_results(qc_results)  # Insert pre-process results to database            
@@ -297,7 +298,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         "md5": md5,
         "process_ids": process_ids,
         # "pp_results": pp_results,
-        "status":"Success"
+        "status": "Success"
     }
 
     return results

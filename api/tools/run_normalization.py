@@ -168,7 +168,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
             "process_ids": process_ids,
             # "pp_results": pp_results,
             "failed_methods": failed_methods,
-            "status":"Success"
+            "status": "Success"
         }
     
     upsert_task_results(results)

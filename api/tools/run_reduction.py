@@ -60,7 +60,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
                 detail = detail
             )
         
-    results.append = {
+    results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input,
@@ -69,7 +69,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         "md5": md5,
         "process_id": process_id,
         # "pp_results": reduction_results,
-        "status":"Success"
+        "status": "Success"
     }
 
     upsert_task_results(results)

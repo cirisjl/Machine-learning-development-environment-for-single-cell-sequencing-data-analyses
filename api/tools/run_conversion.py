@@ -90,7 +90,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
         "owner": userID,
         "inputfile": input,
         "output": outputs,
-        "status":"Success"
+        "status": "Success"
     }
     upsert_task_results(results)
 
