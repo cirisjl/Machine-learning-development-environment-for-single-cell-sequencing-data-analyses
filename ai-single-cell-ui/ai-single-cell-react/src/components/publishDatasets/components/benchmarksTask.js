@@ -3,7 +3,8 @@ import {CELERY_BACKEND_API} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
-import { Card, CardContent, Typography} from '@material-ui/core';
+import useWebSocket from '../../MyData/MyTasks/useWebSocket';
+import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
 
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
@@ -12,6 +13,10 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [ message, setMessage ] = useState('');
   const [ isError, setIsError ] = useState(false);
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [wsLogs, setWsLogs] = useState('');
+  const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
+  const [taskId, setTaskId] = useState('');
+  const [celeryTaskResults, setCeleryTaskResults] = useState({});
 
   const handleTaskCompletion = () => {
 
@@ -33,6 +38,40 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setActiveTask(6);
   };
 
+  
+  const handleStatusMessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      console.log("Task Response");
+      console.log(data);
+      if (data.task_status) {
+        setCurrentStatus(data.task_status);
+        if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
+          setCeleryTaskResults(data);
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing status message:", error);
+    }
+  };
+
+  const handleLogMessage = (event) => {
+    setWsLogs(event.data);
+    // Auto-scroll to the bottom of the logs
+    const logsElement = document.getElementById("_live_logs");
+    if (logsElement) {
+      logsElement.scrollTop = logsElement.scrollHeight;
+    }
+  };
+
+      // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
+      const createMarkup = (logs) => {
+        return { __html: logs };
+      };
+
+      const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage);
+
+
   useEffect(() => {
     if(taskData.benchmarks.status !== 'completed') {
 
@@ -41,16 +80,17 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
       const selectedDatasets  = taskData.task_builder.selectedDatasets;
 
-      const postBody = {
-        task_type: 'Clustering',
-        data: Object.entries(selectedDatasets).map(([key, dataset], index) => ({
-          adata_path: dataset.adata_path,
-          task_label: dataset.taskLabel.label || '',
-          datasetId: dataset.Id
-        })),
-      };
+      let body = Object.entries(selectedDatasets).map(([key, dataset], index) => ({
+        benchmarksId: dataset.taskType.value + "-" + dataset.Id,
+        datasetId: dataset.Id,
+        userID: dataset.Owner,
+        task_type: dataset.taskType.label,
+        adata_path: dataset.adata_path,
+        label: dataset.taskLabel.label || '',
+      }));
+      const postBody = body[0];
 
-      fetch(`${CELERY_BACKEND_API}/convert/publishDatasets/benchmarks`, {
+      fetch(`${CELERY_BACKEND_API}/api/benchmarks/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,41 +99,66 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       })
         .then((response) => response.json())
         .then((data) => {
-          if (Array.isArray(data)) {
-            const benchmarksResults = data;
-
-            // Update the benchmarks section in taskData with the received results
-            setTaskData((prevTaskData) => ({
-              ...prevTaskData,
-              benchmarks: {
-                benchmarks_results: benchmarksResults,
-              },
-            }));
-          } else {
-            console.error('Invalid response format');
-            setMessage('Invalid response format');
-            setHasMessage(true);
-            setIsError(true);
-          }
+          const taskId = data.task_id;
+          setTaskId(taskId);
         })
         .catch((error) => {
           console.error('Error during API call:', error);
           setMessage(`Error during API call: ${error}`);
           setHasMessage(true);
           setIsError(true);
-        })
-        .finally(() => {
           setLoading(false);
-        });
+        })
     }
   }
   }, []);
+
+  useEffect(() => {
+    if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
+      closeWebSockets(); // Close WebSockets when task is done
+      if(currentStatus === "SUCCESS") {
+        // fetchProcessResults(celeryTaskResults.task_result.process_ids);
+      }
+      setLoading(false);
+      setHasMessage(true);
+      setMessage("Benchmarks task Success or failed");
+      setIsError(true);
+    }
+  }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
+
 
 
   return (
     <div className='benchmarks-task'>
       
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
+
+      <Grid item xs={12} sx={{paddingTop: '10px'}}>
+            <Card raised>
+              <CardHeader title="Live Logs" />
+              <CardContent>
+                <Paper 
+                  sx={{ 
+                    maxHeight: 300, 
+                    overflow: 'auto', 
+                    '&::-webkit-scrollbar': { width: '0.4em' },
+                    '&::-webkit-scrollbar-thumb': { 
+                      backgroundColor: 'rgba(0,0,0,.1)',
+                      borderRadius: '4px',
+                    }
+                  }} 
+                  id="_live_logs"
+                >
+                  <Typography 
+                    variant="body2" 
+                    component="div" 
+                    sx={{ fontFamily: 'monospace' }}
+                    dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
+                  />
+                </Paper>
+              </CardContent>
+            </Card>
+        </Grid>
 
       {loading ? (
               <div className="spinner-container">
