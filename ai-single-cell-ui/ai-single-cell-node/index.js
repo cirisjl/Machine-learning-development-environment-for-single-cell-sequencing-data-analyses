@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -2535,6 +2535,38 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
       }
     }
   });
+
+// API endpoint to get process results based on an array of process_ids
+app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
+    let client;
+   
+    try {
+        
+        const processIds = req.body.processIds;
+
+        if (!processIds || !processIds.length) {
+            return res.status(400).json({ error: 'No process IDs provided' });
+        }
+    
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        // Fetching documents where process_id is in the provided array of process IDs
+        const processResults = await collection.find({
+            process_id: { $in: processIds }
+        }).toArray();
+
+        res.status(200).json(processResults);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        client.close();
+    }
+});
 
 
 // Start the server
