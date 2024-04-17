@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, leaderBoardsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1518,7 +1518,25 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     }
   });
   
+app.get('/mongoDB/api/getLeaderboards', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
 
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(leaderBoardsCollection);
+
+        const datasets = await collection.find({}).toArray();
+
+        res.status(200).json(datasets);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
 
 
 // API endpoint to get datasets
