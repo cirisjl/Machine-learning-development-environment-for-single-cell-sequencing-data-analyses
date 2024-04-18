@@ -28,8 +28,7 @@ function StatusChip({ status }) {
 
 function TaskDetailsComponent() {
   const location = useLocation();
-  const { taskId, method, datasetURL, datasetTitle , tool} = location.state || {};   
-  const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
+  const { taskId, method, datasetURL, datasetTitle , tool} = location.state || {};   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
@@ -69,11 +68,8 @@ function TaskDetailsComponent() {
     }
   };
 
-  // useWebSocket(`${WEB_SOCKET_URL}/taskStatus/${taskId}`, handleStatusMessage);
-  // useWebSocket(`${WEB_SOCKET_URL}/log/${taskId}`, handleLogMessage);
-
-   // Use the WebSocket hook
-   useWebSocket(taskId, handleStatusMessage, handleLogMessage);
+  useWebSocket(`${WEB_SOCKET_URL}/taskStatus/${taskId}`, handleStatusMessage);
+  useWebSocket(`${WEB_SOCKET_URL}/log/${taskId}`, handleLogMessage);
 
   return (
 
