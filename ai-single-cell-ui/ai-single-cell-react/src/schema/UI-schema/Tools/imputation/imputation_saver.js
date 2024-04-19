@@ -1,124 +1,60 @@
 export const uiSchema = {
-  "parameters": {
-    "classNames": "category",
-      "output_format": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Output Format",
-          creatable: false,
-          searchable: true,
-          opts:["AnnData", "SingleCellExperiment", "Seurat", "CSV"] 
-        }
-      },
-      "species": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Species type",
-          creatable: false,
-          searchable: true,
-          opts:["human", "mouse"]
-        }
-      },
-      "idtype": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the ID type",
-          creatable: false,
-          searchable: true,
-          opts:["SYMBOL", "ENSEMBL", "ENTREZID", "REFSEQ"]
-        }
-      },
-      "cluster_label": {
-        "classNames": "sub-category",
-        "ui:widget": "ClusterLabelInput"
-      },
-      "show_umap": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
-      "show_error": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
-      "imputation_params": {
-        "classNames": "form-subset sub-category",
+    "parameters": {
+      "classNames": "category",
+        "output_format": {
+          "classNames": "sub-category",
+          "ui:widget": "select",
+          "ui:placeholder": "Select file format"
+        },
         "methods": {
           "classNames": "sub-category",
-          "ui:widget": "MultiSelectComponent",
+          // "ui:widget": "select",
+          "ui:placeholder": "Select a method",
+          'ui:widget': () => (
+            <div className='common-row-wrap'>
+              <select>
+                <option value="Saver">Saver</option>
+              </select>
+        </div>
+          ),
         },
-        "assay": {
+        "default_assay": {
           "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
+          'ui:widget': () => (
+            <div className='common-row-wrap'>
+              <span data-v-22825496="" class="ui-form-title-message warning"> * Optional </span>
+              <input type='text' />
+        </div>
+          ),
         },
         "layer": {
-          "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
+          "classNames": "sub-category"
         },
-        "min_genes": {
-          "classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:options': {
-            title: 'Min Genes: ', // Title for the slider
-            min: 0,
-            max: 20000,
-            step: 25,
-            marks: [
-              { value: 200, label: '200*' },
-              { value: 1000, label: '1000' },
-              { value: 5000, label: '5000' },
-              { value: 10000, label: '10000' },
-              { value: 15000, label: '15000' },
-              { value: 20000, label: '20000' }
-            ]
-          },
-          'ui:title': 'Min Genes', 
+        "path_of_scrublet_calls": {
+          "classNames": "sub-category"
         },
-        "max_genes": {
+        "species": {
           "classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:options': {
-            title: 'Max Genes: ', // Title for the slider
-            min: 0,
-            max: 20000,
-            step: 25,
-            marks: [
-              { value: 200, label: '200*' },
-              { value: 1000, label: '1000' },
-              { value: 5000, label: '5000' },
-              { value: 10000, label: '10000' },
-              { value: 15000, label: '15000' },
-              { value: 20000, label: '20000' }
-            ]
-          },
-          'ui:title': 'Max Genes', 
+          "ui:placeholder": "Select species type"
+        },
+        "idtype": {
+          "classNames": "sub-category"
+        },
+        "genes": {
+          "classNames": "sub-category",
         },
         "ncores": {
           "classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:title': 'ncores: ', 
-          'ui:options': {
-            title: 'ncores: ', 
-            min: 0,
-            max: 20,
-            step: 1,
-            marks:[
-              { value: 0, label: '0' },
-              { value: 5, label: '5' },
-              { value: 12, label: '12*' },
-              { value: 20, label: '20' }
-            ]
-          }
-        } 
-      },
-      "use_default": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      }
-  }
-};
+          "ui:widget": "range",
+        },
+        "show_umap": {
+          "classNames": "sub-category",
+          "ui:widget": "toggle"
+        },
+        "show_error": {
+          "classNames": "sub-category",
+          "ui:widget": "toggle"
+        }
+    }
+  };
+  

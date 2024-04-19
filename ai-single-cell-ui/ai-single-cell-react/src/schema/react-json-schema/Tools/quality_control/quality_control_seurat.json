@@ -48,7 +48,7 @@
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["Seurat"]
+                "enum": ["Seurat", "Scanpy"]
               },
               "default": ["Seurat"],
               "uniqueItems": true,
@@ -62,19 +62,9 @@
 		        "layer": { 
               "type": "string" ,
               "title": "Layer",
-              "description": "Specify the layer",
-              "default": ""
+              "description": "Specify the layer"
             },
-            "min_genes": {
-              "type": "integer",
-              "title": "Min Genes",
-              "default": 200
-            },
-            "max_genes": {
-              "type": "integer",
-              "title": "Max Genes",
-              "default": 20000
-            },
+
             "min_cells": {
               "type": "integer",
               "title": "Min Cells",
@@ -96,30 +86,27 @@
             },
             "n_pcs": {
               "type": "integer",
-              "default": 1
+              "default": 10
             },
             "resolution": {
               "type": "number",
               "title": "Resolution:",
-              "default": 1
+              "default": 1.0
             },
             "doublet_rate": {
               "type": "number",
-              "title": "Expected Doublet Rate: ",
-              "default": 0
+              "title": "Expected Doublet Rate: "
             },
             "regress_cell_cycle": {
               "type": "boolean",
-              "title": "Regress Cell Cycle",
-              "default": false
+              "title": "Regress Cell Cycle"
+            },
+            "use_default": {
+              "type": "boolean",
+              "title": "Use Default",
+              "default": true
             }
           }
-        },
-        "use_default": {
-          "type": "boolean",
-          "title": "Use Default",
-          "default": true,
-          "format": "switch"
         }
       }
     }

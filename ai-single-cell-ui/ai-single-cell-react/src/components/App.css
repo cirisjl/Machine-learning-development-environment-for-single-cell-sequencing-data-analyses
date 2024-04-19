@@ -1178,20 +1178,7 @@ Updates Page */
 }
 
 .sub-category {
-  margin-left: 10px;
-}
-
-.field-object .form-subset {
-  border-left-width: 4px;
-  border-left-color: #e9ecef;
-}
-
-.field-object .form-subset fieldset{
-  padding: 0px;
-}
-
-.field-object .form-subset legend{
-  margin-left: -3px;
+  padding-left: 10px;
 }
 .control-label {
   font-weight: bolder;

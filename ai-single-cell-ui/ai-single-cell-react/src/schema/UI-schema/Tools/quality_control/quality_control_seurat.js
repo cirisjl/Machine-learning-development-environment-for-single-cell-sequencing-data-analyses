@@ -35,8 +35,7 @@ export const uiSchema = {
           }
         },
         "cluster_label": {
-          "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
+          "classNames": "sub-category"
         },
         "show_umap": {
           "classNames": "sub-category",
@@ -47,60 +46,22 @@ export const uiSchema = {
           "ui:widget": "toggle"
         },
         "qc_params": {
-          "classNames": "form-subset sub-category",
+          "classNames": "category",
           "methods": {
             "classNames": "sub-category",
             "ui:widget": "MultiSelectComponent",
           },
           "assay": {
             "classNames": "sub-category",
-            "ui:widget": "ClusterLabelInput"
+            'ui:widget': () => (
+              <div className='common-row-wrap'>
+                <span data-v-22825496="" class="ui-form-title-message warning"> * Optional </span>
+                <input type='text' />
+              </div>
+            ),
           },
           "layer": {
-            "classNames": "sub-category",
-            "ui:widget": "ClusterLabelInput"
-          },
-          // "geneRange": {
-          //   "classNames": "sub-category",
-          //   "ui:widget": "geneRangeSlider",
-          // },
-          "min_genes": {
-            "classNames": "sub-category",
-            "ui:widget": "RangeSlider",
-            'ui:options': {
-              title: 'Min Genes: ', // Title for the slider
-              min: 0,
-              max: 20000,
-              step: 25,
-              marks: [
-                { value: 200, label: '200*' },
-                { value: 1000, label: '1000' },
-                { value: 5000, label: '5000' },
-                { value: 10000, label: '10000' },
-                { value: 15000, label: '15000' },
-                { value: 20000, label: '20000' }
-              ]
-            },
-            'ui:title': 'Min Genes', 
-          },
-          "max_genes": {
-            "classNames": "sub-category",
-            "ui:widget": "RangeSlider",
-            'ui:options': {
-              title: 'Max Genes: ', // Title for the slider
-              min: 0,
-              max: 20000,
-              step: 25,
-              marks: [
-                { value: 200, label: '200*' },
-                { value: 1000, label: '1000' },
-                { value: 5000, label: '5000' },
-                { value: 10000, label: '10000' },
-                { value: 15000, label: '15000' },
-                { value: 20000, label: '20000' }
-              ]
-            },
-            'ui:title': 'Max Genes', 
+            "classNames": "sub-category"
           },
           "min_cells": {
             "classNames": "sub-category",
@@ -234,12 +195,12 @@ export const uiSchema = {
           "regress_cell_cycle": {
             "classNames": "sub-category",
             "ui:widget": "SwitchComponent"
+          },
+          "use_default": {
+            "classNames": "sub-category",
+            "ui:widget": "SwitchComponent"
           }
           
-        },
-        "use_default": {
-          "classNames": "sub-category",
-          "ui:widget": "toggle"
         }
     }
 };
