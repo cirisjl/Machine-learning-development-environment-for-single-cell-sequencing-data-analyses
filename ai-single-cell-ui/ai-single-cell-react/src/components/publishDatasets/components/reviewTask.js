@@ -45,10 +45,12 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         
           // populate the document with details from task builder and benchmarks results
           document = {
-            Id: constructedID,
-            TaskType: datasetDetails.taskType,
-            TaskLabel: datasetDetails.taskLabel,
-            DatasetId: datasetId,
+            task_id: constructedID,
+            task_type: datasetDetails.taskType.label,
+            task_type_abv:datasetDetails.taskType.value,
+            task_label: datasetDetails.taskLabel.label,
+            task_label_abv: datasetDetails.taskLabel.value,
+            datasetId: datasetId,
             TrainFraction: datasetDetails.dataSplit.trainFraction,
             ValidationFraction: datasetDetails.dataSplit.validationFraction,
             TestFraction: datasetDetails.dataSplit.testFraction,
