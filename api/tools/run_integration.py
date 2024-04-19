@@ -45,7 +45,7 @@ def run_integration(task_id, ids:dict):
     if inputs is not None:
         for input in inputs:
             if input is not None:
-                input = unzip_file_if_compressed(task_id, input)
+                input = unzip_file_if_compressed(input)
                 md5 = md5 + get_md5(input)
                 abs_inputList.append(input)
 

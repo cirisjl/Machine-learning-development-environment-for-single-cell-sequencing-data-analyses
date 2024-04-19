@@ -193,14 +193,14 @@ class MyForm extends Component {
       formData.Id = constructedID;
 
       //Add metadata
-      // formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
-      // formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
-      // formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
-      // formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
-      formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.cell_metadata_obs);
-      // formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
-      // formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
-      // formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
+      formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
+      formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
+      formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
+      formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
+      formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cell_metadata_obs);
+      formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
+      formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
+      formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
 
       //Add inputs
       formData.inputFiles = taskData.quality_control.file_paths;
@@ -209,26 +209,25 @@ class MyForm extends Component {
       // formData.taskOptions = this.state.options["Task"];
 
       // Add plots
-      // formData['QC_Plots'] = {
-      //   "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
-      //   "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
-      //   "umap_plot_3d": taskData.quality_control.qc_results[0]?.umap_plot_3d,
-      //   "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
-      //   "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
-      // }
+      formData['QC_Plots'] = {
+        "scatter_plot": taskData.quality_control.qc_results[0]?.scatter_plot,
+        "umap_plot": taskData.quality_control.qc_results[0]?.umap_plot,
+        "umap_plot_3d": taskData.quality_control.qc_results[0]?.umap_plot_3d,
+        "violin_plot": taskData.quality_control.qc_results[0]?.violin_plot,
+        "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
+      }
 
-      formData['process_id'] = taskData.quality_control.qc_results[0]?.process_id;
-      formData['PP Stage'] = taskData.quality_control.qc_results[0]?.stage;
+      formData['PP Stage'] = taskData.quality_control.qc_results[0]?.pp_results?.stage;
       formData['MD5'] = taskData.quality_control.qc_results[0]?.md5;
-      formData['PP Method'] = taskData.quality_control.qc_results[0]?.method;
+      formData['PP Method'] = taskData.quality_control.qc_results[0]?.pp_results?.method_id;
       formData.Owner = taskData.quality_control.token;
       formData.Category = "Public";
-      // formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
+      formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
       formData.info = taskData.quality_control.qc_results[0]?.info;
-      // formData.format = taskData.quality_control.qc_results[0]?.format;
-      formData.default_assay = taskData.quality_control.seurat_meta?.default_assay;
-      formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;
-      // formData.output = taskData.quality_control.seurat_meta?.output;
+      formData.format = taskData.quality_control.qc_results[0]?.format;
+      formData.default_assay = taskData.quality_control.qc_results[0]?.default_assay;
+      formData.assay_names = taskData.quality_control.qc_results[0]?.assay_names;
+      formData.output = taskData.quality_control.qc_results[0]?.output;
 
       } else {
         const constructedID = `${species}-${tissue}-${author}-${year}`;

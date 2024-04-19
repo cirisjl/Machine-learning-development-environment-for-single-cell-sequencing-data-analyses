@@ -51,51 +51,35 @@ async def add_process_time_header(request, call_next):
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
 
-@app.websocket("/{request_type}/{taskId}")
-async def websocket_endpoint(websocket: WebSocket, request_type:str, taskId: str):
+
+@app.websocket("/{request_type}/{taskIdsCommaSeparated}")
+async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsCommaSeparated: str):
     await websocket.accept()
+    
     try:
         while True:
-            if request_type == 'taskCurrentStatus':
-                result = get_task_info(taskId)
-                await websocket.send_json(result)
+            if request_type == 'taskStatus':
+                taskIds = taskIdsCommaSeparated.split(',')
+                results = {}
+                for taskId in taskIds:
+                    result = AsyncResult(taskId)
+                    if result.ready():
+                        if result.successful():
+                            results[taskId] = 'Success'
+                        else:
+                            results[taskId] = 'Failed'
+                    else:
+                        results[taskId] = 'Processing'
+                await websocket.send_json(results)
+
             elif request_type == 'log':
-                logs = await log_reader(taskId, 0, 30)
+                logs = await log_reader(taskIdsCommaSeparated, 0, 30)
                 await websocket.send_text(logs)
             await asyncio.sleep(3)
     except Exception as e:
         print(e)
     finally:
         await websocket.close()
-
-# @app.websocket("/{request_type}/{taskIdsCommaSeparated}")
-# async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsCommaSeparated: str):
-#     await websocket.accept()
-    
-#     try:
-#         while True:
-#             if request_type == 'taskStatus':
-#                 taskIds = taskIdsCommaSeparated.split(',')
-#                 results = {}
-#                 for taskId in taskIds:
-#                     result = AsyncResult(taskId)
-#                     if result.ready():
-#                         if result.successful():
-#                             results[taskId] = 'Success'
-#                         else:
-#                             results[taskId] = 'Failed'
-#                     else:
-#                         results[taskId] = 'Processing'
-#                 await websocket.send_json(results)
-
-#             elif request_type == 'log':
-#                 logs = await log_reader(taskIdsCommaSeparated, 0, 30)
-#                 await websocket.send_text(logs)
-#             await asyncio.sleep(3)
-#     except Exception as e:
-#         print(e)
-#     finally:
-#         await websocket.close()
 
 
 @app.get("/status")

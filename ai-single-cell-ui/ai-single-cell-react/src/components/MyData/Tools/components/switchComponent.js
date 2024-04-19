@@ -12,7 +12,7 @@ const SwitchComponent = ({ value, onChange }) => {
     <Box sx={{ m: 2 }}>
       <FormControlLabel
         control={<Switch checked={value} onChange={handleSwitchChange} />}
-        // label={`Regress Cell Cycle: ${value ? 'Yes' : 'No'}`}
+        label={`Regress Cell Cycle: ${value ? 'Yes' : 'No'}`}
       />
     </Box>
   );
