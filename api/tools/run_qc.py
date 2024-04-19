@@ -80,6 +80,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                     scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
+                    
 
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
                     scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
