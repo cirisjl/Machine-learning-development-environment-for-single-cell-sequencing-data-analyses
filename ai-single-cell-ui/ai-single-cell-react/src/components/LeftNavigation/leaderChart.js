@@ -16,28 +16,85 @@ const Circle = ({ radiusProp }) => {
   );
 };
 
+const ProgressBar = ({ value, max }) => {
+  const percentage = (value / max) * 100;
+
+  return (
+    <div style={{ width: '100%', backgroundColor: '#f0f0f0', borderRadius: '5px', overflow: 'hidden' }}>
+      <div style={{ height: '10px', backgroundColor: '#4caf50', width: `${percentage}%`, transition: 'width 0.5s' }}></div>
+    </div>
+  );
+};
+
+const getPeakValue = (arr) => {
+  return Math.max(...arr);
+}
+
+const random = (min, max) => {
+  return Math.random() * (max - min + 1) + min;
+}
+
+const TableComponent = ({ tableData }) => {
+  const { methods, scores, datasets, metrics, resources, duration } = tableData;
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Methods</th>
+          <th>Scores</th>
+          <th>Datasets</th>
+          {metrics.map((metric) => (
+            <th key={metric}>{metric}</th>
+          ))}
+          {Object.keys(resources).map((resource) => (
+            <th key={resource}>{resource}</th>
+          ))}
+          <th>Duration (s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{methods.join(', ')}</td>
+          <td>{scores.join(', ')}</td>
+          <td>{datasets.join(', ')}</td>
+          {metrics.map((metric) => (
+            <td key={metric}>-</td> // Replace with actual metric values from data
+          ))}
+          {Object.values(resources).map((value) => (
+            <td key={value}>{value}</td>
+          ))}
+          <td>{duration.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
+
 const LeaderCharts = () => {
   const [rowData, setRowData] = useState(null);
   const fetchData = async () => {
     const response = await axios.get(`${SERVER_URL}/mongoDB/api/getLeaderboards`);
+    const datasets = response.data.map(item => ({ keyName: item.DatasetId, value: '0' }))
     setRowData(response.data.map(item => (
       {
         taskType: item.TaskType.label,
         datasetId: item.DatasetId,
         rowItems: [
-          // { keyName: 'Train Fraction', index: 1, value: item.TrainFraction },
-          // { keyName: 'Validation Fraction', index: 1, value: item.ValidationFraction },
-          // { keyName: 'Test Fraction', index: 1, value: item.TestFraction },
-          { keyName: 'Scanpy ASW Score', index: 1, value: item.BenchmarkResults.Scanpy.asw_score },
-          { keyName: 'Scanpy NMI Score', index: 1, value: item.BenchmarkResults.Scanpy.ari_score },
-          { keyName: 'Scanpy ARI Score', index: 1, value: item.BenchmarkResults.Scanpy.nmi_score },
-          { keyName: 'Scanpy CPU Usage', index: 1, value: item.BenchmarkResults.Scanpy.cpu_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.cpu_usage.length },
-          { keyName: 'Scanpy Mem Usage', index: 1, value: item.BenchmarkResults.Scanpy.mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.mem_usage.length },
-          { keyName: 'Scanpy GPU Mem Usage', index: 1, value: item.BenchmarkResults.Scanpy.gpu_mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.gpu_mem_usage.length },
-          ...item.BenchmarkResults.bar_plot.data[0].x.map((xVal, idx) => ({ keyName: xVal, index: 1, value: item.BenchmarkResults.bar_plot.data[0].y[idx] }))
+          { keyName: 'Methods', value: ['Scanpy', 'Seurat', 'scVI'] },
+          ...datasets,
+          // { keyName: 'ASW', value: item.BenchmarkResults.Scanpy.asw_score },
+          // { keyName: 'NMI', value: item.BenchmarkResults.Scanpy.ari_score },
+          // { keyName: 'ARI', value: item.BenchmarkResults.Scanpy.nmi_score },
+          ...item.BenchmarkResults.bar_plot.data[0].x.map((xVal, idx) => ({ keyName: xVal, value: item.BenchmarkResults.bar_plot.data[0].y[idx] })),
+          { keyName: 'Peak CPU', value: item.BenchmarkResults.Scanpy.cpu_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.cpu_usage.length },
+          { keyName: 'Peak Mem', value: item.BenchmarkResults.Scanpy.mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.mem_usage.length },
+          { keyName: 'Peak GPU Mem', value: item.BenchmarkResults.Scanpy.gpu_mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.gpu_mem_usage.length },
         ]
-      })));
+      }
+    )));
   };
+
 
   useEffect(() => {
     fetchData();
@@ -57,9 +114,15 @@ const LeaderCharts = () => {
       </div>
       <div style={{ maxWidth: "100%", overflow: "scroll" }}>
         {rowData && (<table style={{ maxHeight: "80vh", maxWidth: "100%", margin: "50px 0" }}>
+          {console.log(rowData)}
           <thead>
             <tr>
-              <td>Dataset Name</td>
+              <td></td>
+              <td colspan="3">Datasets</td>
+              <td colspan="3">Metrics</td>
+              <td colspan="3">Resources</td>
+            </tr>
+            <tr>
               {rowData[0].rowItems.map(rowItem => (
                 <td>{rowItem.keyName}</td>
               ))}
@@ -68,8 +131,9 @@ const LeaderCharts = () => {
           <tbody>
             {rowData.map((row, index) => (
               <tr key={index} style={{ fontSize: '14px', backgroundColor: index % 2 !== 0 ? '#f0f0f0' : '#ffffff' }}>
-                <td>{row.datasetId}</td>
-                {row.rowItems.map(tdVal => (<td><Circle radiusProp={tdVal.value} /></td>))}
+                {row.rowItems.map(tdVal => (
+                  tdVal.keyName === "Methods" ? <td>{tdVal.value[index]}</td> : <td><Circle radiusProp={tdVal.value} /></td>
+                ))}
               </tr>
             ))}
           </tbody>
