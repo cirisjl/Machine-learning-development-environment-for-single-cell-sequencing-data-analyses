@@ -14,7 +14,7 @@ const stat = util.promisify(fs.stat);
 const multer = require("multer");
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
-
+// const fs1 = require('fs');
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
 const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
@@ -815,7 +815,63 @@ app.get('/download', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
 });
+// Define the route handler for downloading a file
+app.get('/download2/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
 
+        // Create a new MongoClient
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+        console.log('Connected to MongoDB'); // Log message indicating successful connection
+
+        // Select the database
+        const db = client.db(dbName);
+        console.log(`Selected database: ${db}`); // Log message indicating selected database
+
+        // Select the collection
+        const collection = db.collection(datasetCollection);
+        console.log(`Selected collection: ${datasetCollection}`); // Log message indicating selected collection
+
+        // Fetch the document where the ID matches
+        const document = await collection.findOne({ Id: id });
+
+        if (!document) {
+            console.error('Document not found for ID:', id);
+            res.status(404).send('Document not found');
+            return;
+        }
+
+        // Get the adata_path from the matched document
+        const filePath = document.adata_path;
+
+        // Check if the file exists
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                console.error('Error accessing file:', err);
+                res.status(404).send('File not found');
+                return;
+            }
+
+            // Set appropriate headers for file download
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+            res.setHeader('Content-Type', 'application/octet-stream');
+            res.setHeader('Content-Length', fs.statSync(filePath).size); // Set Content-Length based on file size
+
+            // Pipe the file stream directly to the response
+            const fileStream = fs.createReadStream(filePath);
+            fileStream.pipe(res);
+        });
+
+        // Close the MongoDB connection when done
+        await client.close();
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 app.get('/fetchPreview', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const username = getUserFromToken(authToken);
