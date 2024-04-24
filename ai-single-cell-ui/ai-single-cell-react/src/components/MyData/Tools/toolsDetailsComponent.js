@@ -5,7 +5,7 @@ import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams } from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GeneRangeSlider from './components/geneRangeSlider';
@@ -14,12 +14,14 @@ import SwitchComponent from './components/switchComponent';
 import UseDefaultSwitch from './components/useDefaultSwitch';
 import MultiSelectComponent from './components/multiselectComponent';
 import SelectComponent from './components/selectComponent';
+import ClusterLabelInput from './components/customInputComponent';
 
 export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
     const [selectedDatasets, setSelectedDatasets] = useState({});
     const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
+    const [useDefaultValue, setUseDefaultValue] = useState(false);
 
     const filterCategoryMap = {
       quality_control: '/api/tools/qc',
@@ -43,6 +45,8 @@ export default function ToolsDetailsComponent(props) {
 
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
+    const [useDefault, setUseDefault] = useState(true);
+    // let useDefault = true;
     const [filterSchema, setFilterSchema] = useState(null);
     const [UIfilterSchema, setUIFilterSchema] = useState(null);
     const [selectedDataset, setSelectedDataset] = useState([]);
@@ -98,6 +102,7 @@ export default function ToolsDetailsComponent(props) {
 
       const widgets = {
         SelectComponent: SelectComponent,
+        geneRangeSlider: GeneRangeSlider,
         MultiSelectComponent: MultiSelectComponent,
         toggle: (props) => (
           <Toggle
@@ -108,7 +113,8 @@ export default function ToolsDetailsComponent(props) {
         GeneRangeSlider: GeneRangeSlider,
         RangeSlider: RangeSlider,
         SwitchComponent: SwitchComponent,
-        UseDefaultSwitch: UseDefaultSwitch
+        UseDefaultSwitch: UseDefaultSwitch,
+        ClusterLabelInput: ClusterLabelInput
       };
 
       const onSubmit = ({ formData }) => {
@@ -338,6 +344,47 @@ export default function ToolsDetailsComponent(props) {
     });
   },[filterName,filterCategory]);
 
+  const handleChange = ({ formData }) => {
+    console.log("handleChange");
+    const currentToolParams = formData.parameters.qc_params || {};
+
+
+
+    console.log(formData);
+
+    // Determine if there's a change in the use_default toggle
+    const useDefaultChanged = useDefault !== formData.parameters.use_default;
+
+    // Check for any changes in default parameters
+    let defaultParamsChanged = Object.keys(defaultQcParams).some(key => {
+        return JSON.stringify(currentToolParams[key]) !== JSON.stringify(defaultQcParams[key]);
+    });
+
+    if (useDefaultChanged) {
+        if (formData.parameters.use_default) {
+            // If use_default is toggled to true, reset only the default parameters
+            const resetParams = {};
+            Object.keys(defaultQcParams).forEach(key => {
+                resetParams[key] = defaultQcParams[key];
+            });
+            formData.parameters.qc_params = {
+                ...formData.parameters.qc_params,
+                ...resetParams
+            };
+        }
+    } else if (defaultParamsChanged) {
+        // If any default parameters have changed and use_default was previously true, set it to false
+        formData.parameters.use_default = false;
+    }
+
+    setUseDefault(formData.parameters.use_default);
+    // useDefault = formData.parameters.use_default;
+    console.log("use default value");
+    console.log(useDefault);
+    console.log(formData);
+    setFormData(formData);
+};
+
   return (
     <div className='tools-container common-class-tools-and-workflows'>
          {formErrors && (
@@ -389,13 +436,10 @@ export default function ToolsDetailsComponent(props) {
             schema={filterSchema}
             formData={formData}
             widgets={widgets}
-            // fields={customFields}
-            onChange={({ formData }) => {
-              setFormData(formData)
-              console.log(formData);
-            }}
+            onChange={handleChange}
             uiSchema={UIfilterSchema}
             onSubmit={onSubmit}
+            key={JSON.stringify(formData)} // Helps in re-rendering the form with updated data
         />
         </div>
           ) : (
