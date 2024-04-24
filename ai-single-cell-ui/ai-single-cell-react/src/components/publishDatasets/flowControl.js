@@ -38,6 +38,7 @@ const FlowControl = () => {
     quality_control: {
       qc_results: [],
       file_paths: [],
+      output: '',
       seurat_meta: {
         default_assay: '',
         assay_names: [],

@@ -27,7 +27,7 @@ def get_task_info(task_id):
     task_result = AsyncResult(task_id)
     summary = "Processing"
     if task_result.ready():
-        if task_result.result is None:
+        if task_result.result is not None:
             summary = task_result.result
         else:
             summary = task_result.traceback

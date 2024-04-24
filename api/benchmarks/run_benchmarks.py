@@ -12,9 +12,9 @@ def run_benchmarks(task_id, task_dict:dict):
     datasetId = task_dict['datasetId']
     userID = task_dict['userID']
 
-    adata_path = unzip_file_if_compressed(adata_path)
-
-    if(task_type=="clustering"):
+    adata_path = unzip_file_if_compressed(task_id,adata_path)
+    
+    if(task_type=="Clustering"):
         try:
             if os.path.exists(adata_path):
                 clustering_results = clustering_task(adata_path, label, datasetId, task_id, task_type)
