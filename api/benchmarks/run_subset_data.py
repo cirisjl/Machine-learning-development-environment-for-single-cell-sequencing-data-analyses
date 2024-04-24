@@ -21,7 +21,7 @@ def run_subset_data(task_id, data_dict:dict):
     obskey = data_dict['obskey']
     values = data_dict['values']
     subset_id = hashlib.md5(f"{data_dict}".encode("utf_8")).hexdigest()
-    adata_path = unzip_file_if_compressed(task_id, adata_path)
+    adata_path = unzip_file_if_compressed(adata_path)
     adata_sub = None
     # Extract directory and filename from the data filepath
     data_directory = Path(adata_path).parent
