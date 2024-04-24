@@ -82,6 +82,7 @@ const LeaderCharts = () => {
         datasetId: item.DatasetId,
         rowItems: [
           { keyName: 'Methods', value: ['Scanpy', 'Seurat', 'scVI'] },
+          { keyName: 'Score', value: 0 },
           ...datasets,
           // { keyName: 'ASW', value: item.BenchmarkResults.Scanpy.asw_score },
           // { keyName: 'NMI', value: item.BenchmarkResults.Scanpy.ari_score },
@@ -90,6 +91,7 @@ const LeaderCharts = () => {
           { keyName: 'Peak CPU', value: item.BenchmarkResults.Scanpy.cpu_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.cpu_usage.length },
           { keyName: 'Peak Mem', value: item.BenchmarkResults.Scanpy.mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.mem_usage.length },
           { keyName: 'Peak GPU Mem', value: item.BenchmarkResults.Scanpy.gpu_mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.gpu_mem_usage.length },
+          { keyName: 'Duration', value: item.BenchmarkResults.Scanpy.gpu_mem_usage.reduce((a, b) => a + b) / item.BenchmarkResults.Scanpy.gpu_mem_usage.length },
         ]
       }
     )));
@@ -120,7 +122,7 @@ const LeaderCharts = () => {
               <td></td>
               <td colspan="3">Datasets</td>
               <td colspan="3">Metrics</td>
-              <td colspan="3">Resources</td>
+              <td colspan="4">Resources</td>
             </tr>
             <tr>
               {rowData[0].rowItems.map(rowItem => (
@@ -165,12 +167,17 @@ const LeaderCharts = () => {
           </li>
         </ul>
       </div>
-      <div>
-        <h2>Results</h2>
-        {rowData && <table>
+      <div style={{ maxWidth: "100%", overflow: "scroll" }}>
+        {rowData && (<table style={{ maxHeight: "80vh", maxWidth: "100%", margin: "50px 0" }}>
+          {console.log(rowData)}
           <thead>
             <tr>
-              <td>Dataset Name</td>
+              <td></td>
+              <td colspan="3" style={{ backgroundColor: "#c6efce" }}>Datasets</td>
+              <td colspan="3" style={{ backgroundColor: "#ffcc99" }}>Metrics</td>
+              <td colspan="4" style={{ backgroundColor: "#ffeb9c" }}>Resources</td>
+            </tr>
+            <tr>
               {rowData[0].rowItems.map(rowItem => (
                 <td>{rowItem.keyName}</td>
               ))}
@@ -179,12 +186,13 @@ const LeaderCharts = () => {
           <tbody>
             {rowData.map((row, index) => (
               <tr key={index} style={{ fontSize: '14px', backgroundColor: index % 2 !== 0 ? '#f0f0f0' : '#ffffff' }}>
-                <td>{row.datasetId}</td>
-                {row.rowItems.map(tdVal => (<td>{tdVal.value}</td>))}
+                {row.rowItems.map(tdVal => (
+                  tdVal.keyName === "Methods" ? <td>{tdVal.value[index]}</td> : <td>{tdVal.value}</td>
+                ))}
               </tr>
             ))}
           </tbody>
-        </table>}
+        </table>)}
       </div>
       <div>
         <h2>References</h2>
