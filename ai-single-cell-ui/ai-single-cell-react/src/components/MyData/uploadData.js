@@ -554,10 +554,11 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                             setIsLoading(true); // Start loading
 
                             const data = {
-                                fileDetails: updatedFiles
+                                fileDetails: updatedFiles,
+                                userID : authData.username
                             };
                             
-                            axios.post(`${CELERY_BACKEND_API}/convert/api/to_adata_or_srat`, data)
+                            axios.post(`${CELERY_BACKEND_API}/api/benchmarks/to_adata_or_srat`, data)
                             .then(function (response) {
                                 console.log(response.data);
                                 let data = response.data[0];

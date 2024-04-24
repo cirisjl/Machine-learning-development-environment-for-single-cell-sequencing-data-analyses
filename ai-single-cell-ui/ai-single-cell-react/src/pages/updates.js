@@ -44,7 +44,7 @@ export default function Updates() {
             </div>
 
             <div className="main-content">
-                <h1>Updates from OSGB</h1>
+                <h1>Updates from OSCB</h1>
                 {/* <h2>{user[user.length-1].Title} - {formatDate(user[user.length-1].Date_published)}</h2> */}
 
                 {updates.map((item,index)=>(

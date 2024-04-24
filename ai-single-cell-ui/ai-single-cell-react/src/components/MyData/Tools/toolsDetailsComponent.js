@@ -199,7 +199,7 @@ export default function ToolsDetailsComponent(props) {
                   // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
                   const taskId = response.task_id;
                   // const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
-                  const method = formData.methods[0];
+                  const method = formData.qc_params.methods[0];
                   const output = formData.output;
 
                   // Make API call to store the task information
@@ -228,7 +228,7 @@ export default function ToolsDetailsComponent(props) {
                         setLoading(false);
                         setSuccessMessage('Form submitted successfully!');
                         setErrorMessage('');
-                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: formData.methods[0], datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
+                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: formData.qc_params.methods[0], datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
                       } else if (response.status === 400) {
                         response.json().then(data => {
                           console.error('Validation error:', data.error);
