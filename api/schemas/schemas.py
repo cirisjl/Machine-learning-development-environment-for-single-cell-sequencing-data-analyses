@@ -214,6 +214,7 @@ class BenchmarksRequest(BaseModel):
 class ConvertRequest(BaseModel):
     fileDetails: List[str]
     assay_name: Optional[str] = None
+    userID: str
 
 
 
