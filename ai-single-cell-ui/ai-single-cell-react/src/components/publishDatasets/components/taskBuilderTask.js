@@ -1,7 +1,7 @@
-import React , { useState, useEffect ,useRef}from 'react';
+import React , { useState, useEffect }from 'react';
 import Select from 'react-select';
 import { Card, CardContent, Typography, Slider, Button } from '@material-ui/core';
-import { CELERY_BACKEND_API, SERVER_URL, WEB_SOCKET_URL} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
 import ReactPlotly from './reactPlotly';
@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faFile} from "@fortawesome/free-solid-svg-icons";
 import DatasetSelectionDialog from './datasetsDialog';
 import TableComponent from './labelTableComponent';
-import useWebSockets from './useWebSockets';
 
 function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -17,9 +16,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
   const [loading, setLoading] = useState({});
-  const [taskId, setTaskId] = useState("");
-  const webSocketStatus = useRef(null);
-
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
@@ -50,49 +46,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     setSelectionMode(mode);
     setIsDialogOpen(true);
   };
-
-  const updateTaskDataWithResults = (data) => {
-    // Update taskData state with results
-    // For example, setting archive_path
-    setTaskData(prevTaskData => ({
-        ...prevTaskData,
-        task_builder: {
-            ...prevTaskData.task_builder,
-            selectedDatasets: {
-                ...prevTaskData.task_builder.selectedDatasets,
-                [data.datasetId]: {
-                    ...prevTaskData.task_builder.selectedDatasets[data.datasetId],
-                    dataSplit: {
-                        ...prevTaskData.task_builder.selectedDatasets[data.datasetId].dataSplit,
-                        archivePath: data.archive_path,
-                        dataSplitPerformed: true,
-                    }
-                }
-            }
-        }
-    }));
-  };
-  const handleStatusMessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      console.log("Task Response");
-      console.log(data);
-      if (data.task_status && (data.task_status === "SUCCESS" || data.task_status === "FAILURE")) {
-        if(data.task_status === "SUCCESS"){
-            updateTaskDataWithResults(data.task_result); // Update your state with results
-            setLoading(prevLoading => ({ ...prevLoading, [data.task_result.datasetId]: false })); 
-        }
-        // Close WebSocket connection for this taskId
-        closeWebSocket(taskId);
-    }
-    } catch (error) {
-      console.error("Error parsing status message:", error);
-      // setLoading(prevLoading => ({ ...prevLoading, [datasetId]: false })); 
-    }
-  };
-
-  const { closeWebSocket } = useWebSockets(taskId, handleStatusMessage, WEB_SOCKET_URL);
-
   const handleSelectDatasets = async (newSelectedDatasets) => {
     // Initialize additional parameters for new datasets
     Object.keys(newSelectedDatasets).forEach(key => {
@@ -127,21 +80,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
 
   const handleDataSplit = async (adata_path, datasetId) => {
     try {
-      const dataset = taskData.task_builder.selectedDatasets[datasetId];
-
-      if(!dataset.taskType) {
-        setMessage('You must select taskType before the data split!');
-        setHasMessage(true);
-        setIsError(true);
-        return;
-      }
       setLoading(prevLoading => ({ ...prevLoading, [datasetId]: true })); // Set loading to true for the specific dataset
-
+      const dataset = taskData.task_builder.selectedDatasets[datasetId];
+  
       const userData = {
-        benchmarksId: dataset.taskType.value + "-" + datasetId,
-        datasetId: datasetId,
-        userId: dataset.Owner,
-        adata_path: adata_path || '',
+        data: adata_path || '',
         train_fraction: dataset.dataSplit.trainFraction,
         validation_fraction: dataset.dataSplit.validationFraction,
         test_fraction: dataset.dataSplit.testFraction,
@@ -160,7 +103,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       console.log(userData);
   
       // Make the API call
-      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {
+      const response = await fetch(`${CELERY_BACKEND_API}/convert/api/data-split`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,36 +113,35 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   
       if (response.ok) {
         const result = await response.json();
-        const taskID = result.task_id;
-        setTaskId(taskID);
+        console.log(result); // Handle the result as needed
   
         // Update only the specific dataset's dataSplit parameters
-        // setTaskData(prevTaskData => ({
-        //   ...prevTaskData,
-        //   task_builder: {
-        //     ...prevTaskData.task_builder,
-        //     selectedDatasets: {
-        //       ...prevTaskData.task_builder.selectedDatasets,
-        //       [datasetId]: {
-        //         ...prevTaskData.task_builder.selectedDatasets[datasetId],
-        //         dataSplit: {
-        //           ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
-        //           dataSplitPerformed: true,
-        //           archivePath: result.archive_path,
-        //         }
-        //       }
-        //     }
-        //   }
-        // }));
+        setTaskData(prevTaskData => ({
+          ...prevTaskData,
+          task_builder: {
+            ...prevTaskData.task_builder,
+            selectedDatasets: {
+              ...prevTaskData.task_builder.selectedDatasets,
+              [datasetId]: {
+                ...prevTaskData.task_builder.selectedDatasets[datasetId],
+                dataSplit: {
+                  ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
+                  dataSplitPerformed: true,
+                  archivePath: result.archive_path,
+                }
+              }
+            }
+          }
+        }));
       } else {
         const error = await response.json();
         console.error(error.error); // Handle the error
-        setLoading(prevLoading => ({ ...prevLoading, [datasetId]: false })); // Set loading to false for the specific dataset
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
       setLoading(prevLoading => ({ ...prevLoading, [datasetId]: false })); // Set loading to false for the specific dataset
-    } 
+    }
   };
   
 
@@ -298,6 +240,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Call onSelect with the updated selected datasets
     handleSelectDatasets(currentSelectedDatasets);
   };
+  
 
   return (
     <div className='task-builder-task'>

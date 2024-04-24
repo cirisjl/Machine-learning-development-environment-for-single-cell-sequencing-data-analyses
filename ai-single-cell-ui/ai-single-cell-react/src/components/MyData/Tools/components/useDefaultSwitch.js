@@ -1,12 +1,10 @@
 import React from 'react';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch, { SwitchProps } from '@mui/material/Switch';
+import Switch from '@mui/material/Switch';
 import { styled } from '@mui/system';
-import { makeStyles } from '@material-ui/core/styles';
 
-const IOSSwitch = styled((props: SwitchProps) => (
-  <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
-))(({ theme }) => ({
+// Custom switch component styled similarly to the IOSSwitch
+const CustomSwitch = styled(Switch)(({ theme }) => ({
   width: 42,
   height: 26,
   padding: 0,
@@ -64,8 +62,8 @@ const UseDefaultSwitch = ({ checked, onChange, label }) => {
   return (
     <div style={{ marginTop: '10px' }}>
       <FormControlLabel
-        control={<IOSSwitch checked={checked} onChange={handleSwitchChange} />}
-        label="Use Default Values"
+        control={<CustomSwitch checked={checked} onChange={handleSwitchChange} />}
+        label={label}
       />
     </div>
   );

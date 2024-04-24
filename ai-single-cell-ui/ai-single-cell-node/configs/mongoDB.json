@@ -5,6 +5,5 @@
     "datasetCollection": "datasets",
     "taskBuilderCollectionName": "tasks",
     "userDatasetsCollection": "user-datasets",
-    "taskResultsCollection": "task_results",
-    "preProcessResultsCollection": "pp-results"
+    "taskResultsCollection": "task_results"
 }
