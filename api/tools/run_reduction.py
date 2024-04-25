@@ -38,11 +38,11 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     else:
         try:
             redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+            adata, msg = run_dimension_reduction(adata, layer=layer, random_state=random_state)
             if msg is not None: redislogger.warning(task_id, msg)
 
             redislogger.info(task_id, "Clustering the neighborhood graph.")
-            adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+            adata = run_clustering(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
             redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
