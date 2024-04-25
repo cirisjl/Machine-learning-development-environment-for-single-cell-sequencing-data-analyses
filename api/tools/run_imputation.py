@@ -9,6 +9,7 @@ from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from exceptions.custom_exceptions import CeleryTaskException
     
 
 def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
@@ -32,9 +33,8 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     
     if methods is None:
         redislogger.error(task_id, "No imputation method is selected.")
-        raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail = 'No imputation method is selected.')
+        detail = 'No imputation method is selected.'
+        raise CeleryTaskException(detail)
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -76,10 +76,8 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
             else:
                 adata = load_anndata(input)
                 if adata is None:
-                    raise HTTPException(
-                        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail = f"File format is not supported: {input}"
-                    )
+                    detail = f"File format is not supported: {input}"
+                    raise CeleryTaskException(detail)
                 elif 'MAGIC' not in adata.layers.keys(): 
                     try:
                         redislogger.info(task_id, "Start Magic imputation...")
@@ -105,10 +103,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                     except Exception as e:
                         detail = f"MAGIC imputation is failed: {e}"
                         os.remove(output)
-                        raise HTTPException(
-                            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail = detail
-                        )
+                        raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(task_id, "'MAGIC_imputed' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
@@ -163,10 +158,8 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
             else:
                 adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)   
                 if adata is None:
-                    raise HTTPException(
-                        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail = f"File format is not supported: {input}"
-                    )
+                    detail = f"File format is not supported: {input}"
+                    raise CeleryTaskException(detail)
                 elif 'SAVER' not in adata.layers.keys(): 
                     try:
                         report_path = get_report_path(dataset, output, "SAVER")
@@ -205,10 +198,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
                 
                     except Exception as e:
                         detail = f"SAVER imputation is failed: {e}"
-                        raise HTTPException(
-                            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail = detail
-                        )
+                        raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(task_id, "'SAVER' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)

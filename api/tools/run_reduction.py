@@ -6,6 +6,7 @@ from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from exceptions.custom_exceptions import CeleryTaskException
     
 
 def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
@@ -55,10 +56,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
             # redislogger.error(task_id, "UMAP reduction is failed.")
             detail = f"UMAP reduction is failed: {e}"
             os.remove(output)
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
         
     results = {
         "taskId": task_id, 
