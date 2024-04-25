@@ -70,23 +70,20 @@ export default function UppyUploader(props) {
         fieldName: 'files'
     });
 
-    uppy.on('upload-success', (file, response) => {
-        if(toPublishDataset) {
-            // Access the filename of the successfully uploaded file
-            setFileError('');
-            const filename = file.name;
-        
+    uppy.on('complete', (result) => {
+         console.log('Upload complete! We’ve uploaded these files:', result.successful);
+         let filenames = result.successful.map(file => file.name);
+        if (toPublishDataset) {
             setTaskData((prevTaskData) => ({
-                        ...prevTaskData,
-                        upload: {
-                            ...prevTaskData.upload,
-                            files: [...(prevTaskData.upload.files || []), file.name],
-                        },
+                ...prevTaskData,
+                upload: {
+                    ...prevTaskData.upload,
+                    files: [...(prevTaskData.upload.files || []), ...filenames],
+                },
             }));
-            console.log('Successfully uploaded file name:', filename);
         }
-    });
-      
+      });
+ 
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
             <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />

@@ -7,7 +7,7 @@ from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
-
+from exceptions.custom_exceptions import CeleryTaskException
 
 def run_integration(task_id, ids:dict):
     pp_stage = "Corrected"
@@ -32,9 +32,8 @@ def run_integration(task_id, ids:dict):
 
     if methods is None:
         redislogger.warning(task_id, "No integration method is selected.")
-        raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail = 'No integration method is selected.')
+        detail = 'No integration method is selected.'
+        raise CeleryTaskException(detail)
     # output = get_output_path(datasets, input, method='integration')
     # methods = [x.upper() for x in methods if isinstance(x,str)]
     # adata, counts, csv_path = LoadAnndata_to_csv(input, output, layer, show_error)
