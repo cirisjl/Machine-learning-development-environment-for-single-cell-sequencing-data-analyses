@@ -69,7 +69,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         return { __html: logs };
       };
 
-      const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage);
+      const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage, setLoading);
 
   useEffect(() => {
     if(taskData.benchmarks.status !== 'completed') {

@@ -11,6 +11,7 @@ from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndat
 from tools.utils.datasplit import sc_train_val_test_split
 from fastapi import HTTPException, status
 import json
+from exceptions.custom_exceptions import CeleryTaskException
 
 def run_data_split(task_id, data_dict:dict):
     datasetId = data_dict['datasetId']
@@ -41,9 +42,8 @@ def run_data_split(task_id, data_dict:dict):
         if adata is not None:
             train, validation, test = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
         else:
-            raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail = f'File does not exist at {adata_path}')
+            detail = f'File does not exist at {adata_path}'
+            raise CeleryTaskException(detail)
        
         # Define a temporary directory to store the files
         # temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
@@ -83,4 +83,5 @@ def run_data_split(task_id, data_dict:dict):
         return results
     except Exception as e:
         # Handle any errors
-        raise HTTPException(status_code=500, detail=f"Data split failed: {str(e)}")
+        detail=f"Data split failed: {str(e)}"
+        raise CeleryTaskException(detail)
