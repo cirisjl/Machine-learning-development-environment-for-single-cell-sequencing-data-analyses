@@ -78,12 +78,12 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     scanpy_results = load_anndata(output_path)
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                    scanpy_results, msg = run_dimension_reduction(scanpy_results, random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
                     
 
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
+                    scanpy_results = run_clustering(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
@@ -104,11 +104,11 @@ def run_qc(task_id, ds:dict, random_state=0):
 
 
                         redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                        scanpy_results, msg = run_dimension_reduction(scanpy_results, random_state=random_state)
                         if msg is not None: redislogger.warning(task_id, msg)
 
                         redislogger.info(task_id, "Clustering the neighborhood graph.")
-                        scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
+                        scanpy_results = run_clustering(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
                         
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                         qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
@@ -141,11 +141,11 @@ def run_qc(task_id, ds:dict, random_state=0):
                     redislogger.info(task_id, "Output already exists, start from the result of the last run.")
                     dropkick_results = load_anndata(output_path)
                     redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                    dropkick_results, msg = run_dimension_reduction(dropkick_results, random_state=random_state)
                     if msg is not None: redislogger.warning(task_id, msg)
 
                     redislogger.info(task_id, "Clustering the neighborhood graph.")
-                    dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
+                    dropkick_results = run_clustering(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
@@ -164,11 +164,11 @@ def run_qc(task_id, ds:dict, random_state=0):
                         dropkick_results.write_h5ad(output_path, compression='gzip')
 
                         redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                        dropkick_results, msg = run_dimension_reduction(dropkick_results, random_state=random_state)
                         if msg is not None: redislogger.warning(task_id, msg)
 
                         redislogger.info(task_id, "Clustering the neighborhood graph.")
-                        dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
+                        dropkick_results = run_clustering(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
 
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                         qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)

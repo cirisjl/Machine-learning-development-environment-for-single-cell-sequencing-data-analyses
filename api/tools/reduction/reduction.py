@@ -3,7 +3,7 @@ import scanpy as sc
 from anndata import AnnData
 
 
-def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0):
+def run_dimension_reduction(adata, layer=None, random_state=0):
     msg = None
     if layer == "Pearson_residuals":
         msg = "Normalize Pearson_residuals may create NaN values, which are not accepted by PCA."
@@ -17,16 +17,6 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         sc.tl.pca(adata_temp, svd_solver='arpack', random_state=random_state)
         adata.uns['pca'] = adata_temp.uns["pca"].copy()
         adata.obsm[layer+'_pca'] = adata_temp.obsm["X_pca"].copy()
-
-        if use_rep is not None and adata_temp.obsm[use_rep].shape[1] < n_pcs:
-            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata_temp.obsm[use_rep].shape[1]}."
-            n_pcs = adata_temp.obsm[use_rep].shape[1]
-
-        # Computing the neighborhood graph
-        sc.pp.neighbors(adata_temp, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
-        adata.uns['neighbors'] = adata_temp.uns["neighbors"].copy()
-        adata.obsp['distances'] = adata_temp.obsp['distances'].copy()
-        adata.obsp['connectivities'] = adata_temp.obsp['connectivities'].copy()
 
         # tSNE
         sc.tl.tsne(adata_temp)
@@ -47,12 +37,9 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm[layer+"_umap_3D"] = adata_3D.obsm["X_umap"]
         adata_3D = None
 
-    elif 'X_umap' not in adata.obsm.keys():
+    elif layer is None and 'X_umap' not in adata.obsm.keys():
         # Principal component analysis
         sc.tl.pca(adata, svd_solver='arpack', random_state=random_state)
-
-        # Computing the neighborhood graph
-        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
         # tSNE
         sc.tl.tsne(adata)
@@ -69,19 +56,32 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
         adata_3D = None
     else:
-        msg = "{layer}_umap already exists, skipped."
+        if layer is None: layer = 'X'
+        msg = f"{layer}_umap already exists, skipped."
 
     return adata, msg
 
 
-def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0):
+def run_clustering(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, resolution=1, random_state=0):
     if layer == "Pearson_residuals":
         print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
         return adata
     
     if layer is not None and layer + '_louvain' not in adata.obs.keys():
-        # Clustering the neighborhood graph
         adata_temp = adata.copy()
+        adata_temp.X = adata_temp.layers[layer]
+
+        if use_rep is not None and adata_temp.obsm[use_rep].shape[1] < n_pcs:
+            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata_temp.obsm[use_rep].shape[1]}."
+            n_pcs = adata_temp.obsm[use_rep].shape[1]
+
+        # Computing the neighborhood graph
+        sc.pp.neighbors(adata_temp, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
+        adata.uns['neighbors'] = adata_temp.uns["neighbors"].copy()
+        adata.obsp['distances'] = adata_temp.obsp['distances'].copy()
+        adata.obsp['connectivities'] = adata_temp.obsp['connectivities'].copy()
+        
+        # Clustering the neighborhood graph
         sc.tl.leiden(adata_temp, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
@@ -90,7 +90,14 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0
         adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
         adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
         adata_temp = None
-    elif 'louvain' not in adata.obs.keys():
+    elif layer is None and 'louvain' not in adata.obs.keys():
+        if use_rep is not None and adata.obsm[use_rep].shape[1] < n_pcs:
+            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
+            n_pcs = adata.obsm[use_rep].shape[1]
+
+        # Computing the neighborhood graph
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
+        
         # Clustering the neighborhood graph
         leiden_key = "leiden"
         louvain_key = "louvain"
@@ -101,6 +108,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0
                     random_state=random_state, n_iterations=3)
         sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
     else:
+        if layer is None: layer = 'X'
         print("Cluster for {layer} already exists, skipped.")
 
     return adata

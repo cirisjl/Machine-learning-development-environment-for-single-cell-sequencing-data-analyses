@@ -105,11 +105,11 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                     if method != "SCTransform":
                         try:
                             redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
-                            adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                            adata, msg = run_dimension_reduction(adata, layer=layer, random_state=random_state)
                             if msg is not None: redislogger.warning(task_id, msg)
 
                             redislogger.info(task_id, f"Clustering the neighborhood graph for layer {layer}.")
-                            adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+                            adata = run_clustering(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
                             redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
                             normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
@@ -127,11 +127,11 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
                             process_id = generate_process_id(md5, process, method, parameters)
                             try:
                                 redislogger.info(task_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for {method} normalization..")
-                                adata_sct, msg = run_dimension_reduction(adata_sct, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                                adata_sct, msg = run_dimension_reduction(adata_sct, random_state=random_state)
                                 if msg is not None: redislogger.warning(task_id, msg)
 
                                 redislogger.info(task_id, f"Clustering the neighborhood graph for {method} normalization.")
-                                adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state)
+                                adata_sct = run_clustering(adata_sct, n_neighbors=n_neighbors, n_pcs=n_pcs, resolution=resolution, random_state=random_state)
 
                                 redislogger.info(task_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
                                 normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
