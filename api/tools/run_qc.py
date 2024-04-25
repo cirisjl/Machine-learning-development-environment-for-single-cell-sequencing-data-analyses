@@ -14,7 +14,7 @@ from fastapi import HTTPException, status
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
-
+from exceptions.custom_exceptions import CeleryTaskException
 
 def run_qc(task_id, ds:dict, random_state=0):
     pp_results = []
@@ -121,10 +121,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     except Exception as e:
                         detail = f"Error during scanpy QC: {str(e)}"
                         redislogger.error(task_id, detail)
-                        raise HTTPException(
-                            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail = detail
-                        )
+                        raise CeleryTaskException(detail)
                  
             pp_results.append(qc_results)
             process_ids.append(process_id)
@@ -187,10 +184,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         detail = f"Error during Dropkick QC: {str(e)}"
                         redislogger.error(task_id, detail)
                         os.remove(output_path)
-                        raise HTTPException(
-                            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail = detail
-                        )
+                        raise CeleryTaskException(detail)
                 
             pp_results.append(qc_results)
             process_ids.append(process_id)
@@ -234,10 +228,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 redislogger.error(task_id, detail)
                 os.remove(output_path)
                 os.remove(adata_path)
-                raise HTTPException(
-                    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail = detail
-                )
+                raise CeleryTaskException(detail)
         if assay_names is None:
             assay_names = []
         
@@ -299,10 +290,8 @@ def run_qc(task_id, ds:dict, random_state=0):
                 os.remove(output_path)
                 os.remove(adata_path)
                 os.remove(report_path)
-                raise HTTPException(
-                    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail = detail
-                )
+                raise CeleryTaskException(detail)
+                
         pp_results.append(qc_results)
         process_ids.append(process_id)    
 

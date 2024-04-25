@@ -18,9 +18,9 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
+import LogComponent from '../../common_components/liveLogs';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
-  const webSocketInstance = useRef(null);
 
   const [plotDimension, setPlotDimension] = useState('2D');
 
@@ -59,8 +59,8 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 const handleStatusMessage = (event) => {
   try {
     const data = JSON.parse(event.data);
-    console.log("Task Response");
-    console.log(data);
+    console.log("insde handle status message");
+    console.log(event.data);
     if (data.task_status) {
       setCurrentStatus(data.task_status);
       if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
@@ -68,12 +68,15 @@ const handleStatusMessage = (event) => {
       }
     }
   } catch (error) {
+    setLoading(false);
     console.error("Error parsing status message:", error);
   }
 };
 
 const handleLogMessage = (event) => {
   setWsLogs(event.data);
+  console.log("insde handle log message");
+  console.log(event.data);
   // Auto-scroll to the bottom of the logs
   const logsElement = document.getElementById("_live_logs");
   if (logsElement) {
@@ -86,7 +89,7 @@ const handleLogMessage = (event) => {
     return { __html: logs };
   };
 
-  const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage);
+  const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage, setLoading);
 
   const fetchProcessResults = async (processIds) => {
     if (!processIds.length) return;
@@ -115,34 +118,6 @@ const handleLogMessage = (event) => {
     console.log(values);
 
     setLoading(true);
-
-    // const unique_id = uuid()
-
-    
-    // // Establish WebSocket connection right away
-    // const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`;  
-    // webSocketInstance.current = new WebSocket(websocketURL);
-
-    // webSocketInstance.current.onopen = () => {
-    //   console.log('WebSocket Connected');
-    // };
-
-    // webSocketInstance.current.onmessage = (event) => {
-    //   const message = event.data;
-    //   console.log(message);
-    //   setWsLogs(message);
-    //   let logs = document.getElementById("logs");
-    //     let log_data = event.data;
-    //     logs.innerHTML = log_data;
-    // };
-
-    // webSocketInstance.current.onerror = (error) => {
-    //   console.error('WebSocket Error:', error);
-    // };
-
-    // webSocketInstance.current.onclose = () => {
-    //   console.log('WebSocket Disconnected');
-    // };
 
     try {
       let file_paths = taskData.quality_control.file_paths;
@@ -183,37 +158,6 @@ const handleLogMessage = (event) => {
       const taskId = taskInfo.task_id;
       setTaskId(taskId);
 
-      // const qualityControlResults = response.data;
-
-      // const ddl_assay_names = qualityControlResults[0].ddl_assay_names;
-
-      // if(!ddl_assay_names) {
-      //   // Update the qc_results state with the quality control results
-      //   setTaskData((prevTaskData) => ({
-      //     ...prevTaskData,
-      //     quality_control: {
-      //       ...prevTaskData.quality_control,
-      //       qc_results: qualityControlResults,
-      //     },
-      //   }));
-      //   setLoading(false);
-      // } else {
-      //   setTaskData((prevTaskData) => ({
-      //     ...prevTaskData,
-      //     quality_control: {
-      //       ...prevTaskData.quality_control,
-      //       seurat_meta: {
-      //         ...prevTaskData.quality_control.seurat_meta,
-      //         default_assay: qualityControlResults[0].default_assay,
-      //         assay_names: qualityControlResults[0].assay_names,
-      //         file: qualityControlResults[0].inputfile,
-      //         displayAssayNames: ddl_assay_names
-      //       },
-      //     }
-      //   }));
-      //   setLoading(false);
-      //   return;
-      // }
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
       setLoading(false);
@@ -225,27 +169,20 @@ const handleLogMessage = (event) => {
 
   useEffect(() => {
     if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
-      closeWebSockets(); // Close WebSockets when task is done
       if(currentStatus === "SUCCESS" && celeryTaskResults.task_result.process_ids) {
         fetchProcessResults(celeryTaskResults.task_result.process_ids);
+        setMessage("quality control task is Successful");
+        setHasMessage(true);
+        setIsError(false);
+      } else if(currentStatus === "FAILURE"){
+        setMessage("quality control task is Failed");
+        setHasMessage(true);
+        setIsError(true);
       }
       setLoading(false);
-      setHasMessage(true);
-      setMessage("quality control task Success or failed");
-      setIsError(true);
+      closeWebSockets();
     }
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
-
-  // useEffect(() => {
-  //   // This cleanup function will be called on component unmount
-  //   return () => {
-  //     if (webSocketInstance.current) {
-  //       webSocketInstance.current.close();
-  //       console.log('WebSocket Disconnected');
-  //     }
-  //   };
-  // }, []); // Empty dependency array ensures this runs on mount and unmount only
-
 
   useEffect(() => {
     isUserAuth(getCookie('jwtToken'))
@@ -311,32 +248,6 @@ const handleAssaySelectionSubmit = async () => {
     console.log(values);
 
     setLoading(true);
-
-    // const unique_id = uuid();
-
-    // if(!webSocketInstance.current) {
-    //  // Establish WebSocket connection right away
-    //  const websocketURL = `ws://${process.env.REACT_APP_HOST_URL}:5000/log/${unique_id}`; 
-    //  webSocketInstance.current = new WebSocket(websocketURL);
-    // }
-
-
-    // webSocketInstance.current.onopen = () => {
-    //   console.log('WebSocket Connected');
-    // };
-
-    // webSocketInstance.current.onmessage = (event) => {
-    //   const message = event.data;
-    //   setWsLogs(message);
-    // };
-
-    // webSocketInstance.current.onerror = (error) => {
-    //   console.error('WebSocket Error:', error);
-    // };
-
-    // webSocketInstance.current.onclose = () => {
-    //   console.log('WebSocket Disconnected');
-    // };
 
     let inputRequest = {
       dataset: taskData.upload.title,
@@ -433,7 +344,7 @@ const handleAssaySelectionSubmit = async () => {
         </Button>
         </div>
       </div>
-
+{/* 
       <Grid item xs={12} sx={{paddingTop: '10px'}}>
             <Card raised>
               <CardHeader title="Live Logs" />
@@ -459,7 +370,69 @@ const handleAssaySelectionSubmit = async () => {
                 </Paper>
               </CardContent>
             </Card>
-        </Grid>
+        </Grid> */}
+
+{/* <Grid item xs={12} sx={{ paddingTop: '10px' }}>
+  <Card raised>
+    <CardHeader title="Live Logs" />
+    <CardContent>
+      <Paper 
+        sx={{ 
+          maxHeight: 300, 
+          overflow: 'auto', 
+          backgroundColor: 'rgba(211,211,211,0.5)', // Setting the gray background color
+          '&::-webkit-scrollbar': { 
+            width: '0.4em' 
+          },
+          '&::-webkit-scrollbar-thumb': { 
+            backgroundColor: 'rgba(0,0,0,.1)',
+            borderRadius: '4px',
+          }
+        }} 
+        id="_live_logs"
+      >
+        <Typography 
+          variant="body2" 
+          component="div" 
+          sx={{ 
+            fontFamily: 'monospace', 
+            color: 'rgba(0, 0, 0, 0.87)', // Ensuring the text color is darker for better readability
+            padding: '8px' // Adding some padding for visual relief
+          }}
+          dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
+        />
+      </Paper>
+    </CardContent>
+  </Card>
+</Grid> */}
+{/* <div style={{ padding: '10px', width: '100%' }}>
+  <div style={{ 
+    boxShadow: '0px 0px 2px 1px rgba(0,0,0,0.2)', 
+    backgroundColor: '#232323', // Dark background for card
+    color: 'white', // White text for card header
+    marginBottom: '10px',
+  }}>
+    <h2 style={{ 
+      backgroundColor: '#323232', // Slightly lighter header for contrast
+      margin: 0,
+      padding: '10px',
+    }}>Live Logs</h2>
+  </div>
+  <div style={{ 
+    maxHeight: '300px', 
+    overflow: 'auto', 
+    backgroundColor: '#2D2D2D', // Dark background for content
+    color: 'white', // White text color for logs
+    padding: '8px', // Padding inside the Paper equivalent
+    fontSize: '0.875rem', // Default font size for Typography variant="body2"
+    fontFamily: 'monospace', // Monospace font for logs
+  }}>
+    <div dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')} />
+  </div>
+</div> */}
+    <LogComponent wsLogs = {wsLogs}/>
+
+
 
       {taskData.quality_control.seurat_meta.displayAssayNames && (
             <div>
@@ -571,17 +544,6 @@ const handleAssaySelectionSubmit = async () => {
         )}
       </div>
       )}
-
-{/* {wsLogs && (
-         <div class="flex items-center py-2 px-3">
-         <div
-           id="logs"
-           class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-         >
-           reading logs...
-         </div>
-       </div>
-)} */}
 
     </div>
   );

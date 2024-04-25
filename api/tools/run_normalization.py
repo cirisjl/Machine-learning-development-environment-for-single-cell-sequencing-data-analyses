@@ -9,6 +9,7 @@ from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from exceptions.custom_exceptions import CeleryTaskException
 
 
 def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
@@ -37,9 +38,8 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
 
     if len(methods) <1:
         redislogger.error(task_id, "No normalization method is selected.")
-        raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail = 'No normalization method is selected.')
+        detail = 'No normalization method is selected.'
+        raise CeleryTaskException(detail)
     print(f"Slected methods: {methods}")
     # Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -150,10 +150,7 @@ def run_normalization(task_id, ds:dict, random_state=0, show_error=True):
         except Exception as e:
             # redislogger.error(task_id, "Normalization is failed.")
             detail = f"Normalization is failed: {e}"
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
         normalization_output.append({'adata_path': adata_path})
         normalization_output.append({'seurat_path': output})
         if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})

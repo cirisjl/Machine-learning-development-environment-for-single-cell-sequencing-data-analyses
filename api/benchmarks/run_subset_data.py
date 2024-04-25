@@ -10,6 +10,7 @@ from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import load_anndata
 from tools.utils.datasplit import subset_by_obskey
 from fastapi import HTTPException, status
+from exceptions.custom_exceptions import CeleryTaskException
 
 
 def run_subset_data(task_id, data_dict:dict):
@@ -39,9 +40,8 @@ def run_subset_data(task_id, data_dict:dict):
         if adata is not None:
             adata_sub = subset_by_obskey(adata, obskey, values)
         else:
-            raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail = f'File does not exist at {adata_path}')
+            detail = f'File does not exist at {adata_path}'
+            raise CeleryTaskException(detail)
         
         adata_sub.write(archive_path, compression='gzip')
         upsert_benchmarks(benchmarksId, {"adata_path": archive_path})
@@ -62,4 +62,5 @@ def run_subset_data(task_id, data_dict:dict):
     
     except Exception as e:
         # Handle any errors
-        raise HTTPException(status_code=500, detail=f"Subsetting data is failed: {str(e)}")
+        detail=f"Subsetting data is failed: {str(e)}"
+        raise CeleryTaskException(detail)
