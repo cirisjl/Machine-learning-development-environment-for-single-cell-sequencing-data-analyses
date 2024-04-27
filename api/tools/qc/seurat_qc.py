@@ -23,6 +23,8 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
     if assay is None:
         redislogger.info(unique_id, "Assay is not provides, setting it to 'RNA'.")
         assay = 'RNA'
+    if max_genes is None:
+        max_genes = 0
 
     adata_path = change_file_extension(output, 'h5ad')
 
