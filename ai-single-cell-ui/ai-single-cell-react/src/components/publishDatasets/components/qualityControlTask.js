@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
-import { CELERY_BACKEND_API, STORAGE, defaultValues, WEB_SOCKET_URL, SERVER_URL} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, STORAGE, defaultValues, SERVER_URL} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
 import {isUserAuth, getCookie} from '../../../utils/utilFunctions';
@@ -10,13 +10,10 @@ import { Button, makeStyles } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
-import { v4 as uuid } from 'uuid';
 import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import LogComponent from '../../common_components/liveLogs';
 
@@ -41,7 +38,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [ isError, setIsError ] = useState(false);
   const classes = useStyles(); // Use the custom styles
   const [loading, setLoading] = useState(false);
-  const [values, setValues] = useState(defaultValues);
+  const [values, setValues] = useState(taskData.quality_control.qc_params);
   const navigate = useNavigate();
   const [wsLogs, setWsLogs] = useState('');
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
@@ -312,7 +309,8 @@ const handleAssaySelectionSubmit = async () => {
           ...prevTaskData,
           quality_control: {
             ...prevTaskData.quality_control,
-            status: 'completed'
+            status: 'completed',
+            qc_params: values
           },
         }));
 

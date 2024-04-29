@@ -12,7 +12,7 @@ function LogComponent({ wsLogs }) {
       <div className="live_logs_card">
         <h2 className="live_logs_header">Live Logs</h2>
       </div>
-      <div className="live_logs_content">
+      <div className="live_logs_content" id = "_live_logs">
         <div dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')} />
       </div>
     </div>
