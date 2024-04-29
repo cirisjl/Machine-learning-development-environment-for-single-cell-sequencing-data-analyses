@@ -75,15 +75,24 @@ def traversal_subfolder(path):
 # Unzip file if it's compressed, toherwise return its original path
 # unique_id can be task_id, user_id or process_id used for tracking logs
 def unzip_file_if_compressed(unique_id, file_path):
+    # Return the path immediately if it is a directory
+    if os.path.isdir(file_path):
+        redislogger.info(unique_id, f"The given input is a directory, skipping unzipping: {file_path}")
+        return file_path
+
     extract_path = file_path
     if os.path.exists(file_path):
-        if file_path.endswith(".zip"):
-            extract_path = extract_zip_all(unique_id, file_path)
-        elif file_path.endswith(".rar"):
-            extract_path = extract_rar_all(unique_id, file_path)
-        elif is_tarfile(file_path) or file_path.endswith(".gz"):
-            extract_path = extract_tar_all(unique_id, file_path)
-        else:
-            redislogger.info(unique_id, f"No compressed file is found in: {file_path}")
+        try:
+            if file_path.endswith(".zip"):
+                extract_path = extract_zip_all(unique_id, file_path)
+            elif file_path.endswith(".rar"):
+                extract_path = extract_rar_all(unique_id, file_path)
+            elif is_tarfile(file_path) or file_path.endswith(".gz"):
+                extract_path = extract_tar_all(unique_id, file_path)
+            else:
+                redislogger.info(unique_id, f"No compressed file is found in: {file_path}")
+        except Exception as e:
+            redislogger.error(unique_id, f"Error extracting {file_path}: {str(e)}")
+            extract_path = file_path  # Return the original path in case of error
 
     return extract_path
