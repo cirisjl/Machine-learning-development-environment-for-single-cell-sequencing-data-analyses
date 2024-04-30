@@ -40,21 +40,24 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
             output = list(results[2])[0]
             adata_path = list(results[3])[0]
             ddl_assay_names = convert_from_r(list(results[4])[0])
+            print("Type of ddl_assay_names:", type(ddl_assay_names))
+            print("Value of ddl_assay_names:", ddl_assay_names)
         else:
             raise RuntimeError(f"Seurat QC failed.")
 
-        if os.path.exists(adata_path):
-            redislogger.info(unique_id, "Adding 3D UMAP to AnnData object.")
-            adata = load_anndata(adata_path)
-            sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=n_pcs, random_state=0)
-            adata_3D = sc.tl.umap(adata, random_state=0, 
-                            init_pos="spectral", n_components=3, 
-                            copy=True, maxiter=None)
-            adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
-            adata.write_h5ad(adata_path, compression='gzip')
-            adata_3D = None
-        else:
-            raise ValueError("AnnData file does not exist.")
+        if not ddl_assay_names:
+            if os.path.exists(adata_path):
+                redislogger.info(unique_id, "Adding 3D UMAP to AnnData object.")
+                adata = load_anndata(adata_path)
+                sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=n_pcs, random_state=0)
+                adata_3D = sc.tl.umap(adata, random_state=0, 
+                                init_pos="spectral", n_components=3, 
+                                copy=True, maxiter=None)
+                adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+                adata.write_h5ad(adata_path, compression='gzip')
+                adata_3D = None
+            else:
+                raise ValueError("AnnData file does not exist.")
 
     except Exception as e:
         redislogger.error(unique_id, f"An error happened while running Seurat QC: {e}.")
