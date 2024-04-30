@@ -206,14 +206,13 @@ def run_qc(task_id, ds:dict, random_state=0):
                 default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, task_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                 
                 if ddl_assay_names:
-                    results = []
-                    results.append({
+                    results = {
                         "taskId": task_id, 
                         "inputfile": input_path,
                         "default_assay": default_assay,
                         "assay_names": assay_names,
                         "ddl_assay_names": ddl_assay_names
-                    })
+                    }
                     upsert_task_results(results)
                     return results
                 
