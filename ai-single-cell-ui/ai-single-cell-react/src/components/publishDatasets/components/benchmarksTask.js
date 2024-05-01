@@ -5,6 +5,7 @@ import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
+import LogComponent from '../../common_components/liveLogs';
 
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
@@ -42,8 +43,6 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const handleStatusMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      console.log("Task Response");
-      console.log(data);
       if (data.task_status) {
         setCurrentStatus(data.task_status);
         if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
@@ -51,6 +50,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         }
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error parsing status message:", error);
     }
   };
@@ -117,11 +117,15 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       closeWebSockets(); // Close WebSockets when task is done
       if(currentStatus === "SUCCESS") {
         // fetchProcessResults(celeryTaskResults.task_result.process_ids);
+        setMessage("Benchmarks Process is Successful");
+        setHasMessage(true);
+        setIsError(false);
+      } else if(currentStatus === "FAILURE"){
+        setMessage("Benchmarks Process is Failed");
+        setHasMessage(true);
+        setIsError(true);
       }
       setLoading(false);
-      setHasMessage(true);
-      setMessage("Benchmarks task Success or failed");
-      setIsError(true);
     }
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
 
@@ -132,32 +136,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
 
-      <Grid item xs={12} sx={{paddingTop: '10px'}}>
-            <Card raised>
-              <CardHeader title="Live Logs" />
-              <CardContent>
-                <Paper 
-                  sx={{ 
-                    maxHeight: 300, 
-                    overflow: 'auto', 
-                    '&::-webkit-scrollbar': { width: '0.4em' },
-                    '&::-webkit-scrollbar-thumb': { 
-                      backgroundColor: 'rgba(0,0,0,.1)',
-                      borderRadius: '4px',
-                    }
-                  }} 
-                  id="_live_logs"
-                >
-                  <Typography 
-                    variant="body2" 
-                    component="div" 
-                    sx={{ fontFamily: 'monospace' }}
-                    dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
-                  />
-                </Paper>
-              </CardContent>
-            </Card>
-        </Grid>
+      <LogComponent wsLogs = {wsLogs}/>
         
       {loading ? (
               <div className="spinner-container">
