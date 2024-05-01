@@ -353,7 +353,7 @@ export default function ToolsDetailsComponent(props) {
     console.log(formData);
 
     // Determine if there's a change in the use_default toggle
-    const useDefaultChanged = useDefault !== formData.parameters.use_default;
+    const useDefaultChanged = useDefault !== currentToolParams.use_default;
 
     // Check for any changes in default parameters
     let defaultParamsChanged = Object.keys(defaultQcParams).some(key => {
@@ -361,7 +361,7 @@ export default function ToolsDetailsComponent(props) {
     });
 
     if (useDefaultChanged) {
-        if (formData.parameters.use_default) {
+        if (currentToolParams.use_default) {
             // If use_default is toggled to true, reset only the default parameters
             const resetParams = {};
             Object.keys(defaultQcParams).forEach(key => {
@@ -374,14 +374,10 @@ export default function ToolsDetailsComponent(props) {
         }
     } else if (defaultParamsChanged) {
         // If any default parameters have changed and use_default was previously true, set it to false
-        formData.parameters.use_default = false;
+        formData.parameters.qc_params.use_default = false;
     }
 
-    setUseDefault(formData.parameters.use_default);
-    // useDefault = formData.parameters.use_default;
-    console.log("use default value");
-    console.log(useDefault);
-    console.log(formData);
+    setUseDefault(formData.parameters.qc_params.use_default);
     setFormData(formData);
 };
 

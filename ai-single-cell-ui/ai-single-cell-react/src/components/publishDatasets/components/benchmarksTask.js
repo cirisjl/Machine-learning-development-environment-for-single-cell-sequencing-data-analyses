@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {CELERY_BACKEND_API} from '../../../constants/declarations';
+import {CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
 import LogComponent from '../../common_components/liveLogs';
+import axios from 'axios';
 
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
@@ -18,6 +19,38 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
   const [taskId, setTaskId] = useState('');
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
+
+  const fetchBenchmarksResults = async (benchmarksId) => {
+    if (!benchmarksId) return;
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/benchmarks/api/getBenchmarksResults`, { benchmarksId });
+      console.log('Benchmarks Results:', response.data);
+      const benchmarksResults = response.data;
+      if (Array.isArray(benchmarksResults)) {
+    
+        // Update the benchmarks section in taskData with the received results
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          benchmarks: {
+            benchmarks_results: benchmarksResults,
+          },
+        }));
+      } else {
+        console.error('Invalid response format');
+        setMessage('Invalid response format');
+        setHasMessage(true);
+        setIsError(true);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
+      setLoading(false);
+      setHasMessage(true);
+      setMessage("Failed to retrieve pre processed results from MongoDB");
+      setIsError(true);
+    }
+  };
 
   const handleTaskCompletion = () => {
 
@@ -116,7 +149,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
       closeWebSockets(); // Close WebSockets when task is done
       if(currentStatus === "SUCCESS") {
-        // fetchProcessResults(celeryTaskResults.task_result.process_ids);
+        fetchBenchmarksResults(celeryTaskResults.task_result.benchmarksId);
         setMessage("Benchmarks Process is Successful");
         setHasMessage(true);
         setIsError(false);
@@ -134,7 +167,6 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     <div className='benchmarks-task'>
       
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
-
 
       <LogComponent wsLogs = {wsLogs}/>
         
