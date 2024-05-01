@@ -56,8 +56,6 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 const handleStatusMessage = (event) => {
   try {
     const data = JSON.parse(event.data);
-    console.log("insde handle status message");
-    console.log(event.data);
     if (data.task_status) {
       setCurrentStatus(data.task_status);
       if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
@@ -72,8 +70,6 @@ const handleStatusMessage = (event) => {
 
 const handleLogMessage = (event) => {
   setWsLogs(event.data);
-  console.log("insde handle log message");
-  console.log(event.data);
   // Auto-scroll to the bottom of the logs
   const logsElement = document.getElementById("_live_logs");
   if (logsElement) {
@@ -112,8 +108,6 @@ const handleLogMessage = (event) => {
   };
 
   const runQualityControl = async() => {
-    console.log(values);
-
     setLoading(true);
 
     try {
@@ -166,8 +160,33 @@ const handleLogMessage = (event) => {
 
   useEffect(() => {
     if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
-      if(currentStatus === "SUCCESS" && celeryTaskResults.task_result.process_ids) {
+      if(currentStatus === "SUCCESS" && celeryTaskResults.task_result.ddl_assay_names) {
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          quality_control: {
+            ...prevTaskData.quality_control,
+            seurat_meta: {
+              ...prevTaskData.quality_control.seurat_meta,
+              default_assay: celeryTaskResults.task_result.default_assay,
+              assay_names: celeryTaskResults.task_result.assay_names,
+              file: celeryTaskResults.task_result.inputfile,
+              displayAssayNames: celeryTaskResults.task_result.ddl_assay_names
+            },
+          }
+        }));
+      }
+      else if(currentStatus === "SUCCESS" && celeryTaskResults.task_result.process_ids) {
         fetchProcessResults(celeryTaskResults.task_result.process_ids);
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          quality_control: {
+            ...prevTaskData.quality_control,
+            seurat_meta: {
+              ...prevTaskData.quality_control.seurat_meta,
+              displayAssayNames: false
+            },
+          }
+        }));
         setMessage("quality control task is Successful");
         setHasMessage(true);
         setIsError(false);
@@ -220,10 +239,6 @@ const handleLogMessage = (event) => {
     });
   }, []); 
 
-  useEffect(() => {
-    console.log(taskData);
-  }, [taskData]);
-
   const handleAssaySelection = selectedOption => {
     setTaskData(prevTaskData => ({
         ...prevTaskData,
@@ -236,13 +251,13 @@ const handleLogMessage = (event) => {
 
 const handleAssaySelectionSubmit = async () => {
 
+  try {
     if(!taskData.quality_control.selectedAssayName) {
       setHasMessage(true);
       setMessage("Please select the default assay");
       setIsError(true);
       return;
     }
-    console.log(values);
 
     setLoading(true);
 
@@ -262,35 +277,18 @@ const handleAssaySelectionSubmit = async () => {
         resolution : values.resolution,
         regress_cell_cycle : values.regress_cell_cycle,
         use_default : values.use_default,
-        doublet_rate: values.doublet_rate
+        doublet_rate: values.doublet_rate,
+        assay: taskData.quality_control.selectedAssayName
       } 
     }
 
-    try {
+  
       const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
 
-      const qualityControlResults = response.data;
+      const taskInfo = response.data;
 
-        // Update the qc_results state with the quality control results
-        setTaskData((prevTaskData) => ({
-          ...prevTaskData,
-          quality_control: {
-            ...prevTaskData.quality_control,
-            qc_results: qualityControlResults,
-          },
-        }));
-
-        setTaskData((prevTaskData) => ({
-          ...prevTaskData,
-          quality_control: {
-            ...prevTaskData.quality_control,
-            seurat_meta: {
-              ...prevTaskData.quality_control.seurat_meta,
-              displayAssayNames: false
-            },
-          }
-        }));
-        setLoading(false);
+      const taskId = taskInfo.task_id;
+      setTaskId(taskId);
 
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
@@ -342,92 +340,7 @@ const handleAssaySelectionSubmit = async () => {
         </Button>
         </div>
       </div>
-{/* 
-      <Grid item xs={12} sx={{paddingTop: '10px'}}>
-            <Card raised>
-              <CardHeader title="Live Logs" />
-              <CardContent>
-                <Paper 
-                  sx={{ 
-                    maxHeight: 300, 
-                    overflow: 'auto', 
-                    '&::-webkit-scrollbar': { width: '0.4em' },
-                    '&::-webkit-scrollbar-thumb': { 
-                      backgroundColor: 'rgba(0,0,0,.1)',
-                      borderRadius: '4px',
-                    }
-                  }} 
-                  id="_live_logs"
-                >
-                  <Typography 
-                    variant="body2" 
-                    component="div" 
-                    sx={{ fontFamily: 'monospace' }}
-                    dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
-                  />
-                </Paper>
-              </CardContent>
-            </Card>
-        </Grid> */}
 
-{/* <Grid item xs={12} sx={{ paddingTop: '10px' }}>
-  <Card raised>
-    <CardHeader title="Live Logs" />
-    <CardContent>
-      <Paper 
-        sx={{ 
-          maxHeight: 300, 
-          overflow: 'auto', 
-          backgroundColor: 'rgba(211,211,211,0.5)', // Setting the gray background color
-          '&::-webkit-scrollbar': { 
-            width: '0.4em' 
-          },
-          '&::-webkit-scrollbar-thumb': { 
-            backgroundColor: 'rgba(0,0,0,.1)',
-            borderRadius: '4px',
-          }
-        }} 
-        id="_live_logs"
-      >
-        <Typography 
-          variant="body2" 
-          component="div" 
-          sx={{ 
-            fontFamily: 'monospace', 
-            color: 'rgba(0, 0, 0, 0.87)', // Ensuring the text color is darker for better readability
-            padding: '8px' // Adding some padding for visual relief
-          }}
-          dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
-        />
-      </Paper>
-    </CardContent>
-  </Card>
-</Grid> */}
-{/* <div style={{ padding: '10px', width: '100%' }}>
-  <div style={{ 
-    boxShadow: '0px 0px 2px 1px rgba(0,0,0,0.2)', 
-    backgroundColor: '#232323', // Dark background for card
-    color: 'white', // White text for card header
-    marginBottom: '10px',
-  }}>
-    <h2 style={{ 
-      backgroundColor: '#323232', // Slightly lighter header for contrast
-      margin: 0,
-      padding: '10px',
-    }}>Live Logs</h2>
-  </div>
-  <div style={{ 
-    maxHeight: '300px', 
-    overflow: 'auto', 
-    backgroundColor: '#2D2D2D', // Dark background for content
-    color: 'white', // White text color for logs
-    padding: '8px', // Padding inside the Paper equivalent
-    fontSize: '0.875rem', // Default font size for Typography variant="body2"
-    fontFamily: 'monospace', // Monospace font for logs
-  }}>
-    <div dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')} />
-  </div>
-</div> */}
     <LogComponent wsLogs = {wsLogs}/>
 
 
