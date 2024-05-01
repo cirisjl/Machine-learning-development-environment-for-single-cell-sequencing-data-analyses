@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import PublishDataset from './publishDataset';
 import TaskBuilder from './taskBuilder';
+import useAdminAuthCheck from '../common_components/adminAuthCheckComponent';
 
 const FlowControl = () => {
+  
+  useAdminAuthCheck();
 
   const [flow, setFlow] = useState('');
 

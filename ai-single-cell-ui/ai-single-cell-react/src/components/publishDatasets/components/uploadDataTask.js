@@ -23,7 +23,6 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   let pwd = "tempStorage/";
   const navigate = useNavigate();
 
-
   // State to manage error messages
   const [fileError, setFileError] = useState('');
   const [titleError, setTitleError] = useState('');
@@ -255,23 +254,6 @@ function getStandardFileName(fileName, fileType) {
     }
     console.log(taskData);
   };
-
-  useEffect(() => {
-    isUserAuth(getCookie('jwtToken'))
-    .then((authData) => {
-      if (authData.isAdmin) {
-        console.log("User is admin and has access to this page");
-
-      }  else {
-        console.warn("Unauthorized - you must be an admin to access this page");
-        navigate("/accessDenied");
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }, []);
-
 
   return (
     <div className='upload-task'>
