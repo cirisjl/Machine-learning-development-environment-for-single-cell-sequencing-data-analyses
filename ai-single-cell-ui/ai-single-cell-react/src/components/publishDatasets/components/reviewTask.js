@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ReactPlotly from './reactPlotly';
 import BenchmarksPlots from './benchmarksPlots';
 import axios from 'axios';
 import { SERVER_URL } from '../../../constants/declarations';

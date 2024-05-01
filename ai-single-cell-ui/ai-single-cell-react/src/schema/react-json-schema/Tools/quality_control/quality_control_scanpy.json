@@ -112,14 +112,14 @@
               "type": "boolean",
               "title": "Regress Cell Cycle",
               "default": false
+            },
+            "use_default": {
+              "type": "boolean",
+              "title": "Use Default",
+              "default": true,
+              "format": "switch"
             }
           }
-        },
-        "use_default": {
-          "type": "boolean",
-          "title": "Use Default",
-          "default": true,
-          "format": "switch"
         }
       }
     }
