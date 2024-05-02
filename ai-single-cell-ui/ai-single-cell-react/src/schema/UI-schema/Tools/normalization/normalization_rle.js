@@ -118,11 +118,11 @@ export const uiSchema = {
               { value: 5, label: '5' },
             ]
           }
+        },
+        "use_default": {
+          "classNames": "sub-category",
+          "ui:widget": "toggle"
         }    
-      },
-      "use_default": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
       }
   }
 };

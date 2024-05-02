@@ -247,11 +247,10 @@ export const uiSchema = {
           "classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
-
-      },
-      "use_default": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
+        "use_default": {
+          "classNames": "sub-category",
+          "ui:widget": "toggle"
+        }
       }
   }
 };

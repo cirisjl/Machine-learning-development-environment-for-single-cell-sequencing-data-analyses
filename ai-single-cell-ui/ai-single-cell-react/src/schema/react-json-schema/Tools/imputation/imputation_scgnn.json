@@ -80,12 +80,6 @@
               "default": 12
             }
           }
-        },
-        "use_default": {
-          "type": "boolean",
-          "title": "Use Default",
-          "default": true,
-          "format": "switch"
         }
       }
     }

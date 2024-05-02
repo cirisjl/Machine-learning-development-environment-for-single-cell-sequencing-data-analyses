@@ -77,14 +77,14 @@
               "type": "number",
               "title": "Resolution:",
               "default": 1
+            },
+            "use_default": {
+              "type": "boolean",
+              "title": "Use Default",
+              "default": true,
+              "format": "switch"
             }
           }
-        },
-        "use_default": {
-          "type": "boolean",
-          "title": "Use Default",
-          "default": true,
-          "format": "switch"
         }
       }
     }
