@@ -177,7 +177,7 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-        tool === "Quality Control" && (
+        (tool === "Quality Control" || tool === "Normalization") && (
           <div>
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (
