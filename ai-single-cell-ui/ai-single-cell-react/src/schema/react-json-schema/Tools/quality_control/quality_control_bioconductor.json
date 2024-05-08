@@ -130,14 +130,14 @@
               "description": "Shape By 2 field for BioConductor",
               "title": "Shape By 2",
               "default": ""
+            },
+            "use_default": {
+              "type": "boolean",
+              "title": "Use Default",
+              "default": true,
+              "format": "switch"
             }
           }
-        },
-        "use_default": {
-          "type": "boolean",
-          "title": "Use Default",
-          "default": true,
-          "format": "switch"
         }
       }
     }
