@@ -115,10 +115,6 @@ export const uiSchema = {
             ]
           }
         } 
-      },
-      "use_default": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
       }
   }
 };
