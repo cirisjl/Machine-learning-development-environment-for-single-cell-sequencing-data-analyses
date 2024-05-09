@@ -2,6 +2,7 @@ import LeftNav from "../../../components/LeftNavigation/leftNav"
 import ToolsDetailsComponent from "../../../components/MyData/Tools/toolsDetailsComponent";
 import RightRail from "../../../components/RightNavigation/rightRail"
 import React, { useState } from 'react';
+import useUserAuthCheck from "../../../components/common_components/userAuthCheckComponent";
 
 
 export default function ToolsComponentPage() {
@@ -13,6 +14,8 @@ export default function ToolsComponentPage() {
       setSelectedFilter(category+ "_" + filter);
       setCategory(category);
     };
+
+    useUserAuthCheck();
   
     return(
         <div className="page-container">
