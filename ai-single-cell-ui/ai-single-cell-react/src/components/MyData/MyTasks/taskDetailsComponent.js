@@ -89,7 +89,11 @@ function TaskDetailsComponent() {
         setTaskStatus(data.task_status);
         if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
           if(data.task_status === "SUCCESS") {
-            fetchProcessResults(data.task_result.process_ids);
+            if(data.task_result.process_ids) {
+              fetchProcessResults(data.task_result.process_ids);
+            } else {
+              setLoading(false);
+            }
           } else {
             setLoading(false);
           } 
@@ -177,7 +181,7 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-        (tool === "Quality Control" || tool === "Normalization") && (
+        (tool === "Quality Control" || tool === "Normalization" || tool === "Reduction") && (
           <div>
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (

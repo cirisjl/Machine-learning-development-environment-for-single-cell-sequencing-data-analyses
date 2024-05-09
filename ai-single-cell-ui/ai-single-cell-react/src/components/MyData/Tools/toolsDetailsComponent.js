@@ -5,7 +5,7 @@ import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams,defaultNormalizationParams } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams,defaultNormalizationParams ,defaultReductionParams} from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GeneRangeSlider from './components/geneRangeSlider';
@@ -28,7 +28,9 @@ export default function ToolsDetailsComponent(props) {
       normalization: '/api/tools/normalize',
       imputation: '/api/tools/impute',
       integration: '/api/tools/integrate',
-      evaluation: '/api/tools/evaluate'
+      evaluation: '/api/tools/evaluate',
+      formatting: '/api/tools/convert',
+      reduction: '/api/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -36,6 +38,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'qc_params',
       normalization: 'normalization_params',
       imputation: 'imputation_params',
+      reduction: 'reduction_params'
     };
 
     const filterStaticCategoryMap = {
@@ -43,7 +46,9 @@ export default function ToolsDetailsComponent(props) {
       normalization: 'Normalization',
       imputation: 'Imputation',
       integration: 'Integration',
-      evaluation: 'Evaluation'
+      evaluation: 'Evaluation',
+      formatting: 'Formatting',
+      reduction: 'Reduction'
       // Add more filter categories and their corresponding Names as needed
     };
 
@@ -206,12 +211,17 @@ export default function ToolsDetailsComponent(props) {
                   // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
                   const taskId = response.task_id;
                   let method = "";
-                  if(filterCategory === "" && filterCategory === ""){
-                    method = formData.methods[0];
 
-                  } else {
+                  if(filterCategory === "reduction") {
+                    method = "Reduction";
+                  } else if(filterCategory === "formatting") {
+                    method = "Formatting";
+                  } else if(parametersKey[filterCategory]) {
                     method = formData[parametersKey[filterCategory]].methods[0];
+                  } else {
+                    method = formData.methods[0];
                   }
+
                   const output = formData.output;
 
                   // Make API call to store the task information
@@ -368,6 +378,9 @@ export default function ToolsDetailsComponent(props) {
         defaultParams = defaultNormalizationParams;
         paramsKey = 'normalization_params';
 
+    } else if(filterCategory === 'reduction') {
+        defaultParams = defaultReductionParams;
+        paramsKey = 'reduction_params';
     } else {
         // For other categories, we do not reset parameters, just set formData
         setFormData(formData);

@@ -39,3 +39,10 @@ export const defaultValues = {
     n_pcs: 1,
     resolution: 1,
   };
+
+  export const defaultReductionParams = {
+    assay: "RNA",
+    n_neighbors: 15,
+    n_pcs: 1,
+    resolution: 1,
+  };
