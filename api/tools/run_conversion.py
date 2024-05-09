@@ -13,7 +13,6 @@ def run_conversion(task_id, ds:dict, show_error=True):
     pp_stage = "Raw"
     process = "Formatting"
     dataset = ds['dataset']
-    layer = ds['layer']
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
@@ -63,6 +62,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
 
     if output_format == "CSV":
         try:
+            layer = ds['layer']
             adata, counts, csv_path = load_anndata_to_csv(input, output, layer=layer)
             adata = None
             csv_path =None
