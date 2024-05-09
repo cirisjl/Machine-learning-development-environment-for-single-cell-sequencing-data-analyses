@@ -399,6 +399,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     Create a task for benchmarks
     """
     task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
+    print(task_dict)
     task = create_benchmarks_task.apply_async(args=[task_dict])
     return JSONResponse({"task_id": task.id, "status": "Benchmarks task submitted successfully"})
     
