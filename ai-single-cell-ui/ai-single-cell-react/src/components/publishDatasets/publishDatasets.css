@@ -934,3 +934,14 @@ font-size: 16px;
 .dataset-container {
   background-color: #ebe8e8; 
 }
+
+#plot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh; /* Makes the container take the full height of the viewport */
+  font-size: 1.5rem; /* Increases the font size */
+}
+
+
+

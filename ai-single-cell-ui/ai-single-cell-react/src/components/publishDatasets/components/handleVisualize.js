@@ -12,7 +12,16 @@ function HandleVisualize() {
   const [datasetId, setDatasetId] = useState("");
   const [data, setData] = useState(null);
   const [visualizeDataset,setVisualizeDataset]=useState({});
+  const [ppresult,setppResult]=useState({});
+
   const [activeTab, setActiveTab] = useState(0);
+  const [selectedPlot, setSelectedPlot] = useState('2d'); // State to manage selected plot option
+
+  const handlePlotChange = (event) => {
+    setSelectedPlot(event.target.value);
+    console.log('check',ppresult);
+
+  };
 
   const handleTabClick = (tabIndex) => {
     setActiveTab(tabIndex);
@@ -23,10 +32,7 @@ function HandleVisualize() {
     setDatasetId(id);
   }, [id]);
 
-  useEffect(() => {
-    console.log("current dATASET dATA:", visualizeDataset);
-
-  }, [visualizeDataset]);
+ 
 
   useEffect(() => {
     // Make the API call here
@@ -48,6 +54,21 @@ function HandleVisualize() {
 
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if(visualizeDataset){
+    axios.get(`${SERVER_URL}/mongoDB/api/fetchGraphData/${visualizeDataset.process_id}`)
+      .then(response => {
+        console.log('Response Received for pp dataset',response.data);
+        setppResult(response.data)
+
+      })
+      .catch(error => {
+        console.log('Error while retrieving data',error);
+      });
+    }
+    
+  }, [visualizeDataset]);
 
   return (
 
@@ -77,19 +98,70 @@ function HandleVisualize() {
             <p>{visualizeDataset['Reference (paper)']}</p>
           </div>
         )}
-        {activeTab === 1 &&
+        {/* {activeTab === 1 &&
           <div className="dataset-tab-panel">
    <h2>Scatter Plot</h2>
-           <ReactPlotly plot_data={visualizeDataset.QC_Plots.scatter_plot} />
+           <ReactPlotly plot_data={ppresult.scatter_plot} />
 
            <h2>UMAP Plot</h2>
-           <ReactPlotly plot_data={visualizeDataset.QC_Plots.umap_plot} />
+           <ReactPlotly plot_data={ppresult.umap_plot} />
 
 
            <h2>Violin Plot</h2>
-           <ReactPlotly plot_data={visualizeDataset.QC_Plots.violin_plot} />
+           <ReactPlotly plot_data={ppresult.violin_plot} />
+
+           <h2>3d plot</h2>
+           {ppresult.umap_plot_3d ? (
+        <ReactPlotly plot_data={ppresult.umap_plot_3d} />
+      ) : (
+        <div>No 3D plot data available</div>
+      )}
           </div>
-        }
+        } */}
+
+{activeTab === 1 &&
+              <div className="dataset-tab-panel">
+                <div id="plot-container"> 
+                  <label htmlFor="plot-select">Select plot type: </label>
+                  <select id="plot-select" value={selectedPlot} onChange={handlePlotChange}>
+                    <option value="2d">2D Plots</option>
+                    <option value="3d">3D Plot</option>
+                  </select>
+                </div>
+                {selectedPlot === '2d' ? (
+                  <>
+                  <h2>UMAP Plot</h2>
+                  {ppresult.umap_plot ? (
+        <ReactPlotly plot_data={ppresult.umap_plot} />
+          ) : (
+          <div>No UMAP plot data available</div>
+           )}
+                    <h2>Scatter Plot</h2>
+                    {ppresult.scatter_plot ? (
+      <ReactPlotly plot_data={ppresult.scatter_plot} />
+    ) : (
+      <div>No scatter plot data available</div>
+    )}
+                    <h2>Violin Plot</h2>
+
+                    {ppresult.violin_plot ? (
+      <ReactPlotly plot_data={ppresult.violin_plot} />
+    ) : (
+      <div>No violin plot data available</div>
+    )}
+                  </>
+                ) : (
+                  <>
+                    <h2>3D Plot</h2>
+                    {ppresult.umap_plot_3d ? (
+                      <ReactPlotly plot_data={ppresult.umap_plot_3d} />
+                    ) : (
+                      <div>No 3D plot data available</div>
+                    )}
+                  </>
+                )}
+              </div>
+            }
         {activeTab === 2 &&
           <div className="dataset-tab-panel">
             Content for Tab 3

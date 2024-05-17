@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName, taskBuilderCollectionName} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollectionName, taskBuilderCollectionName,preProcessResultsCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 const fs1 = require('fs');
@@ -1484,6 +1484,32 @@ app.get('/mongoDB/api/fetchDataforVisualize/:id', async (req, res) => {
     }
 });
 
+app.get('/mongoDB/api/fetchGraphData/:process_id', async (req, res) => {
+    const { process_id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+    
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        const existingDocument = await collection.findOne({ process_id: process_id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
 
   app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
