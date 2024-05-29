@@ -1443,6 +1443,92 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     }
   });
 
+  app.post('/mongoDB/api/editDatasetMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollection);
+
+        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+
+        // Check if a document with the provided Id exists
+        const existingDocument = await collection.findOne({ Id: formData.Id });
+
+        if (!existingDocument) {
+            console.log('Document with Id does not exist:', formData.Id);
+            res.status(404).json({ error: 'Document with the provided Id does not exist' });
+        } else {
+            // Document with the provided Id exists, proceed with updating
+            await collection.updateOne({ Id: formData.Id }, { $set: formData });
+            console.log('Form data updated successfully');
+            res.status(200).json({ message: 'Form data updated successfully' });
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+app.get('/mongoDB/api/fetchDataforVisualize/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollection);
+
+        const existingDocument = await collection.findOne({ Id: id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+app.get('/mongoDB/api/fetchGraphData/:process_id', async (req, res) => {
+    const { process_id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        const existingDocument = await collection.findOne({ process_id: process_id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
 
   app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
