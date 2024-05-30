@@ -234,12 +234,12 @@ export const uiSchema = {
         "regress_cell_cycle": {
           "classNames": "sub-category",
           "ui:widget": "SwitchComponent"
+        },
+        "use_default": {
+          "classNames": "sub-category",
+          "ui:widget": "toggle"
         }
-        
-      },
-      "use_default": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
+
       }
   }
 };

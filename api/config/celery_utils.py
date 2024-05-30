@@ -20,24 +20,52 @@ def create_celery():
     return celery_app
 
 
+# def get_task_info(task_id):
+#     """
+#     return task info for the given task_id
+#     """
+#     task_result = AsyncResult(task_id)
+#     summary = "Processing"
+#     if task_result.ready():
+#         if task_result.result is not None:
+#             summary = task_result.result
+#         else:
+#             summary = task_result.traceback
+#     result = {
+#         "taskId": task_id,
+#         "task_status": task_result.status,
+#         "task_result": summary
+#     }
+#     print(result)
+#     return result
+
+#     from celery.result import AsyncResult
+
 def get_task_info(task_id):
     """
-    return task info for the given task_id
+    Return task information for the given task_id
     """
     task_result = AsyncResult(task_id)
-    summary = "Processing"
     if task_result.ready():
-        if task_result.result is not None:
-            summary = task_result.result
+        if task_result.successful():
+            # Task completed successfully
+            summary = task_result.get()  # This retrieves the result returned by the task
         else:
-            summary = task_result.traceback
+            # Task failed
+            if task_result.failed():
+                summary = str(task_result.result)  # Getting the exception raised in the task
+                traceback = task_result.traceback  # To get the traceback if you need detailed debug info
+                summary += "\n" + traceback
+    else:
+        summary = "Processing"
+
     result = {
         "taskId": task_id,
         "task_status": task_result.status,
         "task_result": summary
     }
-    print(result)
     return result
+
 
 
 def get_input_path(input, userID):

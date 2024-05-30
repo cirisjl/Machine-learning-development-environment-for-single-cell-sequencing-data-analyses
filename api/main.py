@@ -51,6 +51,7 @@ async def add_process_time_header(request, call_next):
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
 
+
 @app.websocket("/{request_type}/{taskId}")
 async def websocket_endpoint(websocket: WebSocket, request_type:str, taskId: str):
     await websocket.accept()
@@ -68,6 +69,7 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, taskId: str
     finally:
         await websocket.close()
 
+        
 # @app.websocket("/{request_type}/{taskIdsCommaSeparated}")
 # async def websocket_endpoint(websocket: WebSocket, request_type:str, taskIdsCommaSeparated: str):
 #     await websocket.accept()

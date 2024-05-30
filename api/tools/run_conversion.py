@@ -5,7 +5,7 @@ from utils.redislogger import *
 from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
-    
+from exceptions.custom_exceptions import CeleryTaskException
 
 def run_conversion(task_id, ds:dict, show_error=True):
     outputs = []
@@ -13,7 +13,6 @@ def run_conversion(task_id, ds:dict, show_error=True):
     pp_stage = "Raw"
     process = "Formatting"
     dataset = ds['dataset']
-    layer = ds['layer']
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
@@ -39,10 +38,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
         except Exception as e:
             detail = f"Format conversion is failed: {e}"
             os.remove(adata_path)
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
 
     if output_format == "Seurat":
         try:
@@ -52,10 +48,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
         except Exception as e:
             detail = f"Format conversion is failed: {e}"
             os.remove(seurat_path)
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
 
     if output_format == "SingleCellExperiment":
         try:
@@ -65,13 +58,11 @@ def run_conversion(task_id, ds:dict, show_error=True):
         except Exception as e:
             detail = f"Format conversion is failed: {e}"
             os.remove(sce_path)
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
 
     if output_format == "CSV":
         try:
+            layer = ds['layer']
             adata, counts, csv_path = load_anndata_to_csv(input, output, layer=layer)
             adata = None
             csv_path =None
@@ -80,10 +71,7 @@ def run_conversion(task_id, ds:dict, show_error=True):
         except Exception as e:
             detail = f"Format conversion is failed: {e}"
             os.remove(csv_path)
-            raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = detail
-            )
+            raise CeleryTaskException(detail)
         
     results = {
         "taskId": task_id, 

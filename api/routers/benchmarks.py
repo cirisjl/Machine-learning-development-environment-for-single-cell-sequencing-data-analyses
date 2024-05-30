@@ -399,6 +399,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     Create a task for benchmarks
     """
     task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
+    print(task_dict)
     task = create_benchmarks_task.apply_async(args=[task_dict])
     return JSONResponse({"task_id": task.id, "status": "Benchmarks task submitted successfully"})
     
@@ -440,16 +441,17 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
 #         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
-@router.post('/api/to_adata_or_srat')
+@router.post('/to_adata_or_srat')
 async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
 
     fileDetails = request_body.fileDetails
+    userID = request_body.userID
     assay_name = request_body.assay_name
     results = []
 
     # Check if only one file is provided
     if len(fileDetails) == 1:
-        file = unzip_file_if_compressed(fileDetails[0])
+        file = unzip_file_if_compressed(userID, fileDetails[0])
         try:
             # Check if the file is of a specific type
             if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')):
@@ -472,10 +474,10 @@ async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
             raise HTTPException(status_code=500, detail=str(e))
 
     elif len(fileDetails) > 1:
-        parent_directory = os.path.dirname(unzip_file_if_compressed(fileDetails[0]))
+        parent_directory = os.path.dirname(unzip_file_if_compressed(userID, fileDetails[0]))
         
         # Optionally, verify that all files are in the same directory
-        if not all(os.path.dirname(unzip_file_if_compressed(file)) == parent_directory for file in fileDetails):
+        if not all(os.path.dirname(unzip_file_if_compressed(userID, file)) == parent_directory for file in fileDetails):
             raise HTTPException(status_code=400, detail="Not all files are in the same directory.")
 
         try:

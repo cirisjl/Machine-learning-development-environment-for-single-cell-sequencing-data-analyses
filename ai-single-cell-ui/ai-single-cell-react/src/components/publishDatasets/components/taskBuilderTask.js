@@ -20,7 +20,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [taskId, setTaskId] = useState("");
   const webSocketStatus = useRef(null);
 
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState(''); // or 'multiple'
 
@@ -128,7 +127,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const handleDataSplit = async (adata_path, datasetId) => {
     try {
       const dataset = taskData.task_builder.selectedDatasets[datasetId];
-
       if(!dataset.taskType) {
         setMessage('You must select taskType before the data split!');
         setHasMessage(true);
@@ -136,7 +134,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         return;
       }
       setLoading(prevLoading => ({ ...prevLoading, [datasetId]: true })); // Set loading to true for the specific dataset
-
+  
       const userData = {
         benchmarksId: dataset.taskType.value + "-" + datasetId,
         datasetId: datasetId,
@@ -160,8 +158,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       console.log(userData);
   
       // Make the API call
-      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {
-        method: 'POST',
+      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -173,7 +170,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         const taskID = result.task_id;
         setTaskId(taskID);
   
-        // Update only the specific dataset's dataSplit parameters
+        // // Update only the specific dataset's dataSplit parameters
         // setTaskData(prevTaskData => ({
         //   ...prevTaskData,
         //   task_builder: {
@@ -298,6 +295,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Call onSelect with the updated selected datasets
     handleSelectDatasets(currentSelectedDatasets);
   };
+  
 
   return (
     <div className='task-builder-task'>

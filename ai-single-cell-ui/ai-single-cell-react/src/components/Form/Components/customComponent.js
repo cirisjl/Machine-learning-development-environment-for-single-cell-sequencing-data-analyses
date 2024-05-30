@@ -192,7 +192,7 @@ class MyForm extends Component {
 
       formData.Id = constructedID;
 
-      //Add metadata
+      // //Add metadata
       // formData.Cells = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.cells);
       // formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
       // formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
@@ -217,7 +217,7 @@ class MyForm extends Component {
       //   "highest_expr_genes_plot": taskData.quality_control.qc_results[0]?.highest_expr_genes_plot
       // }
 
-      formData['process_id'] = taskData.quality_control.qc_results[0]?.process_id;
+      formData['process_ids'] = taskData.quality_control.qc_results[0]?.process_id ? [taskData.quality_control.qc_results[0].process_id] : [];
       formData['PP Stage'] = taskData.quality_control.qc_results[0]?.stage;
       formData['MD5'] = taskData.quality_control.qc_results[0]?.md5;
       formData['PP Method'] = taskData.quality_control.qc_results[0]?.method;

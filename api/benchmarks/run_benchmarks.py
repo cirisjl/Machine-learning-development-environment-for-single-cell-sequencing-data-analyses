@@ -3,6 +3,7 @@ from utils.redislogger import *
 from utils.mongodb import upsert_benchmarks, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from exceptions.custom_exceptions import CeleryTaskException
 
 def run_benchmarks(task_id, task_dict:dict):
     adata_path = task_dict['adata_path']
@@ -13,7 +14,7 @@ def run_benchmarks(task_id, task_dict:dict):
     userID = task_dict['userID']
 
     adata_path = unzip_file_if_compressed(task_id,adata_path)
-
+    
     if(task_type=="Clustering"):
         try:
             if os.path.exists(adata_path):
@@ -29,10 +30,10 @@ def run_benchmarks(task_id, task_dict:dict):
                 upsert_task_results(results)
                 return results
             else:
-                raise HTTPException(
-                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = f'File does not exist at {adata_path}')
+                detail = f'File does not exist at {adata_path}'
+                raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
-            raise HTTPException(status_code=500, detail=f"Clustering benchmarks is failed: {str(e)}")
+            detail=f"Clustering benchmarks is failed: {str(e)}"
+            raise CeleryTaskException(detail)

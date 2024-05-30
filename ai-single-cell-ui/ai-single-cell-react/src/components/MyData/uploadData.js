@@ -60,13 +60,13 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
 
 
     let [selectedAliases, setSelectedAliases] = useState([]);
-    const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'count_matrix.mtx', 'features.tsv.gz', 'count_matrix.mtx.gz'];
+    const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'features.tsv.gz'];
     const acceptedMultiFileSets = [
         ['molecules.txt', 'annotation.txt'],
         ['barcodes.tsv', 'genes.tsv', 'matrix.mtx'],
         ['barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz'],
-        ['barcodes.tsv', 'features.tsv', 'count_matrix.mtx'],
-        ['barcodes.tsv.gz', 'features.tsv.gz', 'count_matrix.mtx.gz']
+        ['barcodes.tsv', 'features.tsv', 'matrix.mtx'],
+        ['barcodes.tsv.gz', 'features.tsv.gz', 'matrix.mtx.gz']
     ];
 
     // Custom styled components
@@ -221,9 +221,9 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         } else if (fileName.endsWith('.tsv.gz')) {
             return ['genes', 'cells', 'features'];
         } else if (fileName.endsWith('.mtx')) {
-            return ['matrix', 'count matrix'];
+            return ['matrix'];
         } else if (fileName.endsWith('.mtx.gz')) {
-            return ['matrix', 'count matrix'];
+            return ['matrix'];
         }
         else {
             return [];
@@ -231,15 +231,15 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     };
 
     function getStandardFileName(fileName, fileType) {
-        const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features", "count matrix"];
+        const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features"];
         if (!acceptedFileTypes.includes(fileType)) {
             return fileName;
         }
         const txt = { "molecules": "molecules.txt", "annotation": "annotation.txt" }
         const tsv = { "cells": "barcodes.tsv", "genes": "genes.tsv", "features": "features.tsv" }
         const tsv_gz = { "cells": "barcodes.tsv.gz", "genes": "genes.tsv.gz", "features": "features.tsv.gz" }
-        const mtx = {"matrix": "matrix.mtx", "count matrix": "count_matrix.mtx"}
-        const mtx_gz = {"matrix": "matrix.mtx.gz", "count matrix": "count_matrix.mtx.gz"}
+        const mtx = {"matrix": "matrix.mtx"}
+        const mtx_gz = {"matrix": "matrix.mtx.gz"}
 
         if (fileName.endsWith('.txt')) {
             return txt[fileType];
@@ -459,7 +459,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         }
                     }
                     else {
-                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
                         if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
                             setErrorMessage("The selected file is not of an accepted standard format.");
                             return;
@@ -554,10 +554,11 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                             setIsLoading(true); // Start loading
 
                             const data = {
-                                fileDetails: updatedFiles
+                                fileDetails: updatedFiles,
+                                userID : authData.username
                             };
                             
-                            axios.post(`${CELERY_BACKEND_API}/convert/api/to_adata_or_srat`, data)
+                            axios.post(`${CELERY_BACKEND_API}/api/benchmarks/to_adata_or_srat`, data)
                             .then(function (response) {
                                 console.log(response.data);
                                 let data = response.data[0];
@@ -727,10 +728,10 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 </p>
                                 <ul>
                                     <li>Molecules(txt)&nbsp;+&nbsp;Annotation(txt)</li>
-                                    <li>Cells(tsv)&nbsp;+&nbsp;Genes(tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
-                                    <li>Cells(tsv.gz)&nbsp;+&nbsp;Genes(tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
-                                    <li>Cells(tsv)&nbsp;+&nbsp;Features(tsv)&nbsp;+&nbsp;Count Matrix(mtx)</li>
-                                    <li>Cells(tsv.gz)&nbsp;+&nbsp;Features(tsv.gz)&nbsp;+&nbsp;Count Matrix(mtx.gz)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
                                 </ul>
                             </div>
                         </div>

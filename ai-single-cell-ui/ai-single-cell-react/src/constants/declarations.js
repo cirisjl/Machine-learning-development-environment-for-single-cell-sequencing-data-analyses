@@ -19,7 +19,6 @@ export const defaultValues = {
     use_default: true,
     doublet_rate: 0.08
   };
-
   export const defaultQcParams = {
     assay: "RNA",
     min_genes: 200,
@@ -32,4 +31,18 @@ export const defaultValues = {
     resolution: 1,
     doublet_rate: 0,
     regress_cell_cycle: false
+  };
+
+  export const defaultNormalizationParams = {
+    assay: "RNA",
+    n_neighbors: 15,
+    n_pcs: 1,
+    resolution: 1,
+  };
+
+  export const defaultReductionParams = {
+    assay: "RNA",
+    n_neighbors: 15,
+    n_pcs: 1,
+    resolution: 1,
   };

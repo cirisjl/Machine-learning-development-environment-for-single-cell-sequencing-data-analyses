@@ -5,7 +5,7 @@ import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
-import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, SERVER_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams,defaultNormalizationParams ,defaultReductionParams} from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GeneRangeSlider from './components/geneRangeSlider';
@@ -28,8 +28,17 @@ export default function ToolsDetailsComponent(props) {
       normalization: '/api/tools/normalize',
       imputation: '/api/tools/impute',
       integration: '/api/tools/integrate',
-      evaluation: '/api/tools/evaluate'
+      evaluation: '/api/tools/evaluate',
+      formatting: '/api/tools/convert',
+      reduction: '/api/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
+    };
+
+    const parametersKey = {
+      quality_control: 'qc_params',
+      normalization: 'normalization_params',
+      imputation: 'imputation_params',
+      reduction: 'reduction_params'
     };
 
     const filterStaticCategoryMap = {
@@ -37,7 +46,9 @@ export default function ToolsDetailsComponent(props) {
       normalization: 'Normalization',
       imputation: 'Imputation',
       integration: 'Integration',
-      evaluation: 'Evaluation'
+      evaluation: 'Evaluation',
+      formatting: 'Formatting',
+      reduction: 'Reduction'
       // Add more filter categories and their corresponding Names as needed
     };
 
@@ -110,6 +121,7 @@ export default function ToolsDetailsComponent(props) {
             onChange={(e) => props.onChange(e.target.checked)}
           />
         ),
+        GeneRangeSlider: GeneRangeSlider,
         RangeSlider: RangeSlider,
         SwitchComponent: SwitchComponent,
         UseDefaultSwitch: UseDefaultSwitch,
@@ -198,8 +210,18 @@ export default function ToolsDetailsComponent(props) {
 
                   // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
                   const taskId = response.task_id;
-                  // const taskTitle = filterStaticCategoryMap[filterCategory] + " on " + datasetName + " Using " + filterName;
-                  const method = formData.methods[0];
+                  let method = "";
+
+                  if(filterCategory === "reduction") {
+                    method = "Reduction";
+                  } else if(filterCategory === "formatting") {
+                    method = "Formatting";
+                  } else if(parametersKey[filterCategory]) {
+                    method = formData[parametersKey[filterCategory]].methods[0];
+                  } else {
+                    method = formData.methods[0];
+                  }
+
                   const output = formData.output;
 
                   // Make API call to store the task information
@@ -228,7 +250,7 @@ export default function ToolsDetailsComponent(props) {
                         setLoading(false);
                         setSuccessMessage('Form submitted successfully!');
                         setErrorMessage('');
-                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: formData.methods[0], datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
+                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: method, datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
                       } else if (response.status === 400) {
                         response.json().then(data => {
                           console.error('Validation error:', data.error);
@@ -344,43 +366,55 @@ export default function ToolsDetailsComponent(props) {
   },[filterName,filterCategory]);
 
   const handleChange = ({ formData }) => {
-    console.log("handleChange");
-    const currentToolParams = formData.parameters.qc_params || {};
 
-      
+    // Choose the appropriate default parameters based on the category
+    let defaultParams;
+    let paramsKey;
+    if (filterCategory === 'quality_control') {
+        defaultParams = defaultQcParams;
+        paramsKey = 'qc_params';
 
-    console.log(formData);
+    } else if (filterCategory === 'normalization') {
+        defaultParams = defaultNormalizationParams;
+        paramsKey = 'normalization_params';
+
+    } else if(filterCategory === 'reduction') {
+        defaultParams = defaultReductionParams;
+        paramsKey = 'reduction_params';
+    } else {
+        // For other categories, we do not reset parameters, just set formData
+        setFormData(formData);
+        return;
+    }
+
+    const currentToolParams = formData.parameters[paramsKey] || {};
 
     // Determine if there's a change in the use_default toggle
-    const useDefaultChanged = useDefault !== formData.parameters.use_default;
+    const useDefaultChanged = useDefault !== currentToolParams.use_default;
 
     // Check for any changes in default parameters
-    let defaultParamsChanged = Object.keys(defaultQcParams).some(key => {
-        return JSON.stringify(currentToolParams[key]) !== JSON.stringify(defaultQcParams[key]);
+    let defaultParamsChanged = Object.keys(defaultParams).some(key => {
+        return JSON.stringify(currentToolParams[key]) !== JSON.stringify(defaultParams[key]);
     });
 
     if (useDefaultChanged) {
-        if (formData.parameters.use_default) {
+        if (currentToolParams.use_default) {
             // If use_default is toggled to true, reset only the default parameters
             const resetParams = {};
-            Object.keys(defaultQcParams).forEach(key => {
-                resetParams[key] = defaultQcParams[key];
+            Object.keys(defaultParams).forEach(key => {
+                resetParams[key] = defaultParams[key];
             });
-            formData.parameters.qc_params = {
-                ...formData.parameters.qc_params,
-                ...resetParams
-            };
+            formData.parameters[paramsKey] = {
+              ...formData.parameters[paramsKey],
+              ...resetParams
+          };
         }
     } else if (defaultParamsChanged) {
         // If any default parameters have changed and use_default was previously true, set it to false
-        formData.parameters.use_default = false;
+        formData.parameters[paramsKey].use_default = false;
     }
 
-    setUseDefault(formData.parameters.use_default);
-    // useDefault = formData.parameters.use_default;
-    console.log("use default value");
-    console.log(useDefault);
-    console.log(formData);
+    setUseDefault(formData.parameters[paramsKey].use_default);
     setFormData(formData);
 };
 
@@ -438,7 +472,7 @@ export default function ToolsDetailsComponent(props) {
             onChange={handleChange}
             uiSchema={UIfilterSchema}
             onSubmit={onSubmit}
-            key={JSON.stringify(formData)}  // Helps in re-rendering the form with updated data
+            key={JSON.stringify(formData)} // Helps in re-rendering the form with updated data
         />
         </div>
           ) : (

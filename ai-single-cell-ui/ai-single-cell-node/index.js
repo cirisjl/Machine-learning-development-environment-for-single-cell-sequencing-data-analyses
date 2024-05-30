@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 // const fs1 = require('fs');
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -2592,18 +2592,18 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
     }
   });
 
-// API endpoint to get process results based on an array of process_ids
+  // API endpoint to get process results based on an array of process_ids
 app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
     let client;
-   
+
     try {
-        
+
         const processIds = req.body.processIds;
 
         if (!processIds || !processIds.length) {
             return res.status(400).json({ error: 'No process IDs provided' });
         }
-    
+
         client = new MongoClient(mongoUrl);
 
         await client.connect();
@@ -2625,6 +2625,36 @@ app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
 });
 
 
+  // API endpoint to get Benchmarks results based on benchmarksId
+  app.post('/benchmarks/api/getBenchmarksResults', async (req, res) => {
+    let client;
+    try {
+
+        const benchmarksId = req.body.benchmarksId;
+
+        if (!benchmarksId) {
+            return res.status(400).json({ error: 'No BenchmarksId is provided' });
+        }
+
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(benchmarksCollection);
+
+        // Fetching documents where process_id is in the provided array of process IDs
+        const benchmarksResults = await collection.find({
+            benchmarks_id: benchmarksId
+        }).toArray();
+
+        res.status(200).json(benchmarksResults);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        client.close();
+    }
+});
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -1,8 +1,6 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
 import Box from '@mui/material/Box';
-
 
 const RangeSlider = ({ title, value, onChange,options }) => {
   // const handleChange = (event, newValue) => {
@@ -15,17 +13,17 @@ const RangeSlider = ({ title, value, onChange,options }) => {
 
   return (
     <div>
-    <Box sx={{ m: 2 }}>
-      <Slider
-        value={value}
-        // onChange={handleChange}
-        onChangeCommitted={handleDragChange} 
-        valueLabelDisplay="auto"
-        min={options.min}
-        max={options.max}
-        step={options.step}
-        marks={options.marks}
-      />
+      <Box sx={{ m: 2 }}>
+        <Slider
+          value={value}
+          // onChange={handleChange}
+          onChangeCommitted={handleDragChange} 
+          valueLabelDisplay="auto"
+          min={options.min}
+          max={options.max}
+          step={options.step}
+          marks={options.marks}
+        />
       </Box>
     </div>
   );

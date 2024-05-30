@@ -4,7 +4,7 @@ import Slider from '@mui/material/Slider';
 
 // Custom widget component
 const GeneRangeSlider = ({value, onChange}) => {
-  const handleChange = (event, newValue) => {
+    const handleChange = (event, newValue) => {
     onChange(newValue); // newValue will be an array [min, max]
   };
 
@@ -38,5 +38,6 @@ const GeneRangeSlider = ({value, onChange}) => {
     </Box>
   );
 };
+
 
 export default GeneRangeSlider;
