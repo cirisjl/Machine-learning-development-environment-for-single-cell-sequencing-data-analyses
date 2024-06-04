@@ -78,7 +78,7 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
     try: 
         redislogger.info(task_id, "Running scvi for clustering task.")
         # Call scvi_clustering method
-        asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata_path, label)
+        asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label)
 
         scvi_results = {
             "asw_score": asw_scvi,

@@ -8,7 +8,7 @@ from typing import Tuple
 import sys
 sys.path.append('..')
 # from tools.formating.formating import *
-from tools.reduction.reduction import run_dimension_reduction
+from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from tools.evaluation.monitor import *
 from tools.evaluation.clustering import clustering_scores
 
@@ -25,7 +25,7 @@ np.random.seed(0)
 def scvi_clustering(adata, labels):
     # Start monitoring
     monitor = Monitor(1)
-
+    scvi.model.SCVI.setup_anndata(adata)
     model = scvi.model.SCVI(adata)
     model.train()
 
@@ -37,6 +37,7 @@ def scvi_clustering(adata, labels):
     )
 
     adata, msg = run_dimension_reduction(adata, use_rep='X_scVI')
+    adata = run_clustering(adata, use_rep='X_scVI')
 
     adata.obsm["X_mde"] = mde(adata.obsm["X_scVI"])
     

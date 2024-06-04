@@ -661,18 +661,22 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   colnames(X) <- rownames(obs_df)
   rownames(X) <- rownames(var_df)
 
-  if ('scale.data' %in% names(adata$layers)){
-    srat <- CreateSeuratObject(counts = X, data = t(adata$layers['scale.data']), project = project_name, meta.data = obs_df)
-    message("X -> counts; scale.data -> data")
-  } else {
-    srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
-    message("X -> counts")
-  }
+#   if ('scale.data' %in% names(adata$layers)){
+#     srat <- CreateSeuratObject(counts = X, data = t(adata$layers['scale.data']), project = project_name, meta.data = obs_df)
+#     message("X -> counts; scale.data -> data")
+#   } else {
+#     srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
+#     message("X -> counts")
+#   }
+
+  srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
+  message("X -> counts")
   
   # Add AnnData layers to assays
   for (layer in names(adata$layers)){
-    if (layer == 'scale.data') next
-    srat[[layer]] <- CreateAssayObject(data = tadata$layers[layer])
+    if (layer != 'scale.data'){
+        srat[[layer]] <- CreateAssayObject(data = t(adata$layers[layer]))
+    }
     message("Adding AnnData layers to Seurat assays")
   }
 

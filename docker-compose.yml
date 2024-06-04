@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     container_name: oscbdb
@@ -36,6 +34,7 @@ services:
   redis:
     image: "redis:6-alpine"
     hostname: redis
+    restart: always
     command: redis-server --port 6381 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       # - 6379:6379
@@ -46,6 +45,7 @@ services:
   rabbitmq:
     image: "rabbitmq:management"
     container_name: rabbitmq 
+    restart: always
     ports:
       - 5672:5672
       - 15672:15672
@@ -114,6 +114,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_worker1
+    restart: always
     command: celery -A main.celery worker --loglevel=info -Q tools,workflows
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo
@@ -145,6 +146,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_worker2
+    restart: always
     command: celery -A main.celery worker --loglevel=info -Q tools,workflows
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo 
@@ -175,6 +177,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_worker3
+    restart: always
     command: celery -A main.celery worker --loglevel=info -Q tools,workflows
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo 
@@ -205,6 +208,7 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_dashboard
+    restart: always
     command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5672// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       - 5555:5555
@@ -242,6 +246,7 @@ services:
     image: oscb_node
     build:
       context: ./ai-single-cell-ui/ai-single-cell-node
+    restart: always
     ports:
       - "3001:3001"
       - "3020:3020"
@@ -251,7 +256,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=aisinglecell
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=node-0.c6420-ai.biomizzou-pg0.clemson.cloudlab.us
+      - HOST_URL=clnode110.clemson.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./ai-single-cell-ui/ai-single-cell-node/.env  
@@ -264,14 +269,15 @@ services:
 
   oscb_react:
     container_name: oscb_react_container
-    image: oscb_react
-    build: ./ai-single-cell-ui/ai-single-cell-react
+    image: stormgod/oscb_react
+    restart: always
+    # build: ./ai-single-cell-ui/ai-single-cell-react
     ports:
       - "3000:3000"
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=node-0.c6420-ai.biomizzou-pg0.clemson.cloudlab.us
+      - HOST_URL=clnode110.clemson.cloudlab.us
     networks:
       - oscb-network
 
