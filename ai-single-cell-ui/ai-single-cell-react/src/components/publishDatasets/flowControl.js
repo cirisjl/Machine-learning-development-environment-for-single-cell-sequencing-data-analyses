@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import PublishDataset from './publishDataset';
 import TaskBuilder from './taskBuilder';
+import useAdminAuthCheck from '../common_components/adminAuthCheckComponent';
 
 const FlowControl = () => {
+  
+  useAdminAuthCheck();
 
   const [flow, setFlow] = useState('');
 
@@ -23,18 +26,6 @@ const FlowControl = () => {
     upload: {
       files:[]
     },
-    // validation: {
-    //     inputFiles: [],
-    //     seuratFile: {
-    //       default_assay: '',
-    //       assay_names: [],
-    //       file: ''
-    //     } ,
-    //     selectedAssayName: '',
-    //     fileMappings:[],
-    //     token: '',
-    //     displayAssayNames: false
-    //   },
     quality_control: {
       qc_results: [],
       file_paths: [],
@@ -47,7 +38,20 @@ const FlowControl = () => {
       } ,
       shouldHideForSeurat: false,
       token: '',
-      selectedAssayName:''
+      selectedAssayName:'',
+      qc_params:{
+        min_genes: 200,
+        max_genes: 20000, // No limit
+        min_cells: 2,
+        target_sum: 1e4,
+        n_top_genes: 2000,
+        n_neighbors: 15,
+        n_pcs: 0, // None
+        resolution: 1,
+        regress_cell_cycle: false,
+        use_default: true,
+        doublet_rate: 0.08
+      }
     },
     metadata: {
       formData: {

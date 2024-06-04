@@ -32,3 +32,17 @@ export const defaultValues = {
     doublet_rate: 0,
     regress_cell_cycle: false
   };
+
+  export const defaultNormalizationParams = {
+    assay: "RNA",
+    n_neighbors: 15,
+    n_pcs: 1,
+    resolution: 1,
+  };
+
+  export const defaultReductionParams = {
+    assay: "RNA",
+    n_neighbors: 15,
+    n_pcs: 1,
+    resolution: 1,
+  };

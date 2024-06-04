@@ -1,4 +1,4 @@
-import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {useState,useEffect} from 'react';
 import { useTable, useRowSelect } from 'react-table';
@@ -21,10 +21,18 @@ import { useNavigate } from 'react-router-dom';
 
 
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
+
   useEffect(() => {
     console.log("data",data);
-  });
+    updateData(data);
+  },[data]);
 
+
+
+  const [newData,updateData]=useState([]);
+  useEffect(() => {
+    console.log("newData",newData);
+  },[newData]);
 
   const [formData, setFormData] = useState({
     Dataset: '',
@@ -114,9 +122,7 @@ const clearMessageAfterTimeout = () => {
       console.log("curretn dataset",formData);
     }, [formData]);
   
-    const [displayVisualize,setDisplayVisualize] = useState(false);
     const [visualizeDataset, setVisualizeDataset] = useState(null);
-    const [activeTab, setActiveTab] = useState(0);
 
     const handleTabClick = (tabIndex) => {
       setActiveTab(tabIndex);
@@ -334,15 +340,29 @@ const clearMessageAfterTimeout = () => {
    
   
   const handleVisualize = (dataset,id)=>{
-    // setVisualizeDataset(dataset);
-    // setDisplayVisualize(true);
-    // navigate("/handleVisualize/id", { replace: false, state: { newTab: true } });
     const newRoute = `handleVisualize/${id}`
     window.open(`${window.location.origin}/${newRoute}`)
+  }
 
+  const  handleDelete= (dataset,id)=>{
+  console.log("IN making of delete dataset",id);
+  console.log("dataset",dataset);
+  axios.delete(`${SERVER_URL}/mongoDB/api/deleteDataset`, { data: { id: dataset } })
+    .then(response => {
+      console.log('Dataset deleted successfully');
+      const updatedData = newData.filter(item => item.Id !== dataset);
+      console.log("check delete",updatedData);
+            updateData(updatedData);
+
+    })
+    .catch(error => {
+      console.error('Error deleting dataset:', error);
+    });
+    console.log("newData",newData)
 
 
   }
+
 
     const handlecloseView=()=>{
       setx(false);
@@ -375,11 +395,11 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
 
 
     const columns = React.useMemo(() => {
-        if (data.length === 0) {
+        if (newData.length === 0) {
             return [];
         }
 
-        const baseColumns = Object.keys(data[0])
+        const baseColumns = Object.keys(newData[0])
         .filter(key => visibleColumns[key])
         .map(key => ({
             Header: key,
@@ -431,13 +451,19 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
                     >
                         <FontAwesomeIcon icon={faEye} />
                     </button>
+                    <button
+                    onClick={() => handleDelete(item["Id"], item)}
+                    className="action-button"
+                >
+                    <FontAwesomeIcon icon={faTrash} />
+                </button>
                 </div>
                 );
             }
         };
           
         return [actionColumn, ...baseColumns];
-    }, [data, selectedDatasets, visibleColumns]);
+    }, [newData, selectedDatasets, visibleColumns]);
 
     const {
         getTableProps,
@@ -954,95 +980,6 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
            
             </div>
           </div>
-        )}
-        {displayVisualize && (
-          <div className="dialog-container">
-          <div className="dialog1">
-          <div className="tab">
-        <button className={activeTab === 0 ? 'active' : ''} onClick={() => handleTabClick(0)}>Summary</button>
-        <button className={activeTab === 1 ? 'active' : ''} onClick={() => handleTabClick(1)}>Explore</button>
-        <button className={activeTab === 2 ? 'active' : ''} onClick={() => handleTabClick(2)}>Download</button>
-         </div>
-      <div className="tab-content">
-        {activeTab === 0 && 
-        <div className="tab-panel">
-           <h2>Title</h2>
-            <p>{visualizeDataset.Title}</p>
-          <hr />
-          <h2>Abstract</h2>
-          <p>{visualizeDataset.Abstract}</p>
-          <hr />
-        <h2>Author</h2>
-        <p>{visualizeDataset.Author}</p>
-        <hr />
-          <h2>Reference (paper)</h2>
-          <p>{visualizeDataset['Reference (paper)']}</p>
-          <hr />
-          <h2>Species</h2>
-          <p>{visualizeDataset['Species'].value}</p>
-          <hr/>
-          <h2>Sample Type</h2>
-          <p>{visualizeDataset['Sample Type'].value}</p>
-          <hr/>
-          <p>{visualizeDataset['Anatomical Entity'].label}</p>
-          <hr/>
-          <h2>Organ Part</h2>
-          <p>{visualizeDataset['Organ Part'].label}</p>
-          <hr/>
-          <h2>Model Organ</h2>
-          <p>{visualizeDataset['Model Organ'].label}</p>
-          <br/>
-          <h2>Selected Cell Types</h2>
-          <p>{visualizeDataset['Selected Cell Types'].label}</p>
-          <hr/>
-          <h2>Library Construction Method</h2>
-          <p>{visualizeDataset['Library Construction Method']}</p>
-          <hr/>
-          <h2>Nucleic Acid Source</h2>
-          <p>{visualizeDataset['Nucleic Acid Source']}</p>
-          <hr/>
-          <h2>Disease Status (Specimen)</h2>
-          <p>{visualizeDataset['Disease Status (Specimen)'].label}</p>
-          <hr/>
-          <h2>Disease Status (Donor)</h2>
-          <p>{visualizeDataset['Disease Status (Donor)'].label}</p>
-          <hr/>
-          <h2>Development Stage</h2>
-          <p>{visualizeDataset['Development Stage']}</p>
-          <hr/>
-          <h2>Donor Count</h2>
-          <p>{visualizeDataset['Donor Count']}</p>
-          <hr/>
-          <h2>Source</h2>
-          <p>{visualizeDataset['Source']}</p>
-          
-          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
-
-          </div>}
-        {activeTab === 1 && <div className="tab-panel">
-          <h2>Scatter Plot</h2>
-          <ReactPlotly plot_data={visualizeDataset.QC_Plots.scatter_plot} />
-
-          <h2>UMAP Plot</h2>
-          <ReactPlotly plot_data={visualizeDataset.QC_Plots.umap_plot} />
-
-
-          <h2>Violin Plot</h2>
-          <ReactPlotly plot_data={visualizeDataset.QC_Plots.violin_plot} />
-
-
-          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
-
-
-          </div>}
-        {activeTab === 2 && <div className="tab-panel">Content for Tab 3
-          <button className="close-button" onClick={() => handleCloseButtonClick()}>Close</button>
-</div>}
-      </div>
-
-            </div>
-            </div>
-
         )}
         </div>
         </div>

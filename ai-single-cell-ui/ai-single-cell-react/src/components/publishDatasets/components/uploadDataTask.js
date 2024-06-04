@@ -23,7 +23,6 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   let pwd = "tempStorage/";
   const navigate = useNavigate();
 
-
   // State to manage error messages
   const [fileError, setFileError] = useState('');
   const [titleError, setTitleError] = useState('');
@@ -33,13 +32,13 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState(taskData.upload.files);
   let [selectedAliases, setSelectedAliases] = useState(taskData.upload.files);
-  const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'count_matrix.mtx', 'features.tsv.gz', 'count_matrix.mtx.gz'];
+  const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'features.tsv.gz'];
   const acceptedMultiFileSets = [
       ['molecules.txt', 'annotation.txt'],
       ['barcodes.tsv', 'genes.tsv', 'matrix.mtx'],
       ['barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz'],
-      ['barcodes.tsv', 'features.tsv', 'count_matrix.mtx'],
-      ['barcodes.tsv.gz', 'features.tsv.gz', 'count_matrix.mtx.gz']
+      ['barcodes.tsv', 'features.tsv', 'matrix.mtx'],
+      ['barcodes.tsv.gz', 'features.tsv.gz', 'matrix.mtx.gz']
   ];
 
   // Custom styled components
@@ -66,9 +65,9 @@ const CustomListItem = styled(ListItem)(({ theme }) => ({
     } else if (fileName.endsWith('.tsv.gz')) {
         return ['genes', 'cells', 'features'];
     } else if (fileName.endsWith('.mtx')) {
-        return ['matrix', 'count_matrix'];
+        return ['matrix'];
     } else if (fileName.endsWith('.mtx.gz')) {
-        return ['matrix', 'count_matrix'];
+        return ['matrix'];
     }
     else {
         return [];
@@ -76,15 +75,15 @@ const CustomListItem = styled(ListItem)(({ theme }) => ({
 };
 
 function getStandardFileName(fileName, fileType) {
-    const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features", "count_matrix"];
+    const acceptedFileTypes = ["molecules", "annotation", "cells", "genes", "matrix", "features"];
     if (!acceptedFileTypes.includes(fileType)) {
         return fileName;
     }
     const txt = { "molecules": "molecules.txt", "annotation": "annotation.txt" }
     const tsv = { "cells": "barcodes.tsv", "genes": "genes.tsv", "features": "features.tsv" }
     const tsv_gz = { "cells": "barcodes.tsv.gz", "genes": "genes.tsv.gz", "features": "features.tsv.gz" }
-    const mtx = {"matrix": "matrix.mtx", "count_matrix": "count_matrix.mtx"}
-    const mtx_gz = {"matrix": "matrix.mtx.gz", "count_matrix": "count_matrix.mtx.gz"}
+    const mtx = {"matrix": "matrix.mtx"}
+    const mtx_gz = {"matrix": "matrix.mtx.gz"}
 
     if (fileName.endsWith('.txt')) {
         return txt[fileType];
@@ -256,23 +255,6 @@ function getStandardFileName(fileName, fileType) {
     console.log(taskData);
   };
 
-  useEffect(() => {
-    isUserAuth(getCookie('jwtToken'))
-    .then((authData) => {
-      if (authData.isAdmin) {
-        console.log("User is admin and has access to this page");
-
-      }  else {
-        console.warn("Unauthorized - you must be an admin to access this page");
-        navigate("/accessDenied");
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  }, []);
-
-
   return (
     <div className='upload-task'>
       {(errorMessage !== '') && (
@@ -308,10 +290,10 @@ function getStandardFileName(fileName, fileType) {
                     </p>
                     <ul>
                         <li>Molecules(txt)&nbsp;+&nbsp;Annotation(txt)</li>
-                        <li>Cells(tsv)&nbsp;+&nbsp;Genes(tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
-                        <li>Cells(tsv.gz)&nbsp;+&nbsp;Genes(tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
-                        <li>Cells(tsv)&nbsp;+&nbsp;Features(tsv)&nbsp;+&nbsp;Count Matrix(mtx)</li>
-                        <li>Cells(tsv.gz)&nbsp;+&nbsp;Features(tsv.gz)&nbsp;+&nbsp;Count Matrix(mtx.gz)</li>
+                        <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                        <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
+                        <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                        <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
                     </ul>
                 </div>
             </div>

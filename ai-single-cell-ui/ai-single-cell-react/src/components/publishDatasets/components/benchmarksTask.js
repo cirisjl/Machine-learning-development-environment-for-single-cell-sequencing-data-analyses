@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {CELERY_BACKEND_API} from '../../../constants/declarations';
+import {CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
+import LogComponent from '../../common_components/liveLogs';
+import axios from 'axios';
 
 
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
@@ -17,6 +19,38 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
   const [taskId, setTaskId] = useState('');
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
+
+  const fetchBenchmarksResults = async (benchmarksId) => {
+    if (!benchmarksId) return;
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/benchmarks/api/getBenchmarksResults`, { benchmarksId });
+      console.log('Benchmarks Results:', response.data);
+      const benchmarksResults = response.data;
+      if (Array.isArray(benchmarksResults)) {
+    
+        // Update the benchmarks section in taskData with the received results
+        setTaskData((prevTaskData) => ({
+          ...prevTaskData,
+          benchmarks: {
+            benchmarks_results: benchmarksResults,
+          },
+        }));
+      } else {
+        console.error('Invalid response format');
+        setMessage('Invalid response format');
+        setHasMessage(true);
+        setIsError(true);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
+      setLoading(false);
+      setHasMessage(true);
+      setMessage("Failed to retrieve pre processed results from MongoDB");
+      setIsError(true);
+    }
+  };
 
   const handleTaskCompletion = () => {
 
@@ -42,8 +76,6 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const handleStatusMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      console.log("Task Response");
-      console.log(data);
       if (data.task_status) {
         setCurrentStatus(data.task_status);
         if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
@@ -51,6 +83,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         }
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error parsing status message:", error);
     }
   };
@@ -116,12 +149,16 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
       closeWebSockets(); // Close WebSockets when task is done
       if(currentStatus === "SUCCESS") {
-        // fetchProcessResults(celeryTaskResults.task_result.process_ids);
+        fetchBenchmarksResults(celeryTaskResults.task_result.benchmarksId);
+        setMessage("Benchmarks Process is Successful");
+        setHasMessage(true);
+        setIsError(false);
+      } else if(currentStatus === "FAILURE"){
+        setMessage("Benchmarks Process is Failed");
+        setHasMessage(true);
+        setIsError(true);
       }
       setLoading(false);
-      setHasMessage(true);
-      setMessage("Benchmarks task Success or failed");
-      setIsError(true);
     }
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
 
@@ -131,33 +168,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
-
-      <Grid item xs={12} sx={{paddingTop: '10px'}}>
-            <Card raised>
-              <CardHeader title="Live Logs" />
-              <CardContent>
-                <Paper 
-                  sx={{ 
-                    maxHeight: 300, 
-                    overflow: 'auto', 
-                    '&::-webkit-scrollbar': { width: '0.4em' },
-                    '&::-webkit-scrollbar-thumb': { 
-                      backgroundColor: 'rgba(0,0,0,.1)',
-                      borderRadius: '4px',
-                    }
-                  }} 
-                  id="_live_logs"
-                >
-                  <Typography 
-                    variant="body2" 
-                    component="div" 
-                    sx={{ fontFamily: 'monospace' }}
-                    dangerouslySetInnerHTML={createMarkup(wsLogs || 'No Live logs...')}
-                  />
-                </Paper>
-              </CardContent>
-            </Card>
-        </Grid>
+      <LogComponent wsLogs = {wsLogs}/>
         
       {loading ? (
               <div className="spinner-container">

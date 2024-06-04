@@ -6,15 +6,24 @@ import {
   Card, CardContent, Link, CardHeader 
 } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
-import { WEB_SOCKET_URL } from "../../../constants/declarations";
 import RightRail from '../../RightNavigation/rightRail';
+import LogComponent from '../../common_components/liveLogs';
+import { SERVER_URL } from '../../../constants/declarations';
+import axios from 'axios';
+import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
+import { ScaleLoader } from 'react-spinners';
+import FormControl from '@mui/material/FormControl';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import ReactPlotly from '../../publishDatasets/components/reactPlotly';
 
 function StatusChip({ status }) {
   const getStatusColor = () => {
     switch (status?.toLowerCase()) { // Ensure status is defined
       case 'success': return green[500];
-      case 'failed': return red[500];
-      case 'processing': return yellow[700];
+      case 'failure': return red[500];
+      case 'started': return yellow[700];
       default: return yellow[700];
     }
   };
@@ -22,7 +31,7 @@ function StatusChip({ status }) {
   return status ? (
     <Chip label={status.toUpperCase()} style={{ backgroundColor: getStatusColor(), color: '#fff' }} />
   ) : (
-    <Chip label="LOADING" style={{ backgroundColor: yellow[700], color: '#fff' }} />
+    <Chip label="In Progress" style={{ backgroundColor: yellow[700], color: '#fff' }} />
   );
 }
 
@@ -31,6 +40,13 @@ function TaskDetailsComponent() {
   const { taskId, method, datasetURL, datasetTitle , tool} = location.state || {};   
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
+
+  const [ message, setMessage ] = useState('');
+  const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
+  const [ isError, setIsError ] = useState(false);
+  const [plotDimension, setPlotDimension] = useState('2D');
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
@@ -47,15 +63,44 @@ function TaskDetailsComponent() {
       flexGrow: 1, // Allows the content to expand and fill the space
       overflow: 'auto' // Adds scroll for overflow content
     };
+
+    const fetchProcessResults = async (processIds) => {
+      if (!processIds.length) return;
+  
+      try {
+        const response = await axios.post(`${SERVER_URL}/benchmarks/api/getPreProcessResults`, { processIds });
+        console.log('Process Results:', response.data);
+        setToolResultsFromMongo(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
+        setLoading(false);
+        setHasMessage(true);
+        setMessage("Failed to retrieve pre processed results from MongoDB");
+        setIsError(true);
+      }
+    };
   
 
   const handleStatusMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      if (data[taskId]) {
-        setTaskStatus(data[taskId]);
+      if (data.task_status) {
+        setTaskStatus(data.task_status);
+        if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
+          if(data.task_status === "SUCCESS") {
+            if(data.task_result.process_ids) {
+              fetchProcessResults(data.task_result.process_ids);
+            } else {
+              setLoading(false);
+            }
+          } else {
+            setLoading(false);
+          } 
+        }
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error parsing status message:", error);
     }
   };
@@ -69,15 +114,15 @@ function TaskDetailsComponent() {
     }
   };
 
-  // useWebSocket(`${WEB_SOCKET_URL}/taskStatus/${taskId}`, handleStatusMessage);
-  // useWebSocket(`${WEB_SOCKET_URL}/log/${taskId}`, handleLogMessage);
-
     // Use the WebSocket hook
     useWebSocket(taskId, handleStatusMessage, handleLogMessage);
 
   return (
 
     <div className="task-details-container eighty-twenty-grid">
+
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
+
       <div className="main-content">
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Box display="flex" justifyContent="center">
@@ -127,34 +172,73 @@ function TaskDetailsComponent() {
               </Card>
             </Grid>
 
-            <Grid item xs={12}>
-              <Card raised>
-                <CardHeader title="Live Logs" />
-                <CardContent>
-                  <Paper 
-                    sx={{ 
-                      maxHeight: 300, 
-                      overflow: 'auto', 
-                      '&::-webkit-scrollbar': { width: '0.4em' },
-                      '&::-webkit-scrollbar-thumb': { 
-                        backgroundColor: 'rgba(0,0,0,.1)',
-                        borderRadius: '4px',
-                      }
-                    }} 
-                    id="_live_logs"
-                  >
-                    <Typography 
-                      variant="body2" 
-                      component="div" 
-                      sx={{ fontFamily: 'monospace' }}
-                      dangerouslySetInnerHTML={createMarkup(liveLogs || 'Waiting for logs...')}
-                    />
-                  </Paper>
-                </CardContent>
-              </Card>
-            </Grid>
+            <LogComponent wsLogs = {liveLogs}/>
           </Grid>
         </Container>
+
+      {loading ? (
+        <div className="spinner-container">
+          <ScaleLoader color="#36d7b7" loading={loading} />
+        </div>
+      ) : (
+        (tool === "Quality Control" || tool === "Normalization" || tool === "Reduction") && (
+          <div>
+          {toolResultsFromMongo &&
+            toolResultsFromMongo.map((result, index) => (
+              <React.Fragment key={index}>
+                    {result.umap_plot && (
+                      <>
+                        <h2>UMAP Plot</h2>
+
+                        <FormControl>
+                          {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
+                          <RadioGroup
+                            row
+                            aria-labelledby="demo-row-radio-buttons-group-label"
+                            name="row-radio-buttons-group"
+                            value={plotDimension}
+                            onChange={(event) => setPlotDimension(event.target.value)}
+                          >
+                            <FormControlLabel value="2D" control={<Radio color="secondary"/>} label="2D" />
+                            <FormControlLabel value="3D" control={<Radio color="secondary"/>} label="3D" />
+                          </RadioGroup>
+                        </FormControl>
+
+                        {plotDimension === '2D' && result.umap_plot && (
+                            <>
+                              <ReactPlotly plot_data={result.umap_plot} />
+                            </>
+                          )}
+                          {plotDimension === '3D' && result.umap_plot_3d && (
+                            <>
+                              <ReactPlotly plot_data={result.umap_plot_3d}/>
+                            </>
+                          )}
+                      </>
+                    )}
+                    {result.violin_plot && (
+                      <>
+                        <h2>Violin Plot</h2>
+                        <ReactPlotly plot_data={result.violin_plot} />
+                      </>
+                    )}
+                    {result.scatter_plot && (
+                      <>
+                        <h2>Scatter Plot</h2>
+                        <ReactPlotly plot_data={result.scatter_plot} />
+                      </>
+                    )}
+                    {result.highest_expr_genes_plot && (
+                      <>
+                        <h2>Highest expression Genes Plot</h2>
+                        <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+                      </>
+                    )}
+                  </React.Fragment>
+          ))}
+          </div>
+      )
+      )}
       </div>
       <div className="right-rail">
           <RightRail />

@@ -16,6 +16,14 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
 
     #static array to define the metrics evaluated for the clustering methods
     metrics = ['ARI', 'Silhouette', 'NMI']
+    print(adata)
+
+    print("run benchmarks")
+    print(adata_path)
+    print(label)
+    print(task_type)
+    print(datasetId)
+    print(task_id)
     
     try:
         redislogger.info(task_id, "Running scanpy for clustering task.")
