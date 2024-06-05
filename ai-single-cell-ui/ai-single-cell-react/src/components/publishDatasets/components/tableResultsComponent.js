@@ -124,14 +124,14 @@ const clearMessageAfterTimeout = () => {
   
     const [visualizeDataset, setVisualizeDataset] = useState(null);
 
-    const handleTabClick = (tabIndex) => {
-      setActiveTab(tabIndex);
-    };
+  //   const handleTabClick = (tabIndex) => {
+  //     setActiveTab(tabIndex);
+  //   };
 
     
-  const handleCloseButtonClick=()=>{
-    setDisplayVisualize(false);
-  }
+  // const handleCloseButtonClick=()=>{
+  //   setDisplayVisualize(false);
+  // 
 
 
     useEffect(() => {
