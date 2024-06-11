@@ -145,7 +145,13 @@ const handleLogMessage = (event) => {
  
       const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
       const taskInfo = response.data;
-
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        quality_control: {
+          ...prevTaskData.quality_control,
+          nCells: response.data.nCells,
+        },
+      }));
       const taskId = taskInfo.task_id;
       setTaskId(taskId);
 
@@ -210,7 +216,8 @@ const handleLogMessage = (event) => {
 
           let inputFiles = [];
           for (let file of files) {
-            let path = STORAGE + "/" + authData.username + "/" + newDirectoryPath + "/" + file;
+            // let path = STORAGE + "/" + authData.username + "/" + newDirectoryPath + "/" + file;
+            let path = STORAGE + "/Benchmarks/" + newDirectoryPath + "/" + file;
             inputFiles.push(path);
           }
 
@@ -223,6 +230,7 @@ const handleLogMessage = (event) => {
             ...prevTaskData,
             quality_control: {
               ...prevTaskData.quality_control,
+              // nCells: celeryTaskResults.task_result.nCells,
               file_paths: inputFiles,
               token: authData.username,
               shouldHideForSeurat: shouldHideForSeurat
@@ -431,7 +439,7 @@ const handleAssaySelectionSubmit = async () => {
                   )}
                   {result.highest_expr_genes_plot && (
                     <>
-                      <h2>Highest expression Genes Plot</h2>
+                      <h2>Highest Expression Genes Plot</h2>
                       <ReactPlotly plot_data={result.highest_expr_genes_plot} />
                     </>
                   )}

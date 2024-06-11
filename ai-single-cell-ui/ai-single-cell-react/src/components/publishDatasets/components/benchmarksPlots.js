@@ -17,10 +17,10 @@ function BenchmarksPlots({ barPlot, linePlot }) {
     }, [barPlot, linePlot]);
   return (
     <div>
-      <h2>Bar Plot</h2>
+      <h2>Benchmarks</h2>
       {barPlotData && <Plot data={barPlotData.data} layout={barPlotData.layout} />}
 
-      <h2>Line Plot</h2>
+      <h2>Computing assessments</h2>
       {linePlotData && <Plot data={linePlotData.data} layout={linePlotData.layout} />}
     </div>
   );

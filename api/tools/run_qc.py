@@ -31,7 +31,8 @@ def run_qc(task_id, ds:dict, random_state=0):
 
     if input_path is None:
         return None
-
+    
+    nCells = 0
     pp_stage = "Raw"
     process = "QC"
     parameters = ds['qc_params']
@@ -71,6 +72,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
+                nCells = qc_results["nCells"]
                 qc_output.append({"scanpy": qc_results["adata_path"]})
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='scanpy')
@@ -87,6 +89,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                     
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                    nCells = qc_results["nCells"]
                     redislogger.info(task_id, "Saving AnnData object.")
                     
                     scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -112,6 +115,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                         qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                        nCells = qc_results["nCells"]
                         redislogger.info(task_id, "Saving AnnData object.")
                         
                         scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -134,6 +138,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
+                nCells = qc_results["nCells"]
                 qc_output.append({"Dropkick": qc_results["adata_path"]})
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
@@ -149,6 +154,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
                     redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                    nCells = qc_results["nCells"]
                     redislogger.info(task_id, "Saving AnnData object.")
                     redislogger.info(task_id, "output path")
                     redislogger.info(task_id, output_path)
@@ -172,6 +178,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
                         redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                         qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                        nCells = qc_results["nCells"]
                         redislogger.info(task_id, "Saving AnnData object.")
                         redislogger.info(task_id, "output path")
                         redislogger.info(task_id, output_path)
@@ -199,6 +206,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
+            nCells = qc_results["nCells"]
             qc_output.append({"Seurat": qc_results["adata_path"]})
         else:
             output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
@@ -218,6 +226,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path)
+                nCells = qc_results["nCells"]
                 redislogger.info(task_id, qc_results['info'])
                 # adata.write_h5ad(adata_path, compression='gzip')
                 qc_output.append({"Seurat": adata_path})
@@ -244,6 +253,7 @@ def run_qc(task_id, ds:dict, random_state=0):
 
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
+            nCells = qc_results["nCells"]
             qc_output.append({"Bioconductor": qc_results["adata_path"]})
         else:
             output_path = get_output_path(output, process_id, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
@@ -280,6 +290,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
                 qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path)
+                nCells = qc_results["nCells"]
                 qc_output.append({"Bioconductor": adata_path})
                 adata = None
                 redislogger.info(task_id, qc_results['info'])
@@ -296,7 +307,8 @@ def run_qc(task_id, ds:dict, random_state=0):
         process_ids.append(process_id)    
 
     results = {
-        "taskId": task_id, 
+        "taskId": task_id,
+        "nCells": nCells,
         "owner": userID,
         "inputfile": input_path,
         "output": qc_output,

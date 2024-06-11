@@ -30,8 +30,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         'Title': true,
         'Category': true,
         'Species': true,
-        'Organ Part': true,
         'Cell Count Estimate': true,
+        'Organ Part': true,
         'Development Stage': false, // Optional initially not visible
         'Author': false, // Optional initially not visible
         'Submission Date': false, // Optional initially not visible
@@ -63,8 +63,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             'Title': true,
             'Category': true,
             'Species': true,
-            'Organ Part': true,
             'Cell Count Estimate': true,
+            'Organ Part': true,
             'Development Stage': false,
             'Author': false,
             'Submission Date': false,

@@ -63,6 +63,7 @@ const FlowControl = () => {
         Abstract: '',
         DOI: '',
         Species: '',
+        'Cell Count Estimate': '',
         'Sample Type': '',
         'Anatomical Entity': '',
         'Organ Part': '',

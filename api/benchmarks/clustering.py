@@ -44,6 +44,8 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
         y_values_ur['Scanpy_GPU'] = gpu_mem_usage_scanpy
         x_timepoints = time_points_scanpy
         clustering_results.append({'scanpy': scanpy_results})
+        redislogger.info(task_id, "scanpy clustering is done.")
+        redislogger.info(task_id, f"Silhouette: {asw_scanpy}, NMI: {nmi_scanpy}, ARI: {ari_scanpy}")
 
     except Exception as e:
         # Handle exceptions as needed
@@ -69,7 +71,9 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
         y_values_ur['Seurat_GPU'] = gpu_mem_usage_seurat
         if len(x_timepoints) < len(time_points_seurat):
             x_timepoints = time_points_seurat
-        clustering_results.append({'Seurat': scanpy_results})
+        clustering_results.append({'Seurat': seurat_results})
+        redislogger.info(task_id, "Seurat clustering is done.")
+        redislogger.info(task_id, f"Silhouette: {asw_seurat}, NMI: {nmi_seurat}, ARI: {ari_seurat}")
 
     except Exception as e:
         # Handle exceptions as needed
@@ -96,6 +100,8 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
         if len(x_timepoints) < len(time_points_scvi):
             x_timepoints = time_points_scvi
         clustering_results.append({'scvi': scvi_results})
+        redislogger.info(task_id, "scvi clustering is done.")
+        redislogger.info(task_id, f"Silhouette: {asw_scvi}, NMI: {nmi_scvi}, ARI: {ari_scvi}")
 
     except Exception as e:
         # Handle exceptions as needed

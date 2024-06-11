@@ -101,18 +101,21 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0
         adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
         adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
         adata_temp = None
+    elif layer is None and use_rep is not None and use_rep + '_louvain' not in adata.obs.keys():
+        leiden_key = "leiden_" + use_rep
+        louvain_key = "louvain_" + use_rep
+        sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
+                    random_state=random_state, n_iterations=3)
+        sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
     elif layer is None and 'louvain' not in adata.obs.keys():
         # Clustering the neighborhood graph
         leiden_key = "leiden"
         louvain_key = "louvain"
-        if use_rep is not None:
-            leiden_key = "leiden_" + use_rep
-            louvain_key = "louvain_" + use_rep
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
         sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
     else:
         if layer is None: layer = 'X'
-        print("Cluster for {layer} already exists, skipped.")
+        print(f"Cluster for {layer} already exists, skipped.")
 
     return adata
