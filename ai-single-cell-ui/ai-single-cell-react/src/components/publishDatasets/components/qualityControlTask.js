@@ -145,13 +145,6 @@ const handleLogMessage = (event) => {
  
       const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
       const taskInfo = response.data;
-      setTaskData((prevTaskData) => ({
-        ...prevTaskData,
-        quality_control: {
-          ...prevTaskData.quality_control,
-          nCells: response.data.nCells,
-        },
-      }));
       const taskId = taskInfo.task_id;
       setTaskId(taskId);
 
@@ -187,11 +180,12 @@ const handleLogMessage = (event) => {
           ...prevTaskData,
           quality_control: {
             ...prevTaskData.quality_control,
+            nCells: celeryTaskResults.task_result.nCells,
             seurat_meta: {
               ...prevTaskData.quality_control.seurat_meta,
               displayAssayNames: false
             },
-          }
+          },
         }));
         setMessage("quality control task is Successful");
         setHasMessage(true);
@@ -397,7 +391,7 @@ const handleAssaySelectionSubmit = async () => {
             <React.Fragment key={index}>
                   {result.umap_plot && (
                     <>
-                      <h2>UMAP Plot</h2>
+                    <h2>UMAP Plot</h2>
 
                       <FormControl>
                         {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}

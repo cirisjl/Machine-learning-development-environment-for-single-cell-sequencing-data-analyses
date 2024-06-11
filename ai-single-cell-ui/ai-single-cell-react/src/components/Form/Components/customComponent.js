@@ -25,7 +25,7 @@ class MyForm extends Component {
       hasMessage: false,
       isAdmin: false,
       username: ''
-    };  
+    }; 
   }
 
   componentDidMount() {
@@ -86,7 +86,6 @@ class MyForm extends Component {
   }
   
   
-
   handleChange = (e) => {
     const { name, value } = e.target;
     this.setState((prevState) => ({
@@ -181,11 +180,13 @@ class MyForm extends Component {
 
       if(flow === 'upload') {
         // formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
-        formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+        if ((!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0))) {
+          formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+        }
 
-         // add data to the formData
+        // add data to the formData
         // const cellCount = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
-        const cellCount = taskData.quality_control.nCells || 0;
+        const cellCount = formData['Cell Count Estimate'] || 0;
 
       // Check if cellCount is greater than 1000
       const useCellCount = cellCount && parseInt(cellCount) > 1000;
@@ -264,7 +265,7 @@ class MyForm extends Component {
             taskOptions: this.state.options["Task"],
             options: this.state.options,
             newOptions: this.state.newOptions,
-            status: flow === "upload"? "completed" : ''
+            status: flow === "upload" ? "completed" : ''
           },
         }));
   
@@ -356,7 +357,10 @@ class MyForm extends Component {
     }
     const { formData, errors, isLoading, options, hasMessage, message, isAdmin } = this.state;
 
-    const {setActiveTask, activeTask, taskData } = this.props;
+    const { setActiveTask, activeTask, taskData } = this.props;
+    if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
+      formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+    }
     
     // If isAdmin is false, render nothing
     if (!isAdmin) {
@@ -506,7 +510,7 @@ class MyForm extends Component {
           {/* "Cell Count Estimate" (CreatableSelect) */}
           <div className="form-field">
             <div>
-              <label className="form-label">Cell Count Estimate:{taskData.quality_control.nCells}</label>
+              <label className="form-label">Cell Count Estimate:</label>
               <span className="ui-form-title-message warning"> * required </span>
             </div>
             <input
