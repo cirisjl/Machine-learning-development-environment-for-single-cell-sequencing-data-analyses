@@ -222,9 +222,9 @@ function getStandardFileName(fileName, fileType) {
 
           let isMultiFileDataset = taskData.upload.files.length > 1 ? true : false;
 
-          let newDirectoryPath = `projects/${newDirectoryName}`;
+          let newDirectoryPath = `${newDirectoryName}`;
           // Move the uploaded files from tempStorage to the new directory
-          await moveFilesToNewDirectory(newDirectoryPath); 
+              await moveFilesToNewDirectory(newDirectoryPath, true); 
 
           // Update the state of the task in the taskData state
           setTaskData((prevTaskData) => ({

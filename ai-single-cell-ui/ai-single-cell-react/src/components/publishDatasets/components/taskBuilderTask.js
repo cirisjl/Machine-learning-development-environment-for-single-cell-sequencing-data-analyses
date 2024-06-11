@@ -64,6 +64,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     dataSplit: {
                         ...prevTaskData.task_builder.selectedDatasets[data.datasetId].dataSplit,
                         archivePath: data.archive_path,
+                        trainPath: data.train_path,
+                        testPath: data.test_path,
+                        validationPath: data.validation_path,
                         dataSplitPerformed: true,
                     }
                 }
@@ -158,7 +161,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       console.log(userData);
   
       // Make the API call
-      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {        method: 'POST',
+      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {        
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

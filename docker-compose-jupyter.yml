@@ -269,8 +269,6 @@ services:
 
   oscb_react:
     container_name: oscb_react_container
-    image: stormgod/oscb_react
-    # build: ./ai-single-cell-ui/ai-single-cell-react
     build: ./ai-single-cell-ui/ai-single-cell-react
     restart: always
     ports:

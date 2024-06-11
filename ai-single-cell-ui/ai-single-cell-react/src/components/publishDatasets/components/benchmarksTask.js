@@ -117,7 +117,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         datasetId: dataset.Id,
         userID: dataset.Owner,
         task_type: dataset.taskType.label,
-        adata_path: dataset.adata_path,
+        adata_path: dataset.dataSplit.testPath,
         label: dataset.taskLabel.label || '',
       }));
       const postBody = body[0];
