@@ -258,6 +258,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
+        print(layers)
         cell_metadata_obs = adata.obs # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
