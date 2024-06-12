@@ -18,7 +18,10 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     output = ds['output']
     methods = "UMAP"
     parameters = ds['reduction_params']
-    layer = parameters['layer']
+    layer = None
+    layers = None
+    if(len(parameters['layer'].strip())):
+        layer = parameters['layer']
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
@@ -46,7 +49,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
 
             redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
-
+            layers = list(adata.layers.keys())
             output = get_output_path(output, dataset=dataset, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
@@ -63,7 +66,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         "owner": userID,
         "inputfile": input,
         "output": output,
-        "layers": reduction_results.layers,
+        "layers": layers,
         "md5": md5,
         "process_id": process_id,
         # "pp_results": reduction_results,
