@@ -13,7 +13,7 @@ from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
 from exceptions.custom_exceptions import CeleryTaskException
 
 def run_qc(task_id, ds:dict, random_state=0):
@@ -68,7 +68,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         if "SCANPY" in methods:
             method='scanpy'
             process_id = generate_process_id(md5, process, method, parameters)
-            qc_results = pp_results_exists(process_id)
+            qc_results = pp_result_exists(process_id)
 
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
@@ -134,7 +134,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         if "DROPKICK" in methods:
             method='Dropkick'
             process_id = generate_process_id(md5, process, method, parameters)
-            qc_results = pp_results_exists(process_id)
+            qc_results = pp_result_exists(process_id)
 
             if qc_results is not None:
                 redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
@@ -202,7 +202,7 @@ def run_qc(task_id, ds:dict, random_state=0):
     if "SEURAT" in methods:
         method='Seurat'
         process_id = generate_process_id(md5, process, method, parameters)
-        qc_results = pp_results_exists(process_id)
+        qc_results = pp_result_exists(process_id)
 
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
@@ -249,7 +249,7 @@ def run_qc(task_id, ds:dict, random_state=0):
         method='Bioconductor'
         process_id = generate_process_id(md5, process, method, parameters)
         
-        qc_results = pp_results_exists(process_id)
+        qc_results = pp_result_exists(process_id)
 
         if qc_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Quality Control.")
