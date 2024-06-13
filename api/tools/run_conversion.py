@@ -2,7 +2,7 @@ import os
 from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
@@ -29,48 +29,64 @@ def run_conversion(task_id, ds:dict, show_error=True):
     csv_path = get_output_path(output, dataset=dataset, format='CSV')
 
     if output_format == "AnnData":
-        try:
-            adata = load_anndata(input) 
-            adata.write_h5ad(adata_path, compression='gzip')
-            adata = None
+        if os.path.exists(adata_path):
             outputs.append({'adata_path': adata_path})
-            redislogger.info(task_id, "AnnData object is saved successfully")
-        except Exception as e:
-            detail = f"Format conversion is failed: {e}"
-            os.remove(adata_path)
-            raise CeleryTaskException(detail)
+            redislogger.info(task_id, "AnnData file already exists.")
+        else:
+            try:
+                adata = load_anndata(input) 
+                adata.write_h5ad(adata_path, compression='gzip')
+                adata = None
+                outputs.append({'adata_path': adata_path})
+                redislogger.info(task_id, "AnnData object is saved successfully")
+            except Exception as e:
+                detail = f"Format conversion is failed: {e}"
+                os.remove(adata_path)
+                raise CeleryTaskException(detail)
 
     if output_format == "Seurat":
-        try:
-            seurat_path = convert_to_seurat_sce(input, seurat_path, format="Seurat") 
+        if os.path.exists(seurat_path):
             outputs.append({'seurat_path': seurat_path})
-            redislogger.info(task_id, "Seurat object is saved successfully")
-        except Exception as e:
-            detail = f"Format conversion is failed: {e}"
-            os.remove(seurat_path)
-            raise CeleryTaskException(detail)
+            redislogger.info(task_id, "Seurat file already exists.")
+        else:
+            try:
+                seurat_path = convert_to_seurat_sce(input, seurat_path, format="Seurat") 
+                outputs.append({'seurat_path': seurat_path})
+                redislogger.info(task_id, "Seurat object is saved successfully")
+            except Exception as e:
+                detail = f"Format conversion is failed: {e}"
+                os.remove(seurat_path)
+                raise CeleryTaskException(detail)
 
     if output_format == "SingleCellExperiment":
-        try:
-            sce_path = convert_to_seurat_sce(input, sce_path, format="SingleCellExperiment") 
+        if os.path.exists(sce_path):
             outputs.append({'sce_path': sce_path})
-            redislogger.info(task_id, "SingleCellExperiment object is saved successfully")
-        except Exception as e:
-            detail = f"Format conversion is failed: {e}"
-            os.remove(sce_path)
-            raise CeleryTaskException(detail)
+            redislogger.info(task_id, "SingleCellExperiment file already exists.")
+        else:
+            try:
+                sce_path = convert_to_seurat_sce(input, sce_path, format="SingleCellExperiment") 
+                outputs.append({'sce_path': sce_path})
+                redislogger.info(task_id, "SingleCellExperiment object is saved successfully")
+            except Exception as e:
+                detail = f"Format conversion is failed: {e}"
+                os.remove(sce_path)
+                raise CeleryTaskException(detail)
 
     if output_format == "CSV":
-        try:
-            # layer = ds['layer']
-            adata, counts, csv_path = load_anndata_to_csv(input, csv_path, layer=None)
-            adata = None
+        if os.path.exists(csv_path):
             outputs.append({'csv_path': csv_path})
-            redislogger.info(task_id, "CSV file is saved successfully")
-        except Exception as e:
-            detail = f"Format conversion is failed: {e}"
-            os.remove(csv_path)
-            raise CeleryTaskException(detail)
+            redislogger.info(task_id, "CSV file already exists.")
+        else:
+            try:
+                # layer = ds['layer']
+                adata, counts, csv_path = load_anndata_to_csv(input, csv_path, layer=None)
+                adata = None
+                outputs.append({'csv_path': csv_path})
+                redislogger.info(task_id, "CSV file is saved successfully")
+            except Exception as e:
+                detail = f"Format conversion is failed: {e}"
+                os.remove(csv_path)
+                raise CeleryTaskException(detail)
         
     results = {
         "taskId": task_id, 

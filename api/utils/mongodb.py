@@ -14,6 +14,7 @@ user_datasets_collection = db.get_collection("user-datasets")
 pp_results_collection = db.get_collection("pp-results")
 task_results_collection = db.get_collection("task-results")
 benchmarks_collection = db.get_collection("benchmarks")
+benchmark_results_collection = db.get_collection("benchmark_results")
 workflows_collection = db.get_collection("workflows")
 
 
@@ -27,7 +28,7 @@ def generate_workflow_id(file_md5, workflow, parameters):
     return workflow_id
 
 
-def pp_results_exists(process_id):
+def pp_result_exists(process_id):
     result = pp_results_collection.find_one({'process_id': process_id}, {'_id': 0})
     return result
 
@@ -79,3 +80,16 @@ def clear_dict(d):
     drop_falsey = lambda path, key, value: value is not None and value != [] and value != {} and value != [{}]
     d = remap(d, visit=drop_falsey)
     return d
+
+
+def create_benchmark_results(process_id, benchmark_results):
+    benchmark_results = clear_dict(benchmark_results)
+    benchmark_results_collection.update_one({'process_id': process_id}, {'$set': benchmark_results}, upsert=True)
+    if "_id" in benchmark_results: 
+        benchmark_results.pop("_id")
+    return
+
+
+def benchmark_result_exists(process_id):
+    result = benchmark_results_collection.find_one({'process_id': process_id}, {'_id': 0})
+    return result

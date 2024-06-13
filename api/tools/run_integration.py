@@ -6,7 +6,7 @@ from utils.redislogger import *
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
 from exceptions.custom_exceptions import CeleryTaskException
 
 def run_integration(task_id, ids:dict):
@@ -64,7 +64,7 @@ def run_integration(task_id, ids:dict):
         output = get_output_path(output, 'Integration', dataset=dataset, method=method, format='Seurat')
         adata_path = get_output_path(output, 'Integration', dataset=dataset, method=method, format='AnnData')
 
-        integration_results = pp_results_exists(process_id)
+        integration_results = pp_result_exists(process_id)
 
         if integration_results is not None:
             redislogger.info(task_id, "Found existing pre-process results in database, skip Integration.")
