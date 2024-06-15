@@ -45,13 +45,13 @@ detect_delim = ro.globalenv['DetectDelim']
 
 load_figure_template('LUX')
 
-mongo_url = "mongodb://mongodb:65528/aisinglecell"
+mongo_url = "mongodb://mongodb:65528/oscb"
 
 # Connect to MongoDB using the URL
 client = pymongo.MongoClient(mongo_url)
 
 # Access your database and collection
-db = client["aisinglecell"]
+db = client["oscb"]
 metadata_collection = db["metadata_of_datasets"]
 
 # Initialize the Flask application

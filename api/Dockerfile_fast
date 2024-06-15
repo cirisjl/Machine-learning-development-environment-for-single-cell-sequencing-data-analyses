@@ -1,4 +1,4 @@
-FROM u15ec104/ai-single-cell:celery-backend-base
+FROM u15ec104/oscb:celery-backend-base
 
 # Update SeuratObject
 RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))'

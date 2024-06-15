@@ -1,4 +1,4 @@
-# FROM u15ec104/ai-single-cell:celery-backend-base
+# FROM u15ec104/oscb:celery-backend-base
 # FROM stormgod/oscb-api
 # FROM stormgod/oscb-seurat:5.02
 FROM stormgod/oscb-seurat:4.4

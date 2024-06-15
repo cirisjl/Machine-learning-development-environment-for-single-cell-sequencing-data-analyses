@@ -2,14 +2,14 @@
 
 // Connect to MongoDB
 conn = new Mongo();
-db = conn.getDB("ai-single-cell");
+db = conn.getDB("oscb");
 
 // Check if documents already exist in the collection
-var countDocuments = db['form-options'].count();
+var countDocuments = db['form_options'].count();
 
 // If no documents exist, insert default data into the collection
 if (countDocuments === 0) {
-  db['form-options'].insertMany([
+  db['form_options'].insertMany([
     {
 	"field": "Task",
 	"name": "Clustering",

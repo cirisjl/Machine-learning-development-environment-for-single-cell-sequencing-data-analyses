@@ -217,10 +217,10 @@ services:
     container_name: oscb_mysql_container
     image: mysql:8.0
     build:
-      context: ./ai-single-cell-ui/ai-single-cell-mysql
+      context: ./oscb-ui/oscb-mysql
     volumes:
         - /home/kbcfh/ai-ready/mysql_db:/var/lib/mysql
-        - ./ai-single-cell-ui/ai-single-cell-mysql/aisinglecell_schema_latest.sql:/docker-entrypoint-initdb.d/aisinglecell_schema_latest.sql
+        - ./oscb-ui/oscb-mysql/oscb_schema_latest.sql:/docker-entrypoint-initdb.d/oscb_schema_latest.sql
     restart: unless-stopped
     command:
         [
@@ -229,7 +229,7 @@ services:
             "--default-authentication-plugin=mysql_native_password",
         ]
     env_file:
-        - ./ai-single-cell-ui/.env  
+        - ./oscb-ui/.env  
     networks:
       - oscb-network
 
@@ -237,7 +237,7 @@ services:
     container_name: oscb_node_container
     image: oscb_node
     build:
-      context: ./ai-single-cell-ui/ai-single-cell-node
+      context: ./oscb-ui/oscb-node
     ports:
       - "3001:3001"
       - "3020:3020"
@@ -245,7 +245,7 @@ services:
       - EXTERNAL_PORT=3001
       - DBUSER=root
       - DBPASSWORD=Shirley@2410
-      - DATABASE=aisinglecell
+      - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
       - HOST_URL=digbio-devel.missouri.edu
       - SSH_CONNECTION=${SSH_CONNECTION}
@@ -259,7 +259,7 @@ services:
   oscb_react:
     container_name: oscb_react_container
     image: oscb_react
-    build: ./ai-single-cell-ui/ai-single-cell-react
+    build: ./oscb-ui/oscb-react
     ports:
       - "3000:3000"
     depends_on:
@@ -280,13 +280,13 @@ services:
     depends_on:
         - oscb_mysql
     env_file:
-        - ./ai-single-cell-ui/.env
+        - ./oscb-ui/.env
     networks:
       - oscb-network
 
   oscb_flask:
     build:
-      context: ./ai-single-cell-ui/ai-single-cell-flask
+      context: ./oscb-ui/oscb-flask
       dockerfile: Dockerfile
     container_name: oscb_flask_container
     image: oscb_flask

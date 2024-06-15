@@ -6,7 +6,7 @@ from utils.redislogger import *
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_async_tasks
 from exceptions.custom_exceptions import CeleryTaskException
 
 def run_integration(task_id, ids:dict):
@@ -117,6 +117,6 @@ def run_integration(task_id, ids:dict):
         "status": "Success"
     }
 
-    upsert_task_results(results)
+    upsert_async_tasks(results)
 
     return results

@@ -6,7 +6,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
-from tools.formating.formating import change_file_extension, load_anndata, convert_from_r, convert_to_r
+from tools.formating.formating import change_file_extension, load_anndata, convert_from_r
 from utils.redislogger import redislogger
 
 # Ensure that pandas2ri is activated for automatic conversion

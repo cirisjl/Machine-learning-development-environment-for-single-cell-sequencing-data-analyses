@@ -1,6 +1,6 @@
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_task_results
+from utils.mongodb import upsert_benchmarks, upsert_async_tasks
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
@@ -27,7 +27,7 @@ def run_benchmarks(task_id, task_dict:dict):
                     "benchmarksId": benchmarksId,
                     "status": "Success"
                 }
-                upsert_task_results(results)
+                upsert_async_tasks(results)
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'

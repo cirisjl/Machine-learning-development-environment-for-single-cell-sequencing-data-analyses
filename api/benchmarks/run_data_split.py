@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_task_results
+from utils.mongodb import upsert_benchmarks, upsert_async_tasks
 from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata
 from tools.utils.datasplit import sc_train_val_test_split
@@ -78,7 +78,7 @@ def run_data_split(task_id, data_dict:dict):
             "status": "Success"
         }
         
-        upsert_task_results(results)
+        upsert_async_tasks(results)
         
         return results
     except Exception as e:

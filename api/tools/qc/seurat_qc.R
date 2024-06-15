@@ -69,7 +69,8 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
             RedisInfo(unique_id, "Normalizing dataset using log10K.")
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
             RedisInfo(unique_id, "Finding variable features.")
-            srat <- FindVariableFeatures(srat, selection.method = "vst")
+            srat <- FindVariableFeatures(srat, selection.method = "vst", nfeatures = 2000)
+            srat <- subset(srat, features=VariableFeatures(srat)) # Only keep variable features
             RedisInfo(unique_id, "Scaling dataset.")
             srat <- ScaleData(srat, features = rownames(srat))
 
@@ -119,7 +120,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
                 })               
             } 
 
-            # srat <- subset(srat, subset = doublet_class == 'Singlet')
+            srat <- subset(srat, subset = doublet_class == 'Singlet')
             output <- SaveSeurat(srat, output)
             RedisInfo(unique_id, "Seurat object is saved successfully.")
             
