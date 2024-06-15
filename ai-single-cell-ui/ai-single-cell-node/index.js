@@ -1915,13 +1915,13 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
             return res.status(400).send('task_type is required');
         }
         // Initialize matchConditions to include the taskType filter
-        let matchConditions = [{ 'TaskType.label': taskType }];
+        let matchConditions = [{ 'task_type': taskType }];
 
         // Include global search query in match conditions
         if (globalSearchQuery) {
             matchConditions.push({
                 $or: [
-                    { 'TaskType.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'task_type': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Species.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
@@ -1962,7 +1962,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
             {
                 $lookup: {
                     from: datasetCollection,
-                    localField: "DatasetId",
+                    localField: "datasetId",
                     foreignField: "Id",
                     as: "datasetDetails"
                 }
@@ -2023,8 +2023,8 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                         {
                             $project: {
                                 Title: "$datasetDetails.Title",
-                                TaskId: "$Id",
-                                TaskType: "$TaskType.label",
+                                TaskId: "$task_id",
+                                TaskType: "$task_type",
                                 Species: "$datasetDetails.Species.label",
                                 'Organ Part': "$datasetDetails.Organ Part.label",
                                 'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
@@ -2032,7 +2032,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                                 'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
                                 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
                                 Author: "$datasetDetails.Author",
-                                TaskLabel: "$TaskLabel.label",
+                                TaskLabel: "$task_label",
                                 'Source': "$datasetDetails.Source",
                                 'Submission Date': "$datasetDetails.Submission Date",
                             }
