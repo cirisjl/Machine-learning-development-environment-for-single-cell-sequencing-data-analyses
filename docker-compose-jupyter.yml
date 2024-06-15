@@ -225,10 +225,10 @@ services:
     container_name: oscb_mysql_container
     image: mysql:8.0
     build:
-      context: ./ai-single-cell-ui/ai-single-cell-mysql
+      context: ./oscb-ui/oscb-mysql
     volumes:
         - /ps/code/oscb/mysql_db:/var/lib/mysql
-        - ./ai-single-cell-ui/ai-single-cell-mysql/aisinglecell_schema_latest.sql:/docker-entrypoint-initdb.d/aisinglecell_schema_latest.sql
+        - ./oscb-ui/oscb-mysql/oscb_schema_latest.sql:/docker-entrypoint-initdb.d/oscb_schema_latest.sql
     restart: unless-stopped
     command:
         [
@@ -237,7 +237,7 @@ services:
             "--default-authentication-plugin=mysql_native_password",
         ]
     env_file:
-        - ./ai-single-cell-ui/.env  
+        - ./oscb-ui/.env  
     networks:
       - oscb-network
 
@@ -246,7 +246,7 @@ services:
     image: oscb_node
     restart: always
     build:
-      context: ./ai-single-cell-ui/ai-single-cell-node
+      context: ./oscb-ui/oscb-node
     ports:
       - "3001:3001"
       - "3020:3020"
@@ -254,12 +254,12 @@ services:
       - EXTERNAL_PORT=3001
       - DBUSER=root
       - DBPASSWORD=Shirley@2410
-      - DATABASE=aisinglecell
+      - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=clnode110.clemson.cloudlab.us
+      - HOST_URL=clnode179.clemson.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
-      - ./ai-single-cell-ui/ai-single-cell-node/.env  
+      - ./oscb-ui/oscb-node/.env  
     depends_on:
       - oscb_mysql
     volumes:
@@ -269,14 +269,14 @@ services:
 
   oscb_react:
     container_name: oscb_react_container
-    build: ./ai-single-cell-ui/ai-single-cell-react
+    build: ./oscb-ui/oscb-react
     restart: always
     ports:
       - "3000:3000"
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=clnode110.clemson.cloudlab.us
+      - HOST_URL=clnode179.clemson.cloudlab.us
     networks:
       - oscb-network
 
@@ -291,25 +291,25 @@ services:
     depends_on:
         - oscb_mysql
     env_file:
-        - ./ai-single-cell-ui/.env
+        - ./oscb-ui/.env
     networks:
       - oscb-network
 
-  oscb_flask:
-    build:
-      context: ./ai-single-cell-ui/ai-single-cell-flask
-      dockerfile: Dockerfile
-    container_name: oscb_flask_container
-    image: oscb_flask
-    restart: always
-    ports:
-      - "5003:5003"
-    networks:
-      - oscb-network
-    env_file:
-      - .env
-    volumes:
-      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+  # oscb_flask:
+  #   build:
+  #     context: ./oscb-ui/oscb-flask
+  #     dockerfile: Dockerfile
+  #   container_name: oscb_flask_container
+  #   image: oscb_flask
+  #   restart: always
+  #   ports:
+  #     - "5003:5003"
+  #   networks:
+  #     - oscb-network
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
   jupyter:
     image: stormgod/oscb-seurat:4.4

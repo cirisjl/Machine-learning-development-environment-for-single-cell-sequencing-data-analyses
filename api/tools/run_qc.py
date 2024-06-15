@@ -13,7 +13,7 @@ from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_async_tasks
 from exceptions.custom_exceptions import CeleryTaskException
 
 def run_qc(task_id, ds:dict, random_state=0):
@@ -221,7 +221,7 @@ def run_qc(task_id, ds:dict, random_state=0):
                         "assay_names": assay_names,
                         "ddl_assay_names": ddl_assay_names
                     }
-                    upsert_task_results(results)
+                    upsert_async_tasks(results)
                     return results
                 
                 redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
@@ -320,6 +320,6 @@ def run_qc(task_id, ds:dict, random_state=0):
         "status": "Success"
     }
 
-    upsert_task_results(results)
+    upsert_async_tasks(results)
 
     return results

@@ -3,7 +3,7 @@ from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.clustering_methods.scanpy import scanpy_clustering
 from benchmarks.clustering_methods.scvi import scvi_clustering
 from benchmarks.clustering_methods.seurat import seurat_clustering
-from utils.mongodb import generate_process_id, create_benchmark_results, benchmark_result_exists
+from utils.mongodb import generate_process_id, create_bm_results, benchmark_result_exists
 from utils.redislogger import *
 
 def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering'):
@@ -39,7 +39,7 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
                 "mem_usage": mem_usage_scanpy,
                 "gpu_mem_usage": gpu_mem_usage_scanpy
             }
-            create_benchmark_results(process_id, scanpy_results)
+            create_bm_results(process_id, scanpy_results)
 
         y_values['scanpy'] = [scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']]
         y_values_ur['Scanpy_CPU'] = scanpy_results['cpu_usage']
@@ -75,7 +75,7 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
                 "mem_usage": mem_usage_seurat,
                 "gpu_mem_usage": gpu_mem_usage_seurat
             }
-            create_benchmark_results(process_id, seurat_results)
+            create_bm_results(process_id, seurat_results)
 
         y_values['Seurat'] = [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score']]
         y_values_ur['Seurat_CPU'] = seurat_results['cpu_usage']
@@ -112,7 +112,7 @@ def clustering_task(adata_path, label, datasetId, task_id, task_type='clustering
                 "mem_usage": mem_usage_scvi,
                 "gpu_mem_usage": gpu_mem_usage_scvi
             }
-            create_benchmark_results(process_id, scvi_results)
+            create_bm_results(process_id, scvi_results)
 
         y_values['scvi'] = [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']]
         y_values_ur['scvi_CPU'] = scvi_results['cpu_usage']

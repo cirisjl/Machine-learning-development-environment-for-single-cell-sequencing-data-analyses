@@ -5,7 +5,7 @@ import tempfile
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_task_results
+from utils.mongodb import upsert_benchmarks, upsert_async_tasks
 from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import load_anndata
 from tools.utils.datasplit import subset_by_obskey
@@ -57,7 +57,7 @@ def run_subset_data(task_id, data_dict:dict):
             }
         )
 
-        upsert_task_results(results)
+        upsert_async_tasks(results)
         return results
     
     except Exception as e:

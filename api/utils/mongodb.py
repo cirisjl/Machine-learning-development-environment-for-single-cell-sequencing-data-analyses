@@ -8,13 +8,13 @@ mongo_url = "mongodb://mongodb:65528"
 # Connect to MongoDB using the URL
 client = MongoClient(mongo_url)
 # Access your database and collection
-db = client["ai-single-cell"]
+db = client["oscb"]
 datasets_collection = db.datasets
-user_datasets_collection = db.get_collection("user-datasets")
-pp_results_collection = db.get_collection("pp-results")
-task_results_collection = db.get_collection("task-results")
+user_datasets_collection = db.get_collection("user_datasets")
+pp_results_collection = db.get_collection("pp_results")
+async_tasks_collection = db.get_collection("async_tasks")
 benchmarks_collection = db.get_collection("benchmarks")
-benchmark_results_collection = db.get_collection("benchmark_results")
+bm_results_collection = db.get_collection("bm_results")
 workflows_collection = db.get_collection("workflows")
 
 
@@ -41,10 +41,10 @@ def create_pp_results(process_id, pp_results):
     return
 
 
-def upsert_task_results(results):
+def upsert_async_tasks(results):
     results = clear_dict(results)
     task_id = results['taskId']
-    task_results_collection.update_one({'task_id': task_id}, {'$set': results}, upsert=True)
+    async_tasks_collection.update_one({'task_id': task_id}, {'$set': results}, upsert=True)
     if "_id" in results: 
         results.pop("_id")
     return
@@ -82,14 +82,14 @@ def clear_dict(d):
     return d
 
 
-def create_benchmark_results(process_id, benchmark_results):
-    benchmark_results = clear_dict(benchmark_results)
-    benchmark_results_collection.update_one({'process_id': process_id}, {'$set': benchmark_results}, upsert=True)
-    if "_id" in benchmark_results: 
-        benchmark_results.pop("_id")
+def create_bm_results(process_id, bm_results):
+    bm_results = clear_dict(bm_results)
+    bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
+    if "_id" in bm_results: 
+        bm_results.pop("_id")
     return
 
 
 def benchmark_result_exists(process_id):
-    result = benchmark_results_collection.find_one({'process_id': process_id}, {'_id': 0})
+    result = bm_results_collection.find_one({'process_id': process_id}, {'_id': 0})
     return result

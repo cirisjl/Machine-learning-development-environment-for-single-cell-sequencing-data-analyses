@@ -5,7 +5,7 @@ from tools.run_imputation import run_imputation
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from utils.redislogger import *
-from utils.mongodb import generate_workflow_id, upsert_task_results, upsert_workflows
+from utils.mongodb import generate_workflow_id, upsert_async_tasks, upsert_workflows
 
 def run_clustering(task_id, ds:dict, random_state=0):
     wf_results = {}
@@ -44,7 +44,7 @@ def run_clustering(task_id, ds:dict, random_state=0):
         "status": "Success"
     }
     
-    upsert_task_results(results)
+    upsert_async_tasks(results)
 
     return results
 
