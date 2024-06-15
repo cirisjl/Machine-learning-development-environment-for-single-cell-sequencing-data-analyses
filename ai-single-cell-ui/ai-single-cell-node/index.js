@@ -2439,7 +2439,7 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     Author: "$Author",
                     'Source': "$Source",
                     'Submission Date': "$Submission Date",
-                    'files': "$files",
+                    'inputFiles': "$inputFiles",
                     'adata_path': "$adata_path"
                 }
               }
