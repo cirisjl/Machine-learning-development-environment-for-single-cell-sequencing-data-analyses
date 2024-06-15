@@ -180,7 +180,7 @@ const handleLogMessage = (event) => {
           ...prevTaskData,
           quality_control: {
             ...prevTaskData.quality_control,
-            nCells: celeryTaskResults.task_result.nCells,
+             nCells: celeryTaskResults.task_result.nCells,
             seurat_meta: {
               ...prevTaskData.quality_control.seurat_meta,
               displayAssayNames: false

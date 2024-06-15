@@ -27,7 +27,7 @@ from tools.evaluation.clustering import clustering_scores
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
-import json_numpy
+# import json_numpy
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -267,7 +267,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         gene_metadata = adata.var # pandas dataframe
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
-            embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+            # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+            embeddings.append(name)
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
             if layer+'_umap' in adata.obsm.keys():

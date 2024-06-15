@@ -180,8 +180,10 @@ class MyForm extends Component {
 
       if(flow === 'upload') {
         // formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
-        if ((!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0))) {
-          formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+        if (typeof taskData.quality_control.nCells !== 'undefined') {
+          if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
+            formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+          }
         }
 
         // add data to the formData
@@ -205,8 +207,9 @@ class MyForm extends Component {
       // formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
       // formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
 
-      //Add inputs
-      formData.inputFiles = taskData.quality_control.file_paths;
+      // Add inputs
+      // formData.files = taskData.quality_control.file_paths;
+      formData.files = taskData.quality_control.qc_results[0]?.adata_path;
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
       // formData.taskOptions = this.state.options["Task"];
@@ -242,7 +245,8 @@ class MyForm extends Component {
         formData.Owner = taskData.upload.authToken;
         formData.Category = formData.makeItpublic ? "Shared" : "Private";
         formData.format = taskData.upload.final_files.format;
-        formData.inputFiles = taskData.upload.final_files.inputFiles;
+        // formData.files = taskData.upload.final_files.inputFiles;
+        formData.files = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
       }
 
@@ -358,8 +362,10 @@ class MyForm extends Component {
     const { formData, errors, isLoading, options, hasMessage, message, isAdmin } = this.state;
 
     const { setActiveTask, activeTask, taskData } = this.props;
-    if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
-      formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+    if (typeof taskData.quality_control !== 'undefined'){
+      if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
+        formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+      }
     }
     
     // If isAdmin is false, render nothing
