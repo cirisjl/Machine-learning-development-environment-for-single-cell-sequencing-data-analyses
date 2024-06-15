@@ -27,7 +27,7 @@ from tools.evaluation.clustering import clustering_scores
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
-import json_numpy
+# import json_numpy
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -130,8 +130,7 @@ def convert_to_seurat_sce(input, output, format):
 
     if format == "Seurat":
         ConvertToSeurat_r = ro.globalenv['ConvertToSeurat']
-        output = ConvertToSeurat_r(input, output)
-        output = convert_from_r(output)
+        ConvertToSeurat_r(input, output)
 
     elif format == "SingleCellExperiment":
         ConvertToSCE_r = ro.globalenv['ConvertToSCE']
@@ -259,6 +258,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
+        print(layers)
         cell_metadata_obs = adata.obs # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
@@ -267,7 +267,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         gene_metadata = adata.var # pandas dataframe
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
-            embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+            # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+            embeddings.append(name)
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
             if layer+'_umap' in adata.obsm.keys():
@@ -394,11 +395,9 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
 
 def anndata_to_csv(adata, output_path, layer = None):
     counts = None
-    print("to CSV")
-    print(adata)
 
     if layer is None:
-        if type(adata.layers[layer]) != "numpy.ndarray":
+        if type(adata.X) != "numpy.ndarray":
             counts = adata.X.toarray()
         else:
             counts = adata.X
@@ -412,42 +411,27 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, output, layer=None, show_error=True, dataset=None):
+def load_anndata_to_csv(input, csv_path, layer=None, show_error=True, dataset=None):
     adata = None
-    adata_path = None
     counts = None
 
-    if os.path.exists(output):
-        try:
-            adata = load_anndata(output, dataset)
-            adata_path = output
-        except Exception as e:
-            print("File format is not supported.")
-            if show_error: print(e)
-            return None, None, None
-    else:
-        try:
-            print("Inside else , read from input path")
-            print(input)
-            adata = load_anndata(input, dataset)
-            print(adata)
-            adata_path = input
-        except Exception as e:
-            print("File format is not supported.")
-            if show_error: print(e)
-            return None, None, None
+    try:
+        adata = load_anndata(input, dataset)
+        print(adata)
+        adata_path = input
+    except Exception as e:
+        print("File format is not supported.")
+        if show_error: print(e)
+        return None, None, None
 
     if layer is None:
         counts = adata.X
-        print("Layer is none")
-        print(counts)
     elif layer in adata.layers.keys():
         counts = adata.layers[layer]       
     else:
         print("Layer is not found in AnnData object.")
         return None, None, None
 
-    csv_path = adata_path.replace(".h5ad", ".csv")
     csv_path = anndata_to_csv(adata, csv_path, layer=layer)
 
     return adata, counts, csv_path

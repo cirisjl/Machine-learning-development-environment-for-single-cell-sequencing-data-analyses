@@ -6,7 +6,7 @@ from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
@@ -49,7 +49,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
         adata = None
         method='MAGIC'
         process_id = generate_process_id(md5, process, method, parameters)
-        imputation_results = pp_results_exists(process_id)
+        imputation_results = pp_result_exists(process_id)
         output = get_output_path(output, process_id, dataset, method='MAGIC_imputation')
         
         if imputation_results is not None:
@@ -129,7 +129,7 @@ def run_imputation(task_id, ds:dict, show_error=True, random_state=0):
     if "SAVER" in methods:
         method='SAVER'
         process_id = generate_process_id(md5, process, method, parameters)
-        imputation_results = pp_results_exists(process_id)
+        imputation_results = pp_result_exists(process_id)
         adata = None
         output = get_output_path(output, process_id, dataset, method='SAVER_imputation')
 

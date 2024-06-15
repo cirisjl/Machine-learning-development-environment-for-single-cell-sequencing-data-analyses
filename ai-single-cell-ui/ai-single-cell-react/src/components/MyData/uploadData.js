@@ -459,7 +459,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         }
                     }
                     else {
-                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
                         if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
                             setErrorMessage("The selected file is not of an accepted standard format.");
                             return;

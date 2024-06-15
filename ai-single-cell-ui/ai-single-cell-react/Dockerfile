@@ -1,10 +1,12 @@
-FROM node:14
+# FROM node:14
+FROM stormgod/oscb_react
+
 # Create app directory
 WORKDIR /opt/src/app
 # Install app dependencies
-COPY package*.json ./
+# COPY package*.json ./
 
-RUN npm install
+# RUN npm install
 # Copy app source code
 COPY . .
 

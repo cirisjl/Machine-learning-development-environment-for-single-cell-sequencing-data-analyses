@@ -16,7 +16,7 @@ def run_clustering(task_id, ds:dict, random_state=0):
     md5 = get_md5(input)
     workflow_id = generate_workflow_id(md5, "clustering", ds)
 
-    # wf_results = pp_results_exists(process_id)
+    # wf_results = pp_result_exists(process_id)
 
     qc_results = run_qc(task_id, ds)
     if qc_results is not None:

@@ -3,7 +3,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_results_exists, create_pp_results, upsert_task_results
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_task_results
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
@@ -18,7 +18,10 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     output = ds['output']
     methods = "UMAP"
     parameters = ds['reduction_params']
-    layer = parameters['layer']
+    layer = None
+    layers = None
+    if(len(parameters['layer'].strip())):
+        layer = parameters['layer']
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
@@ -32,7 +35,7 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     adata = load_anndata(input)
     method='MAGIC'
     process_id = generate_process_id(md5, process, method, parameters)
-    reduction_results = pp_results_exists(process_id)
+    reduction_results = pp_result_exists(process_id)
     if reduction_results is not None:
         redislogger.info(task_id, "Found existing pre-process results in database, skip dimension reduction.")
     else:
@@ -46,7 +49,6 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
 
             redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
-
             output = get_output_path(output, dataset=dataset, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
@@ -57,13 +59,16 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
             detail = f"UMAP reduction is failed: {e}"
             os.remove(output)
             raise CeleryTaskException(detail)
-        
+    
+    if 'layers' in reduction_results.keys():
+        layers = reduction_results['layers']
+
     results = {
         "taskId": task_id, 
         "owner": userID,
         "inputfile": input,
         "output": output,
-        "layers": reduction_results.layers,
+        "layers": layers,
         "md5": md5,
         "process_id": process_id,
         # "pp_results": reduction_results,

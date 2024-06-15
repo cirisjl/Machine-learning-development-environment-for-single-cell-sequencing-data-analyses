@@ -200,7 +200,7 @@ function getStandardFileName(fileName, fileType) {
         }));
     }
     else if(selectedFiles.length === 1) {
-        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+      const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
         if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
             setErrorMessage("The selected file is not of an accepted standard format.");
             return;
@@ -222,9 +222,9 @@ function getStandardFileName(fileName, fileType) {
 
           let isMultiFileDataset = taskData.upload.files.length > 1 ? true : false;
 
-          let newDirectoryPath = `projects/${newDirectoryName}`;
+          let newDirectoryPath = `${newDirectoryName}`;
           // Move the uploaded files from tempStorage to the new directory
-          await moveFilesToNewDirectory(newDirectoryPath); 
+              await moveFilesToNewDirectory(newDirectoryPath, true); 
 
           // Update the state of the task in the taskData state
           setTaskData((prevTaskData) => ({
