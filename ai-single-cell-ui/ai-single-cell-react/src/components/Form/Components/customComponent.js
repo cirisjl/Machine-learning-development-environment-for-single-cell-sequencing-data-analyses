@@ -208,8 +208,8 @@ class MyForm extends Component {
       // formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
 
       // Add inputs
-      // formData.files = taskData.quality_control.file_paths;
-      formData.files = taskData.quality_control.qc_results[0]?.adata_path;
+      formData.inputFiles = taskData.quality_control.file_paths;
+      // formData.inputFiles = taskData.quality_control.qc_results[0]?.adata_path;
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
       // formData.taskOptions = this.state.options["Task"];
@@ -245,8 +245,8 @@ class MyForm extends Component {
         formData.Owner = taskData.upload.authToken;
         formData.Category = formData.makeItpublic ? "Shared" : "Private";
         formData.format = taskData.upload.final_files.format;
-        // formData.files = taskData.upload.final_files.inputFiles;
-        formData.files = taskData.upload.final_files.adata_path;
+        formData.inputFiles = taskData.upload.final_files.inputFiles;
+        // formData.inputFiles = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
       }
 
