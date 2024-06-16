@@ -12,7 +12,7 @@ import 'react-toggle/style.css';
 
 
 
-export function ClusteringUsingRaceIDComponent(props) {
+export function WorkflowsComponent(props) {
     
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
