@@ -76,12 +76,12 @@ export default function RootLayout() {
             <div className ="header-container">
                 <header className="border-b border-gray-100">
                     <div className="px-4 flex h-16 items-center">
-                        <div className="flex flex-1 items-center">
+                        {/* <div className="flex flex-1 items-center">
                             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/"><span className="hidden whitespace-nowrap text-lg font-bold md:block">OSCB</span></a>
                             <div className="relative flex-1 lg:max-w-sm mr-2 sm:mr-4 lg:mr-6">
                                 <SearchBox placeHolder="Search models, datasets, users..."/>
                             </div>
-                        </div>
+                        </div> */}
 
                     {/* <div className="header-right"> */}
                         <nav aria-label="Main" className="ml-auto hidden lg:block">
@@ -114,7 +114,7 @@ export default function RootLayout() {
                                             <path opacity=".75" fillRule="evenodd" clipRule="evenodd" d="M3 4.914C3 3.857 3.857 3 4.914 3h6.514c.884 0 1.628.6 1.848 1.414a5.171 5.171 0 0 1 7.31 7.31c.815.22 1.414.964 1.414 1.848v6.514A1.914 1.914 0 0 1 20.086 22H4.914A1.914 1.914 0 0 1 3 20.086V4.914Zm3.016 1.102v4.31h4.31v-4.31h-4.31Zm0 12.968v-4.31h4.31v4.31h-4.31Zm8.658 0v-4.31h4.31v4.31h-4.31Zm0-10.813a2.155 2.155 0 1 1 4.31 0 2.155 2.155 0 0 1-4.31 0Z" fill="currentColor"></path>
                                             <path opacity=".25" d="M16.829 6.016a2.155 2.155 0 1 0 0 4.31 2.155 2.155 0 0 0 0-4.31Z" fill="currentColor"></path>
                                         </svg>
-                                        Competitions
+                                        Competition
                                     </NavLink>
                                  </li>
                                  <li data-index="3" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
@@ -131,7 +131,7 @@ export default function RootLayout() {
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
 
                                         <ul className="ul-suboptions">
-                                            <li><NavLink to="benchmarks/overview">Overview</NavLink></li>
+                                            <li><NavLink to="benchmarks">Overview</NavLink></li>
                                             <li><NavLink to="benchmarks/clustering">Clustering</NavLink></li>
                                             <li><NavLink to="benchmarks/imputation">Imputation</NavLink></li>
                                             <li><NavLink to="benchmarks/maker-gene-identification">Marker Gene Identification</NavLink></li>
@@ -147,7 +147,7 @@ export default function RootLayout() {
                                     </div>
                                     </div>
                                  </li>
-                                 <li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                 { /*<li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink to="leaderboards" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                                             <path className="uim-quaternary" d="M6 23H2a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1z" opacity=".25" fill="currentColor"></path>
@@ -156,7 +156,7 @@ export default function RootLayout() {
                                         </svg>
                                         Leaderboards
                                     </NavLink>
-                                 </li>
+                                </li> */ }
                                  <li data-index="5" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">

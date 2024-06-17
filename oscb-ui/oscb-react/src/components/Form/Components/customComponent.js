@@ -413,8 +413,8 @@ class MyForm extends Component {
           <div className="form-field">
             <div>
               <label className="form-label">Downloads:</label> 
-              <span className="ui-form-title-message"> * Download link of the original dataset. </span>
             </div>
+            <span className="ui-form-title-message">Download link of the original dataset. </span>
             <input
               type="text"
               required
