@@ -104,7 +104,7 @@ export default function ToolsDetailsComponent(props) {
     setSelectedDatasets(currentSelectedDatasets);
   };
 
-    const extractDir =  (inputFile) => {
+    const extractDir = (inputFile) => {
         const fileLocParts = inputFile.split('/');
         fileLocParts.pop(); // Remove the file name from the array
         const output = fileLocParts.join('/'); // Join the remaining parts with '/'

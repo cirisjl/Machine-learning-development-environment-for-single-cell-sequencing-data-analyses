@@ -173,7 +173,7 @@ class MyForm extends Component {
       // construct ID 
       // const task_abbv = formData.Task.value;
       const species = formData.Species.value;
-      const tissue = formData['Anatomical Entity'].label;
+      const tissue = formData['Organ Part'].label;
       const author = formData['Author'];
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
@@ -208,8 +208,8 @@ class MyForm extends Component {
       // formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
 
       // Add inputs
-      // formData.files = taskData.quality_control.file_paths;
-      formData.files = taskData.quality_control.qc_results[0]?.adata_path;
+      // formData.inputFiles = taskData.quality_control.file_paths;
+      formData.inputFiles = taskData.quality_control.qc_results[0]?.adata_path;
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
       // formData.taskOptions = this.state.options["Task"];
@@ -245,8 +245,8 @@ class MyForm extends Component {
         formData.Owner = taskData.upload.authToken;
         formData.Category = formData.makeItpublic ? "Shared" : "Private";
         formData.format = taskData.upload.final_files.format;
-        // formData.files = taskData.upload.final_files.inputFiles;
-        formData.files = taskData.upload.final_files.adata_path;
+        // formData.inputFiles = taskData.upload.final_files.inputFiles;
+        formData.inputFiles = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
       }
 
@@ -315,9 +315,9 @@ class MyForm extends Component {
       errors.Dataset = 'Dataset is required';
     }
 
-    if (!formData.Downloads) {
-      errors.Downloads = 'Downloads is required';
-    }
+    // if (!formData.Downloads) {
+    //   errors.Downloads = 'Downloads is required';
+    // }
 
     if (!formData['Submission Date'] && formData['Submission Date'] === '') {
       errors['Submission Date'] = 'Submission Date is required';
@@ -334,18 +334,18 @@ class MyForm extends Component {
     if (!formData['Organ Part'] || (formData['Organ Part'] && formData['Organ Part'].value === '')) {
       errors['Organ Part'] = 'Organ Part is required';
     }
-    if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
-      errors['Anatomical Entity'] = 'Anatomical Entity is required';
-    }
-    if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
-      errors['Selected Cell Types'] = 'Selected Cell Types is required';
-    }
+    // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
+    //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
+    // }
+    // if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
+    //   errors['Selected Cell Types'] = 'Selected Cell Types is required';
+    // }
     if (!formData['Disease Status (Specimen)'] || (formData['Disease Status (Specimen)'] && formData['Disease Status (Specimen)'].value === '')) {
       errors['Disease Status (Specimen)'] = 'Disease Status (Specimen) is required';
     }
-    if (!formData['Disease Status (Donor)'] || (formData['Disease Status (Donor)'] && formData['Disease Status (Donor)'].value === '')) {
-      errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
-    }
+    // if (!formData['Disease Status (Donor)'] || (formData['Disease Status (Donor)'] && formData['Disease Status (Donor)'].value === '')) {
+    //   errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
+    // }
     if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
       errors['Cell Count Estimate'] = 'Cell Count Estimate is required';
     }
@@ -396,7 +396,7 @@ class MyForm extends Component {
           <div className="form-field">
             <div>
               <label className="form-label">Dataset:</label> 
-              <span className="ui-form-title-message warning"> * required </span>
+              <span className="ui-form-title-message warning"> * required, name of the dataset. </span>
             </div>
             <input
               type="text"
@@ -413,7 +413,7 @@ class MyForm extends Component {
           <div className="form-field">
             <div>
               <label className="form-label">Downloads:</label> 
-              <span className="ui-form-title-message warning"> * required </span>
+              <span className="ui-form-title-message"> * Download link of the original dataset. </span>
             </div>
             <input
               type="text"
@@ -425,20 +425,6 @@ class MyForm extends Component {
             />
             {errors.Downloads && <div className="error-tooltip">{errors.Downloads}</div>}
 
-          </div>
-
-          <div className="form-field">
-            <div>
-              <label className="form-label">Title:</label> 
-              <span className="ui-form-title-message warning"> * required </span>
-            </div>
-            <input
-              type="text"
-              name="Title"
-              value={formData.Title}
-              onChange={this.handleChange}
-              className="form-input"
-            />
           </div>
 
           <div className="form-field">
@@ -459,6 +445,7 @@ class MyForm extends Component {
 
           <div className="form-field">
             <label className="form-label">Reference (paper):</label>
+            <span className="ui-form-title-message"> Title of the reference paper. </span>
             <input
               type="text"
               name="Reference (paper)"
@@ -481,6 +468,7 @@ class MyForm extends Component {
           {/* DOI */}
           <div className="form-field">
             <label className="form-label">DOI:</label>
+            <span className="ui-form-title-message"> Link of the reference paper. </span>
             <input
               type="text"
               name="DOI"
@@ -490,7 +478,6 @@ class MyForm extends Component {
               className="form-input"
             />
           </div>
-
 
           {/* Species (CreatableSelect) */}
           <div className="form-field">
@@ -550,8 +537,8 @@ class MyForm extends Component {
           {/* "Anatomical Entity" (CreatableSelect) */}
           <div className="form-field">
             <div>
-            <label className="form-label">Anatomical Entity:</label>
-            <span className="ui-form-title-message warning"> * required </span></div>
+              <label className="form-label">Anatomical Entity:</label>
+            </div>
             <CreatableSelect
               name="Anatomical Entity"
               value={formData['Anatomical Entity']}
@@ -605,8 +592,8 @@ class MyForm extends Component {
 
           {/* "Selected Cell Types" (CreatableSelect) */}
           <div className="form-field"><div>
-            <label className="form-label">Selected Cell Types:</label>
-            <span className="ui-form-title-message warning"> * required </span></div>
+              <label className="form-label">Selected Cell Types:</label>
+            </div>
             <CreatableSelect
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
@@ -620,8 +607,6 @@ class MyForm extends Component {
             />
             {errors['Selected Cell Types'] && <div className="error-tooltip">{errors['Selected Cell Types']}</div>}
           </div>
-
-
 
           {/* "Library Construction Method" (CreatableSelect) */}
           <div className="form-field">
@@ -639,7 +624,6 @@ class MyForm extends Component {
             />
           </div>
 
-
           {/* "Nucleic Acid Source" (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Nucleic Acid Source:</label>
@@ -655,7 +639,6 @@ class MyForm extends Component {
               className="form-input"
             />
           </div>
-
 
           <div className="form-field">
             <label className="form-label">Paired End:</label>
@@ -699,7 +682,7 @@ class MyForm extends Component {
           {/* "Disease Status (Specimen)" (CreatableSelect) */}
           <div className="form-field"><div>
             <label className="form-label">Disease Status (Specimen):</label>
-            <span className="ui-form-title-message warning"> * required </span></div>
+              <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Disease Status (Specimen)"
               value={formData['Disease Status (Specimen)']}
@@ -717,8 +700,8 @@ class MyForm extends Component {
 
           {/* "Disease Status (Donor)" (CreatableSelect) */}
           <div className="form-field"><div>
-            <label className="form-label">Disease Status (Donor):</label>
-            <span className="ui-form-title-message warning"> * required </span></div>
+              <label className="form-label">Disease Status (Donor):</label>
+            </div>
             <CreatableSelect
               name="Disease Status (Donor)"
               value={formData['Disease Status (Donor)']}
@@ -775,7 +758,6 @@ class MyForm extends Component {
               className="form-input"
             />
           </div>
-
           
           {/* Source Key */}
           <div className="form-field">

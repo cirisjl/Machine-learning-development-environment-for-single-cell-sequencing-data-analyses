@@ -72,32 +72,36 @@ def get_input_path(input, userID):
     """
     return the absolute input path for a given input
     """
+    input_path = None
     if input is not None and userID is not None:
         input_path = USER_STORAGE + userID + input
-        return input_path
+    return input_path
 
 
 def get_output(output, userID, task_id):
     """
     return the absolute input path for a given input
     """
+    output_path = None
     if output is not None and userID is not None:
         output_path = output + "/" + task_id
-        return output_path
+    
+    return output_path
     
 
-def benchmarks_output_path(input, task_id):
+def benchmarks_output_path(input):
     """
     return the absolute output path for a given input
     """
-    if input is not None and task_id is not None:
+    output_path = None
+    if input is not None:
         # Check if the input path is a directory
         if os.path.isdir(input):
-            # If it's a directory, append '/Results' to it
-            output_path = os.path.join(input, 'Results', task_id)
+            # If it's a directory, append '/QC' to it
+            output_path = os.path.join(input, 'QC')
         else:
-            # If it's a file, get the parent directory and append '/Results'
+            # If it's a file, get the parent directory and append '/QC'
             parent_dir = os.path.dirname(input)
-            output_path = os.path.join(parent_dir, 'Results', task_id)
+            output_path = os.path.join(parent_dir, 'QC')
     
-        return output_path
+    return output_path

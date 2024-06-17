@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1761,6 +1761,45 @@ app.post('/api/storage/renameFile', async (req, res) => {
     }
 });
 
+app.post('/mongoDB/api/errorlogdata', async (req, res) => {
+    console.log(mongoUrl)
+    const client = new MongoClient(mongoUrl);
+    console.log(52)
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(errorlogcollection);
+        console.log(1234)
+
+        // Create the document to insert into the collection
+        const formData = {
+            name: req.body.name,
+            id: req.body.id,
+            Result: req.body.taskResult,
+            status: req.body.taskStatus,
+            taskid: req.body.taskId,
+            UserComments: req.body.userComments
+        };
+        // Insert the document into the collection
+        const result = await collection.insertOne(formData);
+
+        // Log the success message and send response
+        console.log('Form data saved successfully:', result.insertedId);
+        res.status(200).json({ message: 'Form data saved successfully' });
+    } catch (err) {
+        // Log and send error response
+        console.log(400008)
+        console.error('Error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client connection is closed
+        await client.close();
+    }
+});
+
+
 // Fetch facets and paginated results
 app.post('/api/benchmarks/datasets/search', async (req, res) => {
     let client;
@@ -2439,7 +2478,7 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     Author: "$Author",
                     'Source': "$Source",
                     'Submission Date': "$Submission Date",
-                    'files': "$files",
+                    'inputFiles': "$inputFiles",
                     'adata_path': "$adata_path"
                 }
               }
