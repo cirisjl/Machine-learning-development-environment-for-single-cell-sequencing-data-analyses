@@ -25,7 +25,7 @@ import { getCookie } from '../../../utils/utilFunctions';
 import { owner,repo } from '../../../constants/declarations';
 
 // Initialize Octokit with your GitHub personal access token
-const octokit = new Octokit({ auth: `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` });
+const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 
 let jwtToken = getCookie('jwtToken');
 
@@ -145,7 +145,7 @@ function TaskDetailsComponent() {
         async function fetchFiles() {
        
       try {
-            const taskInfoResponse = await fetch(`http://clnode179.clemson.cloudlab.us:5000/api/task/${taskId}`);
+            const taskInfoResponse = await fetch(`http://${process.env.REACT_APP_HOST_URL}:5000/api/task/${taskId}`);
             const taskInfoData = await taskInfoResponse.json();
             console.log(taskInfoData);
             setTaskResult(taskInfoData.task_result);
@@ -322,7 +322,7 @@ function TaskDetailsComponent() {
                       disabled={isSaving} // Disable button if saving
                       sx={{ mt: 2 }}
                     >
-                      {isSaving ? 'Sending...' : 'Send Feedback'}
+                      {isSaving ? 'Sent' : 'Send Feedback'}
                     </Button>
                     {commentSuccessMessage && (
                       <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
