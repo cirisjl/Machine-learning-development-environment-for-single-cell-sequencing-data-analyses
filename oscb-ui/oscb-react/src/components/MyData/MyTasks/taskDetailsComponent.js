@@ -62,8 +62,8 @@ function TaskDetailsComponent() {
   const [plotDimension, setPlotDimension] = useState('2D');
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
+  const [isSent, setIsSent] = useState(false); // State to indicate save operation
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
-  const [isCommentSaved, setIsCommentSaved] = useState(false); // State to disable button after success
   const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
@@ -179,7 +179,8 @@ function TaskDetailsComponent() {
 
       if (response.status === 200) {
         setCommentSuccessMessage('Feedback sent successfully.');
-        setIsSaving(true);
+        setIsSaving(false);
+        setIsSent(true);
         setShowErrorLog(false); // Hide the error log card
       } else {
         setCommentSuccessMessage('Failed to send feedback.');
@@ -222,9 +223,9 @@ function TaskDetailsComponent() {
 
   const handleSaveComment = async () => {
     setIsSaving(true);
+    setIsSent(false);
     await saveErrorLogData();
     await createGitHubIssue();
-    setIsCommentSaved(true); // Disable the button after success
   };
 
     // Use the WebSocket hook
@@ -319,10 +320,10 @@ function TaskDetailsComponent() {
                       variant="contained"
                       color="primary"
                       onClick={handleSaveComment}
-                      disabled={isSaving} // Disable button if saving
+                      disabled={isSaving || isSent} // Disable button if saving
                       sx={{ mt: 2 }}
                     >
-                      {isSaving ? 'Sent' : 'Send Feedback'}
+                      {isSaving ? 'Sending' : 'Send Feedback'}
                     </Button>
                     {commentSuccessMessage && (
                       <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
@@ -343,7 +344,7 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-        (tool === "Quality Control" || tool === "Normalization" || tool === "Reduction") && (
+        (tool === "Quality Control" || tool === "Normalization" || tool === "UMAP") && (
           <div>
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (

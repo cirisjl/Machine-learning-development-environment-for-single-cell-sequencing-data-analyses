@@ -30,7 +30,7 @@ export default function ToolsDetailsComponent(props) {
       integration: '/api/tools/integrate',
       evaluation: '/api/tools/evaluate',
       formatting: '/api/tools/convert',
-      reduction: '/api/tools/reduce'
+      UMAP: '/api/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -38,7 +38,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'qc_params',
       normalization: 'normalization_params',
       imputation: 'imputation_params',
-      reduction: 'reduction_params'
+      UMAP: 'reduction_params'
     };
 
     const filterStaticCategoryMap = {
@@ -48,7 +48,7 @@ export default function ToolsDetailsComponent(props) {
       integration: 'Integration',
       evaluation: 'Evaluation',
       formatting: 'Formatting',
-      reduction: 'Reduction'
+      visualization: 'Visualization'
       // Add more filter categories and their corresponding Names as needed
     };
 
@@ -212,8 +212,8 @@ export default function ToolsDetailsComponent(props) {
                   const taskId = response.task_id;
                   let method = "";
 
-                  if(filterCategory === "reduction") {
-                    method = "Reduction";
+                  if(filterCategory === "UMAP") {
+                    method = "UMAP";
                   } else if(filterCategory === "formatting") {
                     method = "Formatting";
                   } else if(parametersKey[filterCategory]) {
@@ -378,7 +378,7 @@ export default function ToolsDetailsComponent(props) {
         defaultParams = defaultNormalizationParams;
         paramsKey = 'normalization_params';
 
-    } else if(filterCategory === 'reduction') {
+    } else if(filterCategory === 'UMAP') {
         defaultParams = defaultReductionParams;
         paramsKey = 'reduction_params';
     } else {

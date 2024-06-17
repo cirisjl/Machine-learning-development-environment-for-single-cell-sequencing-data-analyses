@@ -7,7 +7,7 @@ WORKDIR /opt/src/app
 # COPY package*.json ./
 
 # RUN npm install
-RUN npm install @octokit/rest
+# RUN npm install @octokit/rest
 # Copy app source code
 COPY . .
 
