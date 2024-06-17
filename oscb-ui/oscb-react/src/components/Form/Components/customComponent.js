@@ -311,8 +311,8 @@ class MyForm extends Component {
 
   validateForm(formData) {
     const errors = {};
-    if (!formData.Dataset) {
-      errors.Dataset = 'Dataset is required';
+    if (!formData.Title) {
+      errors.Title = 'Title is required';
     }
 
     // if (!formData.Downloads) {
@@ -395,18 +395,18 @@ class MyForm extends Component {
           {/* Dataset */}
           <div className="form-field">
             <div>
-              <label className="form-label">Dataset:</label> 
+              <label className="form-label">Title:</label> 
               <span className="ui-form-title-message warning"> * required, name of the dataset. </span>
             </div>
             <input
               type="text"
-              name="Dataset"
+              name="Title"
               required
-              value={formData.Dataset}
+              value={formData.Title}
               onChange={this.handleChange}
-              className={`form-input ${errors.Dataset ? 'error' : ''}`}
+              className={`form-input ${errors.Title ? 'error' : ''}`}
             />
-            {errors.Dataset && <div className="error-tooltip">{errors.Dataset}</div>}
+            {errors.Title && <div className="error-tooltip">{errors.Title}</div>}
           </div>
 
           {/* Downloads */}
@@ -421,10 +421,8 @@ class MyForm extends Component {
               name="Downloads"
               value={formData.Downloads}
               onChange={this.handleChange}
-              className={`form-input ${errors.Downloads ? 'error' : ''}`}
+              className="form-input"
             />
-            {errors.Downloads && <div className="error-tooltip">{errors.Downloads}</div>}
-
           </div>
 
           <div className="form-field">
@@ -548,9 +546,8 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Anatomical Entity', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Anatomical Entity', inputValue)}
               options={options['Anatomical Entity']} // Set options to the fetched options
-              className={`form-input ${errors['Anatomical Entity'] ? 'error' : ''}`}
+              className="form-input"
             />
-            {errors['Anatomical Entity'] && <div className="error-tooltip">{errors['Anatomical Entity']}</div>}
           </div>
 
           {/* "Organ Part" (CreatableSelect) */}
@@ -711,9 +708,8 @@ class MyForm extends Component {
               onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
               options={options['Disease Status (Donor)']} // Set options to the fetched options
-              className={`form-input ${errors['Disease Status (Donor)'] ? 'error' : ''}`}
+              className="form-input"
             />
-            {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>}
           </div>
 
           {/* "Development Stage" (CreatableSelect) */}
