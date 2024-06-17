@@ -356,17 +356,38 @@ Styles for Benchmarks page
   /* border-bottom: none; */
 }
 
-
 .updates-container{
   display: grid;
   grid-template-columns: 20% 60% 20%;
   width: 100%;
 }
 
-.getStarted-container, .page-container{
+.getStarted-container, 
+.page-container{
   display: grid;
   grid-template-columns: 15% 65% 20%;
   width: 100%;  
+}
+
+.competition-container,
+.page-container {
+  display: grid;
+  grid-template-columns: 15% 65% 20%;
+  width: 100%;
+}
+
+.benchmarks-container,
+.page-container {
+  display: grid;
+  grid-template-columns: 15% 65% 20%;
+  width: 100%;
+}
+
+.tutorial-container, 
+.page-container {
+  display: grid;
+  grid-template-columns: 15% 65% 20%;
+  width: 100%;
 }
 
 .btn {
