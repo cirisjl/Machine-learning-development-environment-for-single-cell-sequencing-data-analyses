@@ -204,7 +204,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                       </Grid>
                       <Grid item xs={4} container justifyContent="center">
                         <Button variant="outlined" color="primary" onClick={handleCreateDataset}>
-                          Create Dataset
+                          Upload Dataset
                         </Button>
                       </Grid>
                     </Grid>
@@ -293,6 +293,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                   )}
                 <div className='dialog-close'>
                     <button onClick={onClose}>Select</button>
+
+                    <button onClick={onClose}>Close</button>
                 </div>
               </div>
               

@@ -477,17 +477,17 @@ def detect_delimiter(file_path):
 #     return output
 
 
-def get_output_path(path, process_id='', dataset=None, method = '', format = "AnnData"):
+def get_output_path(path, process_id='', dataset=None, method='', format="AnnData"):
     output = os.path.abspath(path)
     method = '_' + method if method != '' else ''
     output_path = None
     directory = output
+    base_name = os.path.basename(path)
 
     if not os.path.exists(output):
         os.makedirs(output)
 
     if os.path.isdir(output):
-        print("is a directory")
         if dataset is None:
             dataset = base_name
         if format == "AnnData":
@@ -503,7 +503,6 @@ def get_output_path(path, process_id='', dataset=None, method = '', format = "An
             output_path = os.path.join(output, process_id, dataset + method + ".csv")
             print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
-        print("inside file ")
         if format == "AnnData":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
         elif format == "SingleCellExperiment":
@@ -516,7 +515,6 @@ def get_output_path(path, process_id='', dataset=None, method = '', format = "An
     if not os.path.exists(os.path.dirname(output_path)):
         os.makedirs(os.path.dirname(output_path))
     
-    print("final output")
     print(output_path)
     return output_path
 

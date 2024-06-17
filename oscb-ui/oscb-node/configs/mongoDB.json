@@ -7,5 +7,6 @@
     "userDatasetsCollection": "user_datasets",
     "taskResultsCollection": "task_results",
     "preProcessResultsCollection": "pp_results",
-    "benchmarksCollection":"benchmarks"
+    "benchmarksCollection": "benchmarks",
+    "errorlogcollection": "error_log"
 }

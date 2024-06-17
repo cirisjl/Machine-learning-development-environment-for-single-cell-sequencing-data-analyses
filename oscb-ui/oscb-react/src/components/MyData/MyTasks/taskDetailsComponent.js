@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 import { 
-  Container, Typography, Chip, Box, CircularProgress, Paper, Grid, 
+  Container, Typography, Chip, Box, CircularProgress, Paper, Grid,TextField,Button, 
   Card, CardContent, Link, CardHeader 
 } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
 import RightRail from '../../RightNavigation/rightRail';
 import LogComponent from '../../common_components/liveLogs';
-import { SERVER_URL } from '../../../constants/declarations';
+import { LOGIN_API_URL, SERVER_URL } from '../../../constants/declarations';
 import axios from 'axios';
+import { Octokit } from "@octokit/rest";
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
 import { ScaleLoader } from 'react-spinners';
 import FormControl from '@mui/material/FormControl';
@@ -17,6 +18,16 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
+import { getCookie } from '../../../utils/utilFunctions';
+
+
+//GitImports
+import { owner,repo } from '../../../constants/declarations';
+
+// Initialize Octokit with your GitHub personal access token
+const octokit = new Octokit({ auth: `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` });
+
+let jwtToken = getCookie('jwtToken');
 
 function StatusChip({ status }) {
   const getStatusColor = () => {
@@ -42,11 +53,18 @@ function TaskDetailsComponent() {
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
-
+  const [uName, setUName] = useState(null);
+  const [uIat, setUIat] = useState(null);
+  const [taskResult, setTaskResult] = useState("");
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
+  const [userComment, setUserComment] = useState(''); // State for user comment
+  const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
+  const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
+  const [isCommentSaved, setIsCommentSaved] = useState(false); // State to disable button after success
+  const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
@@ -105,6 +123,40 @@ function TaskDetailsComponent() {
     }
   };
 
+  if (jwtToken) {
+    fetch(LOGIN_API_URL + "/protected", { //to get username,id
+      method: 'GET',
+      credentials: 'include', 
+      headers: { 'Authorization': `Bearer ${jwtToken}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+
+        if (data.authData !== null) {
+          setUName(data.authData.username);
+          setUIat(data.authData.iat)
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      })};
+
+      useEffect(() => {
+        async function fetchFiles() {
+       
+      try {
+            const taskInfoResponse = await fetch(`http://clnode179.clemson.cloudlab.us:5000/api/task/${taskId}`);
+            const taskInfoData = await taskInfoResponse.json();
+            console.log(taskInfoData);
+            setTaskResult(taskInfoData.task_result);
+          } catch (error) {
+            console.error('Error fetching task status:', error);
+          }
+        }
+        fetchFiles();
+      }, [taskId]);
+
+
   const handleLogMessage = (event) => {
     setLiveLogs(event.data);
     // Auto-scroll to the bottom of the logs
@@ -112,6 +164,67 @@ function TaskDetailsComponent() {
     if (logsElement) {
       logsElement.scrollTop = logsElement.scrollHeight;
     }
+  };
+  
+  const saveErrorLogData = async () => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/mongoDB/api/errorlogdata`, {
+        name: uName,
+        id: uIat,
+        taskResult: taskResult,
+        taskStatus: taskStatus,
+        taskId: taskId,
+        userComments: userComment
+      });
+
+      if (response.status === 200) {
+        setCommentSuccessMessage('Feedback sent successfully.');
+        setIsSaving(true);
+        setShowErrorLog(false); // Hide the error log card
+      } else {
+        setCommentSuccessMessage('Failed to send feedback.');
+        setIsSaving(false);
+      }
+    } catch (error) {
+      console.error('Error saving comment:', error);
+      setCommentSuccessMessage('Failed to send feedback.');
+      setIsSaving(false);
+    }
+  };
+
+  const createGitHubIssue = async () => {
+    try {
+      const response = await octokit.issues.create({
+        //owner: 'SAYEERA', // Replace with your GitHub username
+        //repo: 'issues-list', // Replace with your repository name
+        owner: owner,
+        repo: repo,
+        title: `Issue for Task ID: ${taskId}`,
+        body: `
+            User Name:${uName}
+            User ID: ${uIat}
+            Task Result: ${taskResult}
+            Task Status: ${taskStatus}
+            Task ID: ${taskId}
+            User Comments: ${userComment}
+        `
+      });
+      console.log("Git response: ", response);
+      if (response.status === 201) {
+        console.log('GitHub issue created successfully:', response.data.html_url);
+      } else {
+        console.error('Failed to create GitHub issue:', response);
+      }
+    } catch (error) {
+      console.error('Error creating GitHub issue:', error);
+    }
+  };
+
+  const handleSaveComment = async () => {
+    setIsSaving(true);
+    await saveErrorLogData();
+    await createGitHubIssue();
+    setIsCommentSaved(true); // Disable the button after success
   };
 
     // Use the WebSocket hook
@@ -172,7 +285,56 @@ function TaskDetailsComponent() {
               </Card>
             </Grid>
 
-            <LogComponent wsLogs = {liveLogs}/>
+            <Grid item xs={12}  >
+              <Card raised sx={cardStyle}>
+                <CardHeader title="Live Logs" />
+                <CardContent sx={cardContentStyle}>
+                  <LogComponent wsLogs={liveLogs} />
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* {showErrorLog && (    */}
+            {taskStatus?.toLowerCase() === "failure" && (
+              <Grid item xs={12}>
+                <Card raised sx={cardStyle}>
+                  <CardHeader title="Error Feedback" />
+                  <CardContent sx={cardContentStyle}>
+                    <Typography variant="subtitle1"><strong>User Name:</strong> {uName}</Typography>
+                    <Typography variant="subtitle1"><strong>User ID:</strong> {uIat}</Typography>
+                    { /*<Typography variant="subtitle1"><strong>Task Result:</strong> {taskResult}</Typography>*/ }
+                    <Typography variant="subtitle1"><strong>Task Status:</strong> {taskStatus}</Typography>
+                    <Typography variant="subtitle1"><strong>Task ID:</strong> {taskId}</Typography>
+                    <Typography variant="subtitle1"><strong>User Comments:</strong></Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      variant="outlined"
+                      value={userComment}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      placeholder="Enter your comments here."
+                    />
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSaveComment}
+                      disabled={isSaving} // Disable button if saving
+                      sx={{ mt: 2 }}
+                    >
+                      {isSaving ? 'Sending...' : 'Send Feedback'}
+                    </Button>
+                    {commentSuccessMessage && (
+                      <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
+                        {commentSuccessMessage}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
+
           </Grid>
         </Container>
 

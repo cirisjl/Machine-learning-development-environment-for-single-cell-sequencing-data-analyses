@@ -46,3 +46,8 @@ export const defaultValues = {
     n_pcs: 1,
     resolution: 1,
   };
+
+  
+//Github
+export const owner = process.env.REACT_APP_OWNER;
+export const repo = process.env.REACT_APP_REPO;
