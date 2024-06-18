@@ -338,9 +338,9 @@ class MyForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    // if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
-    //   errors['Selected Cell Types'] = 'Selected Cell Types is required';
-    // }
+    if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
+      errors['Selected Cell Types'] = 'Selected Cell Types is required';
+    }
     if (!formData['Disease Status (Specimen)'] || (formData['Disease Status (Specimen)'] && formData['Disease Status (Specimen)'].value === '')) {
       errors['Disease Status (Specimen)'] = 'Disease Status (Specimen) is required';
     }
@@ -382,7 +382,7 @@ class MyForm extends Component {
       <div>
         {taskData.metadata.status === 'completed' ? (
           <div>
-            <p>Continue to taskBuilder</p>
+            <p>Continue to Benchmark Task Builder</p>
             <button className="btn btn-info button" onClick={this.continueToTaskBuilder}>Continue</button>
           </div>
         ) : (
@@ -594,12 +594,13 @@ class MyForm extends Component {
           {/* "Selected Cell Types" (CreatableSelect) */}
           <div className="form-field"><div>
               <label className="form-label">Selected Cell Types:</label>
-            </div>
+              <span className="ui-form-title-message warning"> * required </span></div>
             <CreatableSelect
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
               isClearable
               isSearchable
+              required
               isLoading={isLoading}
               onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
