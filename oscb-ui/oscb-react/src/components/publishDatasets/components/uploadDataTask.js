@@ -207,7 +207,7 @@ function getStandardFileName(fileName, fileType) {
         }
     }
     if (!taskData.upload.title) {
-      setTitleError('Please enter a title.');
+      setTitleError('Title is required.');
     } else {
       setTitleError('');
     }
@@ -360,7 +360,7 @@ function getStandardFileName(fileName, fileType) {
             }
           </div>
         }
-        {fileError && <div className="error-message">{fileError}</div>}
+        {fileError && <div className="error-message"><span className="error-tooltip">{fileError}</span></div>}
       </div>
       <div className="separator heading">
           <div className="stripe"></div>
@@ -370,7 +370,7 @@ function getStandardFileName(fileName, fileType) {
       <div className="form-group field field-string">
         <label className="control-label" for="root_title">Title<span className="required">*</span></label>
         <input className="form-control" id="root_title" label="Title" required="" placeholder="" type="text" value={taskData.upload.title} fdprocessedid="jwyrb9" onChange={handleTitleChange}></input>
-        {titleError && <div className="error-message">{titleError}</div>}
+        {titleError && <div className="error-message"><span className="error-tooltip">{titleError}</span></div>}
       </div>
       <div className='next-upon-success'>
         <button type="submit" className="btn btn-info button" onClick={handleTask1Completion}>Next</button>
