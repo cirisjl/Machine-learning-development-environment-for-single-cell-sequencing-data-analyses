@@ -1818,7 +1818,8 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
       const filters = req.body.filters;
 
       //Update this field accordingly whenever you add a new facet 
-      const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+      // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+      const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
       let matchConditions = [];
 
@@ -1828,11 +1829,11 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                 $or: [
                     { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
                 ],
             });
         }
@@ -1874,9 +1875,9 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
           'Author': [
             { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
           ],
-          'Anatomical Entity': [
-            { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
+        //   'Anatomical Entity': [
+        //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+        //   ],
           'Organ Part': [
             { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
           ],
@@ -1886,9 +1887,9 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
           'Disease Status (Specimen)': [
             { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
           ],
-          'Disease Status (Donor)': [
-            { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
+        //   'Disease Status (Donor)': [
+        //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+        //   ],
           // ... add other facets here
         }},
       ];
