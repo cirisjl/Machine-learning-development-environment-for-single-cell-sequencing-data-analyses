@@ -38,6 +38,7 @@ export default function UploadDataset() {
             Abstract: '',
             DOI: '',
             Species: '',
+            'Cell Count Estimate': '',
             'Sample Type': '',
             'Anatomical Entity': '',
             'Organ Part': '',

@@ -62,7 +62,7 @@ def run_data_split(task_id, data_dict:dict):
         # Updating records using string paths
         upsert_benchmarks(benchmarksId, {
             "archive_path": str(archive_path),
-            "train_path": str(train_path),
+            "train_path": str(train_path), 
             "validation_path": str(val_path),
             "test_path": str(test_path)
         })        

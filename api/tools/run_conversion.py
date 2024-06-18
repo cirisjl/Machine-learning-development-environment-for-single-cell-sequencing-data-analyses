@@ -62,10 +62,9 @@ def run_conversion(task_id, ds:dict, show_error=True):
 
     if output_format == "CSV":
         try:
-            layer = ds['layer']
-            adata, counts, csv_path = load_anndata_to_csv(input, output, layer=layer)
+            # layer = ds['layer']
+            adata, counts, csv_path = load_anndata_to_csv(input, csv_path, layer=None)
             adata = None
-            csv_path =None
             outputs.append({'csv_path': csv_path})
             redislogger.info(task_id, "CSV file is saved successfully")
         except Exception as e:

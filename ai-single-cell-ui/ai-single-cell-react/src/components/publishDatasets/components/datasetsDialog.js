@@ -292,7 +292,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                     </div>
                   )}
                 <div className='dialog-close'>
-                    <button onClick={onClose}>Close</button>
+                    <button onClick={onClose}>Select</button>
                 </div>
               </div>
               
