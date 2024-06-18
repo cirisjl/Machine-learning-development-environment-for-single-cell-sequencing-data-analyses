@@ -28,7 +28,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.oscb.biomizzou-pg0.clemson.cloudlab.us:3000'],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.oscb.biomizzou-pg0.clemson.cloudlab.us:3000', 'http://node-1.c220g2-Sampath.biomizzou-PG0.wisc.cloudlab.us'],
     credentials: true
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
