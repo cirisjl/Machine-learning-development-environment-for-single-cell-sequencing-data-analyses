@@ -76,12 +76,12 @@ export default function RootLayout() {
             <div className ="header-container">
                 <header className="border-b border-gray-100">
                     <div className="px-4 flex h-16 items-center">
-                        {/* <div className="flex flex-1 items-center">
+                        <div className="flex flex-1 items-center">
                             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/"><span className="hidden whitespace-nowrap text-lg font-bold md:block">OSCB</span></a>
-                            <div className="relative flex-1 lg:max-w-sm mr-2 sm:mr-4 lg:mr-6">
+                            {/* <div className="relative flex-1 lg:max-w-sm mr-2 sm:mr-4 lg:mr-6">
                                 <SearchBox placeHolder="Search models, datasets, users..."/>
-                            </div>
-                        </div> */}
+                            </div> */}
+                        </div> 
 
                     {/* <div className="header-right"> */}
                         <nav aria-label="Main" className="ml-auto hidden lg:block">
