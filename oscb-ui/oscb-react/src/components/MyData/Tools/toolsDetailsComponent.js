@@ -30,7 +30,7 @@ export default function ToolsDetailsComponent(props) {
       integration: '/api/tools/integrate',
       evaluation: '/api/tools/evaluate',
       formatting: '/api/tools/convert',
-      UMAP: '/api/tools/reduce'
+      visualization: '/api/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -38,7 +38,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'qc_params',
       normalization: 'normalization_params',
       imputation: 'imputation_params',
-      UMAP: 'reduction_params'
+      visualization: 'reduction_params'
     };
 
     const filterStaticCategoryMap = {
@@ -104,7 +104,7 @@ export default function ToolsDetailsComponent(props) {
     setSelectedDatasets(currentSelectedDatasets);
   };
 
-    const extractDir = (inputFile) => {
+    const extractDir =  (inputFile) => {
         const fileLocParts = inputFile.split('/');
         fileLocParts.pop(); // Remove the file name from the array
         const output = fileLocParts.join('/'); // Join the remaining parts with '/'
@@ -212,8 +212,8 @@ export default function ToolsDetailsComponent(props) {
                   const taskId = response.task_id;
                   let method = "";
 
-                  if(filterCategory === "UMAP") {
-                    method = "UMAP";
+                  if(filterCategory === "visualization") {
+                    method = "Visualization";
                   } else if(filterCategory === "formatting") {
                     method = "Formatting";
                   } else if(parametersKey[filterCategory]) {
@@ -352,6 +352,7 @@ export default function ToolsDetailsComponent(props) {
       setFilterSchema(null);
     });
 
+    console.log(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     import(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     .then((module) => {
       setUIFilterSchema(JSON.parse(JSON.stringify(module.uiSchema)));
@@ -363,7 +364,7 @@ export default function ToolsDetailsComponent(props) {
       console.error('Error loading UI filter schema:', error);
       setUIFilterSchema(null);
     });
-  },[filterName,filterCategory]);
+  },[filterName, filterCategory]);
 
   const handleChange = ({ formData }) => {
 
@@ -378,7 +379,7 @@ export default function ToolsDetailsComponent(props) {
         defaultParams = defaultNormalizationParams;
         paramsKey = 'normalization_params';
 
-    } else if(filterCategory === 'UMAP') {
+    } else if (filterCategory === 'visualization') {
         defaultParams = defaultReductionParams;
         paramsKey = 'reduction_params';
     } else {
