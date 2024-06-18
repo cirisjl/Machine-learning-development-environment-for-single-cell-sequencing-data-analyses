@@ -185,6 +185,7 @@ class MyForm extends Component {
             formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
           }
         }
+        formData['Dataset'] = formData.Title.replace(' ', '_');
 
         // add data to the formData
         // const cellCount = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
@@ -367,6 +368,10 @@ class MyForm extends Component {
         formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
       }
     }
+
+    if (typeof taskData.upload.title !== 'undefined') {
+      formData.Title = taskData.upload.title;
+    }
     
     // If isAdmin is false, render nothing
     if (!isAdmin) {
@@ -417,7 +422,6 @@ class MyForm extends Component {
             <span className="ui-form-title-message">Download link of the original dataset. </span>
             <input
               type="text"
-              required
               name="Downloads"
               value={formData.Downloads}
               onChange={this.handleChange}
