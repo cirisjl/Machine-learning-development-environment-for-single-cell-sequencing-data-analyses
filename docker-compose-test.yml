@@ -1,5 +1,3 @@
-version: '33.8'
-
 services:
   mongodb:
     container_name: oscbdb
