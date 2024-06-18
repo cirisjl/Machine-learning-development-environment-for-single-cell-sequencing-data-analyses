@@ -15,6 +15,8 @@ import {SERVER_URL} from '../../../constants/declarations'
 import axios from 'axios';
 import '../publishDatasets.css';
 import { useNavigate } from 'react-router-dom';
+import { TreeTable } from 'primereact/treetable';
+
 
 
 
@@ -26,6 +28,39 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     console.log("data",data);
     updateData(data);
   },[data]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${SERVER_URL}/mongoDB/api/fetchPpResults`);
+
+        if (data && response.data) {
+          console.log("data if",data);
+          console.log('Response Received', response.data);
+
+          const mergedData = data.map(item => {
+            // Ensure item.process_id is defined
+            if (!item.process_ids) {
+              return item;
+            }
+
+            // Filter response.data to get the matching process_ids
+            const sub = response.data.filter(pp => item.process_ids.includes(pp.process_id));
+            
+            // Return the new object with the sub array included
+            return { ...item, sub };
+          });
+
+          console.log('Merged Data:', mergedData);
+        }
+      } catch (error) {
+        console.log('Error while retrieving data', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
 
 
@@ -123,16 +158,6 @@ const clearMessageAfterTimeout = () => {
     }, [formData]);
   
     const [visualizeDataset, setVisualizeDataset] = useState(null);
-
-  //   const handleTabClick = (tabIndex) => {
-  //     setActiveTab(tabIndex);
-  //   };
-
-    
-  // const handleCloseButtonClick=()=>{
-  //   setDisplayVisualize(false);
-  // 
-
 
     useEffect(() => {
       console.log("visualize dataset",visualizeDataset);
@@ -347,6 +372,10 @@ const clearMessageAfterTimeout = () => {
   const  handleDelete= (dataset,id)=>{
   console.log("IN making of delete dataset",id);
   console.log("dataset",dataset);
+  const confirmDelete = window.confirm("Are you sure you want to delete this dataset?");
+  if (!confirmDelete) {
+      return; // If user clicks cancel, do nothing
+  }
   axios.delete(`${SERVER_URL}/mongoDB/api/deleteDataset`, { data: { id: dataset } })
     .then(response => {
       console.log('Dataset deleted successfully');
@@ -405,6 +434,7 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             Header: key,
             accessor: item => {
                 const value = item[key];
+                console.log('value',value);
                 let res = '';
                 if (value && typeof value === 'object' && value.label) {
                     res = value.label;
@@ -548,7 +578,9 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
                     })}
                 </tbody>
             </table>
-            
+            <TreeTable>
+              
+            </TreeTable>
         </div>
         <div>
 
@@ -981,6 +1013,7 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
             </div>
           </div>
         )}
+
         </div>
         </div>
     );

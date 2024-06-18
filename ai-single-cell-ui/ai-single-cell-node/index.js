@@ -1502,6 +1502,33 @@ app.get('/mongoDB/api/fetchDataforVisualize/:id', async (req, res) => {
     }
 });
 
+app.get('/mongoDB/api/fetchPpResults', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+  
+    try {
+      // Connect to the MongoDB server
+      await client.connect();
+      const db = client.db(dbName);
+      const collection = db.collection(preProcessResultsCollection);
+  
+      // Find all documents (no query criteria)
+      const documents = await collection.find().toArray();
+      console.log("ppresult",documents);
+  
+      // Check if any documents were found
+      if (documents.length === 0) {
+        return res.status(404).json({ error: 'No documents found' });
+      } else {
+        res.status(200).json(documents); // Send all documents found
+      }
+    } catch (err) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+      // Ensure the client will close when you finish/error
+      await client.close();
+    }
+  });
+
 app.get('/mongoDB/api/fetchGraphData/:process_id', async (req, res) => {
     const { process_id } = req.params;
 
