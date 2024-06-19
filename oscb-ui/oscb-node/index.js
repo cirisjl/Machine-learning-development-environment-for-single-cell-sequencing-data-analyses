@@ -2378,7 +2378,8 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
       const filters = req.body.filters;
 
           //Update this field accordingly whenever you add a new facet 
-        const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
 
         // If no flags are provided, do not query any collection.
@@ -2394,11 +2395,11 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
                 { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
             ],
         });
@@ -2474,8 +2475,9 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     'Organ Part': "$Organ Part.label",
                     'Cell Count Estimate': "$Cell Count Estimate",
                     'Development Stage': "$Development Stage",
-                    'Anatomical Entity': "$Anatomical Entity.label",
-                    'Disease Status (Donor)': "$Disease Status (Donor).label",
+                    'Disease Status (Specimen)': "$Disease Status (Specimen).label",
+                    // 'Anatomical Entity': "$Anatomical Entity.label",
+                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
                     Author: "$Author",
                     'Source': "$Source",
                     'Submission Date': "$Submission Date",
@@ -2497,10 +2499,10 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 { $group: { _id: '$Author', count: { $sum: 1 } } },
                 { $sort: { count: -1 } }
             ],
-            'Anatomical Entity': [
-                { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
+            // 'Anatomical Entity': [
+            //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+            //     { $sort: { count: -1 } }
+            // ],
             // More facets as per your requirement
             'Organ Part': [
                 { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
@@ -2514,10 +2516,10 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
                 { $sort: { count: -1 } }
             ],
-            'Disease Status (Donor)': [
-                { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
+            // 'Disease Status (Donor)': [
+            //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+            //     { $sort: { count: -1 } }
+            // ],
           }
         }
       ];
