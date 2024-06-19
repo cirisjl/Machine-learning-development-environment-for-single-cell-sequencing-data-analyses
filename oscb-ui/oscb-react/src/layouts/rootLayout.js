@@ -107,7 +107,7 @@ export default function RootLayout() {
                                      Updates
                                     </NavLink>    
                                 </li>
-                                 <li data-index="2">
+                                {/* <li data-index="2">
                                     <NavLink to="competitions" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-blue-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" viewBox="0 0 25 25">
                                             <path opacity=".5" d="M6.016 14.674v4.31h4.31v-4.31h-4.31ZM14.674 14.674v4.31h4.31v-4.31h-4.31ZM6.016 6.016v4.31h4.31v-4.31h-4.31Z" fill="currentColor"></path>
@@ -116,7 +116,7 @@ export default function RootLayout() {
                                         </svg>
                                         Competition
                                     </NavLink>
-                                 </li>
+                                 </li> */}
                                  <li data-index="3" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink to="benchmarks" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">

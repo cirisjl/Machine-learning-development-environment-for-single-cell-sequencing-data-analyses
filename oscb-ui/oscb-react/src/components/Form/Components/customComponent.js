@@ -210,7 +210,7 @@ class MyForm extends Component {
 
       // Add inputs
       // formData.inputFiles = taskData.quality_control.file_paths;
-      formData.inputFiles = taskData.quality_control.qc_results[0]?.adata_path;
+      formData.inputFiles = [taskData.quality_control.qc_results[0]?.adata_path];
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
       // formData.taskOptions = this.state.options["Task"];
@@ -247,7 +247,7 @@ class MyForm extends Component {
         formData.Category = formData.makeItpublic ? "Shared" : "Private";
         formData.format = taskData.upload.final_files.format;
         // formData.inputFiles = taskData.upload.final_files.inputFiles;
-        formData.inputFiles = taskData.upload.final_files.adata_path;
+        formData.inputFiles = [taskData.upload.final_files.adata_path];
         formData.adata_path = taskData.upload.final_files.adata_path;
       }
 
