@@ -347,6 +347,7 @@ Styles for Benchmarks page
 .right-rail-container {
   margin-right: 12px;
   background: #f8f9fa;
+  min-height: 100vh;
 }
 
 .search-window {
@@ -571,7 +572,7 @@ svg {
 }
 
 .right-container {
-  position: sticky;
+    position: sticky;
     top: 0;
 }
 

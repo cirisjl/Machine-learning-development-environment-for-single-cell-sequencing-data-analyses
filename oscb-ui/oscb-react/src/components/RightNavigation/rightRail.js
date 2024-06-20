@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {getCookie } from "../../utils/utilFunctions";
+import { getCookie } from "../../utils/utilFunctions";
 import { getStorageDetails } from '../../utils/utilFunctions';
-import {faArrowRightArrowLeft , faPlus, faCaretDown, faPen, faDatabase, faLocationDot, faArrowsRotate, faSquareCheck, faCompress, faGear, faChevronDown, faCross, faXmark, faAngleDoubleDown, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightArrowLeft, faPlus, faCaretDown, faPen, faDatabase, faLocationDot, faArrowsRotate, faSquareCheck, faCompress, faGear, faChevronDown, faCross, faXmark, faAngleDoubleDown, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import MyTasksSideNav from "../MyData/myTasksSideNav";
 
 function RightRail() {
@@ -13,34 +13,34 @@ function RightRail() {
     useEffect(() => {
         const userCookie = getCookie('jwtToken');
 
-        if(userCookie!== '') {
+        if (userCookie !== '') {
             setIsUserLoggedIn(true);
         }
-        
-      }, [isUserLoggedIn]);
 
-      useEffect(() => {
+    }, [isUserLoggedIn]);
+
+    useEffect(() => {
         const jwtToken = getCookie('jwtToken'); // Assuming you have a function to get the JWT token
-    
-        getStorageDetails(jwtToken)
-          .then(data => {
-            setUsedStorage(data.usedStorage);
-            setTotalStorage(data.totalStorage);
-          });
-      }, []);
 
-  return (
-    <div>
+        getStorageDetails(jwtToken)
+            .then(data => {
+                setUsedStorage(data.usedStorage);
+                setTotalStorage(data.totalStorage);
+            });
+    }, []);
+
+    return (
+        <div className="right-container">
             {isUserLoggedIn && (
-    <div className="right-container border-l border-gray-100 right-rail-container"> 
-        <div className="rightpane-1">
-            <div className="search-window">
-                <div className="row1-search-window rows-search-window">
-                    <div className="left-side-of-container">
-                        <span className="rightpane-text rightpane-text-history">Storage</span>
-                    </div>
-                </div>
-                {/* <div className="row2-search-window rows-search-window">
+                <div className="border-l border-gray-100 right-rail-container">
+                    <div className="rightpane-1">
+                        <div className="search-window">
+                            <div className="row1-search-window rows-search-window">
+                                <div className="left-side-of-container">
+                                    <span className="rightpane-text rightpane-text-history">Storage</span>
+                                </div>
+                            </div>
+                            {/* <div className="row2-search-window rows-search-window">
                     <input
                         type="text"
                         placeholder="Search Datasets..."
@@ -49,35 +49,35 @@ function RightRail() {
                     <FontAwesomeIcon className="right-rail-search-svg" icon={faAngleDoubleDown} />
                     <FontAwesomeIcon className="right-rail-search-svg" icon={faXmark} />
                 </div> */}
-            </div>
-            <div className="row4-search-window">
-                    <div className="left-side-of-container">
-                        <FontAwesomeIcon icon={faDatabase} title="History size"/><p className="storage-span">{usedStorage} GB/{totalStorage} GB</p>
-                    </div>
-                    <div className="right-side-of-container">
-                        {/* <FontAwesomeIcon icon={faLocationDot} title="Show active"/>
+                        </div>
+                        <div className="row4-search-window">
+                            <div className="left-side-of-container">
+                                <FontAwesomeIcon icon={faDatabase} title="History size" /><p className="storage-span">{usedStorage} GB/{totalStorage} GB</p>
+                            </div>
+                            <div className="right-side-of-container">
+                                {/* <FontAwesomeIcon icon={faLocationDot} title="Show active"/>
                         <FontAwesomeIcon icon={faArrowsRotate} title="Last Refreshed" />*/}
+                            </div>
+                        </div>
+                        <div className="row5-search-window border-b">
+                            <div className="left-side-of-container">
+                                <FontAwesomeIcon icon={faSquareCheck} />
+                                {/* <FontAwesomeIcon icon={faCompress} />*/}
+                            </div>
+                            <div className="right-side-of-container">
+                                {/* <FontAwesomeIcon icon={faGear} />*/}
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div className="row5-search-window border-b">
-                    <div className="left-side-of-container">
-                        <FontAwesomeIcon icon={faSquareCheck} />
-                        {/* <FontAwesomeIcon icon={faCompress} />*/}
-                    </div>
-                    <div className="right-side-of-container">
-                        {/* <FontAwesomeIcon icon={faGear} />*/}
-                    </div>
-                </div>
-        </div>
-        <div className="results-window">
-        <MyTasksSideNav/>
+                    <div className="results-window">
+                        <MyTasksSideNav />
 
+                    </div>
+                </div>
+            )
+            }
         </div>
-        </div>
-  )
-  }
-    </div>
-  );
+    );
 }
 
 export default RightRail;

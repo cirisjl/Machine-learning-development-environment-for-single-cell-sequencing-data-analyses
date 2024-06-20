@@ -1,28 +1,44 @@
 // import LeftNav from "../components/leftNav";
+import ToolsDetailsComponent from "../../components/MyData/Tools/toolsDetailsComponent";
 import RightRail from "../../components/RightNavigation/rightRail";
 import StorageChart from "../../components/MyData/storageChart";
 import { getCookie } from "../../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function MyData() {
 
     const navigate = useNavigate();
 
+    const [selectedFilter, setSelectedFilter] = useState(null);
+    const [category, setCategory] = useState(null);
+    const handleFilterSelection = (category, filter) => {
+        setSelectedFilter(category + "_" + filter);
+        setCategory(category);
+    };
+
     useEffect(() => {
         let jwtToken = getCookie('jwtToken');
-        if(jwtToken===undefined || jwtToken === '') {
+        if (jwtToken === undefined || jwtToken === '') {
             navigate('/routing');
         }
-    },[]);
+    }, []);
 
-    return(
+    return (
         <div className="page-container">
             <div className="left-nav">
                 {/* <LeftNav /> */}
             </div>
             <div className="main-content">
-            <StorageChart/>
+                <StorageChart />
+                    <DatasetSelectionDialog
+                        onSelect={null}
+                        multiple={filterCategory === "integration"}
+                        onClose={null}
+                        isVisible={true}
+                        selectedDatasets={null}
+                        fromToolsPage={false}
+                    />
             </div>
             <div className="right-rail">
                 <RightRail />
