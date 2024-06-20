@@ -11,7 +11,7 @@ export default function WorkflowsPageComponent() {
 
     const handleFilterSelection = (category, filter) => {
         setUniqueFilter(category+ "_" + filter);
-        setSelectedWorkflow(category);
+        setSelectedWorkflow(filter);
         console.log(category + filter);
     };
 

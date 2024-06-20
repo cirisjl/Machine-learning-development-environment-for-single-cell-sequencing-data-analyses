@@ -42,8 +42,6 @@ export default function InputDataComponent(props) {
 
     let onDeleteDataset = props.onDeleteDataset;
 
-    const handleMultipleDatasetChange = props.handleMultipleDatasetChange;
-    const handleDatasetChange = props.handleDatasetChange;
     const filterCategory = props.filterCategory;
 
     const handleOpenDialog = (mode) => {
