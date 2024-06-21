@@ -1,5 +1,5 @@
 // import LeftNav from "../components/leftNav";
-import ToolsDetailsComponent from "../../components/MyData/Tools/toolsDetailsComponent";
+import DatasetSelectionDialog from "../../components/publishDatasets/components/datasetsDialog";
 import RightRail from "../../components/RightNavigation/rightRail";
 import StorageChart from "../../components/MyData/storageChart";
 import { getCookie } from "../../utils/utilFunctions";
@@ -33,11 +33,11 @@ export default function MyData() {
                 <StorageChart />
                     <DatasetSelectionDialog
                         onSelect={null}
-                        multiple={filterCategory === "integration"}
+                        multiple={true}
                         onClose={null}
                         isVisible={true}
                         selectedDatasets={null}
-                        fromToolsPage={false}
+                        fromToolsPage={true}
                     />
             </div>
             <div className="right-rail">
