@@ -76,7 +76,7 @@ class Dataset(BaseModel):
     input: str
     output: Optional[str] = None
     userID: Optional[str] = None
-    task_id: Optional[str] = None
+    job_id: Optional[str] = None
     output_format: Optional[str] = 'AnnData'
     species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".

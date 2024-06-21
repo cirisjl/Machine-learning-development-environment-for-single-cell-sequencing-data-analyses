@@ -42,7 +42,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const navigate = useNavigate();
   const [wsLogs, setWsLogs] = useState('');
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
-  const [taskId, setTaskId] = useState('');
+  const [jobId, setjobId] = useState('');
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
 
 
@@ -82,7 +82,7 @@ const handleLogMessage = (event) => {
     return { __html: logs };
   };
 
-  const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage, setLoading);
+  const { closeWebSockets } = useWebSocket(jobId, handleStatusMessage, handleLogMessage, setLoading);
 
   const fetchProcessResults = async (processIds) => {
     if (!processIds.length) return;
@@ -145,8 +145,8 @@ const handleLogMessage = (event) => {
  
       const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
       const taskInfo = response.data;
-      const taskId = taskInfo.task_id;
-      setTaskId(taskId);
+      const jobId = taskInfo.job_id;
+      setjobId(jobId);
 
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
@@ -289,8 +289,8 @@ const handleAssaySelectionSubmit = async () => {
 
       const taskInfo = response.data;
 
-      const taskId = taskInfo.task_id;
-      setTaskId(taskId);
+      const jobId = taskInfo.job_id;
+      setjobId(jobId);
 
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);

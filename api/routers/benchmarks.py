@@ -401,7 +401,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
     print(task_dict)
     task = create_benchmarks_task.apply_async(args=[task_dict])
-    return JSONResponse({"task_id": task.id, "status": "Benchmarks task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Benchmarks task submitted successfully"})
     
 
 @router.post("/data-split")
@@ -411,7 +411,7 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
     """
     data_dict = data_split_task.dict()  # Convert the Pydantic model to a dict
     task = create_data_split_task.apply_async(args=[data_dict])
-    return JSONResponse({"task_id": task.id, "status": "Data split task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Data split task submitted successfully"})
 
 
 @router.post("/subset")
@@ -421,7 +421,7 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
     """
     data_dict = subset_task.dict()  # Convert the Pydantic model to a dict
     task = create_subset_data_task.apply_async(args=[data_dict])
-    return JSONResponse({"task_id": task.id, "status": "Data subset task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Data subset task submitted successfully"})
 
 
 # @router.post("/api/getTablePlot")

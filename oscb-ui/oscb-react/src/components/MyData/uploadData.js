@@ -721,7 +721,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         <div className="modal-content">
                             <div>
                                 <p>
-                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5seurat, Robj
                                 </p>
                                 <p>
                                     Standard File Structure for Multi-file Datasets:
@@ -860,6 +860,25 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                             <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
                         </div>
                         )}
+
+                        
+                        <div className="modal-content">
+                            <div>
+                                <p>
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5seurat, Robj
+                                </p>
+                                <p>
+                                    Standard File Structure for Multi-file Datasets:
+                                </p>
+                                <ul>
+                                    <li>Molecules(txt)&nbsp;+&nbsp;Annotation(txt)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Genes(Alias name: genes, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv)&nbsp;+&nbsp;Matrix(mtx)</li>
+                                    <li>Barcodes(Alias name: cells, extension:tsv.gz)&nbsp;+&nbsp;Features(Alias name: features, extension:tsv.gz)&nbsp;+&nbsp;Matrix(mtx.gz)</li>
+                                </ul>
+                            </div>
+                        </div>
 
                     </div></div>
                 </div >

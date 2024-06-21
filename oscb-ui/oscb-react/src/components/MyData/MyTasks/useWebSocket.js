@@ -1,43 +1,43 @@
 import { useEffect, useRef } from 'react';
 import { WEB_SOCKET_URL } from '../../../constants/declarations';
 
-function useWebSocket(taskId, onStatusMessage, onLogMessage, setLoading) {
+function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
   const webSocketStatus = useRef(null);
   const webSocketLog = useRef(null);
 
   useEffect(() => {
-    if (!taskId) {
+    if (!jobId) {
       console.log("No task ID available for WebSocket connection.");
-      return; // Don't proceed if taskId is not set
+      return; // Don't proceed if jobId is not set
     }
 
     // Setup WebSocket for task status updates
-    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${taskId}`;
+    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${jobId}`;
     console.log("Connecting to status WebSocket:", statusUrl);
     webSocketStatus.current = new WebSocket(statusUrl);
-    webSocketStatus.current.onopen = () => console.log('WebSocket Status Connected:', taskId);
+    webSocketStatus.current.onopen = () => console.log('WebSocket Status Connected:', jobId);
     webSocketStatus.current.onmessage = onStatusMessage;
     webSocketStatus.current.onerror = error => {
       setLoading(false);
       console.error('WebSocket Status Error:', error);
   };
-      webSocketStatus.current.onclose = () => console.log('WebSocket for status closed:', taskId);
+      webSocketStatus.current.onclose = () => console.log('WebSocket for status closed:', jobId);
 
     // Setup WebSocket for log messages
-    const logUrl = `${WEB_SOCKET_URL}/log/${taskId}`;
+    const logUrl = `${WEB_SOCKET_URL}/log/${jobId}`;
     console.log("Connecting to log WebSocket:", logUrl);
     webSocketLog.current = new WebSocket(logUrl);
-    webSocketLog.current.onopen = () => console.log('WebSocket Log Connected:', taskId);
+    webSocketLog.current.onopen = () => console.log('WebSocket Log Connected:', jobId);
     webSocketLog.current.onmessage = onLogMessage;
     webSocketLog.current.onerror = error => {
       setLoading(false);
       console.error('WebSocket Log Error:', error);
     }
-    webSocketLog.current.onclose = () => console.log('WebSocket for logs closed:', taskId);
+    webSocketLog.current.onclose = () => console.log('WebSocket for logs closed:', jobId);
 
     return () => {
-      // Cleanup on unmount or taskId change
-      console.log('Cleaning up WebSockets for:', taskId);
+      // Cleanup on unmount or jobId change
+      console.log('Cleaning up WebSockets for:', jobId);
       if (webSocketStatus.current) {
         webSocketStatus.current.close();
       }
@@ -45,7 +45,7 @@ function useWebSocket(taskId, onStatusMessage, onLogMessage, setLoading) {
         webSocketLog.current.close();
       }
     };
-  }, [taskId]);
+  }, [jobId]);
 
   const closeWebSockets = () => {
     // Function to manually close WebSockets from the component

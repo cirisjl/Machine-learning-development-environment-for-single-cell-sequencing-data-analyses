@@ -7,7 +7,7 @@ from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
     
 
-def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
+def run_evaluation(job_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     if methods is None:
         print("No evaluation method is selected.")
         return None
@@ -15,7 +15,7 @@ def run_evaluation(task_id, dataset, input, userID, output, methods, layer=None,
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    # output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, job_id)
 
     # methods = [x.upper() for x in methods if isinstance(x,str)]
     output = get_output_path(output, dataset=dataset, method='evaluation', format='SingleCellExperiment')

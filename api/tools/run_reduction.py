@@ -3,13 +3,14 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_async_tasks
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
+from datetime import datetime
     
 
-def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
+def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     pp_stage = "Summarized"
     process = "Reduction"
     dataset = ds['dataset']
@@ -29,34 +30,42 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    input = unzip_file_if_compressed(task_id, ds['input'])
+    input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
-    # output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, job_id)
     adata = load_anndata(input)
     method='MAGIC'
     process_id = generate_process_id(md5, process, method, parameters)
     reduction_results = pp_result_exists(process_id)
     if reduction_results is not None:
-        redislogger.info(task_id, "Found existing pre-process results in database, skip dimension reduction.")
+        redislogger.info(job_id, "Found existing pre-process results in database, skip dimension reduction.")
     else:
         try:
-            redislogger.info(task_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
             adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-            if msg is not None: redislogger.warning(task_id, msg)
+            if msg is not None: redislogger.warning(job_id, msg)
 
-            redislogger.info(task_id, "Clustering the neighborhood graph.")
+            redislogger.info(job_id, "Clustering the neighborhood graph.")
             adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
 
-            redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
+            redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
             output = get_output_path(output, dataset=dataset, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database
-            redislogger.info(task_id, "AnnData object for UMAP reduction is saved successfully")
+            redislogger.info(job_id, "AnnData object for UMAP reduction is saved successfully")
         except Exception as e:
-            # redislogger.error(task_id, "UMAP reduction is failed.")
+            # redislogger.error(job_id, "UMAP reduction is failed.")
             detail = f"UMAP reduction is failed: {e}"
+            upsert_jobs(
+                {
+                    "job_id": job_id, 
+                    "results": detail,
+                    "completed_on": datetime.now(),
+                    "status": "Failure"
+                }
+            )
             os.remove(output)
             raise CeleryTaskException(detail)
     
@@ -64,18 +73,23 @@ def run_reduction(task_id, ds:dict, show_error=True, random_state=0):
         layers = reduction_results['layers']
 
     results = {
-        "taskId": task_id, 
-        "owner": userID,
-        "inputfile": input,
         "output": output,
         "layers": layers,
         "md5": md5,
-        "process_id": process_id,
-        # "pp_results": reduction_results,
-        "status": "Success"
+        "process_id": process_id
     }
 
-    upsert_async_tasks(results)
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "output": output,
+            "layers": layers,
+            "results": results,
+            "completed_on": datetime.now(),
+            "status": "Success"
+        }
+    )
+
 
     return results
 

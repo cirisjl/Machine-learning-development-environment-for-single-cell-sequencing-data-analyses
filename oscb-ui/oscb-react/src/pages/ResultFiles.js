@@ -6,16 +6,16 @@ import React, { useState, useEffect } from 'react';
 
 export default function ResultFiles() {
     const location = useLocation();
-    const [taskId, setTaskId] = useState('');
+    const [jobId, setjobId] = useState('');
     const [resultsPath, setResultsPath] = useState('');
     const [taskTitle, setTaskTitle] = useState('');
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
-        const taskId = searchParams.get('taskId');
+        const jobId = searchParams.get('jobId');
         const resultsPath = searchParams.get('results_path');
         const taskTitle = searchParams.get('task_title');
-        setTaskId(taskId);
+        setjobId(jobId);
         setResultsPath(resultsPath);    
         setTaskTitle(taskTitle);
 
@@ -28,7 +28,7 @@ export default function ResultFiles() {
                 {/* <LeftNav /> */}
             </div>
             <div className="main-content">
-                <IntermediateFiles taskId={taskId} results_path={resultsPath} task_title={taskTitle}/>
+                <IntermediateFiles jobId={jobId} results_path={resultsPath} task_title={taskTitle}/>
             </div>
             <div className="right-rail">
                 <RightRail />

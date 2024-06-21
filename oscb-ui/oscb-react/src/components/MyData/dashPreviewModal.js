@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import close_icon from '../../assets/close_icon_u86.svg'
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 
-export default function DashPreview({ selectedFile, setPreviewBoxOpen, taskId, jwtToken, forResultFile }) {
+export default function DashPreview({ selectedFile, setPreviewBoxOpen, jobId, jwtToken, forResultFile }) {
 
     const [previewContent, setPreviewContent] = useState(<div className="spinner-container">
         <FontAwesomeIcon icon={faSpinner} spin size="3x" />
@@ -86,7 +86,7 @@ export default function DashPreview({ selectedFile, setPreviewBoxOpen, taskId, j
                 try {
                     let previewUrl = `${SERVER_URL}/fetchPreview?authToken=${jwtToken}`
                     if (forResultFile)
-                        previewUrl += `&fileUrl=/${taskId}/${selectedFile}&forResultFile=Yes`;
+                        previewUrl += `&fileUrl=/${jobId}/${selectedFile}&forResultFile=Yes`;
                     else
                         previewUrl += `&fileUrl=${selectedFile}`;
                     console.log('previewUrl: ' + previewUrl);
@@ -135,7 +135,7 @@ export default function DashPreview({ selectedFile, setPreviewBoxOpen, taskId, j
             else try {
                 let previewUrl = `${SERVER_URL}/download?authToken=${jwtToken}`
                 if (forResultFile)
-                    previewUrl += `&fileUrl=/${taskId}/${selectedFile}&forResultFile=Yes`;
+                    previewUrl += `&fileUrl=/${jobId}/${selectedFile}&forResultFile=Yes`;
                 else
                     previewUrl += `&fileUrl=${selectedFile}`;
                 console.log('previewUrl: ' + previewUrl);

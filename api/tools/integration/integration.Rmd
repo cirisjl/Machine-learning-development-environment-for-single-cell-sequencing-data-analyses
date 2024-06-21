@@ -3,7 +3,7 @@ title: "Integration for `r params$dataset`"
 author: "Lei Jiang"
 date: "`r Sys.Date()`"
 params:
-  unique_id: integration # unique_id for live log, which could be task_id, user_id or process_id
+  unique_id: integration # unique_id for live log, which could be job_id, user_id or process_id
   datasets: NA # Strings  of the datasets names
   inputs: NA # Strings  of input file path to scRNA data.
   output_folder: NA # Output file path of the Seurat object.

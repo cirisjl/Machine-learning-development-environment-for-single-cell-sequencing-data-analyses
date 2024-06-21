@@ -5,7 +5,7 @@ import { faEye, faDownload , faSquarePollVertical } from '@fortawesome/free-soli
 import FilePreviewModal from './filePreviewModal';
 import { useNavigate } from 'react-router-dom';
 
-export default function IntermediateFiles({ taskId, results_path, task_title }) {
+export default function IntermediateFiles({ jobId, results_path, task_title }) {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
@@ -15,13 +15,13 @@ export default function IntermediateFiles({ taskId, results_path, task_title }) 
 
   useEffect(() => {
     async function fetchFiles() {
-      const dirPath = results_path + "/" + taskId
+      const dirPath = results_path + "/" + jobId
       const response = await fetch(`${SERVER_URL}/getDirContents?dirPath=${dirPath}&authToken=${jwtToken}&usingFor=resultFiles`);
       const data = await response.json();
       setFiles(data.Files);
     }
     fetchFiles();
-  }, [taskId]);
+  }, [jobId]);
 
   useEffect(() => {
     if (!jwtToken || jwtToken === '')
@@ -39,7 +39,7 @@ export default function IntermediateFiles({ taskId, results_path, task_title }) 
 
     const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
 
-    const dirPath = results_path + "/" + taskId
+    const dirPath = results_path + "/" + jobId
 
     fetch(`${apiUrl}?fileUrl=${dirPath}/${fileUrl}&authToken=${jwtToken}&forResultFile=Yes`)
       .then(response => {
@@ -67,7 +67,7 @@ export default function IntermediateFiles({ taskId, results_path, task_title }) 
           <FilePreviewModal
             selectedFile={selectedFile}
             setPreviewBoxOpen={setPreviewBoxOpen}
-            taskId={taskId}
+            jobId={jobId}
             jwtToken={jwtToken}
             forResultFile={true}
           />

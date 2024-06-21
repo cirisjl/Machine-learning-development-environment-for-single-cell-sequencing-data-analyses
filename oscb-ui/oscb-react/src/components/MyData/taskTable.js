@@ -74,7 +74,7 @@ const TaskTable = () => {
             // Iterate over each task and check if its status is null
             data.forEach(task => {
                 if (task.status === null) {
-                    incompleteTasks.push(task.task_id);
+                    incompleteTasks.push(task.job_id);
                 }
             });
 
@@ -92,13 +92,13 @@ const TaskTable = () => {
                 let failedTasks = [];
                 socket.onmessage = async (event) => {
                     const data = JSON.parse(event.data);
-                    Object.keys(data).forEach(taskId => {
-                        const status = data[taskId];
+                    Object.keys(data).forEach(jobId => {
+                        const status = data[jobId];
                         if (status === 'Success') {
-                            finishedTasks.push(taskId);
+                            finishedTasks.push(jobId);
                         }
                         else if (status === 'Failed') {
-                            failedTasks.push(taskId);
+                            failedTasks.push(jobId);
                         }
                     });
                     if (finishedTasks.length + failedTasks.length > 0) {
@@ -114,16 +114,16 @@ const TaskTable = () => {
         fetchTasks();
     }, [changesFound]);
 
-    const updateTaskStatus = async (taskIds, status) => {
+    const updateTaskStatus = async (jobIds, status) => {
         try {
-            const taskIdString = taskIds.join(',');
+            const jobIdString = jobIds.join(',');
             const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    taskIds: taskIdString,
+                    jobIds: jobIdString,
                     status: status
                 })
             });
@@ -155,11 +155,11 @@ const TaskTable = () => {
                     </TableHeader>
                     <tbody>
                         {tasks.map((task) => (
-                            <TableRow key={task.task_id}>
+                            <TableRow key={task.job_id}>
                                 <TableCell>{task.task_title}</TableCell>
                                 <TableCell>
                                     <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
-                                        {task.task_id}
+                                        {task.job_id}
                                     </Typography>
                                 </TableCell>
                                 <TableCell>{task.tool}</TableCell>
@@ -182,7 +182,7 @@ const TaskTable = () => {
                                 </TableCell>
                                 {task.status ? (
                                 <TableCell>                                    
-                                    <a href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                    <a href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}`}
                                     style={{ textDecoration: 'none', color: 'inherit' }}> View</a></TableCell>
                                      
                                 ) : (

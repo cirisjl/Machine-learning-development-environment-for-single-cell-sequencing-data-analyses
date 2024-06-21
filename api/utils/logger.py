@@ -3,7 +3,7 @@ import sys
 import os
 
 
-# unique_id: user_id or task_id
+# unique_id: user_id or job_id
 class AppLogger:
     def __init__(self):
         self.app_logger = lg

@@ -229,6 +229,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_leiden = None
     labels_pred_louvain = None
     cluster_embedding = None
+    description = f'{method} {process}' 
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -318,6 +319,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
 
         pp_results = {
             "process_id": process_id,
+            "description": description,
             "md5": md5,
             "stage": pp_stage,
             "process": process,
@@ -350,7 +352,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
 
 
 def file_size(path): # MB
-    return os.path.getsize(path)/(1024*1024)
+    return round(os.path.getsize(path)/(1024*1024), 2)
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object
@@ -672,7 +674,7 @@ def get_file_md5(path: str, split_num=256, get_byte=8):
     if os.path.isdir(path):
         raise TypeError("%s is a folder, while path should be a file!" % path)
     
-    size = os.path.getsize(path)
+    size = round(os.path.getsize(path), 2)
     # For a small file (equal to or less than 2M), caculate the MD5 values directly.
     if size < split_num * get_byte:
         # Read the file

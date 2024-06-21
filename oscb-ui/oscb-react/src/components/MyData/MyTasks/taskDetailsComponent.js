@@ -48,7 +48,7 @@ function StatusChip({ status }) {
 
 function TaskDetailsComponent() {
   const location = useLocation();
-  const { taskId, method, datasetURL, datasetTitle , tool} = location.state || {};   
+  const { job_id, method, datasetURL, description , tool} = location.state || {};   
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
@@ -145,7 +145,7 @@ function TaskDetailsComponent() {
         async function fetchFiles() {
        
       try {
-            const taskInfoResponse = await fetch(`http://${process.env.REACT_APP_HOST_URL}:5000/api/task/${taskId}`);
+            const taskInfoResponse = await fetch(`http://${process.env.REACT_APP_HOST_URL}:5000/api/task/${job_id}`);
             const taskInfoData = await taskInfoResponse.json();
             console.log(taskInfoData);
             setTaskResult(taskInfoData.task_result);
@@ -154,7 +154,7 @@ function TaskDetailsComponent() {
           }
         }
         fetchFiles();
-      }, [taskId]);
+      }, [job_id]);
 
 
   const handleLogMessage = (event) => {
@@ -173,7 +173,7 @@ function TaskDetailsComponent() {
         id: uIat,
         taskResult: taskResult,
         taskStatus: taskStatus,
-        taskId: taskId,
+        job_id: job_id,
         userComments: userComment
       });
 
@@ -200,13 +200,13 @@ function TaskDetailsComponent() {
         //repo: 'issues-list', // Replace with your repository name
         owner: owner,
         repo: repo,
-        title: `Issue for Task ID: ${taskId}`,
+        title: `Issue for Job ID: ${job_id}`,
         body: `
             User Name:${uName}
             User ID: ${uIat}
-            Task Result: ${taskResult}
-            Task Status: ${taskStatus}
-            Task ID: ${taskId}
+            Job Result: ${taskResult}
+            Job Status: ${taskStatus}
+            Job ID: ${job_id}
             User Comments: ${userComment}
         `
       });
@@ -229,7 +229,7 @@ function TaskDetailsComponent() {
   };
 
     // Use the WebSocket hook
-    useWebSocket(taskId, handleStatusMessage, handleLogMessage);
+    useWebSocket(job_id, handleStatusMessage, handleLogMessage);
 
   return (
 
@@ -241,7 +241,7 @@ function TaskDetailsComponent() {
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Box display="flex" justifyContent="center">
             <Typography variant="h4" gutterBottom component="div">
-                Task Details for Task ID: {taskId || 'Loading ...'}
+                Job Details for Job ID: {job_id || 'Loading ...'}
             </Typography>
           </Box>
           
@@ -250,8 +250,8 @@ function TaskDetailsComponent() {
               <Card raised sx={cardStyle}>
                 <CardHeader title="Dataset Information" />
                 <CardContent sx={cardContentStyle}>
-                  <Typography variant="subtitle1"><strong>Dataset Title:</strong></Typography>
-                  <Typography variant="body1" gutterBottom>{datasetTitle || 'Not available'}</Typography>
+                  <Typography variant="subtitle1"><strong>Job Description:</strong></Typography>
+                  <Typography variant="body1" gutterBottom>{description || 'Not available'}</Typography>
                   <Typography variant="subtitle1"><strong>Dataset URL:</strong></Typography>
                   <Typography variant="body1" gutterBottom>
                     <Link href={datasetURL} target="_blank" rel="noopener">
@@ -305,7 +305,7 @@ function TaskDetailsComponent() {
                     <Typography variant="subtitle1"><strong>User ID:</strong> {uIat}</Typography>
                     { /*<Typography variant="subtitle1"><strong>Task Result:</strong> {taskResult}</Typography>*/ }
                     <Typography variant="subtitle1"><strong>Task Status:</strong> {taskStatus}</Typography>
-                    <Typography variant="subtitle1"><strong>Task ID:</strong> {taskId}</Typography>
+                    <Typography variant="subtitle1"><strong>Task ID:</strong> {job_id}</Typography>
                     <Typography variant="subtitle1"><strong>User Comments:</strong></Typography>
                     <TextField
                       fullWidth

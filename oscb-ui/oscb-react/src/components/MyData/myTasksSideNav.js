@@ -37,7 +37,7 @@ const MyTasksSideNav = () => {
             const fetchTasks = async () => {
                 const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
                 const data = await response.json();
-                data.sort((a, b) => b.created_datetime - a.created_datetime);
+                data.sort((a, b) => b.created_on - a.created_on);
                 setTasks(data);
 
                 // Create a list to store incomplete tasks
@@ -46,7 +46,7 @@ const MyTasksSideNav = () => {
                 // Iterate over each task and check if its status is null
                 data.forEach(task => {
                     if (task.status === null) {
-                        incompleteTasks.push(task.task_id);
+                        incompleteTasks.push(task.job_id);
                     }
                 });
 
@@ -64,13 +64,13 @@ const MyTasksSideNav = () => {
                     let failedTasks = [];
                     socket.onmessage = async (event) => {
                         const data = JSON.parse(event.data);
-                        Object.keys(data).forEach(taskId => {
-                            const status = data[taskId];
+                        Object.keys(data).forEach(jobId => {
+                            const status = data[jobId];
                             if (status === 'Success') {
-                                finishedTasks.push(taskId);
+                                finishedTasks.push(jobId);
                             }
                             else if (status === 'Failed') {
-                                failedTasks.push(taskId);
+                                failedTasks.push(jobId);
                             }
                         });
                         if (finishedTasks.length + failedTasks.length > 0) {
@@ -87,16 +87,16 @@ const MyTasksSideNav = () => {
         }
     }, [changesFound, expanded]);
 
-    const updateTaskStatus = async (taskIds, status) => {
+    const updateTaskStatus = async (jobIds, status) => {
         try {
-            const taskIdString = taskIds.join(',');
+            const jobIdString = jobIds.join(',');
             const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    taskIds: taskIdString,
+                    jobIds: jobIdString,
                     status: status
                 })
             });
@@ -120,7 +120,7 @@ const MyTasksSideNav = () => {
                     <span className={`arrow ${expanded ? 'expanded' : ''}`}>
                         <FontAwesomeIcon icon={faAngleRight} />
                     </span>
-                    <span className="title">My Tasks</span>
+                    <span className="title">My Jobs</span>
                     &nbsp;
                     <FontAwesomeIcon
                         icon={faArrowUpRightFromSquare}
@@ -147,8 +147,8 @@ const MyTasksSideNav = () => {
                         ) : (
                             <ul>
                             {tasks.map((task, index) => (
-                                <div key={tasks.task_id}>
-                                    <Accordion key={tasks.task_id}>
+                                <div key={tasks.job_id}>
+                                    <Accordion key={tasks.job_id}>
                                       <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
                                         <div className="panel-summary">
                                             <div className='task-summary'>
@@ -162,7 +162,7 @@ const MyTasksSideNav = () => {
                                                     )}
                                                     <p><TextWithEllipsis text={task.task_title} maxLength={23} /></p>
                                                 </div>
-                                                <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</span>
+                                                <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_on))}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
@@ -173,7 +173,7 @@ const MyTasksSideNav = () => {
                                     onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent' }} // Revert back to initial background color on mouse leave 
                                     key={index}> */}
                                       {/* <a
-                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}`}
+                                        href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                     > 
                                         {task.status === 'Success' ? (
@@ -183,17 +183,17 @@ const MyTasksSideNav = () => {
                                     ) : (
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                     )}
-                                    &nbsp;{task.task_id}
+                                    &nbsp;{task.job_id}
                                     </a> */}
                                 {/* </li> */}
                                         </div>
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        href={`/resultfiles?taskId=${task.task_id}&results_path=${task.results_path}&task_title=${task.task_title}`}
+                                        href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}&task_title=${task.task_title}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
-                                        <span className='font-size'><b>Task Id</b> - {task.task_id}</span>
+                                        <span className='font-size'><b>Task Id</b> - {task.job_id}</span>
                                       </a>
                                       </AccordionDetails>
                                     </Accordion>

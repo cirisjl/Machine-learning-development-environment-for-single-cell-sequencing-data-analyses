@@ -1,32 +1,32 @@
 import { useEffect, useRef } from 'react';
 
-function useWebSockets(taskId, handleStatusMessage, WEB_SOCKET_URL) {
+function useWebSockets(jobId, handleStatusMessage, WEB_SOCKET_URL) {
     const webSocketsRef = useRef({});
 
     useEffect(() => {
-        if (!taskId) return;
+        if (!jobId) return;
 
-        const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${taskId}`;
-        if (!webSocketsRef.current[taskId]) {
-            console.log("Opening new WebSocket connection for:", taskId);
+        const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${jobId}`;
+        if (!webSocketsRef.current[jobId]) {
+            console.log("Opening new WebSocket connection for:", jobId);
             const ws = new WebSocket(statusUrl);
-            ws.onopen = () => console.log('WebSocket Connected:', taskId);
+            ws.onopen = () => console.log('WebSocket Connected:', jobId);
             ws.onmessage = handleStatusMessage;
-            ws.onerror = error => console.error('WebSocket Error:', taskId, error);
-            ws.onclose = () => console.log('WebSocket Closed:', taskId);
-            webSocketsRef.current[taskId] = ws;
+            ws.onerror = error => console.error('WebSocket Error:', jobId, error);
+            ws.onclose = () => console.log('WebSocket Closed:', jobId);
+            webSocketsRef.current[jobId] = ws;
         }
 
         return () => {
-            // Cleanup function to close the WebSocket when component unmounts or taskId changes
-            const ws = webSocketsRef.current[taskId];
+            // Cleanup function to close the WebSocket when component unmounts or jobId changes
+            const ws = webSocketsRef.current[jobId];
             if (ws) {
-                console.log('Cleaning up WebSocket:', taskId);
+                console.log('Cleaning up WebSocket:', jobId);
                 ws.close();
-                delete webSocketsRef.current[taskId];
+                delete webSocketsRef.current[jobId];
             }
         };
-    }, [taskId]);
+    }, [jobId]);
 
     const closeWebSocket = (id) => {
         const ws = webSocketsRef.current[id];

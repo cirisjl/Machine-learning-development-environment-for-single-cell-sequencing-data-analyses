@@ -930,14 +930,14 @@ DROP TABLE IF EXISTS `task`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `task` (
   `task_title` varchar(500) NOT NULL,
-  `task_id` varchar(100) NOT NULL,
+  `job_id` varchar(100) NOT NULL,
   `user_id` int NOT NULL,
   `tool` varchar(255) DEFAULT NULL,
   `results_path` varchar(500) NOT NULL,
   `status` varchar(15) DEFAULT NULL,
   `created_datetime` bigint unsigned DEFAULT NULL,
   `finish_datetime` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`task_id`),
+  PRIMARY KEY (`job_id`),
   KEY `user_id_fk_idx` (`user_id`),
   CONSTRAINT `user_id_fk_task` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -17,7 +17,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
   const [loading, setLoading] = useState({});
-  const [taskId, setTaskId] = useState("");
+  const [jobId, setjobId] = useState("");
   const webSocketStatus = useRef(null);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -84,8 +84,8 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
             updateTaskDataWithResults(data.task_result); // Update your state with results
             setLoading(prevLoading => ({ ...prevLoading, [data.task_result.datasetId]: false })); 
         }
-        // Close WebSocket connection for this taskId
-        closeWebSocket(taskId);
+        // Close WebSocket connection for this jobId
+        closeWebSocket(jobId);
     }
     } catch (error) {
       console.error("Error parsing status message:", error);
@@ -93,7 +93,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     }
   };
 
-  const { closeWebSocket } = useWebSockets(taskId, handleStatusMessage, WEB_SOCKET_URL);
+  const { closeWebSocket } = useWebSockets(jobId, handleStatusMessage, WEB_SOCKET_URL);
 
   const handleSelectDatasets = async (newSelectedDatasets) => {
     // Initialize additional parameters for new datasets
@@ -171,27 +171,30 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   
       if (response.ok) {
         const result = await response.json();
-        const taskID = result.task_id;
-        setTaskId(taskID);
+        const jobId = result.job_id;
+        setjobId(jobId);
   
-        // // Update only the specific dataset's dataSplit parameters
-        // setTaskData(prevTaskData => ({
-        //   ...prevTaskData,
-        //   task_builder: {
-        //     ...prevTaskData.task_builder,
-        //     selectedDatasets: {
-        //       ...prevTaskData.task_builder.selectedDatasets,
-        //       [datasetId]: {
-        //         ...prevTaskData.task_builder.selectedDatasets[datasetId],
-        //         dataSplit: {
-        //           ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
-        //           dataSplitPerformed: true,
-        //           archivePath: result.archive_path,
-        //         }
-        //       }
-        //     }
-        //   }
-        // }));
+        // Update only the specific dataset's dataSplit parameters
+        setTaskData(prevTaskData => ({
+          ...prevTaskData,
+          task_builder: {
+            ...prevTaskData.task_builder,
+            selectedDatasets: {
+              ...prevTaskData.task_builder.selectedDatasets,
+              [datasetId]: {
+                ...prevTaskData.task_builder.selectedDatasets[datasetId],
+                dataSplit: {
+                  ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
+                  dataSplitPerformed: true,
+                  archive_path: result.archive_path,
+                  train_path: result.train_path,
+                  validation_path: result.validation_path,
+                  test_path: result.test_path,
+                }
+              }
+            }
+          }
+        }));
       } else {
         const error = await response.json();
         console.error(error.error); // Handle the error

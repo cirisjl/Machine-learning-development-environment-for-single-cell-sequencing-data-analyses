@@ -17,7 +17,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [wsLogs, setWsLogs] = useState('');
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
-  const [taskId, setTaskId] = useState('');
+  const [jobId, setjobId] = useState('');
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
 
   const fetchBenchmarksResults = async (benchmarksId) => {
@@ -102,7 +102,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         return { __html: logs };
       };
 
-      const { closeWebSockets } = useWebSocket(taskId, handleStatusMessage, handleLogMessage, setLoading);
+      const { closeWebSockets } = useWebSocket(jobId, handleStatusMessage, handleLogMessage, setLoading);
 
   useEffect(() => {
     if(taskData.benchmarks.status !== 'completed') {
@@ -131,8 +131,8 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       })
         .then((response) => response.json())
         .then((data) => {
-          const taskId = data.task_id;
-          setTaskId(taskId);
+          const jobId = data.job_id;
+          setjobId(jobId);
         })
         .catch((error) => {
           console.error('Error during API call:', error);
@@ -185,8 +185,8 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                   <CardContent>
                     <Typography variant="body2">Benchmark Results for {result.datasetId}</Typography>
                     <BenchmarksPlots
-                      barPlot={result.bar_plot}
-                      linePlot={result.line_plot}
+                      benchmarksPlot={result.benchmarks_plot}
+                      utilizationPlot={result.utilization_plot}
                     />
                   </CardContent>
                 </Card>

@@ -3,9 +3,9 @@
     "dbName": "oscb",
     "optionsCollectionName": "form_options",
     "datasetCollection": "datasets",
-    "taskBuilderCollectionName": "tasks",
+    "taskBuilderCollectionName": "benchmarks",
     "userDatasetsCollection": "user_datasets",
-    "taskResultsCollection": "task_results",
+    "taskResultsCollection": "jobs",
     "preProcessResultsCollection": "pp_results",
     "benchmarksCollection": "benchmarks",
     "errorlogcollection": "error_log"
