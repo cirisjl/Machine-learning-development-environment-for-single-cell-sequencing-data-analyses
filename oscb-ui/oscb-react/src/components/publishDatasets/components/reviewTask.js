@@ -41,33 +41,34 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
           // construct ID for each document
           const taskType = datasetDetails.taskType.value; 
           const constructedID = `${taskType}-${datasetId}`;
+          const created_on = new Date();
         
           // populate the document with details from task builder and benchmarks results
           document = {
-            task_id: constructedID,
+            benchmarksId: constructedID,
             task_type: datasetDetails.taskType.label,
             task_type_abv:datasetDetails.taskType.value,
             task_label: datasetDetails.taskLabel.label,
             task_label_abv: datasetDetails.taskLabel.value,
-            datasetId: datasetId,
-            TrainFraction: datasetDetails.dataSplit.trainFraction,
-            ValidationFraction: datasetDetails.dataSplit.validationFraction,
-            TestFraction: datasetDetails.dataSplit.testFraction,
-            ArchivePath: datasetDetails.dataSplit.archivePath,
-            BenchmarkResults: {
-              metrics: benchmarkResult.metrics,
-              Scanpy: JSON.stringify(benchmarkResult.Scanpy),
-              Seurat: JSON.stringify(benchmarkResult.Seurat),
-              bar_plot: JSON.stringify(benchmarkResult.bar_plot),
-              line_plot: JSON.stringify(benchmarkResult.line_plot)
-            },            // ... Add any other necessary details
+            // datasetId: datasetId,
+            // train_fraction: datasetDetails.dataSplit.trainFraction,
+            // validation_fraction: datasetDetails.dataSplit.validationFraction,
+            // test_fraction: datasetDetails.dataSplit.testFraction,
+            // archive_path: datasetDetails.dataSplit.archive_path,
+            // train_path: datasetDetails.dataSplit.train_path,
+            // validation_path: datasetDetails.dataSplit.validation_path,
+            // test_path: datasetDetails.dataSplit.test_path,
+            // benchmark_results: {
+            //   metrics: benchmarkResult.metrics,
+            //   benchmarks_plot: JSON.stringify(benchmarkResult.benchmarks_plot),
+            //   utilization_plot: JSON.stringify(benchmarkResult.utilization_plot)
+            // },
+            created_on: created_on,  // ... Add any other necessary details
           };
-        
           documents.push(document);
         } else {
           console.error(`No benchmark result found for datasetId: ${datasetId}`);
         }
-
     });
     
 
@@ -164,8 +165,8 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
                     <CardContent>
                       <Typography variant="body2">Benchmark Results for {result.datasetId}</Typography>
                       <BenchmarksPlots
-                        barPlot={result.bar_plot}
-                        linePlot={result.line_plot}
+                        benchmarksPlot={result.benchmarks_plot}
+                        utilizationPlot={result.utilization_plot}
                       />
                     </CardContent>
                   </Card>

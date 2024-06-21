@@ -170,7 +170,7 @@ export default function RootLayout() {
                                         <ul className="ul-suboptions">
                                             <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
                                             <li><NavLink to="mydata">My Datasets</NavLink></li>
-                                            <li><NavLink to="myTasks">My Tasks</NavLink></li>
+                                            <li><NavLink to="myTasks">My Jobs</NavLink></li>
                                             <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
                                             <li><NavLink to="mydata/tools">Tools</NavLink></li>
                                         </ul>

@@ -3,7 +3,7 @@ import asyncio
 from utils.logger import *
 
 
-# unique_id: user_id or task_id
+# unique_id: user_id or job_id
 class RedisLogger:
     def __init__(self):
         pool = redis.ConnectionPool(host='redis', port=6381, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)

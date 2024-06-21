@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, taskBuilderCollectionName, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -1191,7 +1191,7 @@ app.get('/api/tools/leftnav', function (req, res) {
     });
 });
 
-app.post('/createTask', async (req, res) => {
+app.post('/nodeapi/job/create', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
@@ -1247,8 +1247,8 @@ app.get('/api/tools/getTasks', async (req, res) => {
   });
 
 app.put('/updateTaskStatus', (req, res) => {
-    const { taskIds, status } = req.body;
-    const taskIdsArr = taskIds.split(',');
+    const { job_ids, status } = req.body;
+    const jobIdsArr = job_ids.split(',');
 
     pool.getConnection(function (err, connection) {
         if (err) {
@@ -1265,7 +1265,7 @@ app.put('/updateTaskStatus', (req, res) => {
 
             const date = new Date();
             const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
-            connection.query('UPDATE task SET status = ?, finish_datetime = ? WHERE task_id IN (?)', [status, timestamp, taskIdsArr], function (err, taskResult) {
+            connection.query('UPDATE task SET status = ?, finish_datetime = ? WHERE job_id IN (?)', [status, timestamp, jobIdsArr], function (err, taskResult) {
                 if (err) {
                     console.error('Error in UPDATE query:', err);
                     connection.rollback(function () {
@@ -1325,7 +1325,7 @@ app.get('/getTasks', (req, res) => {
                     return;
                 }
 
-                connection.query('SELECT task_title, task_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
+                connection.query('SELECT task_title, job_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
                     if (err) {
                         console.error('Error committing transaction:', err);
                         connection.rollback(function () {
@@ -1450,7 +1450,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     try {
       await client.connect();
       const db = client.db(dbName);
-      const collection = db.collection(taskBuilderCollectionName);
+      const collection = db.collection(benchmarksCollection);
   
       let documents = req.body;
       // Ensure documents is always an array for consistency
@@ -1460,26 +1460,37 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   
       const insertionResults = [];
       for (const formData of documents) {
-        // Check if a document with the provided Id already exists
-        const existingDocument = await collection.findOne({ Id: formData.Id });
+        // // Check if a document with the provided Id already exists
+        // const existingDocument = await collection.findOne({ Id: formData.Id });
   
-        if (existingDocument) {
-          console.log('Document with Id already exists:', formData.Id);
-          insertionResults.push({
-            Id: formData.Id,
-            status: 'error',
-            message: 'Document with the provided Id already exists',
-          });
-        } else {
-          // Document with the provided Id does not exist, proceed with insertion
-          await collection.insertOne(formData);
-          console.log('Form data submitted successfully for Id:', formData.Id);
-          insertionResults.push({
+        // if (existingDocument) {
+        //   console.log('Document with Id already exists:', formData.Id);
+        //   insertionResults.push({
+        //     Id: formData.Id,
+        //     status: 'error',
+        //     message: 'Document with the provided Id already exists',
+        //   });
+        // } else {
+        //   // Document with the provided Id does not exist, proceed with insertion
+        //   await collection.insertOne(formData);
+        //   console.log('Form data submitted successfully for Id:', formData.Id);
+        //   insertionResults.push({
+        //     Id: formData.Id,
+        //     status: 'success',
+        //     message: 'Form data submitted successfully',
+        //   });
+        // }
+        const query = { benchmarksId: formData.Id };
+        const update = { $set: formData };
+        const options = { upsert: true };
+        await collection.updateOne(query, update, options);
+        console.log('Form data submitted successfully for Id:', formData.Id);
+
+        insertionResults.push({
             Id: formData.Id,
             status: 'success',
             message: 'Form data submitted successfully',
-          });
-        }
+        });
       }
   
       // If handling multiple documents, you might want to aggregate results and respond accordingly
@@ -1779,7 +1790,7 @@ app.post('/mongoDB/api/errorlogdata', async (req, res) => {
             id: req.body.id,
             Result: req.body.taskResult,
             status: req.body.taskStatus,
-            taskid: req.body.taskId,
+            job_id: req.body.job_id,
             UserComments: req.body.userComments
         };
         // Insert the document into the collection
@@ -1940,7 +1951,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
         await client.connect();
 
         const db = client.db(dbName);
-        const tasksCollection = db.collection(taskBuilderCollectionName);
+        const tasksCollection = db.collection(benchmarksCollection);
 
         const page = parseInt(req.query.page, 10) || 1;
         const taskType = req.query.task_type; // Extract task_type from query parameters
@@ -2063,7 +2074,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                         {
                             $project: {
                                 Title: "$datasetDetails.Title",
-                                TaskId: "$Id",
+                                job_id: "$Id",
                                 TaskType: "$TaskType.label",
                                 Species: "$datasetDetails.Species.label",
                                 'Organ Part': "$datasetDetails.Organ Part.label",
@@ -2632,7 +2643,7 @@ app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
 
         // Fetching documents where process_id is in the provided array of process IDs
         const benchmarksResults = await collection.find({
-            benchmarks_id: benchmarksId
+            benchmarksId: benchmarksId
         }).toArray();
 
         res.status(200).json(benchmarksResults);

@@ -12,7 +12,7 @@ db = client["oscb"]
 datasets_collection = db.datasets
 user_datasets_collection = db.get_collection("user_datasets")
 pp_results_collection = db.get_collection("pp_results")
-async_tasks_collection = db.get_collection("async_tasks")
+jobs_collection = db.get_collection("jobs")
 benchmarks_collection = db.get_collection("benchmarks")
 bm_results_collection = db.get_collection("bm_results")
 workflows_collection = db.get_collection("workflows")
@@ -41,18 +41,18 @@ def create_pp_results(process_id, pp_results):
     return
 
 
-def upsert_async_tasks(results):
-    results = clear_dict(results)
-    task_id = results['taskId']
-    async_tasks_collection.update_one({'task_id': task_id}, {'$set': results}, upsert=True)
-    if "_id" in results: 
-        results.pop("_id")
+def upsert_jobs(updates):
+    updates = clear_dict(updates)
+    job_id = updates['job_id']
+    jobs_collection.update_one({'job_id': job_id}, {'$set': updates}, upsert=True)
+    if "_id" in updates: 
+        updates.pop("_id")
     return
 
 
-def upsert_benchmarks(benchmarks_id, results):
+def upsert_benchmarks(benchmarksId, results):
     results = clear_dict(results)
-    benchmarks_collection.update_one({'benchmarks_id': benchmarks_id}, {'$set': results}, upsert=True)
+    benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results}, upsert=True)
     if "_id" in results: 
         results.pop("_id")
     return

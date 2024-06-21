@@ -15,4 +15,4 @@ async def create_clustering_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_clustering_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Clustering task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Clustering task submitted successfully"})

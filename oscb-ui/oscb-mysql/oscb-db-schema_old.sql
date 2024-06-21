@@ -88,14 +88,14 @@ CREATE TABLE `users` (
 
 DROP TABLE IF EXISTS `task`;
 CREATE TABLE `task` (
-  `task_id` varchar(50) NOT NULL,
+  `job_id` varchar(50) NOT NULL,
   `user_id` int NOT NULL,
   `workflow` varchar(255) DEFAULT NULL,
   `dataset_id` int NOT NULL,
   `status` varchar(15) DEFAULT NULL,
   `created_datetime` BIGINT UNSIGNED DEFAULT NULL,
   `finish_datetime` BIGINT UNSIGNED DEFAULT NULL,
-  PRIMARY KEY (`task_id`),
+  PRIMARY KEY (`job_id`),
   KEY `user_id_fk_idx` (`user_id`),
   KEY `dataset_id_fk_idx` (`dataset_id`),
   CONSTRAINT `user_id_fk_task` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),

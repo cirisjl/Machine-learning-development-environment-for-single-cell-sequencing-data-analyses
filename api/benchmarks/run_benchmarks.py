@@ -1,11 +1,12 @@
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_async_tasks
+from utils.mongodb import upsert_benchmarks, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
+from datetime import datetime
 
-def run_benchmarks(task_id, task_dict:dict):
+def run_benchmarks(job_id, task_dict:dict):
     adata_path = task_dict['adata_path']
     label = task_dict['label']
     task_type = task_dict['task_type']
@@ -13,21 +14,37 @@ def run_benchmarks(task_id, task_dict:dict):
     datasetId = task_dict['datasetId']
     userID = task_dict['userID']
 
-    adata_path = unzip_file_if_compressed(task_id,adata_path)
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "created_by": userID,
+            "status": "Processing"
+        }
+    )
+
+    adata_path = unzip_file_if_compressed(job_id,adata_path)
     
     if(task_type=="Clustering"):
         try:
             if os.path.exists(adata_path):
-                clustering_results = clustering_task(adata_path, label, datasetId, task_id, task_type)
+                clustering_results = clustering_task(adata_path, label, datasetId, job_id, task_type)
                 upsert_benchmarks(benchmarksId, clustering_results)
                 results = {
-                    "taskId": task_id,
-                    "owner": userID,
                     "datasetId": datasetId,
-                    "benchmarksId": benchmarksId,
-                    "status": "Success"
+                    "benchmarksId": benchmarksId
                 }
-                upsert_async_tasks(results)
+
+                upsert_jobs(
+                    {
+                        "job_id": job_id, 
+                        "datasetId": datasetId,
+                        "benchmarksId": benchmarksId,
+                        "results": results,
+                        "completed_on": datetime.now(),
+                        "status": "Success"
+                    }
+                )
+
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
@@ -36,4 +53,12 @@ def run_benchmarks(task_id, task_dict:dict):
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Clustering benchmarks is failed: {str(e)}"
+            upsert_jobs(
+                {
+                    "job_id": job_id, 
+                    "results": detail,
+                    "completed_on": datetime.now(),
+                    "status": "Failure"
+                }
+            )
             raise CeleryTaskException(detail)

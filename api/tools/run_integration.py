@@ -6,10 +6,11 @@ from utils.redislogger import *
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
-from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_async_tasks
+from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from exceptions.custom_exceptions import CeleryTaskException
+from datetime import datetime
 
-def run_integration(task_id, ids:dict):
+def run_integration(job_id, ids:dict):
     pp_stage = "Corrected"
     md5 = []
     process_ids = []
@@ -30,8 +31,16 @@ def run_integration(task_id, ids:dict):
     npcs = parameters['npcs']
     integration_output = []
 
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "created_by": userID,
+            "status": "Processing"
+        }
+    )
+
     if methods is None:
-        redislogger.warning(task_id, "No integration method is selected.")
+        redislogger.warning(job_id, "No integration method is selected.")
         detail = 'No integration method is selected.'
         raise CeleryTaskException(detail)
     # output = get_output_path(datasets, input, method='integration')
@@ -44,7 +53,7 @@ def run_integration(task_id, ids:dict):
     if inputs is not None:
         for input in inputs:
             if input is not None:
-                input = unzip_file_if_compressed(task_id, input)
+                input = unzip_file_if_compressed(job_id, input)
                 md5 = md5 + get_md5(input)
                 abs_inputList.append(input)
 
@@ -58,7 +67,7 @@ def run_integration(task_id, ids:dict):
     # #Get the absolute path for the given input
     # input = get_input_path(input, userID)
     #Get the absolute path for the given output
-    # output = get_output(output, userID, task_id)
+    # output = get_output(output, userID, job_id)
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
         output = get_output_path(output, 'Integration', dataset=dataset, method=method, format='Seurat')
@@ -67,7 +76,7 @@ def run_integration(task_id, ids:dict):
         integration_results = pp_result_exists(process_id)
 
         if integration_results is not None:
-            redislogger.info(task_id, "Found existing pre-process results in database, skip Integration.")
+            redislogger.info(job_id, "Found existing pre-process results in database, skip Integration.")
             integration_output.append({method: integration_results[method]})
         else:
             try:
@@ -78,11 +87,11 @@ def run_integration(task_id, ids:dict):
                 relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
                 # Get the absolute path of the desired file
                 rmd_path = os.path.abspath(relative_path)
-                s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + task_id + "', datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + str(methods) + "', dims='" + str(dims) + "', npcs='" + str(npcs) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', genes='" + str(genes) + "'), output_file='" + report_path + "')\""], shell = True)
-                redislogger.info(task_id, s)
+                s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + job_id + "', datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + str(methods) + "', dims='" + str(dims) + "', npcs='" + str(npcs) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', genes='" + str(genes) + "'), output_file='" + report_path + "')\""], shell = True)
+                redislogger.info(job_id, s)
 
                 if os.path.exists(adata_path):
-                    redislogger.info(task_id, "Adding 3D UMAP to AnnData object.")
+                    redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")
                     adata = load_anndata(adata_path)
                     sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
                     adata_3D = sc.tl.umap(adata, random_state=0, 
@@ -92,31 +101,50 @@ def run_integration(task_id, ids:dict):
                     adata.write_h5ad(adata_path, compression='gzip')
                     adata_3D = None
                 else:
+                    upsert_jobs(
+                        {
+                            "job_id": job_id, 
+                            "results": "AnnData file does not exist due to the failure of Bioconductor QC.",
+                            "completed_on": datetime.now(),
+                            "status": "Failure"
+                        }
+                    )
                     raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                 
-                redislogger.info(task_id, "Retrieving metadata and embeddings from AnnData object.")
+                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output)
                 integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                 adata = None
-                redislogger.info(task_id, integration_results['info'])
+                redislogger.info(job_id, integration_results['info'])
                 create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
                 process_ids.append(process_id) 
 
             except Exception as e:
-                redislogger.error(task_id, f"Integration is failed: {e}")
+                upsert_jobs(
+                    {
+                        "job_id": job_id, 
+                        "results": f"Integration is failed: {e}",
+                        "completed_on": datetime.now(),
+                        "status": "Failure"
+                    }
+                )
+                redislogger.error(job_id, f"Integration is failed: {e}")
 
     results = {
-        "taskId": task_id, 
-        "owner": userID,
-        "inputfile": inputs,
         "output": integration_output,
         "default_assay": default_assay,
         "md5": md5,
-        "process_ids": process_ids,
-        # "pp_results": pp_results,
-        "status": "Success"
+        "process_ids": process_ids
     }
 
-    upsert_async_tasks(results)
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "output": integration_output,
+            "results": results,
+            "completed_on": datetime.now(),
+            "status": "Success"
+        }
+    )
 
     return results

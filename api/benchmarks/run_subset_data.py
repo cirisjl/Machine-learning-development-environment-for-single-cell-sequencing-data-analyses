@@ -5,15 +5,16 @@ import tempfile
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_async_tasks
+from utils.mongodb import upsert_benchmarks, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import load_anndata
 from tools.utils.datasplit import subset_by_obskey
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException
+from datetime import datetime
 
 
-def run_subset_data(task_id, data_dict:dict):
+def run_subset_data(job_id, data_dict:dict):
     results = []
     datasetId = data_dict['datasetId']
     benchmarksId = data_dict['benchmarksId']
@@ -22,12 +23,20 @@ def run_subset_data(task_id, data_dict:dict):
     obskey = data_dict['obskey']
     values = data_dict['values']
     subset_id = hashlib.md5(f"{data_dict}".encode("utf_8")).hexdigest()
-    adata_path = unzip_file_if_compressed(task_id, adata_path)
+    adata_path = unzip_file_if_compressed(job_id, adata_path)
     adata_sub = None
     # Extract directory and filename from the data filepath
     data_directory = Path(adata_path).parent
     data_filename = Path(adata_path).stem
     archive_dir = f"{data_directory}/{subset_id}/"
+
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "created_by": userID,
+            "status": "Processing"
+        }
+    )
 
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
@@ -48,19 +57,35 @@ def run_subset_data(task_id, data_dict:dict):
 
         results.append(
             {
-                "taskId": task_id,
-                "owner": userID,
                 "datasetId": datasetId,
                 "benchmarksId": benchmarksId,
-                "adata_path": archive_path,
+                "adata_path": archive_path
+            }
+        )
+
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "datasetId": datasetId,
+                "benchmarksId": benchmarksId,
+                "output": archive_path,
+                "results": results,
+                "completed_on": datetime.now(),
                 "status": "Success"
             }
         )
 
-        upsert_async_tasks(results)
         return results
     
     except Exception as e:
         # Handle any errors
         detail=f"Subsetting data is failed: {str(e)}"
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "results": detail,
+                "completed_on": datetime.now(),
+                "status": "Failure"
+            }
+        )
         raise CeleryTaskException(detail)

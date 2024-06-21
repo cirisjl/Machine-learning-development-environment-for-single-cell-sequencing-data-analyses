@@ -3,7 +3,7 @@ title: "Normalization for `r params$dataset`"
 author: "Lei Jiang"
 date: "`r Sys.Date()`"
 params:
-  unique_id: normalization # unique_id for live log, which could be task_id, user_id or process_id
+  unique_id: normalization # unique_id for live log, which could be job_id, user_id or process_id
   dataset: NA
   input: NULL # Input file path to scRNA data.
   output: NULL # Output file path of the Seurat object.

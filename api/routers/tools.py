@@ -33,7 +33,7 @@ router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"descri
 #     Create a task for quality control
 #     """
 #     task = create_qc_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
-#     return JSONResponse({"task_id": task.id})
+#     return JSONResponse({"job_id": task.id})
 
 
 @router.post("/qc")
@@ -43,7 +43,7 @@ async def create_qc_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_qc_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Quality Control task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Quality Control task submitted successfully"})
 
 
 @router.post("/normalize")
@@ -53,7 +53,7 @@ async def create_normalization_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_normalization_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Normalization task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Normalization task submitted successfully"})
 
 
 @router.post("/impute")
@@ -63,7 +63,7 @@ async def create_imputation_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_imputation_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Imputation task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Imputation task submitted successfully"})
 
 
 @router.post("/reduce")
@@ -73,7 +73,7 @@ async def create_reduction_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_reduction_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Dimension reduction task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Dimension reduction task submitted successfully"})
 
 
 @router.post("/convert")
@@ -83,7 +83,7 @@ async def create_conversion_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_conversion_task.apply_async(args=[ds_dict])
-    return JSONResponse({"task_id": task.id, "status": "Conversion task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Conversion task submitted successfully"})
 
 
 @router.post("/integrate")
@@ -93,7 +93,7 @@ async def create_integration_task_async(ids: IntegrationDataset):
     """
     ids_dict = ids.dict()  # Convert the Pydantic model to a dict
     task = create_integration_task.apply_async(args=[ids_dict])
-    return JSONResponse({"task_id": task.id})
+    return JSONResponse({"job_id": task.id})
 
 
 @router.post("/evaluate")
@@ -102,4 +102,4 @@ async def create_evaluation_task_async(ds: Dataset):
     Create a task for evaluation
     """
     task = create_evaluation_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'layer':ds['layer'], 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
-    return JSONResponse({"task_id": task.id})
+    return JSONResponse({"job_id": task.id})

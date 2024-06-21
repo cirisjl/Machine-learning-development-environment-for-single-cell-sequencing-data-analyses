@@ -5,15 +5,16 @@ from pathlib import Path
 import shutil
 from benchmarks.clustering import clustering_task
 from utils.redislogger import *
-from utils.mongodb import upsert_benchmarks, upsert_async_tasks
+from utils.mongodb import upsert_benchmarks, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata
 from tools.utils.datasplit import sc_train_val_test_split
 from fastapi import HTTPException, status
 import json
 from exceptions.custom_exceptions import CeleryTaskException
+from datetime import datetime
 
-def run_data_split(task_id, data_dict:dict):
+def run_data_split(job_id, data_dict:dict):
     datasetId = data_dict['datasetId']
     benchmarksId = data_dict['benchmarksId']
     userID = data_dict['userID']
@@ -25,7 +26,15 @@ def run_data_split(task_id, data_dict:dict):
     encoded_data = json.dumps(data_dict, sort_keys=True).encode('utf-8')
     split_id = hashlib.md5(encoded_data).hexdigest()
 
-    adata_path = unzip_file_if_compressed(task_id, adata_path) 
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "created_by": userID,
+            "status": "Processing"
+        }
+    )
+
+    adata_path = unzip_file_if_compressed(job_id, adata_path) 
     # Extract directory and filename from the data filepath
     data_directory = Path(adata_path).parent
     data_filename = Path(adata_path).stem
@@ -57,31 +66,51 @@ def run_data_split(task_id, data_dict:dict):
         shutil.make_archive(str(data_directory / f"{data_filename}_data_split"), 'zip', str(adata_dir))
 
         # Return the path to the compressed archive
-        archive_path = data_directory / f"{data_filename}_data_split.zip"
+        archive_path = str(data_directory / f"{data_filename}_data_split.zip")
 
         # Updating records using string paths
         upsert_benchmarks(benchmarksId, {
-            "archive_path": str(archive_path),
+            "datasetId": datasetId,
+            "archive_path": archive_path,
             "train_path": str(train_path), 
             "validation_path": str(val_path),
             "test_path": str(test_path)
         })        
         results = {
-            "taskId": task_id,
-            "owner": userID,
             "datasetId": datasetId,
             "benchmarksId": benchmarksId,
-            "archive_path": str(archive_path),
+            "archive_path": archive_path,
             "train_path": str(train_path), 
             "validation_path": str(val_path),
-            "test_path": str(test_path), 
-            "status": "Success"
+            "test_path": str(test_path)
         }
         
-        upsert_async_tasks(results)
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "datasetId": datasetId,
+                "benchmarksId": benchmarksId,
+                "output": archive_path,
+                "archive_path": str(archive_path),
+                "train_path": str(train_path), 
+                "validation_path": str(val_path),
+                "test_path": str(test_path),
+                "completed_on": datetime.now(),
+                "results": results,
+                "status": "Success"
+            }
+        )
         
         return results
     except Exception as e:
         # Handle any errors
-        detail=f"Data split failed: {str(e)}"
+        detail=f"Data split is failed: {str(e)}"
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "results": detail,
+                "completed_on": datetime.now(),
+                "status": "Failure"
+            }
+        )
         raise CeleryTaskException(detail)

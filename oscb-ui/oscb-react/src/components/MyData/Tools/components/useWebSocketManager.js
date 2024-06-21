@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { WEB_SOCKET_URL } from '../../../../constants/declarations';
 
-export function useWebSocketManager(taskId, setLiveLogs) {
+export function useWebSocketManager(jobId, setLiveLogs) {
     const [logs, setLogs] = useState('');
     const [taskStatus, setTaskStatus] = useState('Processing');
 
     useEffect(() => {
-        if (!taskId) return;
+        if (!jobId) return;
 
-        const statusWs = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${taskId}`);
-        const logWs = new WebSocket(`${WEB_SOCKET_URL}/log/${taskId}`);
+        const statusWs = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${jobId}`);
+        const logWs = new WebSocket(`${WEB_SOCKET_URL}/log/${jobId}`);
 
         const handleStatusMessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data[taskId]) {
-                setTaskStatus(data[taskId]);
-                if (['Success', 'Failed'].includes(data[taskId])) {
+            if (data[jobId]) {
+                setTaskStatus(data[jobId]);
+                if (['Success', 'Failed'].includes(data[jobId])) {
                     statusWs.close();
                     logWs.close();
                     console.log("Web socket disconnected");
@@ -44,7 +44,7 @@ export function useWebSocketManager(taskId, setLiveLogs) {
             logWs.close();
             console.log("websockets disconnected");
         };
-    }, [taskId]); // Reconnect WebSockets if taskId changes
+    }, [jobId]); // Reconnect WebSockets if jobId changes
 
     return { taskStatus};
 }

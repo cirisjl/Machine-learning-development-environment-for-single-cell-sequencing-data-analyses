@@ -20,11 +20,11 @@ def create_celery():
     return celery_app
 
 
-# def get_task_info(task_id):
+# def get_task_info(job_id):
 #     """
-#     return task info for the given task_id
+#     return task info for the given job_id
 #     """
-#     task_result = AsyncResult(task_id)
+#     task_result = AsyncResult(job_id)
 #     summary = "Processing"
 #     if task_result.ready():
 #         if task_result.result is not None:
@@ -32,7 +32,7 @@ def create_celery():
 #         else:
 #             summary = task_result.traceback
 #     result = {
-#         "taskId": task_id,
+#         "job_id": job_id,
 #         "task_status": task_result.status,
 #         "task_result": summary
 #     }
@@ -41,11 +41,11 @@ def create_celery():
 
 #     from celery.result import AsyncResult
 
-def get_task_info(task_id):
+def get_task_info(job_id):
     """
-    Return task information for the given task_id
+    Return task information for the given job_id
     """
-    task_result = AsyncResult(task_id)
+    task_result = AsyncResult(job_id)
     if task_result.ready():
         if task_result.successful():
             # Task completed successfully
@@ -60,7 +60,7 @@ def get_task_info(task_id):
         summary = "Processing"
 
     result = {
-        "taskId": task_id,
+        "job_id": job_id,
         "task_status": task_result.status,
         "task_result": summary
     }
@@ -78,13 +78,13 @@ def get_input_path(input, userID):
     return input_path
 
 
-def get_output(output, userID, task_id):
+def get_output(output, userID, job_id):
     """
     return the absolute input path for a given input
     """
     output_path = None
     if output is not None and userID is not None:
-        output_path = output + "/" + task_id
+        output_path = output + "/" + job_id
     
     return output_path
     

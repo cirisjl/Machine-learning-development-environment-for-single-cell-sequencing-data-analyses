@@ -146,7 +146,9 @@ export default function ToolsDetailsComponent(props) {
           if(filterCategory === "integration") {
             const datasetsArray = Object.values(selectedDatasets);
             const titlesArray = datasetsArray.map(dataset => dataset.Title);
+            const idsArray = datasetsArray.map(dataset => dataset.Id);
             formData.dataset = titlesArray;
+            formData.id = idsArray;
 
              let inputArray = datasetsArray.map(dataset => {
               if (dataset.inputFiles.length > 1) {
@@ -197,80 +199,82 @@ export default function ToolsDetailsComponent(props) {
               })
               .then(response => {
                 
-                let datasetName = "";
+                // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
+                const jobId = response.job_id;
+                let method = "";
+
+                if (filterCategory === "visualization") {
+                  method = "UMAP";
+                } else if (filterCategory === "formatting") {
+                  method = "Convert";
+                } else if(parametersKey[filterCategory]) {
+                  method = formData[parametersKey[filterCategory]].methods[0];
+                } else {
+                  method = formData.methods[0];
+                }
+
+                let job_description = "";
                 if (typeof formData.dataset === 'string') {
-                  datasetName = formData.dataset
+                  job_description = method + ' ' + filterCategory +' of ' + formData.dataset;
                 } else if (Array.isArray(formData.dataset)) {
                   if (formData.dataset.length > 1) {
-                    datasetName = formData.dataset.join('_');
+                    let datasets = formData.dataset.join(', ');
+                    job_description = method + ' ' + filterCategory + ' of ' + datasets;
                   } else if (formData.dataset.length === 1) {
-                    datasetName = formData.dataset[0];
+                    job_description = method + ' ' + filterCategory + ' of ' + formData.dataset[0];
                   }
                 }
 
-                  // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
-                  const taskId = response.task_id;
-                  let method = "";
+                const output = formData.output;
 
-                  if(filterCategory === "visualization") {
-                    method = "Visualization";
-                  } else if(filterCategory === "formatting") {
-                    method = "Formatting";
-                  } else if(parametersKey[filterCategory]) {
-                    method = formData[parametersKey[filterCategory]].methods[0];
-                  } else {
-                    method = formData.methods[0];
-                  }
+                // Make API call to store the task information
+                const requestBody = {
+                  description: job_description,
+                  job_id: jobId,
+                  dataset_id: formData.id,
+                  method: method,
+                  datasetURL: formData.input,
+                  process: filterCategory,
+                  output_path: output,
+                  owner: authData.username,
+                  status: 'Queued'
+                };
 
-                  const output = formData.output;
-
-                  // Make API call to store the task information
-                  const requestBody = {
-                    datasetTitle: formData.dataset,
-                    taskId: taskId,
-                    method: method,
-                    datasetURL: formData.input,
-                    tool: filterCategory,
-                    outputPath: output,
-                    Owner: authData.username,
-                    status: 'Processing'
-                  };
-
-                  fetch(`${SERVER_URL}/createTask`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                  })
-                  .then(response => {
-                    if (response.ok) {
-                      if (response.status === 200) {
-                        console.log('Task created successfully!');
-                        setLoading(false);
-                        setSuccessMessage('Form submitted successfully!');
-                        setErrorMessage('');
-                        navigate("/mydata/taskDetails", { state: { taskId: taskId, method: method, datasetURL: formData.input, datasetTitle: formData.dataset, tool: filterStaticCategoryMap[filterCategory] } });
-                      } else if (response.status === 400) {
-                        response.json().then(data => {
-                          console.error('Validation error:', data.error);
-                          setErrorMessage(data.error); // Set specific error message based on response
-                        });
-                      } else {
-                        throw new Error('Unexpected response from server');
-                      }
+                fetch(`${SERVER_URL}/nodeapi/job/create`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(requestBody)
+                })
+                .then(response => {
+                  if (response.ok) {
+                    if (response.status === 200) {
+                      console.log('Task created successfully!');
+                      setLoading(false);
+                      setSuccessMessage('Form submitted successfully!');
+                      setErrorMessage('');
+                      navigate("/mydata/taskDetails", { state: { job_id: jobId, method: method, datasetURL: formData.input, description: job_description, process: filterStaticCategoryMap[filterCategory] } });
+                    } else if (response.status === 400) {
+                      response.json().then(data => {
+                        console.error('Validation error:', data.error);
+                        setErrorMessage(data.error); // Set specific error message based on response
+                      });
                     } else {
-                      throw new Error('Failed to submit form: ' + response.statusText);
+                      throw new Error('Unexpected response from server');
                     }
-                  })
-                  .catch(error => {
-                    console.error('API request failed:', error);
-                    setLoading(false);
-                    setSuccessMessage('');
-                    setErrorMessage('An error occurred while submitting the form: ' + error.message);
-                  });
+                  } else {
+                    throw new Error('Failed to submit form: ' + response.statusText);
+                  }
+                })
+                .catch(error => {
+                  console.error('API request failed:', error);
+                  setLoading(false);
+                  setSuccessMessage('');
+                  setErrorMessage('An error occurred while submitting the form: ' + error.message);
+                });
 
-                  setFormErrors("");
+                setFormErrors("");
               })
               .catch(error => {
                 // Handle any errors that occur during the API call
@@ -352,7 +356,6 @@ export default function ToolsDetailsComponent(props) {
       setFilterSchema(null);
     });
 
-    console.log(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     import(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     .then((module) => {
       setUIFilterSchema(JSON.parse(JSON.stringify(module.uiSchema)));

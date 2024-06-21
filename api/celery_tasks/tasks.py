@@ -16,78 +16,78 @@ from workflows.clustering import run_clustering
 
 @shared_task(bind=True, name='tools:create_qc_task') 
 def create_qc_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_qc(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_qc(job_id, ds_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_normalization_task') 
 def create_normalization_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_normalization(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_normalization(job_id, ds_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_imputation_task') 
 def create_imputation_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_imputation(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_imputation(job_id, ds_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_reduction_task') 
 def create_reduction_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_reduction(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_reduction(job_id, ds_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_conversion_task') 
 def create_conversion_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_conversion(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_conversion(job_id, ds_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_integration_task') 
 def create_integration_task(self, ids_dict:dict):
-    task_id = self.request.id
-    results = run_integration(task_id, ids_dict)
+    job_id = self.request.id
+    results = run_integration(job_id, ids_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_evaluation_task') 
 def create_evaluation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
-    task_id = self.request.id
-    results = run_evaluation(task_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True)
+    job_id = self.request.id
+    results = run_evaluation(job_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True)
     return results
 
 
 # Benchmarks
 @shared_task(bind=True, name='tools:create_benchmarks_task') 
 def create_benchmarks_task(self, task_dict:dict):
-    task_id = self.request.id
-    results = run_benchmarks(task_id, task_dict)
+    job_id = self.request.id
+    results = run_benchmarks(job_id, task_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_data_split_task') 
 def create_data_split_task(self, task_dict:dict):
-    task_id = self.request.id
-    results = run_data_split(task_id, task_dict)
+    job_id = self.request.id
+    results = run_data_split(job_id, task_dict)
     return results
 
 
 @shared_task(bind=True, name='tools:create_subset_data_task') 
 def create_subset_data_task(self, task_dict:dict):
-    task_id = self.request.id
-    results = run_subset_data(task_id, task_dict)
+    job_id = self.request.id
+    results = run_subset_data(job_id, task_dict)
     return results
 
 
 # Workflows
 @shared_task(bind=True, name='tools:create_clustering_task') 
 def create_clustering_task(self, ds_dict:dict):
-    task_id = self.request.id
-    results = run_clustering(task_id, ds_dict)
+    job_id = self.request.id
+    results = run_clustering(job_id, ds_dict)
     return results

@@ -1,27 +1,27 @@
 import React, {useEffect, useState} from 'react';
 import Plot from 'react-plotly.js';
 
-function BenchmarksPlots({ barPlot, linePlot }) {
+function BenchmarksPlots({ benchmarksPlot, utilizationPlot }) {
 
-    const [barPlotData, setBarPlotData] = useState(null);
-    const [linePlotData, setLinePlotData] = useState(null);
+    const [benchmarksPlotData, setbenchmarksPlotData] = useState(null);
+    const [utilizationPlotData, setutilizationPlotData] = useState(null);
 
     useEffect(() => {
-      if (barPlot) {
-        setBarPlotData(barPlot);
+      if (benchmarksPlot) {
+        setbenchmarksPlotData(benchmarksPlot);
       }
 
-      if(linePlot) {
-        setLinePlotData(linePlot);
+      if(utilizationPlot) {
+        setutilizationPlotData(utilizationPlot);
       }
-    }, [barPlot, linePlot]);
+    }, [benchmarksPlot, utilizationPlot]);
   return (
     <div>
       <h2>Benchmarks</h2>
-      {barPlotData && <Plot data={barPlotData.data} layout={barPlotData.layout} />}
+      {benchmarksPlotData && <Plot data={benchmarksPlotData.data} layout={benchmarksPlotData.layout} />}
 
       <h2>Computing assessments</h2>
-      {linePlotData && <Plot data={linePlotData.data} layout={linePlotData.layout} />}
+      {utilizationPlotData && <Plot data={utilizationPlotData.data} layout={utilizationPlotData.layout} />}
     </div>
   );
 }
