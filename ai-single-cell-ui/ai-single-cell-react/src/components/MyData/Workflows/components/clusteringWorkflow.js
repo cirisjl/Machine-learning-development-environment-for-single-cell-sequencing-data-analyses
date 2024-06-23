@@ -9,6 +9,7 @@ import Schema from '../../../../schema/react-json-schema/Workflows/clusteringWor
 import { uiSchema } from '../../../../schema/UI-schema/Workflows/clusteringWorkflow';
 // import Form from 'react-jsonschema-form';
 import Form from '@rjsf/core';
+import {validator} from '@rjsf/validator-ajv8';
 import SelectComponent from '../../Tools/components/selectComponent';
 import GeneRangeSlider from '../../Tools/components/geneRangeSlider';
 import MultiSelectComponent from '../../Tools/components/multiselectComponent';
@@ -18,6 +19,13 @@ import UseDefaultSwitch from '../../Tools/components/useDefaultSwitch';
 import ClusterLabelInput from '../../Tools/components/customInputComponent';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
+// import Ajv from 'ajv';
+// import addKeywords from 'ajv-keywords';
+
+
+// // Create a custom Ajv instance
+// const ajv = new Ajv({ allErrors: true, $data: true });
+// addKeywords(ajv);
 
 
 export function ClusteringWorkFlowComponent(props) {
@@ -76,26 +84,16 @@ export function ClusteringWorkFlowComponent(props) {
         console.log("Submitted data:", formData);
     };
 
-    // const getCombinedSchema = () => {
-    //     if (value === "normalization") {
-    //       return {
-    //         ...fixedSchema,
-    //         properties: {
-    //           ...fixedSchema.properties,
-    //           ...normalizationSchema.properties
-    //         }
-    //       };
-    //     } else if (value === "imputation") {
-    //       return {
-    //         ...fixedSchema,
-    //         properties: {
-    //           ...fixedSchema.properties,
-    //           ...integrationSchema.properties
-    //         }
-    //       };
-    //     }
-    //     return fixedSchema;
-    //   };
+    const CustomField = (props) => {
+      const { params_type, children } = props.formContext;
+      const fieldName = props.idSchema.$id.split('_').pop();
+    
+      if ((params_type === 'Normalization') ||
+          (params_type === 'Imputation')) {
+        return <div>{children}</div>;
+      }
+      return null;
+    };
     
   return (
     <div className='workflow-container common-class-tools-and-workflows'>
@@ -132,12 +130,17 @@ export function ClusteringWorkFlowComponent(props) {
         <Form
             // schema={getCombinedSchema()}
             schema = {Schema}
-            uiSchema={uiSchema}
+            // uiSchema={uiSchema}
             widgets={widgets}
             formData={formData}
             onChange={({ formData }) => setFormData(formData)}
             onSubmit={handleSubmit}
-            onError={console.log("errors")}
+            onError={(errors) => console.log("Form errors:", errors)}
+            // fields={{ custom: CustomField }}
+            // formContext={{ params_type: formData.params_type }}
+            // ajv={ajv}
+
+            validator={validator}
         />
       </div>
 
