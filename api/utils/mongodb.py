@@ -41,12 +41,13 @@ def create_pp_results(process_id, pp_results):
     return
 
 
-def upsert_jobs(updates):
-    updates = clear_dict(updates)
-    job_id = updates['job_id']
-    jobs_collection.update_one({'job_id': job_id}, {'$set': updates}, upsert=True)
-    if "_id" in updates: 
-        updates.pop("_id")
+def upsert_jobs(data):
+    data = clear_dict(data)
+    job_id = data['job_id']
+    # data.pop("job_id")
+    jobs_collection.update_one({'job_id': job_id}, {'$set': data}, upsert=True)
+    if "_id" in data: 
+        data.pop("_id")
     return
 
 

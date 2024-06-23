@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, taskResultsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jopbsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -740,9 +740,12 @@ app.post('/download', async (req, res) => {
 
         for (const item of fileList) {
             let filePath = "";
-            if(pwd && pwd.includes("publicDatasets")) {
+            if (pwd && pwd.includes("publicDatasets")) {
                 filePath = path.join(storageDir, item);
-            } else {
+            } else if (pwd && pwd.includes("jobResults")) {
+                filePath = item;
+            }
+            else {
                 filePath = path.join(storageDir, username, item);
             }
             const archivePath = item;
@@ -769,6 +772,7 @@ app.post('/download', async (req, res) => {
     }
 });
 
+
 app.get('/download', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const { pwd } = req.query
@@ -781,11 +785,12 @@ app.get('/download', async (req, res) => {
     
     if(pwd && pwd.includes("publicDatasets")) {
         filePath = path.join(storageDir, fileUrl);
+    } else if (pwd && pwd.includes("jobResults")) {
+        filePath = fileUrl;
     } else {
         filePath = path.join(storageDir, username, fileUrl);
     }
   
-
     const fileStat = await fs.promises.stat(filePath);
 
     if (fileStat.isFile()) {
@@ -815,6 +820,7 @@ app.get('/download', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
 });
+
 
 app.get('/fetchPreview', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
@@ -1198,13 +1204,13 @@ app.post('/nodeapi/job/create', async (req, res) => {
         const date = new Date();
         const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
         const formData = req.body;
-        formData.creationTime = timestamp;
+        formData.created_on = timestamp;
         
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
 
-        const collection = db.collection(taskResultsCollection);
+        const collection = db.collection(jopbsCollection);
         
         await collection.insertOne(formData);
         console.log('Form data submitted successfully');
@@ -1221,8 +1227,10 @@ app.post('/nodeapi/job/create', async (req, res) => {
 });
 
 // Route to retrieve documents from task_results collection
-app.get('/api/tools/getTasks', async (req, res) => {
+app.get('/nodeapi/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
+    const { authToken } = req.query;
+    const username = getUserFromToken(authToken);
   
     try {
       // Connect to the MongoDB server
@@ -1230,16 +1238,16 @@ app.get('/api/tools/getTasks', async (req, res) => {
       const db = client.db(dbName);
   
       // Get reference to the task_results collection
-      const collection = db.collection(taskResultsCollection);
+      const collection = db.collection(jopbsCollection);
   
       // Query documents from the collection
-      const tasks = await collection.find({}).toArray();
+      const tasks = await collection.find({ created_by: username }).toArray();
   
       // Respond with the tasks data
       res.status(200).json(tasks);
     } catch (error) {
       console.error('Error:', error);
-      res.status(500).json({ error: 'An error occurred while fetching tasks' });
+      res.status(500).json({ error: 'An error occurred while fetching jobs' });
     } finally {
       // Ensure the client will close when you finish/error
       await client.close();
@@ -1293,54 +1301,54 @@ app.put('/updateTaskStatus', (req, res) => {
     });
 });
 
-app.get('/getTasks', (req, res) => {
-    const { authToken } = req.query;
-    const username = getUserFromToken(authToken);
+// app.get('/getTasks', (req, res) => {
+//     const { authToken } = req.query;
+//     const username = getUserFromToken(authToken);
 
-    pool.getConnection(function (err, connection) {
-        if (err) {
-            console.error('Error getting DB connection:', err);
-            return res.status(500).json({ message: 'Database connection error' });
-        }
+//     pool.getConnection(function (err, connection) {
+//         if (err) {
+//             console.error('Error getting DB connection:', err);
+//             return res.status(500).json({ message: 'Database connection error' });
+//         }
 
-        connection.beginTransaction(function (err) {
-            if (err) {
-                console.error('Error starting transaction:', err);
-                connection.release();
-                return res.status(500).json({ message: 'Transaction error' });
-            }
-            connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
-                if (err) {
-                    console.error('Database query error:', err);
-                    return res.status(500).json({ message: 'Internal Server Error' });
-                }
+//         connection.beginTransaction(function (err) {
+//             if (err) {
+//                 console.error('Error starting transaction:', err);
+//                 connection.release();
+//                 return res.status(500).json({ message: 'Transaction error' });
+//             }
+//             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
+//                 if (err) {
+//                     console.error('Database query error:', err);
+//                     return res.status(500).json({ message: 'Internal Server Error' });
+//                 }
 
-                const userId = userRows[0].user_id;
+//                 const userId = userRows[0].user_id;
 
-                if (!userId) {
-                    res.status(400).send('User not found');
-                    connection.rollback(function () {
-                        connection.release();
-                    });
-                    return;
-                }
+//                 if (!userId) {
+//                     res.status(400).send('User not found');
+//                     connection.rollback(function () {
+//                         connection.release();
+//                     });
+//                     return;
+//                 }
 
-                connection.query('SELECT task_title, job_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
-                    if (err) {
-                        console.error('Error committing transaction:', err);
-                        connection.rollback(function () {
-                            connection.release();
-                        });
-                        return res.status(500).json({ message: 'Transaction commit error' });
-                    } else {
-                        connection.release();
-                        res.json(rows);
-                    }
-                });
-            });
-        });
-    });
-});
+//                 connection.query('SELECT task_title, job_id, results_path, tool, status, created_datetime, finish_datetime FROM task WHERE user_id = ?', [userId], function (err, rows) {
+//                     if (err) {
+//                         console.error('Error committing transaction:', err);
+//                         connection.rollback(function () {
+//                             connection.release();
+//                         });
+//                         return res.status(500).json({ message: 'Transaction commit error' });
+//                     } else {
+//                         connection.release();
+//                         res.json(rows);
+//                     }
+//                 });
+//             });
+//         });
+//     });
+// });
 
 
 // Connect to MongoDB and retrieve options
@@ -2594,11 +2602,8 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   // API endpoint to get process results based on an array of process_ids
 app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
     let client;
-
     try {
-
         const processIds = req.body.processIds;
-
         if (!processIds || !processIds.length) {
             return res.status(400).json({ error: 'No process IDs provided' });
         }

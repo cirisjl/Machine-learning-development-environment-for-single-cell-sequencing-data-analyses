@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect} from 'react';
+import { useLocation,useNavigate } from 'react-router-dom';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 import { 
   Container, Typography, Chip, Box, CircularProgress, Paper, Grid,TextField,Button, 
@@ -29,6 +29,7 @@ const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 
 let jwtToken = getCookie('jwtToken');
 
+
 function StatusChip({ status }) {
   const getStatusColor = () => {
     switch (status?.toLowerCase()) { // Ensure status is defined
@@ -46,9 +47,51 @@ function StatusChip({ status }) {
   );
 }
 
+
+function getFileNameFromURL(fileUrl){
+  if (fileUrl) {
+    return fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+  } else{
+    return '';
+  }
+};
+
+function downloadFile(fileUrl) {
+  const apiUrl = `${SERVER_URL}/download`;
+  const pwd = "jobResults";
+
+  if (fileUrl) {
+    const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+
+    fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}&pwd=${pwd}`)
+      .then(response => {
+        return response.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+
+        document.body.appendChild(link);
+        link.click();
+        // Remove the link from the DOM
+        // document.body.removeChild(link);
+      })
+      .catch(error => {
+        console.error('Error downloading file:', error);
+      });
+  }
+}
+
+
 function TaskDetailsComponent() {
   const location = useLocation();
-  const { job_id, method, datasetURL, description , tool} = location.state || {};   
+  const navigate = useNavigate();
+  const {job_id, method, datasetURL, description , tool} = location.state || {};
+  const searchParams = new URLSearchParams(location.search);
+  const resultsPath = searchParams.get('results_path');
+  const taskTitle = searchParams.get('description');
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
@@ -59,12 +102,15 @@ function TaskDetailsComponent() {
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
+  const [plotLoaded, setPlotLoaded] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
-  const [isSent, setIsSent] = useState(false); // State to indicate save operation
+  const [isSent, setIsSent] = useState(false); // State to disable button after success
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
   const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
+  // const [fileUrl, setFileUrl] = useState('');
+
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
@@ -98,7 +144,7 @@ function TaskDetailsComponent() {
         setIsError(true);
       }
     };
-  
+    
 
   const handleStatusMessage = (event) => {
     try {
@@ -106,9 +152,10 @@ function TaskDetailsComponent() {
       if (data.task_status) {
         setTaskStatus(data.task_status);
         if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
-          if(data.task_status === "SUCCESS") {
+          if (data.task_status === "SUCCESS" && !plotLoaded) {
             if(data.task_result.process_ids) {
               fetchProcessResults(data.task_result.process_ids);
+              setPlotLoaded(true)
             } else {
               setLoading(false);
             }
@@ -252,16 +299,19 @@ function TaskDetailsComponent() {
                 <CardContent sx={cardContentStyle}>
                   <Typography variant="subtitle1"><strong>Job Description:</strong></Typography>
                   <Typography variant="body1" gutterBottom>{description || 'Not available'}</Typography>
-                  <Typography variant="subtitle1"><strong>Dataset URL:</strong></Typography>
+                  <Typography variant="subtitle1"><strong>Dataset:</strong></Typography>
                   <Typography variant="body1" gutterBottom>
-                    <Link href={datasetURL} target="_blank" rel="noopener">
-                      {datasetURL || 'Not available'}
-                    </Link>
+                    { /* <Button onClick={downloadFile(datasetURL)}>
+                      {getFileNameFromURL(datasetURL) || 'Not available'}
+                    </Button> */ }
+                    <a download onClick={() => {downloadFile(datasetURL)}} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                      {getFileNameFromURL(datasetURL) || 'Not available'}
+                    </a> 
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <Card raised sx={cardStyle}>
                 <CardHeader title="Execution Details" />

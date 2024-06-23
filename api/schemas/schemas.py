@@ -76,7 +76,10 @@ class Dataset(BaseModel):
     input: str
     output: Optional[str] = None
     userID: Optional[str] = None
-    job_id: Optional[str] = None
+    description: Optional[str] = None,
+    dataset_id: Optional[str] = None
+    method: Optional[str] = None,
+    process: Optional[str] = None,
     output_format: Optional[str] = 'AnnData'
     species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
@@ -91,6 +94,10 @@ class Dataset(BaseModel):
 
 
 class integrationParameters(BaseModel):
+    description: Optional[str] = None,
+    dataset_id: Optional[str] = None
+    method: Optional[str] = None,
+    process: Optional[str] = None,
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
     default_assay: Optional[str] = 'RNA' # Required for Seurat
