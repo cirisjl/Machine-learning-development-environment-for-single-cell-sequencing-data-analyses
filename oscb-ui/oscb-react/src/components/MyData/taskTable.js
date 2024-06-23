@@ -65,7 +65,7 @@ const TaskTable = () => {
         const fetchTasks = async () => {
             const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
             const data = await response.json();
-            data.sort((a, b) => a.created_datetime - b.created_datetime);
+            data.sort((a, b) => a.created_on - b.created_on);
             setTasks(data);
 
             // Create a list to store incomplete tasks
@@ -163,7 +163,7 @@ const TaskTable = () => {
                                     </Typography>
                                 </TableCell>
                                 <TableCell>{task.tool}</TableCell>
-                                <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_datetime))}</TableCell>
+                                <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_on))}</TableCell>
                                 <TableCell>
                                     {task.finish_datetime ? (
                                         new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.finish_datetime))

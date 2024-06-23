@@ -5,6 +5,8 @@ from starlette.responses import JSONResponse
 # from api import tools
 from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task
 from schemas.schemas import Dataset, IntegrationDataset, PathRequest
+from datetime import datetime
+from utils.mongodb import upsert_jobs
 router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"description": "API Not found"}})
 
 
@@ -35,6 +37,20 @@ router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"descri
 #     task = create_qc_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'path_of_scrublet_calls':ds.path_of_scrublet_calls, 'show_error': ds.show_error})
 #     return JSONResponse({"job_id": task.id})
 
+def create_job(job_id, ds_dict: dict):
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "description": ds_dict['description'],
+            "dataset_id": ds_dict['dataset_id'],
+            "method": ds_dict['method'],
+            "datasetURL": ds_dict['input'],
+            "process": ds_dict['process'],
+            "created_on": datetime.now(), 
+            "status": "Queued"
+        }
+    )
+
 
 @router.post("/qc")
 async def create_qc_task_async(ds: Dataset):
@@ -43,6 +59,8 @@ async def create_qc_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_qc_task.apply_async(args=[ds_dict])
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id, "status": "Quality Control task submitted successfully"})
 
 
@@ -53,6 +71,8 @@ async def create_normalization_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_normalization_task.apply_async(args=[ds_dict])
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id, "status": "Normalization task submitted successfully"})
 
 
@@ -63,6 +83,8 @@ async def create_imputation_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_imputation_task.apply_async(args=[ds_dict])
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id, "status": "Imputation task submitted successfully"})
 
 
@@ -73,6 +95,8 @@ async def create_reduction_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_reduction_task.apply_async(args=[ds_dict])
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id, "status": "Dimension reduction task submitted successfully"})
 
 
@@ -83,6 +107,8 @@ async def create_conversion_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_conversion_task.apply_async(args=[ds_dict])
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id, "status": "Conversion task submitted successfully"})
 
 
@@ -93,6 +119,8 @@ async def create_integration_task_async(ids: IntegrationDataset):
     """
     ids_dict = ids.dict()  # Convert the Pydantic model to a dict
     task = create_integration_task.apply_async(args=[ids_dict])
+    create_job(task.id, ids)
+
     return JSONResponse({"job_id": task.id})
 
 
@@ -101,5 +129,8 @@ async def create_evaluation_task_async(ds: Dataset):
     """
     Create a task for evaluation
     """
+    ds_dict = ds.dict() 
     task = create_evaluation_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'layer':ds['layer'], 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
+    create_job(task.id, ds_dict)
+
     return JSONResponse({"job_id": task.id})

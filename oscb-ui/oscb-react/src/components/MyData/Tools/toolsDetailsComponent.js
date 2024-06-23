@@ -160,7 +160,6 @@ export default function ToolsDetailsComponent(props) {
 
             formData.input = inputArray;
             formData.output = "/IntegrationResults";
-
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
@@ -174,6 +173,35 @@ export default function ToolsDetailsComponent(props) {
                 formData.output = directory + "/Results";
               }
           }
+
+          let method = "";
+
+          if (filterCategory === "visualization") {
+            method = "UMAP";
+          } else if (filterCategory === "formatting") {
+            method = "Convert";
+          } else if (parametersKey[filterCategory]) {
+            method = formData[parametersKey[filterCategory]].methods[0];
+          } else {
+            method = formData.methods[0];
+          }
+
+          let job_description = "";
+          if (typeof formData.dataset === 'string') {
+            job_description = method + ' ' + filterCategory + ' for ' + formData.dataset;
+          } else if (Array.isArray(formData.dataset)) {
+            if (formData.dataset.length > 1) {
+              let datasets = formData.dataset.join(', ');
+              job_description = method + ' ' + filterCategory + ' for ' + datasets;
+            } else if (formData.dataset.length === 1) {
+              job_description = method + ' ' + filterCategory + ' for ' + formData.dataset[0];
+            }
+          }
+
+          formData.description = job_description;
+          formData.dataset_id = formData.id;
+          formData.method = method;
+          formData.process = filterCategory;
       
           // Verify the authenticity of the user
           isUserAuth(jwtToken)
@@ -197,84 +225,14 @@ export default function ToolsDetailsComponent(props) {
                   throw new Error('Error while making a call to the celery Tools API');
                 }
               })
-              .then(response => {
-                
+              .then(response => {                
                 // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
                 const jobId = response.job_id;
-                let method = "";
-
-                if (filterCategory === "visualization") {
-                  method = "UMAP";
-                } else if (filterCategory === "formatting") {
-                  method = "Convert";
-                } else if(parametersKey[filterCategory]) {
-                  method = formData[parametersKey[filterCategory]].methods[0];
-                } else {
-                  method = formData.methods[0];
-                }
-
-                let job_description = "";
-                if (typeof formData.dataset === 'string') {
-                  job_description = method + ' ' + filterCategory +' of ' + formData.dataset;
-                } else if (Array.isArray(formData.dataset)) {
-                  if (formData.dataset.length > 1) {
-                    let datasets = formData.dataset.join(', ');
-                    job_description = method + ' ' + filterCategory + ' of ' + datasets;
-                  } else if (formData.dataset.length === 1) {
-                    job_description = method + ' ' + filterCategory + ' of ' + formData.dataset[0];
-                  }
-                }
-
-                const output = formData.output;
-
-                // Make API call to store the task information
-                const requestBody = {
-                  description: job_description,
-                  job_id: jobId,
-                  dataset_id: formData.id,
-                  method: method,
-                  datasetURL: formData.input,
-                  process: filterCategory,
-                  output_path: output,
-                  owner: authData.username,
-                  status: 'Queued'
-                };
-
-                fetch(`${SERVER_URL}/nodeapi/job/create`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(requestBody)
-                })
-                .then(response => {
-                  if (response.ok) {
-                    if (response.status === 200) {
-                      console.log('Task created successfully!');
-                      setLoading(false);
-                      setSuccessMessage('Form submitted successfully!');
-                      setErrorMessage('');
-                      navigate("/mydata/taskDetails", { state: { job_id: jobId, method: method, datasetURL: formData.input, description: job_description, process: filterStaticCategoryMap[filterCategory] } });
-                    } else if (response.status === 400) {
-                      response.json().then(data => {
-                        console.error('Validation error:', data.error);
-                        setErrorMessage(data.error); // Set specific error message based on response
-                      });
-                    } else {
-                      throw new Error('Unexpected response from server');
-                    }
-                  } else {
-                    throw new Error('Failed to submit form: ' + response.statusText);
-                  }
-                })
-                .catch(error => {
-                  console.error('API request failed:', error);
-                  setLoading(false);
-                  setSuccessMessage('');
-                  setErrorMessage('An error occurred while submitting the form: ' + error.message);
-                });
-
-                setFormErrors("");
+                console.log('Task created successfully!');
+                setLoading(false);
+                setSuccessMessage('Form submitted successfully!');
+                setErrorMessage('');
+                navigate("/mydata/taskDetails", { state: { job_id: jobId, method: formData.method, datasetURL: formData.input, description: formData.description, process: filterStaticCategoryMap[filterCategory] } });
               })
               .catch(error => {
                 // Handle any errors that occur during the API call

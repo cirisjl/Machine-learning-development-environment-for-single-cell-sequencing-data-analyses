@@ -35,8 +35,9 @@ const MyTasksSideNav = () => {
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
-                const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
+                const response = await fetch(`${NODE_API_URL}/nodeapi/getTasks?authToken=${jwtToken}`);
                 const data = await response.json();
+                console.log(data);
                 data.sort((a, b) => b.created_on - a.created_on);
                 setTasks(data);
 
@@ -74,7 +75,7 @@ const MyTasksSideNav = () => {
                             }
                         });
                         if (finishedTasks.length + failedTasks.length > 0) {
-                            await updateTaskStatus(failedTasks, 'Failed');
+                            await updateTaskStatus(failedTasks, 'Failure');
                             await updateTaskStatus(finishedTasks, 'Success');
                             // Close the WebSocket connection
                             socket.close(1000, 'See you again!');
@@ -162,7 +163,7 @@ const MyTasksSideNav = () => {
                                                     )}
                                                     <p><TextWithEllipsis text={task.task_title} maxLength={23} /></p>
                                                 </div>
-                                                <span className='time-stamp-display'>- {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_on))}</span>
+                                                <span className='time-stamp-display'>- {task.created_on}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
