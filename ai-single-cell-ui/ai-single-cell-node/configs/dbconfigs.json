@@ -1,0 +1,7 @@
+{
+    "host": "localhost",
+    "user": "root",
+    "password": "Shirley@2410",
+    "database": "aisinglecell",
+    "connectionLimit": 10
+  }

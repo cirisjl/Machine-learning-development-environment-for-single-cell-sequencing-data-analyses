@@ -1968,26 +1968,27 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
         const filters = req.body.filters;
       
         //Update this field accordingly whenever you add a new facet 
-        const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
         if (!taskType) {
             return res.status(400).send('task_type is required');
         }
         // Initialize matchConditions to include the taskType filter
-        let matchConditions = [{ 'TaskType.label': taskType }];
+        let matchConditions = [{ 'task_type': taskType }];
 
         // Include global search query in match conditions
         if (globalSearchQuery) {
             matchConditions.push({
                 $or: [
-                    { 'TaskType.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'task_type': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Species.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
                 ]
             });
         }
@@ -2021,7 +2022,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
             {
                 $lookup: {
                     from: datasetCollection,
-                    localField: "DatasetId",
+                    localField: "datasetId",
                     foreignField: "Id",
                     as: "datasetDetails"
                 }
@@ -2055,10 +2056,10 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                         { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } }, 
                         { $sort: { count: -1 } }
                     ],
-                    'Anatomical Entity': [
+                    /* 'Anatomical Entity': [
                         { $group: { _id: '$datasetDetails.Anatomical Entity.label', count: { $sum: 1 } } }, 
                         { $sort: { count: -1 } }
-                    ],
+                    ], */
                     'Organ Part': [
                         { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } }, 
                         { $sort: { count: -1 } }
@@ -2071,27 +2072,27 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                         { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } }, 
                         { $sort: { count: -1 } }
                     ],
-                    'Disease Status (Donor)': [
+                    /* 'Disease Status (Donor)': [
                         { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } }, 
                         { $sort: { count: -1 } }
-                    ],
+                    ], */
                     // Documents facet for pagination
                     documents: [
                         { $skip: (page - 1) * pageSize },
                         { $limit: pageSize },
                         {
                             $project: {
+                                "Benchmarks ID": benchmarksId,
                                 Title: "$datasetDetails.Title",
-                                job_id: "$Id",
-                                TaskType: "$TaskType.label",
+                                'Task': "$task_type",
                                 Species: "$datasetDetails.Species.label",
                                 'Organ Part': "$datasetDetails.Organ Part.label",
                                 'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
                                 'Development Stage': "$datasetDetails.Development Stage",
-                                'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
-                                'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
+                                // 'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
+                                // 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
                                 Author: "$datasetDetails.Author",
-                                TaskLabel: "$TaskLabel.label",
+                                TaskLabel: "$task_label",
                                 'Source': "$datasetDetails.Source",
                                 'Submission Date': "$datasetDetails.Submission Date",
                             }
@@ -2605,7 +2606,7 @@ app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {
-            return res.status(400).json({ error: 'No process IDs provided' });
+            return res.status(400).json({ error: 'No process ID is provided.' });
         }
 
         client = new MongoClient(mongoUrl);

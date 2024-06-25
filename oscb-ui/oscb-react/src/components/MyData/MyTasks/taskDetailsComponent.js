@@ -56,6 +56,7 @@ function getFileNameFromURL(fileUrl){
   }
 };
 
+
 function downloadFile(fileUrl) {
   const apiUrl = `${SERVER_URL}/download`;
   const pwd = "jobResults";
@@ -102,15 +103,13 @@ function TaskDetailsComponent() {
   const [ message, setMessage ] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
-  const [plotLoaded, setPlotLoaded] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
   const [isSent, setIsSent] = useState(false); // State to disable button after success
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
   const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
-  // const [fileUrl, setFileUrl] = useState('');
-
+  let plotLoaded = false;
 
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
@@ -134,7 +133,10 @@ function TaskDetailsComponent() {
       try {
         const response = await axios.post(`${SERVER_URL}/benchmarks/api/getPreProcessResults`, { processIds });
         console.log('Process Results:', response.data);
+        console.log('Process Results Type:', typeof(response.data));
         setToolResultsFromMongo(response.data);
+        console.log('toolResultsFromMongo:', toolResultsFromMongo);
+        console.log('toolResultsFromMongo Type:', typeof (toolResultsFromMongo));
         setLoading(false);
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
@@ -155,7 +157,7 @@ function TaskDetailsComponent() {
           if (data.task_status === "SUCCESS" && !plotLoaded) {
             if(data.task_result.process_ids) {
               fetchProcessResults(data.task_result.process_ids);
-              setPlotLoaded(true)
+              plotLoaded = true;
             } else {
               setLoading(false);
             }
@@ -170,38 +172,40 @@ function TaskDetailsComponent() {
     }
   };
 
-  if (jwtToken) {
-    fetch(LOGIN_API_URL + "/protected", { //to get username,id
-      method: 'GET',
-      credentials: 'include', 
-      headers: { 'Authorization': `Bearer ${jwtToken}` },
-    })
-      .then((response) => response.json())
-      .then((data) => {
+  useEffect(() => {
+    async function fetchFiles() {
 
-        if (data.authData !== null) {
-          setUName(data.authData.username);
-          setUIat(data.authData.iat)
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      })};
-
-      useEffect(() => {
-        async function fetchFiles() {
-       
       try {
-            const taskInfoResponse = await fetch(`http://${process.env.REACT_APP_HOST_URL}:5000/api/task/${job_id}`);
-            const taskInfoData = await taskInfoResponse.json();
-            console.log(taskInfoData);
-            setTaskResult(taskInfoData.task_result);
-          } catch (error) {
-            console.error('Error fetching task status:', error);
-          }
+        const taskInfoResponse = await fetch(`http://clnode121.clemson.cloudlab.us:5000/api/task/${job_id}`);
+        const taskInfoData = await taskInfoResponse.json();
+        console.log(taskInfoData);
+        setTaskResult(taskInfoData.task_result);
+
+        if (jwtToken) {
+          fetch(LOGIN_API_URL + "/protected", { //to get username,id
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Authorization': `Bearer ${jwtToken}` },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+
+              if (data.authData !== null) {
+                console.log("userdata: ", data.authData);
+                setUName(data.authData.username);
+                setUIat(data.authData.iat);
+              }
+            })
+            .catch((error) => {
+              console.error(error);
+            })
         }
-        fetchFiles();
-      }, [job_id]);
+      } catch (error) {
+        console.error('Error fetching task status:', error);
+      }
+    }
+    fetchFiles();
+  }, [job_id]);
 
 
   const handleLogMessage = (event) => {
@@ -354,8 +358,8 @@ function TaskDetailsComponent() {
                     <Typography variant="subtitle1"><strong>User Name:</strong> {uName}</Typography>
                     <Typography variant="subtitle1"><strong>User ID:</strong> {uIat}</Typography>
                     { /*<Typography variant="subtitle1"><strong>Task Result:</strong> {taskResult}</Typography>*/ }
-                    <Typography variant="subtitle1"><strong>Task Status:</strong> {taskStatus}</Typography>
-                    <Typography variant="subtitle1"><strong>Task ID:</strong> {job_id}</Typography>
+                    <Typography variant="subtitle1"><strong>Job Status:</strong> {taskStatus}</Typography>
+                    <Typography variant="subtitle1"><strong>Job ID:</strong> {job_id}</Typography>
                     <Typography variant="subtitle1"><strong>User Comments:</strong></Typography>
                     <TextField
                       fullWidth
@@ -394,7 +398,7 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-        (tool === "Quality Control" || tool === "Normalization" || tool === "UMAP") && (
+        (tool === "Quality Control" || tool === "Normalization" || tool === "Visualization") && (
           <div>
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (
