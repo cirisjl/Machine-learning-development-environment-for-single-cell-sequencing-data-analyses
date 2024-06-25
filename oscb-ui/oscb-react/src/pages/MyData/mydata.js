@@ -10,12 +10,9 @@ export default function MyData() {
 
     const navigate = useNavigate();
 
-    const [selectedFilter, setSelectedFilter] = useState(null);
-    const [category, setCategory] = useState(null);
-    const handleFilterSelection = (category, filter) => {
-        setSelectedFilter(category + "_" + filter);
-        setCategory(category);
-    };
+    const filterCategory = null;
+    const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
+    const [selectedDatasets, setSelectedDatasets] = useState({});
 
     useEffect(() => {
         let jwtToken = getCookie('jwtToken');
@@ -24,6 +21,31 @@ export default function MyData() {
         }
     }, []);
 
+    const onSelectDataset = (dataset) => {
+        let datasetId = dataset.Id;
+        let currentSelectedDatasets = { ...selectedDatasets };
+
+        if (currentSelectedDatasets[datasetId]) {
+            delete currentSelectedDatasets[datasetId];
+        } else {
+            if (filterCategory !== "integration") {
+                currentSelectedDatasets = {};
+            }
+            currentSelectedDatasets[datasetId] = dataset;
+        }
+        if (filterCategory === "quality_control") {
+            // Check if any of the selected datasets should trigger hiding for Seurat
+            const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
+                dataset.inputFiles.length === 1 &&
+                (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
+                    dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
+                    dataset.inputFiles[0].toLowerCase().endsWith('robj'))
+            );
+            setShouldHideForSeurat(shouldHideForSeurat);
+        }
+        setSelectedDatasets(currentSelectedDatasets)
+    };
+
     return (
         <div className="page-container">
             <div className="left-nav">
@@ -31,14 +53,17 @@ export default function MyData() {
             </div>
             <div className="main-content">
                 <StorageChart />
+                <div className="task-builder-task">
                     <DatasetSelectionDialog
-                        onSelect={null}
-                        multiple={true}
+                        onSelect={onSelectDataset}
+                        multiple={false} // Can just be false, I think
                         onClose={null}
                         isVisible={true}
-                        selectedDatasets={null}
+                        selectedDatasets={selectedDatasets}
                         fromToolsPage={true}
+                        showAsPopup={false}
                     />
+                </div>
             </div>
             <div className="right-rail">
                 <RightRail />
