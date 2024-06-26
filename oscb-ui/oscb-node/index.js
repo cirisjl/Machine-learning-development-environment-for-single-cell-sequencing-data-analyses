@@ -1466,14 +1466,14 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
         documents = [documents];
       }
   
-      const insertionResults = [];
+      const updateResults = [];
       for (const formData of documents) {
         // // Check if a document with the provided Id already exists
         // const existingDocument = await collection.findOne({ Id: formData.Id });
   
         // if (existingDocument) {
         //   console.log('Document with Id already exists:', formData.Id);
-        //   insertionResults.push({
+        //   updateResults.push({
         //     Id: formData.Id,
         //     status: 'error',
         //     message: 'Document with the provided Id already exists',
@@ -1482,7 +1482,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
         //   // Document with the provided Id does not exist, proceed with insertion
         //   await collection.insertOne(formData);
         //   console.log('Form data submitted successfully for Id:', formData.Id);
-        //   insertionResults.push({
+        //   updateResults.push({
         //     Id: formData.Id,
         //     status: 'success',
         //     message: 'Form data submitted successfully',
@@ -1490,11 +1490,12 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
         // }
         const query = { benchmarksId: formData.Id };
         const update = { $set: formData };
-        const options = { upsert: true };
-        await collection.updateOne(query, update, options);
+        // const options = { upsert: true };
+        // await collection.updateOne(query, update, options);
+        await collection.updateOne(query, update);
         console.log('Form data submitted successfully for Id:', formData.Id);
 
-        insertionResults.push({
+        updateResults.push({
             Id: formData.Id,
             status: 'success',
             message: 'Form data submitted successfully',
@@ -1502,12 +1503,12 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
       }
   
       // If handling multiple documents, you might want to aggregate results and respond accordingly
-      if (insertionResults.length > 1) {
+      if (updateResults.length > 1) {
         // Respond with the aggregated results for multiple documents
-        res.status(200).json(insertionResults);
-      } else if (insertionResults.length === 1) {
+        res.status(200).json(updateResults);
+      } else if (updateResults.length === 1) {
         // For a single document, you can respond with the single result
-        const result = insertionResults[0];
+        const result = updateResults[0];
         if (result.status === 'success') {
           res.status(200).json({ message: result.message });
         } else {
@@ -1525,8 +1526,6 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
     }
   });
   
-
-
 
 // API endpoint to get datasets
 app.get('/mongoDB/api/getDatasets', async (req, res) => {
@@ -2082,7 +2081,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
                         { $limit: pageSize },
                         {
                             $project: {
-                                "Benchmarks ID": benchmarksId,
+                                "Benchmarks ID": "$benchmarksId",
                                 Title: "$datasetDetails.Title",
                                 'Task': "$task_type",
                                 Species: "$datasetDetails.Species.label",
