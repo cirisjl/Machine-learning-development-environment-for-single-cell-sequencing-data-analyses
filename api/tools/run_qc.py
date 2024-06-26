@@ -48,13 +48,6 @@ def run_qc(job_id, ds:dict, random_state=0):
     methods =parameters['methods']
     redislogger.info(job_id, f"Using QC Parameters: {parameters}")
 
-    upsert_jobs(
-        {
-            "job_id": job_id, 
-            "created_by": userID,
-            "status": "Processing"
-        }
-    )
     
     # Get the absolute path for the given output
     # output = get_output(output, ds['userID'], job_id) # Tools
@@ -65,8 +58,26 @@ def run_qc(job_id, ds:dict, random_state=0):
             methods = ["Seurat"]
         else:
             methods = ["scanpy"]
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "description": "QC for Benchmarks",
+                "method": methods[0],
+                "process": "Quality Control",
+                "created_by": userID,
+                "status": "Processing"
+            }
+        )
         output = benchmarks_output_path(input_path)
-
+    else:
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "created_by": userID,
+                "status": "Processing"
+            }
+        )
+    
     # Get the absolute path for the given input
     # input = get_input_path(input, ds['userID'])
     # Get the absolute path for the given output

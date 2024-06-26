@@ -1,16 +1,16 @@
-import React, { useState,useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import FilterComponent from './filtersComponent';
-import {SERVER_URL} from '../../../constants/declarations';
+import { SERVER_URL } from '../../../constants/declarations';
 import ResultsTable from './tableResultsComponent';
 import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } from '@mui/material';
 import { ScaleLoader } from 'react-spinners';
 import { getCookie } from '../../../utils/utilFunctions';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, fromToolsPage }) => {
+const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, selectedDatasets, fromToolsPage, showAsPopup = true }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -62,7 +62,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
             url = `${SERVER_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
         }
         
-        const response = await fetch( url , {
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
     const handleSearchSubmit = (event) => {
       event.preventDefault();
       setShowMoreFacets(false);
-      fetchData(1 , activeFilters, globalSearchTerm);
+      fetchData(1, activeFilters, globalSearchTerm);
       console.log("Search Handled");
     };
 
@@ -175,8 +175,8 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
 
     return (
         <div style={dialogStyle} className="dialog-container">
-            <div className="dialog-backdrop" onClick={onClose} />
-            <div className="dialog">
+      {showAsPopup && <div className="dialog-backdrop" onClick={onClose} />}
+      <div className={showAsPopup ? "dialog" : ""}>
               <div>
                 {fromToolsPage && 
                   <div className='dataset-type-container'>
@@ -195,16 +195,16 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                               control={<Checkbox checked={checkedState.public} onChange={handleCheckboxChange} name="public" />}
                               label="Benchmarks Datasets"
                             />
-                            <FormControlLabel
+                            {showAsPopup && <FormControlLabel
                               control={<Checkbox checked={checkedState.shared} onChange={handleCheckboxChange} name="shared" />}
                               label="User Shared Datasets"
-                            />
+                            /> }
                           </FormGroup>
                         </Box>
                       </Grid>
                       <Grid item xs={4} container justifyContent="center">
                         <Button variant="outlined" color="primary" onClick={handleCreateDataset}>
-                          Create Dataset
+                          Upload Dataset
                         </Button>
                       </Grid>
                     </Grid>
@@ -268,11 +268,15 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                                     {appliedFilters.map((filter, index) => (
                                       <div key={index} className="applied-filter">
                                         {filter.category}: {filter.value}
-                                        <span  className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
+                                        <span className="cross-icon" onClick={() => handleRemoveFilter(filter.category, filter.value)}>&times;</span>
                                       </div>
                                     ))}
                                   </div>
                           )}
+                        </div>                
+                        
+                        <div className='table-results'>
+                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
                         </div>
 
                         <div className='table-pagination'>
@@ -281,19 +285,18 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                             onPageChange={onPageChange}
                           />
                         </div>
-                        
-                        <div className='table-results'>
-                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
-                        </div>
                     </div>
                   ) : (
                     <div>
                       <p> No results for you search.</p>
                     </div>
                   )}
-                <div className='dialog-close'>
+
+                {showAsPopup && <div className='dialog-close'>
                     <button onClick={onClose}>Select</button>
-                </div>
+
+                    <button onClick={onClose}>Close</button>
+                </div> }
               </div>
               
             </div>

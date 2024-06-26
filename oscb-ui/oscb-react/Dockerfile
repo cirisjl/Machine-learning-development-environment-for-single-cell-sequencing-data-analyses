@@ -8,8 +8,8 @@ COPY package*.json ./
 
 RUN npm install
 # RUN npm install @octokit/rest
-# RUN npm install @rjsf/utils
-# RUN npm install @rjsf/validator-ajv8
+# RUN npm install @rjsf/core @rjsf/utils @rjsf/validator-ajv8 --save
+
 # Copy app source code
 COPY . .
 

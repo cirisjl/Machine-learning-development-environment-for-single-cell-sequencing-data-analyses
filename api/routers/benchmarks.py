@@ -1,3 +1,4 @@
+import os
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
 from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest, QualityControlRequest, UMAPRequest
@@ -14,7 +15,8 @@ from pathlib import Path
 import shutil
 import tempfile
 from fastapi.encoders import jsonable_encoder
-import os
+from utils.mongodb import upsert_jobs
+from datetime import datetime
 
 
 router = APIRouter(prefix='/api/benchmarks', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
@@ -399,8 +401,19 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     Create a task for benchmarks
     """
     task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
-    print(task_dict)
     task = create_benchmarks_task.apply_async(args=[task_dict])
+    upsert_jobs(
+        {
+            "job_id": task.id, 
+            "description": "Run Benchmarks",
+            "dataset_id": task_dict['datasetId'],
+            "method": task_dict['task_type'],
+            "datasetURL": task_dict['adata_path'],
+            "process": task_dict['task_type'],
+            "created_on": datetime.now(), 
+            "status": "Queued"
+        }
+    )
     return JSONResponse({"job_id": task.id, "status": "Benchmarks task submitted successfully"})
     
 
@@ -411,6 +424,18 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
     """
     data_dict = data_split_task.dict()  # Convert the Pydantic model to a dict
     task = create_data_split_task.apply_async(args=[data_dict])
+    upsert_jobs(
+        {
+            "job_id": task.id, 
+            "description": "Run Data Split",
+            "dataset_id": data_dict['datasetId'],
+            "method": "Data Split",
+            "datasetURL": data_dict['adata_path'],
+            "process": "Data Split",
+            "created_on": datetime.now(), 
+            "status": "Queued"
+        }
+    )
     return JSONResponse({"job_id": task.id, "status": "Data split task submitted successfully"})
 
 
@@ -421,6 +446,18 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
     """
     data_dict = subset_task.dict()  # Convert the Pydantic model to a dict
     task = create_subset_data_task.apply_async(args=[data_dict])
+    upsert_jobs(
+        {
+            "job_id": task.id, 
+            "description": "Run Subset Data",
+            "dataset_id": data_dict['datasetId'],
+            "method": f"{data_dict['obskey']}: {data_dict['values']}",
+            "datasetURL": data_dict['adata_path'],
+            "process": "Subset Data",
+            "created_on": datetime.now(), 
+            "status": "Queued"
+        }
+    )
     return JSONResponse({"job_id": task.id, "status": "Data subset task submitted successfully"})
 
 
