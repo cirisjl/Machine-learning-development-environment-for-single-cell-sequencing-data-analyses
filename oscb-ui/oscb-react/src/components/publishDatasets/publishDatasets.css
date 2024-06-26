@@ -494,7 +494,7 @@
 
 .task-builder-task .dialog-container .table-results .cell-ellipsis {
   display: block; /* or inline-block */
-  max-width: 200px; /* or a specific width */
+  max-width: 250px; /* or a specific width */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

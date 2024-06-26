@@ -24,9 +24,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
 
     const [visibleColumns, setVisibleColumns] = useState({
-        'Id': true,
-        'jobId': true,
-        'TaskType': true,
+        'Benchmarks ID': true,
+        'Task': true,
         'Title': true,
         'Category': true,
         'Species': true,
@@ -57,11 +56,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
     const resetColumnVisibility = () => {
         setVisibleColumns({
-            'Id': true,
-            'jobId': true,
-            'TaskType': true,
+            'Benchmarks ID': true,
+            'Task': true,
             'Title': true,
-            'Category': true,
             'Species': true,
             'Cell Count Estimate': true,
             'Organ Part': true,
@@ -75,10 +72,10 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     // const isSelected = datasetId => !!selectedDatasets[datasetId];
     // const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
 
-    const handleEdit = (dataset) => {
-        console.log("Editing dataset: ", dataset);
-        // Implement your edit logic here
-    };
+    // const handleEdit = (dataset) => {
+    //     console.log("Editing dataset: ", dataset);
+    //     // Implement your edit logic here
+    // };
     
     const handleVisualize = (dataset) => {
         console.log("Visualizing dataset: ", dataset);
@@ -129,12 +126,12 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
 
                     />
-                    <button
+                    { /* <button
                         onClick={() => handleEdit(item["Id"])}
                         className="action-button"
                     >
                         <FontAwesomeIcon icon={faEdit} />
-                    </button>
+                    </button> */ }
                     <button
                         onClick={() => handleVisualize(item["Id"])}
                         className="action-button"
