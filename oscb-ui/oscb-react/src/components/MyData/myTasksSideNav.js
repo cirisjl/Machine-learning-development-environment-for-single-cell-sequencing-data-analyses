@@ -70,13 +70,13 @@ const MyTasksSideNav = () => {
                             if (status === 'Success') {
                                 finishedTasks.push(jobId);
                             }
-                            else if (status === 'Failed') {
+                            else if (status === 'Failure') {
                                 failedTasks.push(jobId);
                             }
                         });
                         if (finishedTasks.length + failedTasks.length > 0) {
-                            await updateTaskStatus(failedTasks, 'Failure');
-                            await updateTaskStatus(finishedTasks, 'Success');
+                            // await updateTaskStatus(failedTasks, 'Failure');
+                            // await updateTaskStatus(finishedTasks, 'Success');
                             // Close the WebSocket connection
                             socket.close(1000, 'See you again!');
                             setChangesFound(!changesFound);
@@ -140,7 +140,7 @@ const MyTasksSideNav = () => {
                                     <div role="alert" aria-live="polite" aria-atomic="true" className="alert m-2 alert-info">
                                         <h4 className="mb-1">
                                             <FontAwesomeIcon icon={faInfoCircle} />
-                                            <span>Your task list is empty.</span>
+                                            <span>Your job list is empty.</span>
                                         </h4> 
                             </div>
                             </div>
@@ -156,12 +156,12 @@ const MyTasksSideNav = () => {
                                                 <div className='display-flex'>
                                                     {task.status === 'Success' ? (
                                                         <CheckCircleIcon style={{ color: 'green' }} />
-                                                    ) : task.status === 'Failed' ? (
+                                                    ) : task.status === 'Failure' ? (
                                                         <CancelIcon style={{ color: 'red' }} />
                                                     ) : (
                                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                                     )}
-                                                    <p><TextWithEllipsis text={task.task_title} maxLength={23} /></p>
+                                                    <p><TextWithEllipsis text={task.description} maxLength={23} /></p>
                                                 </div>
                                                 <span className='time-stamp-display'>- {task.created_on}</span>
                                             </div>
@@ -191,7 +191,7 @@ const MyTasksSideNav = () => {
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}&task_title=${task.task_title}`}
+                                        href={`/resultfiles?jobId=${task.job_id}&description=${task.description}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
                                         <span className='font-size'><b>Task Id</b> - {task.job_id}</span>

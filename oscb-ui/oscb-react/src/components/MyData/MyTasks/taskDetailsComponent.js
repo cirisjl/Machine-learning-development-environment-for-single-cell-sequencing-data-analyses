@@ -176,7 +176,7 @@ function TaskDetailsComponent() {
     async function fetchFiles() {
 
       try {
-        const taskInfoResponse = await fetch(`http://clnode121.clemson.cloudlab.us:5000/api/task/${job_id}`);
+        const taskInfoResponse = await fetch(`${CELERY_BACKEND_API}/api/task/${job_id}`);
         const taskInfoData = await taskInfoResponse.json();
         console.log(taskInfoData);
         setTaskResult(taskInfoData.task_result);
