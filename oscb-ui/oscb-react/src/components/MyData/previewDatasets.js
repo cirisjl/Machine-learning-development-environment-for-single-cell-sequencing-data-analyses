@@ -16,9 +16,8 @@ import {NavLink} from "react-router-dom";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import styled from 'styled-components';
+import { FLASK_BACKEND_API, NODE_API_URL } from '../../constants/declarations'
 
-const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
-const PREVIEW_DATASETS_API = `http://${process.env.REACT_APP_HOST_URL}:3001`;
 
 export function Preview(props) {
 
@@ -56,7 +55,7 @@ export function Preview(props) {
   const handleDeleteConfirmClick = async (event) => {
     if (jwtToken) {
       const deleteDataset = async () => {
-        const response = await axios.delete(PREVIEW_DATASETS_API + `/deleteDataset?authToken=${jwtToken}&dataset=${datasetToDelete}`);
+        const response = await axios.delete(NODE_API_URL + `/deleteDataset?authToken=${jwtToken}&dataset=${datasetToDelete}`);
         setMessage('Dataset deleted successfully.');
       };
       await deleteDataset();
@@ -103,7 +102,7 @@ export function Preview(props) {
         isUserAuth(jwtToken)
           .then((authData) => {
             if (authData.isAuth) {
-              fetch(FLASK_PREVIEW_DATASET_API + '/preview/dataset', {
+              fetch(FLASK_BACKEND_API + '/preview/dataset', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -133,7 +132,7 @@ export function Preview(props) {
   useEffect(() => {
     if (jwtToken) {
       const fetchData = async () => {
-        const response = await axios.get(PREVIEW_DATASETS_API + "/preview/datasets?authToken=" + jwtToken);
+        const response = await axios.get(NODE_API_URL + "/preview/datasets?authToken=" + jwtToken);
         setDatasets(Object.values(response.data));
       };
       fetchData();

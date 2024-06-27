@@ -8,6 +8,7 @@ import { Typography } from '@material-ui/core';
 import Intl from 'intl';
 import 'intl/locale-data/jsonp/en-US';
 import { useNavigate } from 'react-router-dom';
+import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 
 const TableWrapper = styled.div`
   display: flex;
@@ -40,10 +41,6 @@ const TableRow = styled.tr`
 const TableCell = styled.td`
   padding: 15px;
 `;
-
-
-const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
-const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:80/taskStatus`;
 
 const TaskTable = () => {
     const [tasks, setTasks] = useState([]);
@@ -80,7 +77,7 @@ const TaskTable = () => {
 
             if (incompleteTasks.length > 0) {
                 let webSocketParam = incompleteTasks.join(',');
-                const socket = new WebSocket(`${WEB_SOCKET_URL}/${webSocketParam}`);
+                const socket = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${webSocketParam}`);
                 socket.onopen = () => {
                     console.log('Socket connected');
                 };

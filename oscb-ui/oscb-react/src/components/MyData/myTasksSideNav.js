@@ -13,6 +13,7 @@ import {
     AccordionDetails
   } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 
 const MyTasksSideNav = () => {
     const [expanded, setExpanded] = useState(false);
@@ -20,8 +21,6 @@ const MyTasksSideNav = () => {
     const [changesFound, setChangesFound] = useState(false);
     let jwtToken = getCookie('jwtToken');
     const navigate = useNavigate();
-    const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
-    const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5000/taskStatus`;
 
     const timestampScheme = {
         year: 'numeric',
@@ -35,7 +34,7 @@ const MyTasksSideNav = () => {
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
-                const response = await fetch(`${NODE_API_URL}/nodeapi/getTasks?authToken=${jwtToken}`);
+                const response = await fetch(`${NODE_API_URL}/api/getTasks?authToken=${jwtToken}`);
                 const data = await response.json();
                 console.log(data);
                 data.sort((a, b) => b.created_on - a.created_on);
@@ -53,7 +52,7 @@ const MyTasksSideNav = () => {
 
                 if (incompleteTasks.length > 0) {
                     let webSocketParam = incompleteTasks.join(',');
-                    const socket = new WebSocket(`${WEB_SOCKET_URL}/${webSocketParam}`);
+                    const socket = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${webSocketParam}`);
                     socket.onopen = () => {
                         console.log('Socket connected');
                     };

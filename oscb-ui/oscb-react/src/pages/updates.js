@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LeftNav from "../components/LeftNavigation/leftNav";
 import RightRail from "../components/RightNavigation/rightRail";
-
-const UPDATES_PAGE_API = `http://${process.env.REACT_APP_HOST_URL}:8055`
+import { DIRECTUS_URL } from '../constants/declarations'
 
 export default function Updates() {
 
@@ -11,7 +10,7 @@ export default function Updates() {
 
     const fetchData = async () => {
         try {
-          const response = await axios.get(UPDATES_PAGE_API + '/items/updates');
+          const response = await axios.get(DIRECTUS_URL + '/items/updates');
           console.log(response.data.data);
           const sortedData = response.data.data.sort((a, b) => {
             return new Date(b.date_published) - new Date(a.date_published);

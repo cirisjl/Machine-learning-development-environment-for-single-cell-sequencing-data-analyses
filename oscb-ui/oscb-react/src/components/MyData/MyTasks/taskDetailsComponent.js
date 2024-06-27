@@ -8,7 +8,6 @@ import {
 import { green, red, yellow } from '@mui/material/colors';
 import RightRail from '../../RightNavigation/rightRail';
 import LogComponent from '../../common_components/liveLogs';
-import { LOGIN_API_URL, SERVER_URL } from '../../../constants/declarations';
 import axios from 'axios';
 import { Octokit } from "@octokit/rest";
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
@@ -19,10 +18,8 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
 import { getCookie } from '../../../utils/utilFunctions';
-
-
 //GitImports
-import { CELERY_BACKEND_API, owner,repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 
 // Initialize Octokit with your GitHub personal access token
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
@@ -58,7 +55,7 @@ function getFileNameFromURL(fileUrl){
 
 
 function downloadFile(fileUrl) {
-  const apiUrl = `${SERVER_URL}/download`;
+  const apiUrl = `${NODE_API_URL}/download`;
   const pwd = "jobResults";
 
   if (fileUrl) {
@@ -131,7 +128,7 @@ function TaskDetailsComponent() {
       if (!processIds.length) return;
   
       try {
-        const response = await axios.post(`${SERVER_URL}/benchmarks/api/getPreProcessResults`, { processIds });
+        const response = await axios.post(`${NODE_API_URL}/api/getPreProcessResults`, { processIds });
         console.log('Process Results:', response.data);
         console.log('Process Results Type:', typeof(response.data));
         setToolResultsFromMongo(response.data);
@@ -182,7 +179,7 @@ function TaskDetailsComponent() {
         setTaskResult(taskInfoData.task_result);
 
         if (jwtToken) {
-          fetch(LOGIN_API_URL + "/protected", { //to get username,id
+          fetch(NODE_API_URL + "/protected", { //to get username,id
             method: 'GET',
             credentials: 'include',
             headers: { 'Authorization': `Bearer ${jwtToken}` },
@@ -219,7 +216,7 @@ function TaskDetailsComponent() {
   
   const saveErrorLogData = async () => {
     try {
-      const response = await axios.post(`${SERVER_URL}/mongoDB/api/errorlogdata`, {
+      const response = await axios.post(`${NODE_API_URL}/api/errorlogdata`, {
         name: uName,
         id: uIat,
         taskResult: taskResult,

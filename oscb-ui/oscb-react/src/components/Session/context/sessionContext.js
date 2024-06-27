@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState , useEffect} from 'react';
-import {SERVER_URL} from '../../../constants/declarations';
+import {NODE_API_URL} from '../../../constants/declarations';
 import {getCookie, setCookie} from '../../../utils/utilFunctions';
 import {jwtDecode} from 'jwt-decode';
 
@@ -15,7 +15,7 @@ export const SessionProvider = ({ children }) => {
 
     const extendSession = async () => {
         try {
-            const response = await fetch(`${SERVER_URL}/api/refresh-token`, {
+            const response = await fetch(`${NODE_API_URL}/api/refresh-token`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: { 'Authorization': `Bearer ${getCookie('jwtToken')}` },

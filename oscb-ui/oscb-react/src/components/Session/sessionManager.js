@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode';
 import { getCookie, setCookie, isUserAuth} from '../../utils/utilFunctions'; 
-import {SERVER_URL} from '../../constants/declarations'
+import {NODE_API_URL} from '../../constants/declarations'
 // import { useNavigate } from 'react-router-dom';
 import PopUpModal from './popupModal';
 
@@ -37,7 +37,7 @@ const SessionReminder = () => {
     isUserAuth(getCookie('jwtToken'))
     .then((authData) => {
         if (authData.isAuth) {
-        fetch(SERVER_URL + "/api/refresh-token", {
+        fetch(NODE_API_URL + "/api/refresh-token", {
             method: 'GET',
             credentials: 'include', // send cookies with the request
             headers: { 'Authorization': `Bearer ${getCookie('jwtToken')}` },

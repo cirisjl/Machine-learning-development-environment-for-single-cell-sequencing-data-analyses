@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
 import { getCookie } from '../../utils/utilFunctions';
+import { NODE_API_URL } from '../../constants/declarations'
+
 
 let jwtToken = getCookie('jwtToken');
-const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
-
 
 const StorageChart = () => {
   const chartRef = useRef(null);
@@ -17,7 +17,7 @@ const StorageChart = () => {
 
     jwtToken = getCookie('jwtToken');
 
-    fetch(`${SERVER_URL}/getStorageDetails?authToken=${jwtToken}`)
+    fetch(`${NODE_API_URL}/getStorageDetails?authToken=${jwtToken}`)
       .then(response => {
         if (response.status === 403) {
           throw new Error('Please log in first');

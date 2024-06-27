@@ -45,7 +45,7 @@ detect_delim = ro.globalenv['DetectDelim']
 
 load_figure_template('LUX')
 
-mongo_url = "mongodb://mongodb:65528/oscb"
+mongo_url = "mongodb://mongodb:65530/oscb"
 
 # Connect to MongoDB using the URL
 client = pymongo.MongoClient(mongo_url)

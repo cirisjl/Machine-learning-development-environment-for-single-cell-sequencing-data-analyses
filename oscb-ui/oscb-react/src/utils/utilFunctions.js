@@ -1,4 +1,4 @@
-import {LOGIN_API_URL, SERVER_URL} from '../constants/declarations'
+import { NODE_API_URL } from '../constants/declarations'
 import axios from 'axios';
 
 
@@ -26,7 +26,7 @@ export function getCookie(name) {
   export function isUserAuth(jwtToken) {
     return new Promise((resolve, reject) => {
       if (jwtToken) {
-        fetch(LOGIN_API_URL + "/protected", {
+        fetch(NODE_API_URL + "/protected", {
           method: 'GET',
           credentials: 'include', // send cookies with the request
           headers: { 'Authorization': `Bearer ${jwtToken}`},
@@ -61,7 +61,7 @@ export function deleteCookie(name) {
 
 export async function getStorageDetails(jwtToken) {
   try {
-    const response = await fetch(`${SERVER_URL}/getStorageDetails?authToken=${jwtToken}`);
+    const response = await fetch(`${NODE_API_URL}/getStorageDetails?authToken=${jwtToken}`);
 
     if (response.status === 403) {
       throw new Error('Please log in first');
@@ -105,7 +105,7 @@ export function createUniqueFolderName(title) {
 
 export function moveFilesToNewDirectory(newDirectoryPath, isBenchmarks=false) {
   axios
-    .post(`${SERVER_URL}/api/move-files`, { newDirectoryPath, isBenchmarks, jwtToken:getCookie('jwtToken')})
+    .post(`${NODE_API_URL}/api/move-files`, { newDirectoryPath, isBenchmarks, jwtToken:getCookie('jwtToken')})
     .then((response) => {
       console.log('Files moved successfully');
     })
@@ -139,7 +139,7 @@ export function prepareTableData(cellMetadataObs) {
 
 export async function copyFilesToPrivateStorage(selectedFiles, userId){
   try {
-    const response = await axios.post(`${SERVER_URL}/api/copyFiles`, {
+    const response = await axios.post(`${NODE_API_URL}/api/copyFiles`, {
       selectedFiles,
       userId,
     });

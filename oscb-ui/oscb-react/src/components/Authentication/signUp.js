@@ -1,8 +1,7 @@
 import React , { useState }from 'react';
 import {NavLink} from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
-
-const SIGNUP_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001/api/signup`;
+import { NODE_API_URL } from '../../constants/declarations'
 
 
 function Signup (props){
@@ -59,7 +58,7 @@ function Signup (props){
 
     // Submit the form if there are no errors
     if (Object.keys(newErrors).length === 0) {
-        fetch(SIGNUP_API_URL, {
+        fetch(`${NODE_API_URL}/api/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -114,4 +114,4 @@ async def get_task_status(job_id: str) -> dict:
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host='0.0.0.0', port=5000, reload=True)
+    uvicorn.run("main:app", host='0.0.0.0', port=5005, reload=True)

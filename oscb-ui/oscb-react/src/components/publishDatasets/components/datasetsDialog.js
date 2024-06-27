@@ -1,6 +1,6 @@
 import React, { useState,useEffect, useMemo } from 'react';
 import FilterComponent from './filtersComponent';
-import {SERVER_URL} from '../../../constants/declarations';
+import {NODE_API_URL} from '../../../constants/declarations';
 import ResultsTable from './tableResultsComponent';
 import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -57,9 +57,9 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
       let url = "";
       try {
         if (fromToolsPage) {
-            url = `${SERVER_URL}/api/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
+            url = `${NODE_API_URL}/api/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
         } else {
-            url = `${SERVER_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+            url = `${NODE_API_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
         }
         
         const response = await fetch( url , {

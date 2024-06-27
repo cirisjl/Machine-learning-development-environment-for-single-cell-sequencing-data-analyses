@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
-import { CELERY_BACKEND_API, STORAGE, defaultValues, SERVER_URL} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, STORAGE, defaultValues, NODE_API_URL} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
 import {isUserAuth, getCookie} from '../../../utils/utilFunctions';
@@ -88,7 +88,7 @@ const handleLogMessage = (event) => {
     if (!processIds.length) return;
 
     try {
-      const response = await axios.post(`${SERVER_URL}/benchmarks/api/getPreProcessResults`, { processIds });
+      const response = await axios.post(`${NODE_API_URL}/api/getPreProcessResults`, { processIds });
       console.log('Process Results:', response.data);
       setTaskData((prevTaskData) => ({
         ...prevTaskData,

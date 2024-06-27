@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 import close_icon from '../../assets/close_icon_u86.svg'
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
+import { NODE_API_URL } from '../../constants/declarations'
 
 export default function FilePreviewModal({ selectedFile, setPreviewBoxOpen, jobId, jwtToken, forResultFile }) {
 
@@ -26,8 +27,6 @@ export default function FilePreviewModal({ selectedFile, setPreviewBoxOpen, jobI
             <FontAwesomeIcon icon={faSpinner} spin size="3x" />
         </div>);
     }
-
-    const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 
     const TableWrapper = styled.div`
   display: flex;
@@ -83,7 +82,7 @@ export default function FilePreviewModal({ selectedFile, setPreviewBoxOpen, jobI
 
             else if (['csv', 'tsv'].includes(fileFormat)) {
                 try {
-                    let previewUrl = `${SERVER_URL}/fetchPreview?authToken=${jwtToken}`
+                    let previewUrl = `${NODE_API_URL}/fetchPreview?authToken=${jwtToken}`
                     if (forResultFile)
                         previewUrl += `&fileUrl=/${jobId}/${selectedFile}&forResultFile=Yes`;
                     else
@@ -132,7 +131,7 @@ export default function FilePreviewModal({ selectedFile, setPreviewBoxOpen, jobI
             }
 
             else try {
-                let previewUrl = `${SERVER_URL}/download?authToken=${jwtToken}`
+                let previewUrl = `${NODE_API_URL}/download?authToken=${jwtToken}`
                 if (forResultFile)
                     previewUrl += `&fileUrl=/${jobId}/${selectedFile}&forResultFile=Yes`;
                 else
