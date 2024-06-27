@@ -22,7 +22,7 @@ import { getCookie } from '../../../utils/utilFunctions';
 
 
 //GitImports
-import { owner,repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, owner,repo } from '../../../constants/declarations';
 
 // Initialize Octokit with your GitHub personal access token
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
