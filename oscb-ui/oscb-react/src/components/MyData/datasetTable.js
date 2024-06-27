@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import FilterComponent from './filtersComponent';
-import { SERVER_URL } from '../../../constants/declarations';
-import ResultsTable from './tableResultsComponent';
-import Pagination from './tablePaginationComponent';
+import FilterComponent from '../publishDatasets/components/filtersComponent';
+import { SERVER_URL } from '../../constants/declarations';
+import ResultsTable from '../publishDatasets/components/tableResultsComponent';
+import Pagination from '../publishDatasets/components/tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } from '@mui/material';
 import { ScaleLoader } from 'react-spinners';
-import { getCookie } from '../../../utils/utilFunctions';
+import { getCookie } from '../../utils/utilFunctions';
 
-const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, selectedDatasets, fromToolsPage, showAsPopup = true }) => {
+const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -21,7 +21,6 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
     const [checkedState, setCheckedState] = useState({
       private: true,
       public: false,
-      shared: false,
     });
 
     const navigate = useNavigate();
@@ -59,9 +58,9 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
         if (fromToolsPage) {
             url = `${SERVER_URL}/api/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
         } else {
-            url = `${SERVER_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+        url = `${SERVER_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
         }
-        
+    
         const response = await fetch(url, {
           method: 'POST',
           headers: {
@@ -174,9 +173,8 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
     };
 
     return (
-        <div style={dialogStyle} className="dialog-container">
-      {showAsPopup && <div className="dialog-backdrop" onClick={onClose} />}
-      <div className={showAsPopup ? "dialog" : ""}>
+    <div style={dialogStyle} className="dialog-container">
+      <div>
               <div>
                 {fromToolsPage && 
                   <div className='dataset-type-container'>
@@ -195,10 +193,6 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
                               control={<Checkbox checked={checkedState.public} onChange={handleCheckboxChange} name="public" />}
                               label="Benchmarks Datasets"
                             />
-                            {showAsPopup && <FormControlLabel
-                              control={<Checkbox checked={checkedState.shared} onChange={handleCheckboxChange} name="shared" />}
-                              label="User Shared Datasets"
-                            /> }
                           </FormGroup>
                         </Box>
                       </Grid>
@@ -276,7 +270,7 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
                         </div>                
                         
                         <div className='table-results'>
-                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
+                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination}/>
                         </div>
 
                         <div className='table-pagination'>
@@ -291,12 +285,6 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
                       <p> No results for you search.</p>
                     </div>
                   )}
-
-                {showAsPopup && <div className='dialog-close'>
-                    <button onClick={onClose}>Select</button>
-
-                    <button onClick={onClose}>Close</button>
-                </div> }
               </div>
               
             </div>
@@ -304,4 +292,4 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
     );
   };
 
-export default DatasetSelectionDialog;
+export default DatasetTable;

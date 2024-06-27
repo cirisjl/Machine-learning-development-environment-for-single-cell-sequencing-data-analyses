@@ -191,7 +191,8 @@ const MyTasksSideNav = () => {
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        href={`/resultfiles?jobId=${task.job_id}&description=${task.description}`}
+                                        onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, status: task.status } }) }}
+                                        // href={`/mydata/taskDetails?jobId=${task.job_id}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
                                         <span className='font-size'><b>Task Id</b> - {task.job_id}</span>
