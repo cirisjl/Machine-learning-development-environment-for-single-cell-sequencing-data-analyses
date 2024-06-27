@@ -5,6 +5,7 @@ import './ModalWindow.css';
 import UppyUploader from "./uppy";
 import { red } from "@mui/material/colors";
 import { useNavigate } from 'react-router-dom';
+import { NODE_API_URL } from '../../constants/declarations'
 
 export default function FileManagerModal({ setEnabledCheckboxes, setFileToPreview, tempFileList, fileNames, dirNames, jwtToken, fetchDirContents, pwd, setPwd, setPreviewBoxOpen, selectedFiles, setSelectedFiles, setErrorMessage, setTempFileList, enabledCheckboxes, toggleModal, isAdminuser, publicDatasetFlag}) {
 
@@ -15,7 +16,6 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     const [totalStorage, setTotalStorage] = useState(1);
     const navigate = useNavigate();
 
-    const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 
     useEffect(() => {
         if (jwtToken) {
@@ -73,7 +73,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     }
 
     const renameFileOrDir = async (oldFileOrDir, newFileOrDir) => {
-        const renameApiUrl = `${SERVER_URL}/renameFile`;
+        const renameApiUrl = `${NODE_API_URL}/renameFile`;
         let errorHandled = false;
         fetch(`${renameApiUrl}?oldName=${pwd}/${oldFileOrDir}&newName=${pwd}/${newFileOrDir}&authToken=${jwtToken}`, {
             method: 'POST',
@@ -107,7 +107,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
 
     const getStorageDetails = async () => {
 
-        fetch(`${SERVER_URL}/getStorageDetails?authToken=${jwtToken}`)
+        fetch(`${NODE_API_URL}/getStorageDetails?authToken=${jwtToken}`)
             .then(response => {
                 if (response.status === 403) {
                     throw new Error('Please log in first');
@@ -130,7 +130,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     }
 
     function createNewFolder(folderName) {
-        fetch(`${SERVER_URL}/createNewFolder?pwd=${pwd}&folderName=${folderName}&authToken=${jwtToken}`, {
+        fetch(`${NODE_API_URL}/createNewFolder?pwd=${pwd}&folderName=${folderName}&authToken=${jwtToken}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -154,7 +154,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
 
     function downloadFiles() {
 
-        const apiUrl = `${SERVER_URL}/download`;
+        const apiUrl = `${NODE_API_URL}/download`;
 
         // If fileUrl is not empty, call the API with fileUrl as query parameter
         if (tempFileList.length == 1) {
@@ -210,7 +210,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
     }
 
     async function deleteFiles() {
-        const deleteApiUrl = `${SERVER_URL}/deleteFiles?authToken=${jwtToken}&pwd=${pwd}`
+        const deleteApiUrl = `${NODE_API_URL}/deleteFiles?authToken=${jwtToken}&pwd=${pwd}`
         await fetch(`${deleteApiUrl}`, {
             method: 'DELETE',
             headers: {

@@ -11,8 +11,8 @@ import "@uppy/core/dist/style.css"
 import "@uppy/progress-bar/dist/style.css"
 import "@uppy/status-bar/dist/style.css"
 import "@uppy/drag-drop/dist/style.css"
+import { NODE_API_URL, UPPY_API_URL } from '../../constants/declarations'
 
-const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
 export default function UppyUploader(props) {
 
     const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError ,setTaskData } = props;
@@ -53,19 +53,19 @@ export default function UppyUploader(props) {
         debug: true,
     });
     uppy.use(GoogleDrive, {
-        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+        companionUrl: `${UPPY_API_URL}`,
     });
     uppy.use(OneDrive, {
-        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+        companionUrl: `${UPPY_API_URL}`,
     });
     uppy.use(Dropbox, {
-        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+        companionUrl: `${UPPY_API_URL}`,
     });
     uppy.use(Url, {
-        companionUrl: `http://${process.env.REACT_APP_HOST_URL}:3020`,
+        companionUrl: `${UPPY_API_URL}`,
     });
     uppy.use(XHRUpload, {
-        endpoint: `${SERVER_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
+        endpoint: `${NODE_API_URL}/upload?uploadDir=${pwd}&authToken=${authToken}&publicDatasetFlag=${publicDatasetFlag}`,
         formData: true,
         fieldName: 'files'
     });

@@ -2,8 +2,7 @@ import RightRail from "../components/RightNavigation/rightRail";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import LeftNav from "../components/LeftNavigation/leftNav";
-
-const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}:8055`
+import { DIRECTUS_URL } from '../constants/declarations'
 
 export default function Team() {
 

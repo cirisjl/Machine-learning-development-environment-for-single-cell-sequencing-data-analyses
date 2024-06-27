@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie} from '../../utils/utilFunctions';
 import {NavLink} from "react-router-dom"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; 
+import { NODE_API_URL  } from '../../constants/declarations'
 
-
-
-
-const LOGIN_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
 
 function LoginPage (props) {
   const navigate = useNavigate();
@@ -39,7 +36,7 @@ function LoginPage (props) {
     }
 
 
-    fetch(LOGIN_API_URL + "/api/login", {
+    fetch(NODE_API_URL + "/api/login", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
@@ -61,7 +58,7 @@ function LoginPage (props) {
     const jwtToken = getCookie('jwtToken');
 
     if (jwtToken) {
-          fetch(LOGIN_API_URL + "/protected", {
+          fetch(NODE_API_URL + "/protected", {
             method: 'GET',
             credentials: 'include', // send cookies with the request
             headers: { 'Authorization': `Bearer ${jwtToken}`},

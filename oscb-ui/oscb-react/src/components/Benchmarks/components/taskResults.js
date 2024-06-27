@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {SERVER_URL} from '../../../constants/declarations'
+import {NODE_API_URL} from '../../../constants/declarations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import FilterComponent from '../../publishDatasets/components/filtersComponent';
@@ -30,7 +30,7 @@ function SearchTasks({taskType}) {
     }).toString();
 
     try {
-      const response = await axios.post(`${SERVER_URL}/api/tasks/search?${queryParams}`, 
+      const response = await axios.post(`${NODE_API_URL}/api/tasks/search?${queryParams}`, 
       JSON.stringify({ filters: currentFilters }),
       {
         headers: {

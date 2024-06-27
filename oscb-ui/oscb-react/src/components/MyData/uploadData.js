@@ -22,8 +22,7 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import { FormControl, InputLabel } from '@mui/material';
-
-
+import { NODE_API_URL, FLASK_BACKEND_API } from '../../constants/declarations'
 import schema from "../../schema/react-json-schema/uploadDataSchema.json";
 import RightRail from "../RightNavigation/rightRail";
 import { useLocation } from 'react-router-dom';
@@ -35,7 +34,6 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const [isFileManagerOpen, setIsFileManagerOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState(taskData?.upload?.files);
     const [pwd, setPwd] = useState('/');
-    const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -55,7 +53,6 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
     const [isAdminuser, setIsAdminUser] = useState(false);
-    const FLASK_PREVIEW_DATASET_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
     const [isLoading, setIsLoading] = useState(false);
 
 
@@ -291,7 +288,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         else
             newDir = pwd
 
-        fetch(`${SERVER_URL}/getDirContents?dirPath=${newDir}&authToken=${jwtToken}`)
+        fetch(`${NODE_API_URL}/getDirContents?dirPath=${newDir}&authToken=${jwtToken}`)
             .then(response => {
                 if (response.status === 403) {
                     throw new Error('Please log in first');
@@ -449,7 +446,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 } else {
                                     selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
                                 }
-                                fetch(`${SERVER_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
+                                fetch(`${NODE_API_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -635,7 +632,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
 
             // if (mode === 'update') {
             //     formData.currentFileList = currentFileList;
-            //     fetch(`${SERVER_URL}/updateDataset`, {
+            //     fetch(`${NODE_API_URL}/updateDataset`, {
             //         method: 'PUT',
             //         headers: {
             //             'Content-Type': 'application/json'
@@ -656,7 +653,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
             //         });
             //     return;
             // }
-            // fetch(`${SERVER_URL}/createDataset`, {
+            // fetch(`${NODE_API_URL}/createDataset`, {
             //     method: 'POST',
             //     headers: {
             //         'Content-Type': 'application/json'

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {CELERY_BACKEND_API, SERVER_URL} from '../../../constants/declarations';
+import {CELERY_BACKEND_API, NODE_API_URL} from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
@@ -24,7 +24,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     if (!benchmarksId) return;
 
     try {
-      const response = await axios.post(`${SERVER_URL}/benchmarks/api/getBenchmarksResults`, { benchmarksId });
+      const response = await axios.post(`${NODE_API_URL}/api/getBenchmarksResults`, { benchmarksId });
       console.log('Benchmarks Results:', response.data);
       const benchmarksResults = response.data;
       if (Array.isArray(benchmarksResults)) {

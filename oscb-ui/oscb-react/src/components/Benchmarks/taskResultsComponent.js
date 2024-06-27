@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {SERVER_URL} from '../../constants/declarations'
+import {NODE_API_URL} from '../../constants/declarations'
 import { getCookie } from "../../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 import RightRail from '../RightNavigation/rightRail';

@@ -1,7 +1,7 @@
 import React , { useState, useEffect ,useRef}from 'react';
 import Select from 'react-select';
 import { Card, CardContent, Typography, Slider, Button } from '@material-ui/core';
-import { CELERY_BACKEND_API, SERVER_URL, WEB_SOCKET_URL} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL} from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import axios from 'axios';
 import ReactPlotly from './reactPlotly';

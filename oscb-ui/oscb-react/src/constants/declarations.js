@@ -1,11 +1,16 @@
-export const LOGIN_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
-export const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
-export const PREVIEW_DATASETS_API = `http://${process.env.REACT_APP_HOST_URL}:3001`;
-export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5000`;
+export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
+export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5005`;
 export const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
-export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5000`;
-export const PUBLIC_DATASETS = "/usr/src/app/storage/publicDatasets/"
+export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5005`;
+export const UPPY_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3020`;
+export const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}:8055`;
+// Storage
+export const PUBLIC_DATASETS = "/usr/src/app/storage/publicDatasets/";
 export const STORAGE = "/usr/src/app/storage";
+// Github
+export const owner = process.env.REACT_APP_OWNER;
+export const repo = process.env.REACT_APP_REPO;
+
 export const defaultValues = {
     min_genes: 200,
     max_genes: 20000, // No limit
@@ -46,8 +51,3 @@ export const defaultValues = {
     n_pcs: 1,
     resolution: 1,
   };
-
-  
-//Github
-export const owner = process.env.REACT_APP_OWNER;
-export const repo = process.env.REACT_APP_REPO;

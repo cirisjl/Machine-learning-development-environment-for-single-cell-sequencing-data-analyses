@@ -5,8 +5,7 @@ import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
 import RightRail from "../components/RightNavigation/rightRail";
-
-const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}:8055`
+import { DIRECTUS_URL } from '../constants/declarations'
 
 export default function Competition() {
     const [markdownText,setMarkdownText] = useState('')

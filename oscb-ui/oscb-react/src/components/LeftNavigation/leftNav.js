@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { NODE_API_URL } from '../../constants/declarations'
 
 function LeftNav(props) {
   const [categories, setCategories] = useState([]);
-
-  const TOOLS_FILTERS = `http://${process.env.REACT_APP_HOST_URL}:3001`;
 
   const handleFilterSelection = props.handleFilterSelection
 
 
   useEffect(() => {
-    fetch(TOOLS_FILTERS + "/api/tools/leftnav")
+    fetch(NODE_API_URL + "/api/tools/leftnav")
       .then(response => response.json())
       .then(data => {
         const updatedCategories = data.map((category, index) => {

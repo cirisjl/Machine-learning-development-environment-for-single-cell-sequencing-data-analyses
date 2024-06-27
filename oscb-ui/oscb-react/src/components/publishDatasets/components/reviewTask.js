@@ -3,7 +3,7 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import BenchmarksPlots from './benchmarksPlots';
 import axios from 'axios';
-import { SERVER_URL } from '../../../constants/declarations';
+import { NODE_API_URL } from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
 import { Card, CardContent, Typography} from '@material-ui/core';
 
@@ -72,7 +72,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     });
     
 
-    axios.post(`${SERVER_URL}/mongoDB/api/submitTaskMetadata`, documents)
+    axios.post(`${NODE_API_URL}/api/submitTaskMetadata`, documents)
     .then(response => {
       const { data } = response;
   

@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from boltons.iterutils import remap
 
 
-mongo_url = "mongodb://mongodb:65528"
+mongo_url = "mongodb://mongodb:65530"
 # Connect to MongoDB using the URL
 client = MongoClient(mongo_url)
 # Access your database and collection

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { getCookie, isUserAuth} from '../../utils/utilFunctions';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Iframe from 'react-iframe';
+import { FLASK_BACKEND_API } from '../../constants/declarations'
 
 
 export default function FlaskDashboard (props) {
@@ -32,7 +33,7 @@ export default function FlaskDashboard (props) {
             username: userID,
             title: state.title
         });
-    const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5000/dashboard?${queryParams}`
+
         setFlaskURL(FLASK_BACKEND_API)
       } else {
         console.warn("Unauthorized - please login first to continue");

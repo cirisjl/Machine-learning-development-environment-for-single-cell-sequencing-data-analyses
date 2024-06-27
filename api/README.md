@@ -16,7 +16,7 @@ Install all the packages in the requirements.txt and Run the main.py
 
 ### step 4:
 #### Start the rabbitmq docker container
-```docker run -d -p 5672:5672 rabbitmq```
+```docker run -d -p 5673:5673 rabbitmq```
 
 ### step 5:
 #### start the redis docker container

@@ -3,9 +3,9 @@ services:
     container_name: oscbdb
     image: mongo:7.0  # Updated to MongoDB version 7.0
     restart: always
-    command: mongod --port 65528
+    command: mongod --port 65530
     ports:
-      - 65528:65528
+      - 65530:65530
     volumes:
       - /ps/code/oscb/db/mongodb:/data/db
       - ./initMongo.js:/docker-entrypoint-initdb.d/initMongo.js
@@ -18,7 +18,7 @@ services:
     restart: always
     environment:
       ME_CONFIG_MONGODB_SERVER: oscbdb
-      ME_CONFIG_MONGODB_PORT: "65528"
+      ME_CONFIG_MONGODB_PORT: "65530"
       ME_CONFIG_BASICAUTH: "true"
       ME_CONFIG_BASICAUTH_USERNAME: "admin"
       ME_CONFIG_BASICAUTH_PASSWORD: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
@@ -35,10 +35,10 @@ services:
     image: "redis:6-alpine"
     hostname: redis
     restart: always
-    command: redis-server --port 6381 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: redis-server --port 6388 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       # - 6379:6379
-      - 6381:6381
+      - 6388:6388
     networks:
       - oscb-network
 
@@ -47,8 +47,8 @@ services:
     container_name: rabbitmq 
     restart: always
     ports:
-      - 5672:5672
-      - 15672:15672
+      - 5673:5673
+      - 15673:15672
     env_file:
       - ./rabbitmq.env
     volumes:
@@ -94,7 +94,7 @@ services:
     command: python3 main.py
     restart: always
     ports:
-      - 5000:5000
+      - 5005:5005
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
@@ -209,9 +209,9 @@ services:
       dockerfile: Dockerfile
     container_name: oscb_dashboard
     restart: always
-    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5672// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5673// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
-      - 5555:5555
+      - 5558:5555
     env_file:
       - .env
     depends_on:
@@ -237,7 +237,9 @@ services:
             "--default-authentication-plugin=mysql_native_password",
         ]
     env_file:
-        - ./oscb-ui/.env  
+      - ./oscb-ui/.env
+    ports:
+      - 3308:3308  
     networks:
       - oscb-network
 

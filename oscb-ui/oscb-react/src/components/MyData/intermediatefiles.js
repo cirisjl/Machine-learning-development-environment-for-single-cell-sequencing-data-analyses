@@ -4,19 +4,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faDownload , faSquarePollVertical } from '@fortawesome/free-solid-svg-icons';
 import FilePreviewModal from './filePreviewModal';
 import { useNavigate } from 'react-router-dom';
+import { NODE_API_URL } from '../../constants/declarations'
 
 export default function IntermediateFiles({ jobId, results_path, task_title }) {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
-  const SERVER_URL = "http://" + process.env.REACT_APP_HOST_URL + ":3001";
   const navigate = useNavigate();
   let jwtToken = getCookie('jwtToken');
 
   useEffect(() => {
     async function fetchFiles() {
       const dirPath = results_path + "/" + jobId
-      const response = await fetch(`${SERVER_URL}/getDirContents?dirPath=${dirPath}&authToken=${jwtToken}&usingFor=resultFiles`);
+      const response = await fetch(`${NODE_API_URL}/getDirContents?dirPath=${dirPath}&authToken=${jwtToken}&usingFor=resultFiles`);
       const data = await response.json();
       setFiles(data.Files);
     }
@@ -35,7 +35,7 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
 
   function downloadFile(fileUrl) {
 
-    const apiUrl = `${SERVER_URL}/download`;
+    const apiUrl = `${NODE_API_URL}/download`;
 
     const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
 

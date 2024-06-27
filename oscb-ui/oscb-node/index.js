@@ -28,7 +28,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, 'http://node-0.jiangl0-160204.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.jiangl0-161295.biomizzou-pg0.clemson.cloudlab.us:3000','http://node-0.oscb.biomizzou-pg0.clemson.cloudlab.us:3000'],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`],
     credentials: true
 }));
 app.use(bodyParser.json({ limit: '25mb' }));
@@ -45,6 +45,7 @@ const { storageDir, storageAllowance, intermediateStorage, publicStorage } = sto
 // Create a connection pool to handle multiple connections to the database
 const pool = mysql.createPool({
     host: dbConfig.host,
+    port: dbConfig.port,
     user: dbConfig.user,
     password: dbConfig.password,
     database: dbConfig.database,
@@ -1197,7 +1198,7 @@ app.get('/api/tools/leftnav', function (req, res) {
     });
 });
 
-app.post('/nodeapi/job/create', async (req, res) => {
+app.post('/api/job/create', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
@@ -1227,7 +1228,7 @@ app.post('/nodeapi/job/create', async (req, res) => {
 });
 
 // Route to retrieve documents from task_results collection
-app.get('/nodeapi/getTasks', async (req, res) => {
+app.get('/api/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     const { authToken } = req.query;
     const username = getUserFromToken(authToken);
@@ -1352,7 +1353,7 @@ app.put('/updateTaskStatus', (req, res) => {
 
 
 // Connect to MongoDB and retrieve options
-app.get('/mongoDB/api/options', async (req, res) => {
+app.get('/api/options', async (req, res) => {
     try {
         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
@@ -1394,7 +1395,7 @@ app.get('/mongoDB/api/options', async (req, res) => {
     }
 });
 
-app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
+app.post('/api/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
@@ -1452,7 +1453,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   });
 
 
-  app.post('/mongoDB/api/submitTaskMetadata', async (req, res) => {
+  app.post('/api/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
   
     try {
@@ -1528,7 +1529,7 @@ app.post('/mongoDB/api/submitDatasetMetadata', async (req, res) => {
   
 
 // API endpoint to get datasets
-app.get('/mongoDB/api/getDatasets', async (req, res) => {
+app.get('/api/getDatasets', async (req, res) => {
     const client = new MongoClient(mongoUrl);
 
     try {
@@ -1551,7 +1552,7 @@ app.get('/mongoDB/api/getDatasets', async (req, res) => {
     }
 });
 // Define a route to handle adding a new option to MongoDB
-app.post('/mongoDB/api/addNewOption', async (req, res) => {
+app.post('/api/addNewOption', async (req, res) => {
     const { field, name, username } = req.body;
 
     // Create the document object with the specified format
@@ -1586,7 +1587,7 @@ app.post('/mongoDB/api/addNewOption', async (req, res) => {
   });
 
 // Connect to MongoDB and retrieve options
-app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
+app.get('/api/groupedUserOptions', async (req, res) => {
     try {
         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
@@ -1633,7 +1634,7 @@ app.get('/mongoDB/api/groupedUserOptions', async (req, res) => {
 });
 
 // Define a DELETE route to delete selected options
-app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
+app.delete('/api/deleteOptions', async (req, res) => {
     try {
       const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
 
@@ -1666,7 +1667,7 @@ app.delete('/mongoDB/api/deleteOptions', async (req, res) => {
   
 
 // Define a route to handle adding a new option for Task field to MongoDB
-app.post('/mongoDB/api/addTaskOption', async (req, res) => {
+app.post('/api/addTaskOption', async (req, res) => {
     const { field, name, username, abbreviation } = req.body;
 
     // Create the document object with the specified format
@@ -1779,7 +1780,7 @@ app.post('/api/storage/renameFile', async (req, res) => {
     }
 });
 
-app.post('/mongoDB/api/errorlogdata', async (req, res) => {
+app.post('/api/errorlogdata', async (req, res) => {
     console.log(mongoUrl)
     const client = new MongoClient(mongoUrl);
     console.log(52)
@@ -2600,7 +2601,7 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   });
 
   // API endpoint to get process results based on an array of process_ids
-app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
+app.post('/api/getPreProcessResults', async (req, res) => {
     let client;
     try {
         const processIds = req.body.processIds;
@@ -2630,7 +2631,7 @@ app.post('/benchmarks/api/getPreProcessResults', async (req, res) => {
 
 
   // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/benchmarks/api/getBenchmarksResults', async (req, res) => {
+  app.post('/api/getBenchmarksResults', async (req, res) => {
     let client;
     try {
 
