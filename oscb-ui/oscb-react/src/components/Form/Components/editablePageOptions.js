@@ -29,7 +29,7 @@ function ManageOptions() {
         const username = authData.username;
         setUserName(username);
         setIsAdmin(authData.isAdmin);
-        const apiUrl = `${NODE_API_URL}/api/groupedUserOptions?username=${username}&isAdmin=${authData.isAdmin}`;
+        const apiUrl = `${NODE_API_URL}/groupedUserOptions?username=${username}&isAdmin=${authData.isAdmin}`;
 
         axios.get(apiUrl)
           .then((response) => {
@@ -72,7 +72,7 @@ const handleDeleteSelectedOptions = (field) => {
 
   // Check if there are selected options to delete
   if (selectedOptionIds.length > 0) {
-    const deleteApiUrl = `${NODE_API_URL}/api/deleteOptions`;
+    const deleteApiUrl = `${NODE_API_URL}/deleteOptions`;
 
     // Send a DELETE request with the array of selected option IDs to delete from MongoDB
     axios
@@ -80,7 +80,7 @@ const handleDeleteSelectedOptions = (field) => {
       .then((response) => {
         // Handle success response, e.g., update the UI to reflect the deleted options
         // After successful deletion, re-fetch the updated options and set the state
-        const updatedApiUrl = `${NODE_API_URL}/api/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
+        const updatedApiUrl = `${NODE_API_URL}/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
         axios
           .get(updatedApiUrl)
           .then((response) => {
@@ -113,13 +113,13 @@ const handleAddOption = () => {
   };
 
   // Send a POST request to add the new option to MongoDB
-  const addOptionApiUrl = `${NODE_API_URL}/api/addTaskOption`;
+  const addOptionApiUrl = `${NODE_API_URL}/addTaskOption`;
   axios
     .post(addOptionApiUrl, newOption)
     .then((response) => {
       // Handle success response, e.g., update the UI to reflect the added option
       // After successful addition, re-fetch the updated options and set the state
-      const updatedApiUrl = `${NODE_API_URL}/api/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
+      const updatedApiUrl = `${NODE_API_URL}/groupedUserOptions?username=${username}&isAdmin=${isAdmin}`;
       axios
         .get(updatedApiUrl)
         .then((response) => {

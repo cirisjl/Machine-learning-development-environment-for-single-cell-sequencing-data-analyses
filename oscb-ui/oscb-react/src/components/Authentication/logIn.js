@@ -36,7 +36,7 @@ function LoginPage (props) {
     }
 
 
-    fetch(NODE_API_URL + "/api/login", {
+    fetch(NODE_API_URL + "/login", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),

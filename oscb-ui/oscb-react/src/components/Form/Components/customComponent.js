@@ -58,7 +58,7 @@ class MyForm extends Component {
 
   async fetchDefaultOptions() {
     try {
-      const response = await fetch(`${NODE_API_URL}/api/options`);
+      const response = await fetch(`${NODE_API_URL}/options`);
       if (!response.ok) {
         console.error('Error fetching default options');
         return;
@@ -143,7 +143,7 @@ class MyForm extends Component {
   addNewOptionToMongoDB = (fieldName, optionName) => {
     // Make a POST request to your backend to add the new option to MongoDB
     axios
-      .post(`${NODE_API_URL}/api/addNewOption`, { 'field':fieldName, 'name':optionName, 'username': this.state.username })
+      .post(`${NODE_API_URL}/addNewOption`, { 'field':fieldName, 'name':optionName, 'username': this.state.username })
       .then((response) => {
         console.log(`New option "${optionName}" added to MongoDB for field "${fieldName}"`);
       })
@@ -252,9 +252,8 @@ class MyForm extends Component {
       }
 
       formData.flow = flow;
-     
 
-      axios.post(`${NODE_API_URL}/api/submitDatasetMetadata`, formData)
+      axios.post(`${NODE_API_URL}/submitDatasetMetadata`, formData)
       .then(response => {
         console.log('Form data submitted successfully');
         this.setState({

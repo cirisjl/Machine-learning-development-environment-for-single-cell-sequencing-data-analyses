@@ -128,7 +128,7 @@ function TaskDetailsComponent() {
       if (!processIds.length) return;
   
       try {
-        const response = await axios.post(`${NODE_API_URL}/api/getPreProcessResults`, { processIds });
+        const response = await axios.post(`${NODE_API_URL}/getPreProcessResults`, { processIds });
         console.log('Process Results:', response.data);
         console.log('Process Results Type:', typeof(response.data));
         setToolResultsFromMongo(response.data);
@@ -216,7 +216,7 @@ function TaskDetailsComponent() {
   
   const saveErrorLogData = async () => {
     try {
-      const response = await axios.post(`${NODE_API_URL}/api/errorlogdata`, {
+      const response = await axios.post(`${NODE_API_URL}/errorlogdata`, {
         name: uName,
         id: uIat,
         taskResult: taskResult,

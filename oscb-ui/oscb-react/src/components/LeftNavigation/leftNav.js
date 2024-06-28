@@ -10,7 +10,7 @@ function LeftNav(props) {
 
 
   useEffect(() => {
-    fetch(NODE_API_URL + "/api/tools/leftnav")
+    fetch(NODE_API_URL + "/tools/leftnav")
       .then(response => response.json())
       .then(data => {
         const updatedCategories = data.map((category, index) => {

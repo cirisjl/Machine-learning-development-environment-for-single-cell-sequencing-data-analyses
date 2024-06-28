@@ -24,7 +24,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     if (!benchmarksId) return;
 
     try {
-      const response = await axios.post(`${NODE_API_URL}/api/getBenchmarksResults`, { benchmarksId });
+      const response = await axios.post(`${NODE_API_URL}/getBenchmarksResults`, { benchmarksId });
       console.log('Benchmarks Results:', response.data);
       const benchmarksResults = response.data;
       if (Array.isArray(benchmarksResults)) {

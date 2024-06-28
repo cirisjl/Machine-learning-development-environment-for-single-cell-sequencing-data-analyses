@@ -34,7 +34,7 @@ const MyTasksSideNav = () => {
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
-                const response = await fetch(`${NODE_API_URL}/api/getTasks?authToken=${jwtToken}`);
+                const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
                 const data = await response.json();
                 console.log(data);
                 data.sort((a, b) => b.created_on - a.created_on);

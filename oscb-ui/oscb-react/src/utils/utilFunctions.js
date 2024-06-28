@@ -105,7 +105,7 @@ export function createUniqueFolderName(title) {
 
 export function moveFilesToNewDirectory(newDirectoryPath, isBenchmarks=false) {
   axios
-    .post(`${NODE_API_URL}/api/move-files`, { newDirectoryPath, isBenchmarks, jwtToken:getCookie('jwtToken')})
+    .post(`${NODE_API_URL}/move-files`, { newDirectoryPath, isBenchmarks, jwtToken:getCookie('jwtToken')})
     .then((response) => {
       console.log('Files moved successfully');
     })
@@ -139,7 +139,7 @@ export function prepareTableData(cellMetadataObs) {
 
 export async function copyFilesToPrivateStorage(selectedFiles, userId){
   try {
-    const response = await axios.post(`${NODE_API_URL}/api/copyFiles`, {
+    const response = await axios.post(`${NODE_API_URL}/copyFiles`, {
       selectedFiles,
       userId,
     });

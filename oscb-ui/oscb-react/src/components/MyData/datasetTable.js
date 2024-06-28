@@ -56,9 +56,9 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage }) 
       let url = "";
       try {
         if (fromToolsPage) {
-            url = `${NODE_API_URL}/api/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
+            url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
         } else {
-        url = `${NODE_API_URL}/api/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+        url = `${NODE_API_URL}/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
         }
     
         const response = await fetch(url, {

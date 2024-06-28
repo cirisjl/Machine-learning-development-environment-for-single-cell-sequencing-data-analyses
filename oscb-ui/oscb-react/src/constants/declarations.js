@@ -1,9 +1,19 @@
-export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001`;
+// Development
+export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001/node`;
 export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5005`;
 export const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
 export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5005`;
 export const UPPY_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3020`;
 export const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}:8055`;
+
+// Production
+// export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}/node`;
+// export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}/api`;
+// export const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
+// export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}/socket`;
+// export const UPPY_API_URL = `http://${process.env.REACT_APP_HOST_URL}/uppy`;
+// export const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}/contents`;
+
 // Storage
 export const PUBLIC_DATASETS = "/usr/src/app/storage/publicDatasets/";
 export const STORAGE = "/usr/src/app/storage";
