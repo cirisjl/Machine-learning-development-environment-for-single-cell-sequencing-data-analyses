@@ -6,9 +6,9 @@ from utils.logger import *
 # unique_id: user_id or job_id
 class RedisLogger:
     def __init__(self):
-        pool = redis.ConnectionPool(host='redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
+        pool = redis.ConnectionPool(host='oscb_redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
         self.r = redis.Redis(connection_pool=pool)
-        # self.r = redis.Redis(host='redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
+        # self.r = redis.Redis(host='oscb_redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0)
         # self.r = redis.Redis(host='127.0.0.1', port=6379, db=0)
         self.app_logger = logger
         

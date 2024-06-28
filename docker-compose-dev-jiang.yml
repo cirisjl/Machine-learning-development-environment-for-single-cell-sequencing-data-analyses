@@ -27,9 +27,10 @@ services:
     networks:
       - oscb-network
 
-  redis:
+  oscb_redis:
     image: "redis:6-alpine"
-    hostname: redis
+    container_name: oscb_redis 
+    hostname: oscb_redis
     command: redis-server --port 6388 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       # - 6379:6379
@@ -37,9 +38,9 @@ services:
     networks:
       - oscb-network
 
-  rabbitmq:
+  oscb_rabbitmq:
     image: "rabbitmq:management"
-    container_name: rabbitmq 
+    container_name: oscb_rabbitmq 
     ports:
       - 5673:5673
       - 15673:15672
@@ -100,8 +101,8 @@ services:
       - .env
     depends_on:
       - mongodb
-      - redis
-      - rabbitmq
+      - oscb_redis
+      - oscb_rabbitmq
 
   worker1:
     build:
@@ -130,8 +131,8 @@ services:
       - oscb-network
     depends_on:
       - mongodb
-      - redis
-      - rabbitmq
+      - oscb_redis
+      - oscb_rabbitmq
       - celery-api
 
   worker2:
@@ -160,8 +161,8 @@ services:
       - oscb-network
     depends_on:
       - mongodb
-      - redis
-      - rabbitmq
+      - oscb_redis
+      - oscb_rabbitmq
       - celery-api
 
   worker3:
@@ -190,8 +191,8 @@ services:
       - oscb-network
     depends_on:
       - mongodb
-      - redis
-      - rabbitmq
+      - oscb_redis
+      - oscb_rabbitmq
       - celery-api
 
   dashboard:
@@ -199,20 +200,20 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     container_name: oscb_dashboard
-    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@rabbitmq:5673// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_rabbitmq:5673// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     ports:
       - 5558:5555
     env_file:
       - .env
     depends_on:
       - celery-api
-      - rabbitmq
-      - redis
+      - oscb_rabbitmq
+      - oscb_redis
     networks:
       - oscb-network
   
   oscb_mysql:
-    container_name: oscb_mysql_container
+    container_name: oscb_mysql
     image: mysql:8.0
     build:
       context: ./oscb-ui/oscb-mysql
@@ -234,7 +235,7 @@ services:
       - oscb-network
 
   oscb_node:
-    container_name: oscb_node_container
+    container_name: oscb_node
     image: oscb_node
     build:
       context: ./oscb-ui/oscb-node
@@ -257,7 +258,7 @@ services:
       - oscb-network
 
   oscb_react:
-    container_name: oscb_react_container
+    container_name: oscb_react
     image: oscb_react
     build: ./oscb-ui/oscb-react
     ports:
@@ -270,7 +271,7 @@ services:
       - oscb-network
 
   directus:
-    container_name: oscb_directus_container
+    container_name: oscb_directus
     image: directus/directus:9.24.0
     restart: unless-stopped
     ports:
@@ -288,7 +289,7 @@ services:
     build:
       context: ./oscb-ui/oscb-flask
       dockerfile: Dockerfile
-    container_name: oscb_flask_container
+    container_name: oscb_flask
     image: oscb_flask
     restart: always
     ports:
