@@ -15,7 +15,7 @@ export const SessionProvider = ({ children }) => {
 
     const extendSession = async () => {
         try {
-            const response = await fetch(`${NODE_API_URL}/api/refresh-token`, {
+            const response = await fetch(`${NODE_API_URL}/refresh-token`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: { 'Authorization': `Bearer ${getCookie('jwtToken')}` },

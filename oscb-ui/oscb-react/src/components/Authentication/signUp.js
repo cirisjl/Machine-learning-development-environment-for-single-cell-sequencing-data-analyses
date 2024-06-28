@@ -58,7 +58,7 @@ function Signup (props){
 
     // Submit the form if there are no errors
     if (Object.keys(newErrors).length === 0) {
-        fetch(`${NODE_API_URL}/api/signup`, {
+        fetch(`${NODE_API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

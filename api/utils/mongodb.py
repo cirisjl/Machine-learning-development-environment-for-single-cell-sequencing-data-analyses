@@ -1,6 +1,7 @@
 import hashlib
 import os
 from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 from boltons.iterutils import remap
 
 
@@ -17,6 +18,12 @@ benchmarks_collection = db.get_collection("benchmarks")
 bm_results_collection = db.get_collection("bm_results")
 workflows_collection = db.get_collection("workflows")
 
+pp_results_collection.create_index({'process_id': 1}, unique=True, background=True)
+bm_results_collection.create_index({'process_id': 1}, unique=True, background=True)
+workflows_collection.create_index({'workflows_id': 1}, unique=True, background=True)
+datasets_collection.create_index({'Id': 1}, unique=True, background=True)
+benchmarks_collection.create_index({'benchmarksId': 1}, unique=True, background=True)
+jobs_collection.create_index({'job_id': 1}, unique=True, background=True)
 
 def generate_process_id(file_md5, process, method, parameters):
     process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters}".encode("utf-8")).hexdigest()
@@ -35,7 +42,10 @@ def pp_result_exists(process_id):
 
 def create_pp_results(process_id, pp_results):
     pp_results = clear_dict(pp_results)
-    pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
+    try:
+        pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
+    except DuplicateKeyError:
+        pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results})
     if "_id" in pp_results: 
         pp_results.pop("_id")
     return
@@ -53,7 +63,10 @@ def upsert_jobs(data):
 
 def upsert_benchmarks(benchmarksId, results):
     results = clear_dict(results)
-    benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results}, upsert=True)
+    try:
+        benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results}, upsert=True)
+    except DuplicateKeyError:
+        benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results})
     if "_id" in results: 
         results.pop("_id")
     return
@@ -61,7 +74,10 @@ def upsert_benchmarks(benchmarksId, results):
 
 def upsert_workflows(workflows_id, results):
     results = clear_dict(results)
-    workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results}, upsert=True)
+    try:
+        workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results}, upsert=True)
+    except DuplicateKeyError:
+        workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results})
     if "_id" in results: 
         results.pop("_id")
     return
@@ -85,7 +101,10 @@ def clear_dict(d):
 
 def create_bm_results(process_id, bm_results):
     bm_results = clear_dict(bm_results)
-    bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
+    try:
+        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
+    except DuplicateKeyError:
+        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
     if "_id" in bm_results: 
         bm_results.pop("_id")
     return

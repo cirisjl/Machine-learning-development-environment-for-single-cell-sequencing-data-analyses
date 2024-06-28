@@ -30,7 +30,7 @@ function SearchTasks({taskType}) {
     }).toString();
 
     try {
-      const response = await axios.post(`${NODE_API_URL}/api/tasks/search?${queryParams}`, 
+      const response = await axios.post(`${NODE_API_URL}/tasks/search?${queryParams}`, 
       JSON.stringify({ filters: currentFilters }),
       {
         headers: {

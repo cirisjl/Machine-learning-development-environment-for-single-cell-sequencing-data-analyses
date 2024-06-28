@@ -72,7 +72,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     });
     
 
-    axios.post(`${NODE_API_URL}/api/submitTaskMetadata`, documents)
+    axios.post(`${NODE_API_URL}/submitTaskMetadata`, documents)
     .then(response => {
       const { data } = response;
   

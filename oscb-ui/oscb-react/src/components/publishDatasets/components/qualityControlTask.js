@@ -88,7 +88,7 @@ const handleLogMessage = (event) => {
     if (!processIds.length) return;
 
     try {
-      const response = await axios.post(`${NODE_API_URL}/api/getPreProcessResults`, { processIds });
+      const response = await axios.post(`${NODE_API_URL}/getPreProcessResults`, { processIds });
       console.log('Process Results:', response.data);
       setTaskData((prevTaskData) => ({
         ...prevTaskData,

@@ -28,9 +28,11 @@ const { MongoClient, ObjectId } = require('mongodb');
 console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
-    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`],
+    // origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`],
+    origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, `http://${process.env.HOST_URL}/node/`, `http://${hostIp}/node/`],
     credentials: true
 }));
+// app.use(cors());
 app.use(bodyParser.json({ limit: '25mb' }));
 app.use(cookieParser());
 app.use((err, req, res, next) => {
@@ -159,7 +161,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     }
   };
 
-  app.post('/api/copyFiles', async (req, res) => {
+  app.post('/node/copyFiles', async (req, res) => {
 
     const { selectedFiles, userId } = req.body;
 
@@ -193,7 +195,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
   });
 
   // Refresh token endpoint
-app.get('/api/refresh-token', verifyToken, (req, res) => {
+app.get('/node/refresh-token', verifyToken, (req, res) => {
     jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
         if(err) {
             res.sendStatus(403);
@@ -208,7 +210,7 @@ app.get('/api/refresh-token', verifyToken, (req, res) => {
 });
 
 // Route to handle user signup
-app.post('/api/signup', (req, res) => {
+app.post('/node/signup', (req, res) => {
     const { username, email, password } = req.body;
 
     // Hash the password using bcrypt
@@ -257,7 +259,7 @@ app.post('/api/signup', (req, res) => {
 });
 
 // Route to handle user login
-app.post('/api/login', (req, res) => {
+app.post('/node/login', (req, res) => {
     const { username, password } = req.body;
 
     pool.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
@@ -306,7 +308,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // Route to handle protected resource
-app.get('/protected', verifyToken, (req, res) => {
+app.get('/node/protected', verifyToken, (req, res) => {
     jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
         if (err) {
             res.sendStatus(403);
@@ -335,7 +337,7 @@ app.get('/protected', verifyToken, (req, res) => {
     });
 });
 
-app.post('/createDataset', async (req, res) => {
+app.post('/node/createDataset', async (req, res) => {
 
     const { title, n_cells, reference, summary, authToken, files, makeItpublic } = req.body;
     const username = getUserFromToken(authToken);
@@ -453,7 +455,7 @@ app.post('/createDataset', async (req, res) => {
       }
 });
 
-app.put('/updateDataset', async (req, res) => {
+app.put('/node/updateDataset', async (req, res) => {
 
     const { title, n_cells, reference, summary, authToken, files, currentFileList } = req.body;
     const username = getUserFromToken(authToken);
@@ -574,7 +576,7 @@ app.put('/updateDataset', async (req, res) => {
     });
 });
 
-app.delete('/deleteDataset', async (req, res) => {
+app.delete('/node/deleteDataset', async (req, res) => {
     const { authToken, dataset } = req.query;
     const username = getUserFromToken(authToken);
 
@@ -662,7 +664,7 @@ app.delete('/deleteDataset', async (req, res) => {
 });
 
 
-app.post('/renameFile', async (req, res) => {
+app.post('/node/renameFile', async (req, res) => {
     let { oldName } = req.query;
     let { newName } = req.query;
     let { authToken } = req.query;
@@ -709,7 +711,7 @@ app.post('/renameFile', async (req, res) => {
 });
 
 
-app.post('/download', async (req, res) => {
+app.post('/node/download', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
     const { pwd } = req.query;
@@ -774,7 +776,7 @@ app.post('/download', async (req, res) => {
 });
 
 
-app.get('/download', async (req, res) => {
+app.get('/node/download', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const { pwd } = req.query
     const username = getUserFromToken(authToken);
@@ -823,7 +825,7 @@ app.get('/download', async (req, res) => {
 });
 
 
-app.get('/fetchPreview', async (req, res) => {
+app.get('/node/fetchPreview', async (req, res) => {
     const { fileUrl, authToken, forResultFile } = req.query;
     const username = getUserFromToken(authToken);
     let filePath = '';
@@ -867,7 +869,7 @@ app.get('/fetchPreview', async (req, res) => {
     }
 });
 
-app.delete('/deleteFiles', async (req, res) => {
+app.delete('/node/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
     const { pwd } = req.query
@@ -936,7 +938,7 @@ const formatDate = (dateString) => {
     return formattedDate;
 }
 
-app.get('/getDirContents', async (req, res) => {
+app.get('/node/getDirContents', async (req, res) => {
     try {
         console.log(`HOSTURL: ${process.env.HOST_URL}`);
         const { dirPath, authToken, usingFor } = req.query;
@@ -1002,7 +1004,7 @@ app.get('/getDirContents', async (req, res) => {
 });
 
 
-app.post('/upload', async (req, res) => {
+app.post('/node/upload', async (req, res) => {
     let { uploadDir, authToken ,publicDatasetFlag} = req.query;
     let username = getUserFromToken(authToken);
 
@@ -1053,7 +1055,7 @@ app.post('/upload', async (req, res) => {
 });
 
 
-app.post('/createNewFolder', (req, res) => {
+app.post('/node/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
     let folderPath = ""
@@ -1077,7 +1079,7 @@ app.post('/createNewFolder', (req, res) => {
 
 const { exec } = require('child_process');
 
-app.get('/getStorageDetails', async (req, res) => {
+app.get('/node/getStorageDetails', async (req, res) => {
     const sizeRegex = /^(\d+(\.\d+)?)\s*([KMG]B?)$/i;
     try {
         const { authToken } = req.query;
@@ -1113,7 +1115,7 @@ app.get('/getStorageDetails', async (req, res) => {
 });
 
 // Route to get datasets and files for a specific user
-app.get('/preview/datasets', (req, res) => {
+app.get('/node/preview/datasets', (req, res) => {
 
     const { authToken } = req.query;
 
@@ -1180,7 +1182,7 @@ app.get('/preview/datasets', (req, res) => {
 
 
 // Define API endpoint
-app.get('/api/tools/leftnav', function (req, res) {
+app.get('/node/tools/leftnav', function (req, res) {
     // Query the category and filter tables and group the filters by category
     const sql = 'SELECT c.id AS category_id, c.name AS category_name, ' +
         'JSON_ARRAYAGG(f.name) AS filters ' +
@@ -1198,7 +1200,7 @@ app.get('/api/tools/leftnav', function (req, res) {
     });
 });
 
-app.post('/api/job/create', async (req, res) => {
+app.post('/node/job/create', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
@@ -1228,7 +1230,7 @@ app.post('/api/job/create', async (req, res) => {
 });
 
 // Route to retrieve documents from task_results collection
-app.get('/api/getTasks', async (req, res) => {
+app.get('/node/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     const { authToken } = req.query;
     const username = getUserFromToken(authToken);
@@ -1255,7 +1257,7 @@ app.get('/api/getTasks', async (req, res) => {
     }
   });
 
-app.put('/updateTaskStatus', (req, res) => {
+app.put('/node/updateTaskStatus', (req, res) => {
     const { job_ids, status } = req.body;
     const jobIdsArr = job_ids.split(',');
 
@@ -1353,7 +1355,7 @@ app.put('/updateTaskStatus', (req, res) => {
 
 
 // Connect to MongoDB and retrieve options
-app.get('/api/options', async (req, res) => {
+app.get('/node/options', async (req, res) => {
     try {
         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
@@ -1395,7 +1397,7 @@ app.get('/api/options', async (req, res) => {
     }
 });
 
-app.post('/api/submitDatasetMetadata', async (req, res) => {
+app.post('/node/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     
     try {
@@ -1453,7 +1455,7 @@ app.post('/api/submitDatasetMetadata', async (req, res) => {
   });
 
 
-  app.post('/api/submitTaskMetadata', async (req, res) => {
+  app.post('/node/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
   
     try {
@@ -1529,7 +1531,7 @@ app.post('/api/submitDatasetMetadata', async (req, res) => {
   
 
 // API endpoint to get datasets
-app.get('/api/getDatasets', async (req, res) => {
+app.get('/node/getDatasets', async (req, res) => {
     const client = new MongoClient(mongoUrl);
 
     try {
@@ -1552,7 +1554,7 @@ app.get('/api/getDatasets', async (req, res) => {
     }
 });
 // Define a route to handle adding a new option to MongoDB
-app.post('/api/addNewOption', async (req, res) => {
+app.post('/node/addNewOption', async (req, res) => {
     const { field, name, username } = req.body;
 
     // Create the document object with the specified format
@@ -1587,7 +1589,7 @@ app.post('/api/addNewOption', async (req, res) => {
   });
 
 // Connect to MongoDB and retrieve options
-app.get('/api/groupedUserOptions', async (req, res) => {
+app.get('/node/groupedUserOptions', async (req, res) => {
     try {
         const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
@@ -1634,7 +1636,7 @@ app.get('/api/groupedUserOptions', async (req, res) => {
 });
 
 // Define a DELETE route to delete selected options
-app.delete('/api/deleteOptions', async (req, res) => {
+app.delete('/node/deleteOptions', async (req, res) => {
     try {
       const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
 
@@ -1667,7 +1669,7 @@ app.delete('/api/deleteOptions', async (req, res) => {
   
 
 // Define a route to handle adding a new option for Task field to MongoDB
-app.post('/api/addTaskOption', async (req, res) => {
+app.post('/node/addTaskOption', async (req, res) => {
     const { field, name, username, abbreviation } = req.body;
 
     // Create the document object with the specified format
@@ -1704,7 +1706,7 @@ app.post('/api/addTaskOption', async (req, res) => {
 
 
   //API to move files from one folder to another
-  app.post('/api/move-files', (req, res) => {
+  app.post('/node/move-files', (req, res) => {
       const { newDirectoryPath, isBenchmarks, jwtToken } = req.body;
     const username = getUserFromToken(jwtToken);
     let destinationPath = ""
@@ -1732,7 +1734,7 @@ app.post('/api/addTaskOption', async (req, res) => {
   });
 
   
-app.delete('/api/storage/delete-file', (req, res) => {
+app.delete('/node/storage/delete-file', (req, res) => {
 
     try {
         const { fileName, authToken, newDirectoryPath } = req.query;
@@ -1757,7 +1759,7 @@ app.delete('/api/storage/delete-file', (req, res) => {
     }
 });
 
-app.post('/api/storage/renameFile', async (req, res) => {
+app.post('/node/storage/renameFile', async (req, res) => {
 
     try {
 
@@ -1780,7 +1782,7 @@ app.post('/api/storage/renameFile', async (req, res) => {
     }
 });
 
-app.post('/api/errorlogdata', async (req, res) => {
+app.post('/node/errorlogdata', async (req, res) => {
     console.log(mongoUrl)
     const client = new MongoClient(mongoUrl);
     console.log(52)
@@ -1820,7 +1822,7 @@ app.post('/api/errorlogdata', async (req, res) => {
 
 
 // Fetch facets and paginated results
-app.post('/api/benchmarks/datasets/search', async (req, res) => {
+app.post('/node/benchmarks/datasets/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl);
@@ -1952,7 +1954,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
   });
 
 
-  app.post('/api/tasks/search', async (req, res) => {
+  app.post('/node/tasks/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -2148,7 +2150,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
     }
 });
 
-// app.post('/api/test', async (req, res) => {
+// app.post('/node/test', async (req, res) => {
 //   let client;
 //   try {
 //     client = new MongoClient(mongoUrl);
@@ -2377,7 +2379,7 @@ app.post('/api/benchmarks/datasets/search', async (req, res) => {
 
 // }
 
-app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
+app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
     let client;
     try {
       client = new MongoClient(mongoUrl);
@@ -2601,7 +2603,7 @@ app.post('/api/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   });
 
   // API endpoint to get process results based on an array of process_ids
-app.post('/api/getPreProcessResults', async (req, res) => {
+app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
     try {
         const processIds = req.body.processIds;
@@ -2631,7 +2633,7 @@ app.post('/api/getPreProcessResults', async (req, res) => {
 
 
   // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/api/getBenchmarksResults', async (req, res) => {
+  app.post('/node/getBenchmarksResults', async (req, res) => {
     let client;
     try {
 

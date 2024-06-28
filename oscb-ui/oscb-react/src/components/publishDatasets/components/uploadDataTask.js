@@ -132,7 +132,7 @@ function getStandardFileName(fileName, fileType) {
   const removeFile = async (item, indexToRemove) => {
     try {
       // Send request to backend to delete the file
-      await axios.delete(`${NODE_API_URL}/api/storage/delete-file?fileName=${item}&authToken=${getCookie('jwtToken')}&newDirectoryPath=tempStorage`);
+      await axios.delete(`${NODE_API_URL}/storage/delete-file?fileName=${item}&authToken=${getCookie('jwtToken')}&newDirectoryPath=tempStorage`);
 
       // If successful, update the state to remove the file from the list
       setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
@@ -181,7 +181,7 @@ function getStandardFileName(fileName, fileType) {
             if (!acceptedMultiFileNames.includes(fileName)) {
                     selectedFiles[i] = selectedAliases[i];
             
-                fetch(`${NODE_API_URL}/api/storage/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}`, {
+                fetch(`${NODE_API_URL}/storage/renameFile?oldName=tempStorage/${fileName}&newName=tempStorage/${selectedFiles[i]}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

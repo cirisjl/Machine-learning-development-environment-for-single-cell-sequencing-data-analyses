@@ -37,7 +37,7 @@ const SessionReminder = () => {
     isUserAuth(getCookie('jwtToken'))
     .then((authData) => {
         if (authData.isAuth) {
-        fetch(NODE_API_URL + "/api/refresh-token", {
+        fetch(NODE_API_URL + "/refresh-token", {
             method: 'GET',
             credentials: 'include', // send cookies with the request
             headers: { 'Authorization': `Bearer ${getCookie('jwtToken')}` },
