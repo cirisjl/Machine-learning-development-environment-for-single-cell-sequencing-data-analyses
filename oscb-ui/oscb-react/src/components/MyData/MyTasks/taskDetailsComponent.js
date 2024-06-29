@@ -88,9 +88,10 @@ function TaskDetailsComponent() {
   const navigate = useNavigate();
   const {job_id, method, datasetURL, description , tool} = location.state || {};
   const searchParams = new URLSearchParams(location.search);
-  const resultsPath = searchParams.get('results_path');
-  const taskTitle = searchParams.get('description');
+  // const resultsPath = searchParams.get('results_path');
+  // const taskTitle = searchParams.get('description');
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
+  const [taskOutput, setTaskOutput] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
@@ -130,10 +131,10 @@ function TaskDetailsComponent() {
       try {
         const response = await axios.post(`${NODE_API_URL}/getPreProcessResults`, { processIds });
         console.log('Process Results:', response.data);
-        console.log('Process Results Type:', typeof(response.data));
+        // console.log('Process Results Type:', typeof(response.data));
         setToolResultsFromMongo(response.data);
         console.log('toolResultsFromMongo:', toolResultsFromMongo);
-        console.log('toolResultsFromMongo Type:', typeof (toolResultsFromMongo));
+        // console.log('toolResultsFromMongo Type:', typeof (toolResultsFromMongo));
         setLoading(false);
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
@@ -177,6 +178,9 @@ function TaskDetailsComponent() {
         const taskInfoData = await taskInfoResponse.json();
         console.log(taskInfoData);
         setTaskResult(taskInfoData.task_result);
+        if ("output" in taskInfoData.task_result) {
+          setTaskOutput(taskInfoData.task_result.output);
+        }
 
         if (jwtToken) {
           fetch(NODE_API_URL + "/protected", { //to get username,id
@@ -346,6 +350,50 @@ function TaskDetailsComponent() {
               </Card>
             </Grid>
 
+            {taskStatus?.toLowerCase() === "success" && taskOutput && (
+              <Grid item xs={12}  >
+                <Card raised sx={cardStyle}>
+                  <CardHeader title="Task Results" />
+                  <CardContent sx={cardContentStyle}>
+                    {JSON.stringify(taskOutput)}
+                    {console.log("taskOutput: ", taskOutput)}
+                    {
+                      taskOutput.map((output, index) => (
+                        // Object.keys(output).forEach(key => (
+                        //   <><Typography variant="subtitle1"><strong>Key {key}: {JSON.stringify(output)} </strong></Typography>
+                        //     <Typography variant="body1" gutterBottom>
+                        //       { /* <a download onClick={() => { downloadFile(taskResult.output[key]); } } style={{ marginLeft: '10px', textAlign: 'center' }}>
+                        //   {getFileNameFromURL(taskResult.output[key]) || 'Not available'}
+                        //       </a> */}
+                        //       {output[key]}
+                        //     </Typography></>
+                        // )
+                        // )
+                        JSON.stringify(Object.keys(output))
+                      )
+                      )}
+                    {
+                      taskOutput.map((output, index) => (
+                        // Object.keys(output).forEach(key => (
+                        //   <><Typography variant="subtitle1"><strong>Key {key}: {JSON.stringify(output)} </strong></Typography>
+                        //     <Typography variant="body1" gutterBottom>
+                        //       { /* <a download onClick={() => { downloadFile(taskResult.output[key]); } } style={{ marginLeft: '10px', textAlign: 'center' }}>
+                        //   {getFileNameFromURL(taskResult.output[key]) || 'Not available'}
+                        //       </a> */}
+                        //       {output[key]}
+                        //     </Typography></>
+                        // )
+                        // )
+                        Object.keys(output).map((key, index) => {
+                          (<strong>Key{key}, Index: {index}</strong>)
+                        })
+                      )
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
             {/* {showErrorLog && (    */}
             {taskStatus?.toLowerCase() === "failure" && (
               <Grid item xs={12}>
@@ -397,6 +445,7 @@ function TaskDetailsComponent() {
       ) : (
         (tool === "Quality Control" || tool === "Normalization" || tool === "Visualization") && (
           <div>
+                { JSON.stringify(toolResultsFromMongo) }
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (
               <React.Fragment key={index}>
