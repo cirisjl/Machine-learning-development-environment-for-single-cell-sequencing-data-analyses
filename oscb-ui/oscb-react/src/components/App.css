@@ -521,7 +521,7 @@ Styles for Right Rail
 margin: 0px;}
 
 .time-stamp-display {
-  float: right;
+  float: left;
   font-size: 12px;
 }
 
