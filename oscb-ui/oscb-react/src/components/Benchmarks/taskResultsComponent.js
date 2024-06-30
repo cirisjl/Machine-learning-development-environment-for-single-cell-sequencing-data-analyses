@@ -10,12 +10,12 @@ function TaskResultsComponent(task_type) {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        let jwtToken = getCookie('jwtToken');
-        if(jwtToken===undefined || jwtToken === '') {
-            navigate('/routing');
-        }
-    },[]);
+    // useEffect(() => {
+    //     let jwtToken = getCookie('jwtToken');
+    //     if(jwtToken===undefined || jwtToken === '') {
+    //         navigate('/routing');
+    //     }
+    // },[]);
 
     return (
         <div className="task-results-container eighty-twenty-grid">

@@ -1,5 +1,8 @@
+import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 import { getCookie } from '../../utils/utilFunctions';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
@@ -9,6 +12,7 @@ import Intl from 'intl';
 import 'intl/locale-data/jsonp/en-US';
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
+import Pagination from '../publishDatasets/components/tablePaginationComponent';
 
 const TableWrapper = styled.div`
   display: flex;
@@ -42,6 +46,7 @@ const TableCell = styled.td`
   padding: 15px;
 `;
 
+
 const TaskTable = () => {
     const [tasks, setTasks] = useState([]);
     const [changesFound, setChangesFound] = useState(false);
@@ -56,140 +61,174 @@ const TaskTable = () => {
         hour12: true
     };
 
-    useEffect(() => {
-        if (!jwtToken)
-            navigate('/routing');
-        const fetchTasks = async () => {
-            const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
-            const data = await response.json();
-            data.sort((a, b) => a.created_on - b.created_on);
-            setTasks(data);
+    // Destructure the pagination object for easier access to its properties
+    // const { page, pageSize, totalCount } = pagination;
 
-            // Create a list to store incomplete tasks
-            const incompleteTasks = [];
+    // Calculate the starting and ending result numbers for the current page
+    // const startResult = (page - 1) * pageSize + 1;
+    // const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
+    const [pagination, setPagination] = useState({});
+    // Function to reset all state variables
+    const resetState = () => {
+        setPagination({});
+    };
 
-            // Iterate over each task and check if its status is null
-            data.forEach(task => {
-                if (task.status === null) {
-                    incompleteTasks.push(task.job_id);
-                }
-            });
+    const fetchTasks = async (currentPage) => {
+        const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}&page=${currentPage}&top=0`);
+        const data = await response.json();
+        data.sort((a, b) => a.created_on - b.created_on);
+        setTasks(data);
+        setPagination(data.pagination);
 
-            if (incompleteTasks.length > 0) {
-                let webSocketParam = incompleteTasks.join(',');
-                const socket = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${webSocketParam}`);
-                socket.onopen = () => {
-                    console.log('Socket connected');
-                };
-                socket.onclose = () => {
-                    console.log('Socket disconnected');
-                };
+        // Create a list to store incomplete tasks
+        const incompleteTasks = [];
 
-                let finishedTasks = [];
-                let failedTasks = [];
-                socket.onmessage = async (event) => {
-                    const data = JSON.parse(event.data);
-                    Object.keys(data).forEach(jobId => {
-                        const status = data[jobId];
-                        if (status === 'Success') {
-                            finishedTasks.push(jobId);
-                        }
-                        else if (status === 'Failed') {
-                            failedTasks.push(jobId);
-                        }
-                    });
-                    if (finishedTasks.length + failedTasks.length > 0) {
-                        await updateTaskStatus(failedTasks, 'Failed');
-                        await updateTaskStatus(finishedTasks, 'Success');
-                        // Close the WebSocket connection
-                        socket.close(1000, 'See you again!');
-                        setChangesFound(!changesFound);
-                    }
-                };
+        // Iterate over each task and check if its status is null
+        data.forEach(task => {
+            if (task.status === null) {
+                incompleteTasks.push(task.job_id);
             }
-        };
-        fetchTasks();
-    }, [changesFound]);
+        });
 
-    const updateTaskStatus = async (jobIds, status) => {
-        try {
-            const jobIdString = jobIds.join(',');
-            const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    jobIds: jobIdString,
-                    status: status
-                })
-            });
-            const data = await response.json();
-            console.log(data);
-            return data; // return the data from the function
-        } catch (error) {
-            console.error(error);
-            throw error; // throw the error so that the caller can handle it
+        if (incompleteTasks.length > 0) {
+            let webSocketParam = incompleteTasks.join(',');
+            const socket = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${webSocketParam}`);
+            socket.onopen = () => {
+                console.log('Socket connected');
+            };
+            socket.onclose = () => {
+                console.log('Socket disconnected');
+            };
+
+            let finishedTasks = [];
+            let failedTasks = [];
+            socket.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                Object.keys(data).forEach(jobId => {
+                    const status = data[jobId];
+                    if (status === 'Success') {
+                        finishedTasks.push(jobId);
+                    }
+                    else if (status === 'Failed') {
+                        failedTasks.push(jobId);
+                    }
+                });
+                if (finishedTasks.length + failedTasks.length > 0) {
+                    // await updateTaskStatus(failedTasks, 'Failed');
+                    // await updateTaskStatus(finishedTasks, 'Success');
+                    // Close the WebSocket connection
+                    socket.close(1000, 'See you again!');
+                    setChangesFound(!changesFound);
+                }
+            };
         }
     };
+
+    const onPageChange = (newPage) => {
+        fetchTasks(newPage);
+    };
+
+    useEffect(() => {
+        if (!jwtToken)
+            navigate('/routing');       
+        fetchTasks(1);
+    }, [changesFound]);
+
+
+    // const updateTaskStatus = async (jobIds, status) => {
+    //     try {
+    //         const jobIdString = jobIds.join(',');
+    //         const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             body: JSON.stringify({
+    //                 jobIds: jobIdString,
+    //                 status: status
+    //             })
+    //         });
+    //         const data = await response.json();
+    //         console.log(data);
+    //         return data; // return the data from the function
+    //     } catch (error) {
+    //         console.error(error);
+    //         throw error; // throw the error so that the caller can handle it
+    //     }
+    // };
 
 
     if (jwtToken)
         return (
-            <TableWrapper>
-                <h1>My Tasks</h1>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHeaderCell>Task Title</TableHeaderCell>
-                            <TableHeaderCell>Task ID</TableHeaderCell>
-                            <TableHeaderCell>Tool</TableHeaderCell>
-                            <TableHeaderCell>Created</TableHeaderCell>
-                            <TableHeaderCell>Finished</TableHeaderCell>
-                            <TableHeaderCell>Status</TableHeaderCell>
-                            <TableHeaderCell>Result</TableHeaderCell>
-                        </TableRow>
-                    </TableHeader>
-                    <tbody>
-                        {tasks.map((task) => (
-                            <TableRow key={task.job_id}>
-                                <TableCell>{task.task_title}</TableCell>
-                                <TableCell>
-                                    <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
-                                        {task.job_id}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>{task.tool}</TableCell>
-                                <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.created_on))}</TableCell>
-                                <TableCell>
-                                    {task.finish_datetime ? (
-                                        new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(task.finish_datetime))
-                                    ) : (
-                                        ''
-                                    )}
-                                </TableCell>
-                                <TableCell style={{ textAlign: 'center' }}>
-                                    {task.status === 'Success' ? (
-                                        <CheckCircleIcon style={{ color: 'green' }} />
-                                    ) : task.status === 'Failed' ? (
-                                        <CancelIcon style={{ color: 'red' }} />
-                                    ) : (
-                                        <HourglassEmptyIcon style={{ color: 'gray' }} />
-                                    )}
-                                </TableCell>
-                                {task.status ? (
-                                <TableCell>                                    
-                                    <a href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}`}
-                                    style={{ textDecoration: 'none', color: 'inherit' }}> View</a></TableCell>
-                                     
-                                ) : (
-                                    <TableCell></TableCell>
-                                )}
+            <><div className='table-results'>
+                <TableWrapper>
+                    <h1>My Jobs</h1>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Description</TableHeaderCell>
+                                <TableHeaderCell>Task ID</TableHeaderCell>
+                                <TableHeaderCell>Process</TableHeaderCell>
+                                <TableHeaderCell>Method</TableHeaderCell>
+                                <TableHeaderCell>Created on</TableHeaderCell>
+                                <TableHeaderCell>Completed on</TableHeaderCell>
+                                <TableHeaderCell>Status</TableHeaderCell>
+                                <TableHeaderCell>Actions</TableHeaderCell>
                             </TableRow>
-                        ))}
-                    </tbody>
-                </Table>
-            </TableWrapper>
+                        </TableHeader>
+                        <tbody>
+                            {tasks.map((task) => (
+                                <TableRow key={task.job_id}>
+                                    <TableCell>
+                                        <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
+                                            {task.description}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
+                                            {task.job_id}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>{task.process}</TableCell>
+                                    <TableCell>{task.method}</TableCell>
+                                    <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.created_on).local()))}</TableCell>
+                                    <TableCell>
+                                        {task.finish_datetime ? (
+                                            new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.completed_on).local()))
+                                        ) : (
+                                            ''
+                                        )}
+                                    </TableCell>
+                                    <TableCell style={{ textAlign: 'center' }}>
+                                        {task.status === 'Success' ? (
+                                            <CheckCircleIcon style={{ color: 'green' }} />
+                                        ) : task.status === 'Failed' ? (
+                                            <CancelIcon style={{ color: 'red' }} />
+                                        ) : (
+                                            <HourglassEmptyIcon style={{ color: 'gray' }} />
+                                        )}
+                                    </TableCell>
+                                    {task.status ? (
+                                        <TableCell>
+                                            <a onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, output: task.output, results: task.results, status: task.status } }); } }
+                                                style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faEye} /></a></TableCell>
+                                    ) : (
+                                        <TableCell></TableCell>
+                                    )}
+                                </TableRow>
+                            ))}
+                        </tbody>
+                    </Table>
+                </TableWrapper>
+                </div>
+                <div className='table-pagination'>
+                    <Pagination
+                        pagination={pagination}
+                        onPageChange={onPageChange}
+                    />
+                </div>
+            </>
+
         );
 };
 

@@ -1232,9 +1232,11 @@ app.post('/node/job/create', async (req, res) => {
 // Route to retrieve documents from task_results collection
 app.get('/node/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    const { authToken } = req.query;
-    const { top } = req.query;
+    const { authToken } = req.query.authToken;
+    const { top } = parseInt(req.query.top) || 0;
     const username = getUserFromToken(authToken);
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
   
     try {
       // Connect to the MongoDB server
@@ -1245,13 +1247,24 @@ app.get('/node/getTasks', async (req, res) => {
       const collection = db.collection(jopbsCollection);
   
       // Query documents from the collection
-      if (parseInt(top) == 0) {
-        const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).toArray();
+      if (top == 0) {
+        const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray();
         // Respond with the tasks data
-        res.status(200).json(tasks);
+        const totalCount = await collection.countDocuments({ created_by: username });
+        res.status(200).json(
+            {
+                results: tasks,
+                pagination: {
+                    page,
+                    pageSize,
+                    pageCount: Math.ceil(totalCount / pageSize),
+                    totalCount
+                }
+            }
+        );
       }
       else{
-          const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(parseInt(top)).toArray();
+          const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(top).toArray();
         // Respond with the tasks data
         res.status(200).json(tasks);
       }

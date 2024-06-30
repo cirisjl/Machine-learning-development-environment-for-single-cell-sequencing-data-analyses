@@ -1,14 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { getCookie} from '../../../utils/utilFunctions';
-import { useNavigate } from 'react-router-dom';
-import schema from '../../../schema/react-json-schema/Workflows/clusteringWorkflow.json';
-import Form from 'react-jsonschema-form';
-import styled from 'styled-components';
-import { Container, Button } from "reactstrap";
-import Switch from 'react-switch';
-import Toggle from 'react-toggle';
-import 'react-toggle/style.css';
-import InputDataComponent from '../Tools/inputDataCollection';
+import React from 'react';
 import { ClusteringWorkFlowComponent } from './components/clusteringWorkflow';
 
 
