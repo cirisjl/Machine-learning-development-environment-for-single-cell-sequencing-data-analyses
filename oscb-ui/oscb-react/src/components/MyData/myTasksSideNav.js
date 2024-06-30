@@ -88,27 +88,27 @@ const MyTasksSideNav = () => {
         }
     }, [changesFound, expanded]);
 
-    const updateTaskStatus = async (jobIds, status) => {
-        try {
-            const jobIdString = jobIds.join(',');
-            const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    jobIds: jobIdString,
-                    status: status
-                })
-            });
-            const data = await response.json();
-            console.log(data);
-            return data; // return the data from the function
-        } catch (error) {
-            console.error(error);
-            throw error; // throw the error so that the caller can handle it
-        }
-    };
+    // const updateTaskStatus = async (jobIds, status) => {
+    //     try {
+    //         const jobIdString = jobIds.join(',');
+    //         const response = await fetch(`${NODE_API_URL}/updateTaskStatus`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             body: JSON.stringify({
+    //                 jobIds: jobIdString,
+    //                 status: status
+    //             })
+    //         });
+    //         const data = await response.json();
+    //         console.log(data);
+    //         return data; // return the data from the function
+    //     } catch (error) {
+    //         console.error(error);
+    //         throw error; // throw the error so that the caller can handle it
+    //     }
+    // };
 
     const toggleExpand = () => {
         setExpanded(!expanded);

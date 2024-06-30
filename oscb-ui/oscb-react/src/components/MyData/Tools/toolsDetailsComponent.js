@@ -188,13 +188,13 @@ export default function ToolsDetailsComponent(props) {
 
           let job_description = "";
           if (typeof formData.dataset === 'string') {
-            job_description = method + ' ' + filterCategory + ' for ' + formData.dataset;
+            job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset;
           } else if (Array.isArray(formData.dataset)) {
             if (formData.dataset.length > 1) {
               let datasets = formData.dataset.join(', ');
-              job_description = method + ' ' + filterCategory + ' for ' + datasets;
+              job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + datasets;
             } else if (formData.dataset.length === 1) {
-              job_description = method + ' ' + filterCategory + ' for ' + formData.dataset[0];
+              job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset[0];
             }
           }
 

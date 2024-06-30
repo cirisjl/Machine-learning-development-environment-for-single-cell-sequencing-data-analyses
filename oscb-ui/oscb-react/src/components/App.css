@@ -523,6 +523,7 @@ margin: 0px;}
 .time-stamp-display {
   float: left;
   font-size: 12px;
+  padding-left: 28px;
 }
 
 .right-rail-search-svg {

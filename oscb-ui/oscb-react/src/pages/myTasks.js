@@ -8,7 +8,7 @@ export default function MyTasks() {
             <div className="left-nav">
                 {/* <LeftNav /> */}
             </div>
-            <div className="main-content">
+            <div className='table-results'>
                 <TaskTable/>
             </div>
             <div className="right-rail">
