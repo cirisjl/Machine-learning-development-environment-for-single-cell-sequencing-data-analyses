@@ -9,6 +9,7 @@ import SearchTasks from './components/taskResults';
 function TaskResultsComponent(task_type) {
 
     const navigate = useNavigate();
+    let jwtToken = getCookie('jwtToken');
 
     // useEffect(() => {
     //     let jwtToken = getCookie('jwtToken');
@@ -22,9 +23,9 @@ function TaskResultsComponent(task_type) {
             <div className="main-content task-builder-task">
                 <SearchTasks taskType={task_type} />
             </div>
-            <div className="right-rail">
+            {(jwtToken != undefined || jwtToken != '') && (<div className="right-rail">
                 <RightRail />
-            </div>
+            </div>)}
         </div>
     );
 }

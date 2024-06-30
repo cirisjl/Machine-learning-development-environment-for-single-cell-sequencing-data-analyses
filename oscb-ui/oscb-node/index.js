@@ -1106,7 +1106,7 @@ app.get('/node/getStorageDetails', async (req, res) => {
 
             console.log(`disk utilization: ${gigabytes} GB, folder: ${folder}`);
 
-            return res.json({ used: gigabytes, allowed: storageAllowance });
+            return res.json({ used: gigabytes.toFixed(2), allowed: storageAllowance });
         });
     } catch (e) {
         console.log('Error in getting Storage usage: ' + e);
@@ -1232,12 +1232,12 @@ app.post('/node/job/create', async (req, res) => {
 // Route to retrieve documents from task_results collection
 app.get('/node/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    const { authToken } = req.query.authToken;
-    const { top } = parseInt(req.query.top) || 0;
+    const authToken = req.query.authToken;
+    const top = parseInt(req.query.top) || 0;
     const username = getUserFromToken(authToken);
     const page = parseInt(req.query.page, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
-  
+
     try {
       // Connect to the MongoDB server
       await client.connect();
@@ -1247,7 +1247,7 @@ app.get('/node/getTasks', async (req, res) => {
       const collection = db.collection(jopbsCollection);
   
       // Query documents from the collection
-      if (top == 0) {
+      if (top === 0) {
         const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray();
         // Respond with the tasks data
         const totalCount = await collection.countDocuments({ created_by: username });

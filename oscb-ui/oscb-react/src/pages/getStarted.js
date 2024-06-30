@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react"
 import axios from 'axios';
 import ReactMarkdown from "react-markdown"
-import LeftNav from "../components/LeftNavigation/leftNav";
+// import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
+import { getCookie } from "../utils/utilFunctions";
 
 
 export default function GetStarted() {
     const [markdownText,setMarkdownText] = useState('')
+    let jwtToken = getCookie('jwtToken');
 
     useEffect(() => {
         async function fetchFileData() {
@@ -50,7 +52,7 @@ export default function GetStarted() {
 
             <div className="right-rail">
                 <RightRail />
-            </div>            
+            </div>        
             
         </div>
     )

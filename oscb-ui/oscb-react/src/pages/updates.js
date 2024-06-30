@@ -3,10 +3,13 @@ import axios from "axios";
 import LeftNav from "../components/LeftNavigation/leftNav";
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
+import { getCookie } from "../utils/utilFunctions";
+
 
 export default function Updates() {
 
     const [updates,setUpdates] = useState([]);
+    let jwtToken = getCookie('jwtToken');
 
     const fetchData = async () => {
         try {
@@ -55,9 +58,9 @@ export default function Updates() {
                 ))}
             </div>
             
-            <div className="right-rail">
+            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
                 <RightRail />
-            </div>
+            </div>)}
         </div>
     )
 }
