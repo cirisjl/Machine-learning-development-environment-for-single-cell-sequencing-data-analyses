@@ -201,7 +201,7 @@ export default function ToolsDetailsComponent(props) {
           formData.description = job_description;
           formData.dataset_id = formData.id;
           formData.method = method;
-          formData.process = filterCategory;
+          formData.process = filterStaticCategoryMap[filterCategory];
       
           // Verify the authenticity of the user
           isUserAuth(jwtToken)
