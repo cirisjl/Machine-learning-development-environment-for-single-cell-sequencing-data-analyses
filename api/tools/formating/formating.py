@@ -338,7 +338,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "nCells": nCells,
             "nGenes": nGenes,
             "genes": genes,
-            "cells": cells,
+            # "cells": cells,
             "embeddings": embeddings,
             "umap_plot": umap_plot,
             "umap_plot_3d": umap_plot_3d,
@@ -395,7 +395,7 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
     return adata_path, assay_names, default_assay
 
 
-def anndata_to_csv(adata, output_path, layer = None):
+def anndata_to_csv(adata, output_path, layer=None, compress=False):
     counts = None
 
     if layer is None:
@@ -413,7 +413,7 @@ def anndata_to_csv(adata, output_path, layer = None):
     return output_path
 
 
-def load_anndata_to_csv(input, csv_path, layer=None, show_error=True, dataset=None):
+def load_anndata_to_csv(input, csv_path, layer=None, show_error=True, dataset=None, compress=False):
     adata = None
     counts = None
 
@@ -434,7 +434,7 @@ def load_anndata_to_csv(input, csv_path, layer=None, show_error=True, dataset=No
         print("Layer is not found in AnnData object.")
         return None, None, None
 
-    csv_path = anndata_to_csv(adata, csv_path, layer=layer)
+    csv_path = anndata_to_csv(adata, csv_path, layer=layer, compress=compress)
 
     return adata, counts, csv_path
 
@@ -479,7 +479,7 @@ def detect_delimiter(file_path):
 #     return output
 
 
-def get_output_path(path, process_id='', dataset=None, method='', format="AnnData"):
+def get_output_path(path, process_id='', dataset=None, method='', format="AnnData", compress=False):
     output = os.path.abspath(path)
     method = '_' + method if method != '' else ''
     output_path = None
@@ -502,8 +502,12 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
             output_path = os.path.join(output, process_id, dataset + method + ".h5seurat")
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
         elif format == "CSV":
-            output_path = os.path.join(output, process_id, dataset + method + ".csv")
-            print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
+            if compress == True:
+                output_path = os.path.join(output, process_id, dataset + method + ".csv.gz")
+                print("The output path is a directory, adding output file " + dataset + method + ".csv.gz to the path.")
+            else:
+                output_path = os.path.join(output, process_id, dataset + method + ".csv")
+                print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
         if format == "AnnData":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
@@ -512,7 +516,10 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
         elif format == "Seurat":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
         elif format == "CSV":
-            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
+            if compress == True:
+                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv.gz"))
+            else:
+                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
 
     if not os.path.exists(os.path.dirname(output_path)):
         os.makedirs(os.path.dirname(output_path))

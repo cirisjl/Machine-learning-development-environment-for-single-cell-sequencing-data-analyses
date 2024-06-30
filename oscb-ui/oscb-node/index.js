@@ -2626,6 +2626,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   // API endpoint to get process results based on an array of process_ids
 app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
+    const projection = { _id: 0, process_id:1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {
@@ -2641,7 +2642,7 @@ app.post('/node/getPreProcessResults', async (req, res) => {
         // Fetching documents where process_id is in the provided array of process IDs
         const processResults = await collection.find({
             process_id: { $in: processIds }
-        }).toArray();
+        }).project(projection).toArray();
 
         res.status(200).json(processResults);
     } catch (err) {
