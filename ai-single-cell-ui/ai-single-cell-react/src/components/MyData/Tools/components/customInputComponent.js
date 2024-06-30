@@ -17,7 +17,7 @@ const ClusterLabelInput = ({ value, onChange }) => {
       value={inputValue}
       onChange={handleInputChange}
       onBlur={handleBlur}
-      placeholder="Enter Cluster Label"
+      placeholder="Enter here..."
     />
   );
 };
