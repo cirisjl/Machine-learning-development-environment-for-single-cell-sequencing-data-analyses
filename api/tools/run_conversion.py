@@ -35,7 +35,7 @@ def run_conversion(job_id, ds:dict, show_error=True):
     adata_path = get_output_path(output, dataset=dataset)
     seurat_path = get_output_path(output, dataset=dataset, format='Seurat')
     sce_path = get_output_path(output, dataset=dataset, format='SingleCellExperiment')
-    csv_path = get_output_path(output, dataset=dataset, format='CSV')
+    csv_path = get_output_path(output, dataset=dataset, format='CSV', compress=True)
 
     if output_format == "AnnData":
         if os.path.exists(adata_path):
@@ -112,7 +112,7 @@ def run_conversion(job_id, ds:dict, show_error=True):
         else:
             try:
                 # layer = ds['layer']
-                adata, counts, csv_path = load_anndata_to_csv(input, csv_path, layer=None)
+                adata, counts, csv_path = load_anndata_to_csv(input, csv_path, layer=None, compress=True)
                 adata = None
                 outputs.append({'CSV': csv_path})
                 redislogger.info(job_id, "CSV file is saved successfully")
