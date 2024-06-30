@@ -355,38 +355,16 @@ function TaskDetailsComponent() {
                 <Card raised sx={cardStyle}>
                   <CardHeader title="Task Results" />
                   <CardContent sx={cardContentStyle}>
-                    {JSON.stringify(taskOutput)}
-                    {console.log("taskOutput: ", taskOutput)}
                     {
                       taskOutput.map((output, index) => (
-                        // Object.keys(output).forEach(key => (
-                        //   <><Typography variant="subtitle1"><strong>Key {key}: {JSON.stringify(output)} </strong></Typography>
-                        //     <Typography variant="body1" gutterBottom>
-                        //       { /* <a download onClick={() => { downloadFile(taskResult.output[key]); } } style={{ marginLeft: '10px', textAlign: 'center' }}>
-                        //   {getFileNameFromURL(taskResult.output[key]) || 'Not available'}
-                        //       </a> */}
-                        //       {output[key]}
-                        //     </Typography></>
-                        // )
-                        // )
-                        JSON.stringify(Object.keys(output))
-                      )
-                      )}
-                    {
-                      taskOutput.map((output, index) => (
-                        // Object.keys(output).forEach(key => (
-                        //   <><Typography variant="subtitle1"><strong>Key {key}: {JSON.stringify(output)} </strong></Typography>
-                        //     <Typography variant="body1" gutterBottom>
-                        //       { /* <a download onClick={() => { downloadFile(taskResult.output[key]); } } style={{ marginLeft: '10px', textAlign: 'center' }}>
-                        //   {getFileNameFromURL(taskResult.output[key]) || 'Not available'}
-                        //       </a> */}
-                        //       {output[key]}
-                        //     </Typography></>
-                        // )
-                        // )
-                        Object.keys(output).map((key, index) => {
-                          (<strong>Key{key}, Index: {index}</strong>)
-                        })
+                        Object.keys(output).map((key) => (
+                          <><Typography variant="subtitle1"><strong>{key}: </strong></Typography>
+                            <Typography variant="body1" gutterBottom>
+                              { <a download onClick={() => { downloadFile(output[key]); } } style={{ marginLeft: '10px', textAlign: 'center' }}>
+                                   {getFileNameFromURL(output[key]) || 'Not available'}
+                              </a> }
+                            </Typography></>
+                        ))
                       )
                     )}
                   </CardContent>
@@ -445,7 +423,7 @@ function TaskDetailsComponent() {
       ) : (
         (tool === "Quality Control" || tool === "Normalization" || tool === "Visualization") && (
           <div>
-                { JSON.stringify(toolResultsFromMongo) }
+          { JSON.stringify(toolResultsFromMongo) }
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (
               <React.Fragment key={index}>
