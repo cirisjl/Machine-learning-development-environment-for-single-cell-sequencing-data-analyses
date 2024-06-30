@@ -86,7 +86,7 @@ function downloadFile(fileUrl) {
 function TaskDetailsComponent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { job_id, method, datasetURL, description, process } = location.state || {};
+  const { job_id, method, datasetURL, description, process, output, results, status } = location.state || {};
   const searchParams = new URLSearchParams(location.search);
   // const resultsPath = searchParams.get('results_path');
   // const taskTitle = searchParams.get('description');
@@ -131,10 +131,7 @@ function TaskDetailsComponent() {
       try {
         const response = await axios.post(`${NODE_API_URL}/getPreProcessResults`, { processIds });
         console.log('Process Results:', response.data);
-        // console.log('Process Results Type:', typeof(response.data));
         setToolResultsFromMongo(response.data);
-        console.log('toolResultsFromMongo:', toolResultsFromMongo);
-        // console.log('toolResultsFromMongo Type:', typeof (toolResultsFromMongo));
         setLoading(false);
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
@@ -149,7 +146,18 @@ function TaskDetailsComponent() {
   const handleStatusMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      if (data.task_status) {
+      if (status?.toLowerCase() === "success" || status?.toLowerCase() === "failure"){
+        setTaskStatus(status);
+        if (status?.toLowerCase() === "success" && !plotLoaded) {
+          if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
+            setTaskResult(results);
+            fetchProcessResults(results.process_ids);
+            plotLoaded = true;
+          } else {
+            setLoading(false);
+          }
+        }       
+      } else if (data.task_status) {
         setTaskStatus(data.task_status);
         if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
           if (data.task_status === "SUCCESS" && !plotLoaded) {
@@ -172,37 +180,41 @@ function TaskDetailsComponent() {
 
   useEffect(() => {
     async function fetchFiles() {
+      if (status?.toLowerCase() === "success" && output) {
+        setTaskOutput(output);
+      }
+      else {
+        try {
+          const taskInfoResponse = await fetch(`${CELERY_BACKEND_API}/api/task/${job_id}`);
+          const taskInfoData = await taskInfoResponse.json();
+          console.log(taskInfoData);
+          setTaskResult(taskInfoData.task_result);
+          if ("output" in taskInfoData.task_result) {
+            setTaskOutput(taskInfoData.task_result.output);
+          }
 
-      try {
-        const taskInfoResponse = await fetch(`${CELERY_BACKEND_API}/api/task/${job_id}`);
-        const taskInfoData = await taskInfoResponse.json();
-        console.log(taskInfoData);
-        setTaskResult(taskInfoData.task_result);
-        if ("output" in taskInfoData.task_result) {
-          setTaskOutput(taskInfoData.task_result.output);
-        }
-
-        if (jwtToken) {
-          fetch(NODE_API_URL + "/protected", { //to get username,id
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Authorization': `Bearer ${jwtToken}` },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-
-              if (data.authData !== null) {
-                console.log("userdata: ", data.authData);
-                setUName(data.authData.username);
-                setUIat(data.authData.iat);
-              }
+          if (jwtToken) {
+            fetch(NODE_API_URL + "/protected", { //to get username,id
+              method: 'GET',
+              credentials: 'include',
+              headers: { 'Authorization': `Bearer ${jwtToken}` },
             })
-            .catch((error) => {
-              console.error(error);
-            })
+              .then((response) => response.json())
+              .then((data) => {
+
+                if (data.authData !== null) {
+                  console.log("userdata: ", data.authData);
+                  setUName(data.authData.username);
+                  setUIat(data.authData.iat);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              })
+          }
+        } catch (error) {
+          console.error('Error fetching task status:', error);
         }
-      } catch (error) {
-        console.error('Error fetching task status:', error);
       }
     }
     fetchFiles();
@@ -341,14 +353,14 @@ function TaskDetailsComponent() {
               </Card>
             </Grid>
 
-            <Grid item xs={12}  >
+            {(status?.toLowerCase() != "success" && status?.toLowerCase() != "failure") && <Grid item xs={12}  >
               <Card raised sx={cardStyle}>
                 <CardHeader title="Live Logs" />
                 <CardContent sx={cardContentStyle}>
                   <LogComponent wsLogs={liveLogs} />
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid>}
 
             {taskStatus?.toLowerCase() === "success" && taskOutput && (
               <Grid item xs={12}  >
@@ -420,9 +432,9 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-          (process === "Quality Control" || process === "Normalization" || process === "Visualization") && (
+          toolResultsFromMongo && (
           <div align="center"> 
-          {toolResultsFromMongo &&
+          {
             toolResultsFromMongo.map((result, index) => (
               <React.Fragment key={index}>
                     {result.umap_plot && (

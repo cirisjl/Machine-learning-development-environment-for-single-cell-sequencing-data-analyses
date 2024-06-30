@@ -190,7 +190,7 @@ const MyTasksSideNav = () => {
                                       </AccordionSummary>
                                       <AccordionDetails>
                                       <a
-                                        onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, status: task.status } }) }}
+                                                onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, output: task.output, results: task.results, status: task.status } }) }}
                                         // href={`/mydata/taskDetails?jobId=${task.job_id}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                      > 
