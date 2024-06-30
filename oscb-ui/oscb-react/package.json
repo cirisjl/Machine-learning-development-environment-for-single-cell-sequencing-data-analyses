@@ -68,7 +68,8 @@
      "@emotion/styled": "*",
      "uuid": "*",
      "@octokit/rest": "*",
-     "ajv": "^7.0.3"
+     "ajv": "^7.0.3",
+     "moment": "*"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",

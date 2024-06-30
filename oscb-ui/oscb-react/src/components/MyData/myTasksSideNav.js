@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 import { faArrowUpRightFromSquare, faAngleRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getCookie } from '../../utils/utilFunctions';
@@ -34,7 +35,7 @@ const MyTasksSideNav = () => {
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
-                const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}`);
+                const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}&top=5`);
                 const data = await response.json();
                 console.log(data);
                 data.sort((a, b) => b.created_on - a.created_on);
@@ -162,7 +163,7 @@ const MyTasksSideNav = () => {
                                                     )}
                                                     <p><TextWithEllipsis text={task.description} maxLength={23} /></p>
                                                 </div>
-                                                <span className='time-stamp-display'>- {task.created_on}</span>
+                                                    <span className='time-stamp-display'>- {moment.utc(task.created_on).local().format("YYYY-MM-DD HH:mm:ss")}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color

@@ -1233,6 +1233,7 @@ app.post('/node/job/create', async (req, res) => {
 app.get('/node/getTasks', async (req, res) => {
     const client = new MongoClient(mongoUrl);
     const { authToken } = req.query;
+    const { top } = req.query;
     const username = getUserFromToken(authToken);
   
     try {
@@ -1244,10 +1245,17 @@ app.get('/node/getTasks', async (req, res) => {
       const collection = db.collection(jopbsCollection);
   
       // Query documents from the collection
-      const tasks = await collection.find({ created_by: username }).toArray();
-  
-      // Respond with the tasks data
-      res.status(200).json(tasks);
+      if (parseInt(top) == 0) {
+        const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).toArray();
+        // Respond with the tasks data
+        res.status(200).json(tasks);
+      }
+      else{
+          const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(parseInt(top)).toArray();
+        // Respond with the tasks data
+        res.status(200).json(tasks);
+      }
+      
     } catch (error) {
       console.error('Error:', error);
       res.status(500).json({ error: 'An error occurred while fetching jobs' });
