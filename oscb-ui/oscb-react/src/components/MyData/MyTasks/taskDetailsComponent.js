@@ -86,7 +86,7 @@ function downloadFile(fileUrl) {
 function TaskDetailsComponent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {job_id, method, datasetURL, description , tool} = location.state || {};
+  const { job_id, method, datasetURL, description, process } = location.state || {};
   const searchParams = new URLSearchParams(location.search);
   // const resultsPath = searchParams.get('results_path');
   // const taskTitle = searchParams.get('description');
@@ -323,8 +323,8 @@ function TaskDetailsComponent() {
                 <CardContent sx={cardContentStyle}>
                   <Grid container spacing={2}> {/* Create a Grid container to layout details side by side */}
                   <Grid item xs={6}>
-                      <Typography variant="subtitle1" gutterBottom><strong>Tool:</strong></Typography>
-                      <Typography variant="body1">{tool || 'Not available'}</Typography>
+                      <Typography variant="subtitle1" gutterBottom><strong>Process:</strong></Typography>
+                      <Typography variant="body1">{process || 'Not available'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle1" gutterBottom><strong>Method:</strong></Typography>
@@ -412,7 +412,6 @@ function TaskDetailsComponent() {
               </Grid>
             )}
 
-
           </Grid>
         </Container>
 
@@ -421,16 +420,14 @@ function TaskDetailsComponent() {
           <ScaleLoader color="#36d7b7" loading={loading} />
         </div>
       ) : (
-        (tool === "Quality Control" || tool === "Normalization" || tool === "Visualization") && (
-          <div>
-          { JSON.stringify(toolResultsFromMongo) }
+          (process === "Quality Control" || process === "Normalization" || process === "Visualization") && (
+          <div align="center"> 
           {toolResultsFromMongo &&
             toolResultsFromMongo.map((result, index) => (
               <React.Fragment key={index}>
                     {result.umap_plot && (
                       <>
-                        <h2>UMAP Plot</h2>
-
+                        <h2>UMAP</h2>
                         <FormControl>
                           {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
                           <RadioGroup
@@ -440,11 +437,11 @@ function TaskDetailsComponent() {
                             value={plotDimension}
                             onChange={(event) => setPlotDimension(event.target.value)}
                           >
-                            <FormControlLabel value="2D" control={<Radio color="secondary"/>} label="2D" />
-                            <FormControlLabel value="3D" control={<Radio color="secondary"/>} label="3D" />
+                            <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+                            <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
                           </RadioGroup>
                         </FormControl>
-
+                      
                         {plotDimension === '2D' && result.umap_plot && (
                             <>
                               <ReactPlotly plot_data={result.umap_plot} />
@@ -459,19 +456,19 @@ function TaskDetailsComponent() {
                     )}
                     {result.violin_plot && (
                       <>
-                        <h2>Violin Plot</h2>
+                        <h2>Violin</h2>
                         <ReactPlotly plot_data={result.violin_plot} />
                       </>
                     )}
                     {result.scatter_plot && (
                       <>
-                        <h2>Scatter Plot</h2>
+                        <h2>Scatter</h2>
                         <ReactPlotly plot_data={result.scatter_plot} />
                       </>
                     )}
                     {result.highest_expr_genes_plot && (
                       <>
-                        <h2>Highest expression Genes Plot</h2>
+                        <h2>Highest expression Genes</h2>
                         <ReactPlotly plot_data={result.highest_expr_genes_plot} />
                       </>
                     )}
