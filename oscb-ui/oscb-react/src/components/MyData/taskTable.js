@@ -74,17 +74,17 @@ const TaskTable = () => {
     };
 
     const fetchTasks = async (currentPage) => {
-        const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}&page=${currentPage}&top=0`);
+        const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}&page=${currentPage}`);
         const data = await response.json();
-        data.sort((a, b) => a.created_on - b.created_on);
-        setTasks(data);
+        data.results.sort((a, b) => a.created_on - b.created_on);
+        setTasks(data.results);
         setPagination(data.pagination);
 
         // Create a list to store incomplete tasks
         const incompleteTasks = [];
 
         // Iterate over each task and check if its status is null
-        data.forEach(task => {
+        data.results.forEach(task => {
             if (task.status === null) {
                 incompleteTasks.push(task.job_id);
             }
@@ -109,12 +109,12 @@ const TaskTable = () => {
                     if (status === 'Success') {
                         finishedTasks.push(jobId);
                     }
-                    else if (status === 'Failed') {
+                    else if (status === 'Failure') {
                         failedTasks.push(jobId);
                     }
                 });
                 if (finishedTasks.length + failedTasks.length > 0) {
-                    // await updateTaskStatus(failedTasks, 'Failed');
+                    // await updateTaskStatus(failedTasks, 'Failure');
                     // await updateTaskStatus(finishedTasks, 'Success');
                     // Close the WebSocket connection
                     socket.close(1000, 'See you again!');
@@ -167,7 +167,7 @@ const TaskTable = () => {
                         <TableHeader>
                             <TableRow>
                                 <TableHeaderCell>Description</TableHeaderCell>
-                                <TableHeaderCell>Task ID</TableHeaderCell>
+                                <TableHeaderCell>Job ID</TableHeaderCell>
                                 <TableHeaderCell>Process</TableHeaderCell>
                                 <TableHeaderCell>Method</TableHeaderCell>
                                 <TableHeaderCell>Created on</TableHeaderCell>
@@ -193,11 +193,7 @@ const TaskTable = () => {
                                     <TableCell>{task.method}</TableCell>
                                     <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.created_on).local()))}</TableCell>
                                     <TableCell>
-                                        {task.finish_datetime ? (
-                                            new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.completed_on).local()))
-                                        ) : (
-                                            ''
-                                        )}
+                                        {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.completed_on).local()))}
                                     </TableCell>
                                     <TableCell style={{ textAlign: 'center' }}>
                                         {task.status === 'Success' ? (
@@ -220,15 +216,17 @@ const TaskTable = () => {
                         </tbody>
                     </Table>
                 </TableWrapper>
-                </div>
-                <div className='table-pagination'>
+                <p></p>
+                <p></p>
+                <p></p>
+                <div className='table-pagination' align="center">
                     <Pagination
                         pagination={pagination}
                         onPageChange={onPageChange}
                     />
                 </div>
+                </div>
             </>
-
         );
 };
 

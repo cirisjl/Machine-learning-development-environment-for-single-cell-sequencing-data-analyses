@@ -3,11 +3,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import LeftNav from "../components/LeftNavigation/leftNav";
 import { DIRECTUS_URL } from '../constants/declarations'
+import { getCookie } from "../utils/utilFunctions";
+
 
 export default function Team() {
 
   const [coreTeamData, setCoreTeamData] = useState([]);
   const [committeeTeamData, setCommitteeTeamData] = useState([]);
+  let jwtToken = getCookie('jwtToken');
 
   useEffect(() => {
     async function fetchTeamData() {
@@ -78,9 +81,9 @@ export default function Team() {
 
             
             </div>
-                <div className="right-rail">
+            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
                 <RightRail />
-            </div>
+            </div>)}
         </div>
     )
 }

@@ -74,7 +74,7 @@ const StorageChart = () => {
     };
   }, [totalStorage, usedStorage]);
 
-  if (jwtToken != undefined && jwtToken != '') {
+  if (jwtToken === undefined || jwtToken === '') {
     return (
       <>
         <h2>My Data</h2> <br />

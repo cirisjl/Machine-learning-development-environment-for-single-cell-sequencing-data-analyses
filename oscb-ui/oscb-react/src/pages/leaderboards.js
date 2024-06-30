@@ -1,7 +1,11 @@
 // import LeftNav from "../components/leftNav";
 import RightRail from "../components/RightNavigation/rightRail";
+import { getCookie } from "../utils/utilFunctions";
+
 
 export default function Leaderboards() {
+    let jwtToken = getCookie('jwtToken');
+
     return(
         <div className="page-container">
             <div className="left-nav">
@@ -10,9 +14,9 @@ export default function Leaderboards() {
             <div className="main-content">
                 <h1>I'm inside Leaderboards page</h1>
             </div>
-            <div className="right-rail">
+            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
                 <RightRail />
-            </div>
+            </div>)}
         </div>
     )
 }
