@@ -161,7 +161,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
       console.log(userData);
   
       // Make the API call
-      const response = await fetch(`${CELERY_BACKEND_API}/api/benchmarks/data-split`, {        
+      const response = await fetch(`${CELERY_BACKEND_API}/benchmarks/data-split`, {        
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -369,7 +369,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         }
     
         // Make the API call
-        axios.post(`${CELERY_BACKEND_API}/api/convert/to_adata_or_srat`, payload)
+        axios.post(`${CELERY_BACKEND_API}/convert/to_adata_or_srat`, payload)
         .then(response => {
             // Handle your response here
             console.log(response.data);
@@ -555,7 +555,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 userID : authData.username
                             };
                             
-                            axios.post(`${CELERY_BACKEND_API}/api/benchmarks/to_adata_or_srat`, data)
+                            axios.post(`${CELERY_BACKEND_API}/benchmarks/to_adata_or_srat`, data)
                             .then(function (response) {
                                 console.log(response.data);
                                 let data = response.data[0];

@@ -22,7 +22,7 @@ def run_benchmarks(job_id, task_dict:dict):
         }
     )
 
-    adata_path = unzip_file_if_compressed(job_id,adata_path)
+    adata_path = unzip_file_if_compressed(job_id, adata_path)
     
     if(task_type=="Clustering"):
         try:
@@ -45,7 +45,7 @@ def run_benchmarks(job_id, task_dict:dict):
                     }
                 )
 
-                return clustering_results
+                return results
             else:
                 detail = f'File does not exist at {adata_path}'
                 raise CeleryTaskException(detail)

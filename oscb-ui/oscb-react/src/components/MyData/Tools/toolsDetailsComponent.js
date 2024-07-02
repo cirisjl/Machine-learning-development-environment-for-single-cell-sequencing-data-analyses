@@ -24,13 +24,13 @@ export default function ToolsDetailsComponent(props) {
     const [useDefaultValue, setUseDefaultValue] = useState(false);
 
     const filterCategoryMap = {
-      quality_control: '/api/tools/qc',
-      normalization: '/api/tools/normalize',
-      imputation: '/api/tools/impute',
-      integration: '/api/tools/integrate',
-      evaluation: '/api/tools/evaluate',
-      formatting: '/api/tools/convert',
-      visualization: '/api/tools/reduce'
+      quality_control: '/tools/qc',
+      normalization: '/tools/normalize',
+      imputation: '/tools/impute',
+      integration: '/tools/integrate',
+      evaluation: '/tools/evaluate',
+      formatting: '/tools/convert',
+      visualization: '/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
     };
 

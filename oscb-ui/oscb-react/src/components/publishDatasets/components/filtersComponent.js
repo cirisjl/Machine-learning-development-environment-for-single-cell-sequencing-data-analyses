@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 
-
 const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, onApplyFilters}) => {
 
     const [searchTerm, setSearchTerm] = useState('');

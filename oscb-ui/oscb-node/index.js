@@ -1216,9 +1216,9 @@ app.post('/node/job/create', async (req, res) => {
         const collection = db.collection(jobsCollection);
         
         await collection.insertOne(formData);
-        console.log('Form data submitted successfully');
+        console.log('Job is created successfully');
 
-        res.status(200).json({ message: 'Form data submitted successfully' });
+        res.status(200).json({ message: 'Job is created successfully' });
         
     } catch (err) {
       console.error('Error:', err);
@@ -1475,7 +1475,7 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
       } else {
         // Document with the provided Id does not exist, proceed with insertion
         await collection.insertOne(formData);
-        console.log('Form data submitted successfully');
+          console.log('Metadata is  submitted successfully');
 
         if(makeItpublic) {
             console.log("Transfering files from local to public folder");
@@ -1495,7 +1495,7 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
                 console.error(err);
             }
           }
-        res.status(200).json({ message: 'Form data submitted successfully' });
+        res.status(200).json({ message: 'Metadata is submitted successfully' });
       }
     } catch (err) {
       console.error('Error:', err);
@@ -1548,12 +1548,12 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
         // const options = { upsert: true };
         // await collection.updateOne(query, update, options);
         await collection.updateOne(query, update);
-        console.log('Form data submitted successfully for Id:', formData.Id);
+          console.log('Benchmarks submitted successfully for Id:', formData.Id);
 
         updateResults.push({
             Id: formData.Id,
             status: 'success',
-            message: 'Form data submitted successfully',
+            message: 'Benchmarks submitted successfully',
         });
       }
   
