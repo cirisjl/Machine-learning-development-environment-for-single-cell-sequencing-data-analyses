@@ -23,7 +23,7 @@ function TaskResultsComponent(task_type) {
             <div className="main-content task-builder-task">
                 <SearchTasks taskType={task_type} />
             </div>
-            {(jwtToken != undefined || jwtToken != '') && (<div className="right-rail">
+            {(jwtToken !==undefined || jwtToken !=='') && (<div className="right-rail">
                 <RightRail />
             </div>)}
         </div>

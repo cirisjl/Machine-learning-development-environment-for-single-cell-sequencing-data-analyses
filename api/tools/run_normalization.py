@@ -34,6 +34,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    datasetId = ds['dataset_id']
     status = 'Successful'
     failed_methods = []
 
@@ -124,7 +125,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                             normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
                             pp_results.append(normalization_results)
                             process_ids.append(process_id)
-                            
+                            normalization_results['datasetId'] = datasetId
                             create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                         except Exception as e:
                             redislogger.error(job_id, f"UMAP or clustering is failed for {layer}: {e}")
@@ -148,6 +149,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                                 process_ids.append(process_id)
                                 
                                 adata.write_h5ad(adata_sct_path, compression='gzip')
+                                normalization_results['datasetId'] = datasetId
                                 create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                             except Exception as e:
                                 redislogger.error(job_id, f"UMAP or clustering is failed for {layer}: {e}")
@@ -183,6 +185,8 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
     upsert_jobs(
         {
             "job_id": job_id, 
+            "datasetId": datasetId,
+            "process_ids": process_ids,
             "output": normalization_output,
             "results": results,
             "completed_on": datetime.now(),

@@ -27,7 +27,7 @@ def run_benchmarks(job_id, task_dict:dict):
     if(task_type=="Clustering"):
         try:
             if os.path.exists(adata_path):
-                clustering_results = clustering_task(adata_path, label, datasetId, job_id, task_type)
+                clustering_results = clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_type)
                 upsert_benchmarks(benchmarksId, clustering_results)
                 results = {
                     "datasetId": datasetId,
@@ -39,13 +39,13 @@ def run_benchmarks(job_id, task_dict:dict):
                         "job_id": job_id, 
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
-                        "results": results,
+                        "results": clustering_results,
                         "completed_on": datetime.now(),
                         "status": "Success"
                     }
                 )
 
-                return results
+                return clustering_results
             else:
                 detail = f'File does not exist at {adata_path}'
                 raise CeleryTaskException(detail)

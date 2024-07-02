@@ -5,7 +5,6 @@ import { NODE_API_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
-import { useNavigate } from 'react-router-dom';
 import AccessDenied from '../../AccessDeniedPage';
 
 class MyForm extends Component {
@@ -169,7 +168,6 @@ class MyForm extends Component {
     if (Object.keys(errors).length === 0) {
       let formData = this.state.formData;
 
-      
       // construct ID 
       // const task_abbv = formData.Task.value;
       const species = formData.Species.value;
@@ -178,7 +176,7 @@ class MyForm extends Component {
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
-      if(flow === 'upload') {
+      if(flow === 'upload') {  // Benchmark Dataset
         // formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
         if (typeof taskData.quality_control !== 'undefined') {
           if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
@@ -237,8 +235,8 @@ class MyForm extends Component {
       formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;
       // formData.output = taskData.quality_control.seurat_meta?.output;
 
-      } else {
-        const constructedID = `${species}-${tissue}-${author}-${year}`;
+      } else { // User Dataset
+        const constructedID = `U-${species}-${tissue}-${author}-${year}@${this.state.username}`; // U indicates user datasets
         formData.Id = constructedID;
         formData.fileDetails = taskData.upload.final_files;
         formData.files = taskData.upload.files;
@@ -252,6 +250,7 @@ class MyForm extends Component {
       }
 
       formData.flow = flow;
+      // console.log('flow:', flow);
 
       axios.post(`${NODE_API_URL}/submitDatasetMetadata`, formData)
       .then(response => {
@@ -278,11 +277,16 @@ class MyForm extends Component {
           ...prevTaskStatus,
           4: true, // Mark Task 4 as completed
         }));
+
+        if (flow === "uploadMyData") {
+          window.location.href = "/mydata";
+        }
+        
       })
       .catch(error => {
-        console.error('Error submitting form data:', error.response.data.error);
+        console.error('Error when submitting metadata:', error.response.data.error);
         this.setState({
-          message: 'Error submitting form data: ' + error.response.data.error,
+          message: 'Error when submitting metadata: ' + error.response.data.error,
           hasMessage: true, // Set hasMessage to true when a message is set
         });
       });

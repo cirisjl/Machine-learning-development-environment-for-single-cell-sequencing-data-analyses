@@ -12,7 +12,7 @@ import { Typography } from '@material-ui/core';
 import Intl from 'intl';
 import 'intl/locale-data/jsonp/en-US';
 import { useNavigate } from 'react-router-dom';
-import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
+import { NODE_API_URL, WEB_SOCKET_URL, CELERY_BACKEND_API } from '../../constants/declarations'
 import Pagination from '../publishDatasets/components/tablePaginationComponent';
 import '../publishDatasets/publishDatasets.css';
 
@@ -138,8 +138,13 @@ const TaskTable = () => {
         }
         axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`)
             .then(response => {
-                console.log('Job is deleted successfully');
-                fetchTasks(pagination.page);
+                axios.post(`${CELERY_BACKEND_API}/task/revoke/${jobID}`).then(response => {
+                    console.log('Job is deleted successfully');
+                    fetchTasks(pagination.page);
+                })
+                    .catch(error => {
+                        console.error('Error deleting job:', error);
+                    });
             })
             .catch(error => {
                 console.error('Error deleting job:', error);

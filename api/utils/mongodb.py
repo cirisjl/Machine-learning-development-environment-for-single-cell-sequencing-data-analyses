@@ -50,12 +50,30 @@ def create_pp_results(process_id, pp_results):
         pp_results.pop("_id")
     return
 
+# Append new process_ids to dataset after each process
+def append_pp_ids_to_ds(process_ids, dataset_id):
+    collection = datasets_collection
+    if dataset_id.split("-")[0] == "U":
+        print("Appending new process_ids to user dataset")
+        collection = user_datasets_collection
+    result = collection.find_one({'Id': dataset_id})
+    if  "process_ids" not in result:
+        collection.update_one({'Id': dataset_id}, {'$set': {'process_ids': process_ids}})
+    else:
+        pp_ids = list(set(process_ids)|set(result['process_ids']))
+        collection.update_one({'Id': dataset_id}, {'$set': {'process_ids': pp_ids}})
+    return
+
 
 def upsert_jobs(data):
     data = clear_dict(data)
     job_id = data['job_id']
     # data.pop("job_id")
     jobs_collection.update_one({'job_id': job_id}, {'$set': data}, upsert=True)
+
+    if "process_ids" in data and "datasetId" in data: # Append new process_ids to dataset
+        append_pp_ids_to_ds(data['process_ids'], data['datasetId'])
+
     if "_id" in data: 
         data.pop("_id")
     return
@@ -70,6 +88,22 @@ def upsert_benchmarks(benchmarksId, results):
     if "_id" in results: 
         results.pop("_id")
     return
+
+
+def create_bm_results(process_id, bm_results):
+    bm_results = clear_dict(bm_results)
+    try:
+        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
+    except DuplicateKeyError:
+        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
+    if "_id" in bm_results: 
+        bm_results.pop("_id")
+    return
+
+
+def benchmark_result_exists(process_id):
+    result = bm_results_collection.find_one({'process_id': process_id}, {'_id': 0})
+    return result
 
 
 def upsert_workflows(workflows_id, results):
@@ -97,19 +131,3 @@ def clear_dict(d):
     drop_falsey = lambda path, key, value: value is not None and value != [] and value != {} and value != [{}]
     d = remap(d, visit=drop_falsey)
     return d
-
-
-def create_bm_results(process_id, bm_results):
-    bm_results = clear_dict(bm_results)
-    try:
-        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
-    except DuplicateKeyError:
-        bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
-    if "_id" in bm_results: 
-        bm_results.pop("_id")
-    return
-
-
-def benchmark_result_exists(process_id):
-    result = bm_results_collection.find_one({'process_id': process_id}, {'_id': 0})
-    return result

@@ -354,7 +354,7 @@ function TaskDetailsComponent() {
               </Card>
             </Grid>
 
-            {(status?.toLowerCase() != "success" && status?.toLowerCase() != "failure") && <Grid item xs={12}  >
+            {(status?.toLowerCase() !=="success" && status?.toLowerCase() !=="failure") && <Grid item xs={12}  >
               <Card raised sx={cardStyle}>
                 <CardHeader title="Live Logs" />
                 <CardContent sx={cardContentStyle}>

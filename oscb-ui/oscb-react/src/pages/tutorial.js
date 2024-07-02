@@ -46,7 +46,7 @@ export default function Tutorial() {
             <div className="main-content">
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
-            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
+            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
                 <RightRail />
             </div>)}
         </div>

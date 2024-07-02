@@ -406,7 +406,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
         {
             "job_id": task.id, 
             "description": "Run Benchmarks",
-            "dataset_id": task_dict['datasetId'],
+            "datasetId": task_dict['datasetId'],
             "method": task_dict['task_type'],
             "datasetURL": task_dict['adata_path'],
             "process": task_dict['task_type'],
@@ -428,7 +428,7 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
         {
             "job_id": task.id, 
             "description": "Run Data Split",
-            "dataset_id": data_dict['datasetId'],
+            "datasetId": data_dict['datasetId'],
             "method": "Data Split",
             "datasetURL": data_dict['adata_path'],
             "process": "Data Split",
@@ -450,7 +450,7 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
         {
             "job_id": task.id, 
             "description": "Run Subset Data",
-            "dataset_id": data_dict['datasetId'],
+            "datasetId": data_dict['datasetId'],
             "method": f"{data_dict['obskey']}: {data_dict['values']}",
             "datasetURL": data_dict['adata_path'],
             "process": "Subset Data",

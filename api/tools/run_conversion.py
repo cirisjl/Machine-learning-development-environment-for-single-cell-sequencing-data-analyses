@@ -1,8 +1,8 @@
 import os
 from tools.formating.formating import *
-from config.celery_utils import get_input_path, get_output
+# from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
+from utils.mongodb import upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from exceptions.custom_exceptions import CeleryTaskException

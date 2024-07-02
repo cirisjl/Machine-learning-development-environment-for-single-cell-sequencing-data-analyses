@@ -3,7 +3,7 @@ import hashlib
 from pathlib import Path
 # import tempfile
 import shutil
-from benchmarks.clustering import clustering_task
+# from benchmarks.clustering import clustering_task
 from utils.redislogger import *
 from utils.mongodb import upsert_benchmarks, upsert_jobs
 from utils.unzip import unzip_file_if_compressed

@@ -18,6 +18,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     userID = ds['userID']
     output = ds['output']
     methods = "UMAP"
+    datasetId = ds['dataset_id']
     parameters = ds['reduction_params']
     layer = None
     layers = None
@@ -53,6 +54,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             output = get_output_path(output, dataset=dataset, method='UMAP')
             adata.write_h5ad(output, compression='gzip')
             adata = None
+            reduction_results['datasetId'] = datasetId
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database
             redislogger.info(job_id, "AnnData object for UMAP reduction is saved successfully")
         except Exception as e:
@@ -82,6 +84,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     upsert_jobs(
         {
             "job_id": job_id, 
+            "datasetId": datasetId,
             "output": output,
             "layers": layers,
             "results": results,

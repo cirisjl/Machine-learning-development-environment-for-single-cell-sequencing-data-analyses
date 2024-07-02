@@ -51,7 +51,7 @@ export default function GetStarted() {
             </div>
 
             <div className="right-rail">
-                <RightRail />
+                {(jwtToken != undefined || jwtToken != '') && (<RightRail />)}
             </div>        
             
         </div>
