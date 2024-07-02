@@ -40,6 +40,8 @@ import SessionReminder from './Session/sessionManager';
 import { SessionProvider } from './Session/context/sessionContext'; 
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
+import HandleVisualize from './publishDatasets/components/handleVisualize';
+
 
 function App() {
   
@@ -85,6 +87,8 @@ function App() {
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
           <Route path="testapi"         element={<QualityControlParameters/>}/>
+          <Route path="handleVisualize/:id"           element={<HandleVisualize/>}/>
+
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>

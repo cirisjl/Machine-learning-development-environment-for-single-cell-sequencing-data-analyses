@@ -1,7 +1,8 @@
-import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import moment from 'moment';
 import { getCookie } from '../../utils/utilFunctions';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
@@ -13,6 +14,7 @@ import 'intl/locale-data/jsonp/en-US';
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 import Pagination from '../publishDatasets/components/tablePaginationComponent';
+import '../publishDatasets/publishDatasets.css';
 
 const TableWrapper = styled.div`
   display: flex;
@@ -24,7 +26,7 @@ const TableWrapper = styled.div`
 const Table = styled.table`
   border-collapse: collapse;
   width: 95%;
-  max-width: 1000px;
+  /* max-width: 1000px; */
   min-width: 500px;
 `;
 
@@ -128,6 +130,22 @@ const TaskTable = () => {
         fetchTasks(newPage);
     };
 
+    const handleDelete = (jobID) => {
+        console.log("Delete job: ", jobID);
+        const confirmDelete = window.confirm("Are you sure to delete this job?");
+        if (!confirmDelete) {
+            return; // If user clicks cancel, do nothing
+        }
+        axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`)
+            .then(response => {
+                console.log('Job is deleted successfully');
+                fetchTasks(pagination.page);
+            })
+            .catch(error => {
+                console.error('Error deleting job:', error);
+            });
+    };
+
     useEffect(() => {
         if (!jwtToken)
             navigate('/routing');       
@@ -206,8 +224,12 @@ const TaskTable = () => {
                                     </TableCell>
                                     {task.status ? (
                                         <TableCell>
-                                            <a onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, output: task.output, results: task.results, status: task.status } }); } }
-                                                style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faEye} /></a></TableCell>
+                                            <a onClick={() => handleDelete(task.job_id)}
+                                                style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faTrash} /></a>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                            <a onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, output: task.output, results: task.results, status: task.status } }); }}
+                                                style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faEye} /></a>
+                                        </TableCell>
                                     ) : (
                                         <TableCell></TableCell>
                                     )}

@@ -706,3 +706,294 @@
   background-color: rgba(0,0,0,.1);
   border-radius: 4px;
 }
+
+
+.message-box{
+  top: 25px;
+  position: fixed !important;
+}
+
+.dialog1{
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 65%;
+  height: 90vh;
+  overflow-y: auto;
+  background-color: grey;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* ------------------------------------------------------------- */
+
+.my-form-container1 {
+  /* max-width: 500px; */
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  height: 2850px !important;
+
+}
+
+.my-form-container1 .message-box{
+  top: 25px;
+  position: fixed !important;
+}
+
+.my-form-container1 .form-input:not([type=radio]):not([type=checkbox]) {
+  width: auto !important;
+}
+
+.form-title1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form1 {
+  display: grid;
+  gap: 15px;
+}
+
+.form-field1 {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label1 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+.form-input1 {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.tab {
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  color:#3d5a87;
+}
+
+.tab button:hover {
+  background-color: #ddd;
+}
+
+.tab button.active {
+  background-color: #fff;
+  color:#333;
+}
+
+.tab-content {
+  padding: 20px;
+  background-color: #f1f1f1;
+  border: 1px solid #e3e3e3;
+  border-top: none;
+}
+
+.tab-content h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.tab-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.tab-content .close-button {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.tab-content .close-button:hover {
+  background-color: dodgerblue;
+}
+
+.tab-content{
+  width: 100vh;
+  /* height: 100vh; */
+  border: 2px solid #f00;
+  background-color: white;
+  margin-top: 20px;
+}
+
+.dialog1 {
+  /* background-color: #fafafa; */
+  border-radius: 4px;
+  /* width: 70%;  */
+}
+
+.tab-panel {
+  padding: 20px;
+}
+
+.tab-panel > h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.tab-panel > p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-top: 10px;
+  text-align:justify;
+}
+
+.tab-panel > hr {
+  margin: 10px 0;
+  border: none;
+  border-bottom: 1px solid black;
+}
+
+
+/* --------------------------------------------------------------------- */
+
+.dataset-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dataset-dialog-container {
+  display: flex;
+  max-width: 1200px;
+}
+
+.side-panel {
+  flex: 1;
+  padding: 20px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.dataset-dialog {
+  flex: 2;
+  padding: 20px;
+  margin-bottom: 40px;
+
+}
+
+.dataset-tabs {
+  display: flex;
+  justify-content: flex-start; /* Align items to the start (left) */
+  gap: 10px;
+  margin-bottom: 40px;
+  position: absolute;
+  top: 90px; /* Adjust this value according to your design */
+  left: 145px; /* Adjusted left value */
+  z-index: 999; /* Ensure it's above other content */
+}
+
+
+
+.dataset-tabs button {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dataset-tabs button.active-tab {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.dataset-tab-panel {
+  margin-top: 20px;
+}
+
+.dataset-tab-panel h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.dataset-tab-panel p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.dataset-tab-panel hr {
+  margin: 10px 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+.dataset-tab-content {
+  background-color: #fefefe;
+
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin-top: 60px; /* Adjusted margin-top value to move it below the tabs */
+  margin-bottom: 30px;}
+
+.side-panel {
+  background-color: #fefefe;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin-top: 78px !important;
+
+}
+
+.side-panel h2 {
+  font-size: 18px;
+  margin-top: 0;
+}
+
+.side-panel p {
+  margin: 5px 0;
+}
+
+.side-panel hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 10px 0;
+}
+
+.dataset-container {
+  background-color: #ebe8e8;
+}
+
+#plot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh; /* Makes the container take the full height of the viewport */
+  font-size: 1.5rem; /* Increases the font size */
+}

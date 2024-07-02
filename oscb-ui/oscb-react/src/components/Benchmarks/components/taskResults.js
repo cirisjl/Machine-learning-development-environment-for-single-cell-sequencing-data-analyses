@@ -217,7 +217,7 @@ const onPageChange = (newPage) => {
                 </div>
                 
                 <div className='table-results'>
-                     <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination}/>
+                  <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination} showEdit={false} showDelete={false} />
                 </div>
               </div>
               

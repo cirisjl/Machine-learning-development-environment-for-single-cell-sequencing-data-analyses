@@ -283,7 +283,7 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                         </div>
                         
                         <div className='table-results'>
-                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination}/>
+                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination} showEdit={false} showDelete={false} />
                         </div>
                     </div>
                   ) : (
