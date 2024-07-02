@@ -16,7 +16,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jopbsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -576,92 +576,92 @@ app.put('/node/updateDataset', async (req, res) => {
     });
 });
 
-app.delete('/node/deleteDataset', async (req, res) => {
-    const { authToken, dataset } = req.query;
-    const username = getUserFromToken(authToken);
+// app.delete('/node/deleteDataset', async (req, res) => {
+//     const { authToken, dataset } = req.query;
+//     const username = getUserFromToken(authToken);
 
-    pool.getConnection(function (err, connection) {
-        if (err) {
-            console.error('Error getting DB connection:', err);
-            return res.status(500).send('Database connection error');
-        }
+//     pool.getConnection(function (err, connection) {
+//         if (err) {
+//             console.error('Error getting DB connection:', err);
+//             return res.status(500).send('Database connection error');
+//         }
 
-        connection.beginTransaction(function (err) {
-            if (err) {
-                console.error('Error starting transaction:', err);
-                connection.release();
-                return res.status(500).send('Transaction error');
-            }
+//         connection.beginTransaction(function (err) {
+//             if (err) {
+//                 console.error('Error starting transaction:', err);
+//                 connection.release();
+//                 return res.status(500).send('Transaction error');
+//             }
 
-            // Run SELECT command
-            connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
-                if (err) {
-                    console.error('Error in SELECT query:', err);
-                    connection.rollback(function () {
-                        connection.release();
-                    });
-                    return res.status(500).send('Database query error');
-                }
+//             // Run SELECT command
+//             connection.query('SELECT user_id FROM users WHERE username = ? LIMIT 1', [username], function (err, userRows) {
+//                 if (err) {
+//                     console.error('Error in SELECT query:', err);
+//                     connection.rollback(function () {
+//                         connection.release();
+//                     });
+//                     return res.status(500).send('Database query error');
+//                 }
 
-                const userId = userRows[0].user_id;
+//                 const userId = userRows[0].user_id;
 
-                if (!userId) {
-                    res.status(400).send('User not found');
-                    connection.rollback(function () {
-                        connection.release();
-                    });
-                    return;
-                }
+//                 if (!userId) {
+//                     res.status(400).send('User not found');
+//                     connection.rollback(function () {
+//                         connection.release();
+//                     });
+//                     return;
+//                 }
 
-                connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, dataset], function (err, datasetRows) {
-                    if (err) {
-                        console.error('Error in SELECT query for dataset:', err);
-                        connection.rollback(function () {
-                            connection.release();
-                        });
-                        return res.status(500).send('Dataset query error');
-                    }
+//                 connection.query('SELECT dataset_id FROM dataset WHERE user_id = ? and title = ? LIMIT 1', [userId, dataset], function (err, datasetRows) {
+//                     if (err) {
+//                         console.error('Error in SELECT query for dataset:', err);
+//                         connection.rollback(function () {
+//                             connection.release();
+//                         });
+//                         return res.status(500).send('Dataset query error');
+//                     }
 
-                    const datasetId = datasetRows[0].dataset_id;
+//                     const datasetId = datasetRows[0].dataset_id;
 
-                    if (!datasetId) {
-                        res.status(400).send('Dataset not found');
-                        connection.rollback(function () {
-                            connection.release();
-                        });
-                        return;
-                    }
+//                     if (!datasetId) {
+//                         res.status(400).send('Dataset not found');
+//                         connection.rollback(function () {
+//                             connection.release();
+//                         });
+//                         return;
+//                     }
 
-                    connection.query('delete FROM file WHERE dataset_id=?', [datasetId], function (err, datasetResult) {
-                        if (err) {
-                            console.error('Error deleting files:', err);
-                            connection.rollback(function () {
-                                connection.release();
-                            });
-                            return res.status(500).send('Error deleting files');
-                        }
-                        connection.query('DELETE FROM dataset where dataset_id=?', [datasetId]);
+//                     connection.query('delete FROM file WHERE dataset_id=?', [datasetId], function (err, datasetResult) {
+//                         if (err) {
+//                             console.error('Error deleting files:', err);
+//                             connection.rollback(function () {
+//                                 connection.release();
+//                             });
+//                             return res.status(500).send('Error deleting files');
+//                         }
+//                         connection.query('DELETE FROM dataset where dataset_id=?', [datasetId]);
 
-                        // Commit transaction
-                        connection.commit(function (err) {
-                            if (err) {
-                                console.error('Error committing transaction:', err);
-                                    connection.rollback(function () {
-                                        connection.release();
-                                    });
-                                    return res.status(500).send('Transaction commit error');
-                            }
+//                         // Commit transaction
+//                         connection.commit(function (err) {
+//                             if (err) {
+//                                 console.error('Error committing transaction:', err);
+//                                     connection.rollback(function () {
+//                                         connection.release();
+//                                     });
+//                                     return res.status(500).send('Transaction commit error');
+//                             }
 
-                            console.log('Transaction completed successfully');
-                            connection.release();
-                            res.status(200).jsonp('Dataset deleted.');
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
+//                             console.log('Transaction completed successfully');
+//                             connection.release();
+//                             res.status(200).jsonp('Dataset deleted.');
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+//     });
+// });
 
 
 app.post('/node/renameFile', async (req, res) => {
@@ -1213,7 +1213,7 @@ app.post('/node/job/create', async (req, res) => {
         await client.connect();
         const db = client.db(dbName);
 
-        const collection = db.collection(jopbsCollection);
+        const collection = db.collection(jobsCollection);
         
         await collection.insertOne(formData);
         console.log('Form data submitted successfully');
@@ -1244,7 +1244,7 @@ app.get('/node/getTasks', async (req, res) => {
       const db = client.db(dbName);
   
       // Get reference to the task_results collection
-      const collection = db.collection(jopbsCollection);
+      const collection = db.collection(jobsCollection);
   
       // Query documents from the collection
       if (top === 0) {
@@ -1277,6 +1277,37 @@ app.get('/node/getTasks', async (req, res) => {
       await client.close();
     }
   });
+
+
+app.delete('/node/deleteJob', async (req, res) => {
+    const jobID = req.query.jobID;
+    console.log("jobID: ", jobID);
+
+    if (!jobID) {
+        return res.status(400).json({ error: 'Job ID is required' });
+    }
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(jobsCollection);
+
+        const result = await collection.deleteOne({ job_id: jobID });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json({ message: 'Job is deleted successfully' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
 
 app.put('/node/updateTaskStatus', (req, res) => {
     const { job_ids, status } = req.body;
@@ -2626,7 +2657,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   // API endpoint to get process results based on an array of process_ids
 app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
-    const projection = { _id: 0, process_id:1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
+    const projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {
@@ -2684,6 +2715,155 @@ app.post('/node/getPreProcessResults', async (req, res) => {
         client.close();
     }
 });
+
+
+app.post('/node/editDatasetMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollection);
+
+        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+
+        // Check if a document with the provided Id exists
+        const existingDocument = await collection.findOne({ Id: formData.Id });
+
+        if (!existingDocument) {
+            console.log('Document with Id does not exist:', formData.Id);
+            res.status(404).json({ error: 'Document with the provided Id does not exist' });
+        } else {
+            // Document with the provided Id exists, proceed with updating
+            await collection.updateOne({ Id: formData.Id }, { $set: formData });
+            console.log('Form data updated successfully');
+            res.status(200).json({ message: 'Form data updated successfully' });
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+
+app.get('/node/fetchDataforVisualize/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollection);
+
+        const existingDocument = await collection.findOne({ Id: id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+
+app.get('/node/fetchPpResults', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        // Find all documents (no query criteria)
+        const documents = await collection.find().toArray();
+        console.log("ppresult", documents);
+
+        // Check if any documents were found
+        if (documents.length === 0) {
+            return res.status(404).json({ error: 'No documents found' });
+        } else {
+            res.status(200).json(documents); // Send all documents found
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+
+app.get('/node/fetchGraphData/:process_id', async (req, res) => {
+    const { process_id } = req.params;
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        const existingDocument = await collection.findOne({ process_id: process_id });
+
+        if (!existingDocument) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json(existingDocument);
+
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        // Ensure the client will close when you finish/error
+        await client.close();
+    }
+});
+
+
+app.delete('/node/deleteDataset', async (req, res) => {
+    const { id } = req.body;
+    console.log("id in delete", id);
+
+    if (!id) {
+        return res.status(400).json({ error: 'ID is required' });
+    }
+
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(datasetCollection);
+
+        const result = await collection.deleteOne({ Id: id });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Document not found' });
+        } else {
+            res.status(200).json({ message: 'Document deleted successfully' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

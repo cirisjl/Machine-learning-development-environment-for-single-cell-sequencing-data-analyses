@@ -1,4 +1,4 @@
-import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {useState} from 'react';
 import { useTable, useRowSelect } from 'react-table';
@@ -11,7 +11,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, showEdit=false, showDelete=false }) => {
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -21,7 +21,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     // Calculate the starting and ending result numbers for the current page
     const startResult = (page - 1) * pageSize + 1;
     const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
-
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
@@ -82,6 +81,16 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         // Implement your visualization logic here
     };
 
+    const handleEdit = (dataset) => {
+        console.log("Edit dataset: ", dataset);
+        // Implement your visualization logic here
+    };
+
+    const handleDelete = (dataset) => {
+        console.log("Delete dataset: ", dataset);
+        // Implement your visualization logic here
+    };
+
     const columns = React.useMemo(() => {
         if (data.length === 0) {
             return [];
@@ -124,18 +133,22 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         onChange={() => onSelectDataset(item)}
                         checked={!!selectedDatasets[item["Id"]]}
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
-
                     />
-                    { /* <button
+                    { showEdit && (<button
                         onClick={() => handleEdit(item["Id"])}
-                        className="action-button"
-                    >
+                        className="action-button">
                         <FontAwesomeIcon icon={faEdit} />
-                    </button> */ }
+                    </button>) }
+
+                    { showDelete && (<button
+                        onClick={() => handleDelete(item["Id"], item)}
+                        className="action-button">
+                        <FontAwesomeIcon icon={faTrash} />
+                    </button>)}
+
                     <button
                         onClick={() => handleVisualize(item["Id"])}
-                        className="action-button"
-                    >
+                        className="action-button">
                         <FontAwesomeIcon icon={faEye} />
                     </button>
                 </div>

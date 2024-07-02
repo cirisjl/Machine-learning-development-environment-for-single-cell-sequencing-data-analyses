@@ -270,7 +270,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage }) 
                         </div>                
                         
                         <div className='table-results'>
-                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination}/>
+                          <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} showEdit={true} showDelete={true} />
                         </div>
 
                         <div className='table-pagination'>

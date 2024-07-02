@@ -69,7 +69,8 @@
      "uuid": "*",
      "@octokit/rest": "*",
      "ajv": "^7.0.3",
-     "moment": "*"
+     "moment": "*",
+     "primereact": "*"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",

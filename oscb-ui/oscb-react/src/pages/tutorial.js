@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from 'axios';
 import ReactMarkdown from "react-markdown"
-import LeftNav from "../components/LeftNavigation/leftNav";
+// import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
 import RightRail from "../components/RightNavigation/rightRail";

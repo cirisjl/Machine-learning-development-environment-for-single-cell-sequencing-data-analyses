@@ -187,9 +187,9 @@ function TaskDetailsComponent() {
         try {
           const taskInfoResponse = await fetch(`${CELERY_BACKEND_API}/api/task/${job_id}`);
           const taskInfoData = await taskInfoResponse.json();
-          console.log("taskInfoData", taskInfoData);
+          // console.log("taskInfoData", taskInfoData);
           setTaskResult(taskInfoData.task_result);
-          console.log("taskInfoData.task_result", taskInfoData.task_result);
+          // console.log("taskInfoData.task_result", taskInfoData.task_result);
           if ("output" in taskInfoData.task_result) {
             setTaskOutput(taskInfoData.task_result.output);
           }

@@ -5,7 +5,7 @@
     "datasetCollection": "datasets",
     "taskBuilderCollectionName": "benchmarks",
     "userDatasetsCollection": "user_datasets",
-    "jopbsCollection": "jobs",
+    "jobsCollection": "jobs",
     "preProcessResultsCollection": "pp_results",
     "benchmarksCollection": "benchmarks",
     "errorlogcollection": "error_log"
