@@ -15,7 +15,7 @@ import {SERVER_URL} from '../../../constants/declarations'
 import axios from 'axios';
 import '../publishDatasets.css';
 import { useNavigate } from 'react-router-dom';
-import { TreeTable } from 'primereact/treetable';
+// import { TreeTable } from 'primereact/treetable';
 
 
 
@@ -578,9 +578,9 @@ axios.post(`${SERVER_URL}/mongoDB/api/editDatasetMetadata`, formData)
                     })}
                 </tbody>
             </table>
-            <TreeTable>
+            {/* <TreeTable>
               
-            </TreeTable>
+            </TreeTable> */}
         </div>
         <div>
 
