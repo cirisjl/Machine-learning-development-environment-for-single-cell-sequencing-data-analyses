@@ -257,7 +257,7 @@ class EditForm extends Component {
       .then(response => {
         console.log('Form data submitted successfully');
         this.setState({
-          message: 'Dataset created Successfully!',
+          message: 'Dataset is created Successfully!',
           hasMessage: true, // Set hasMessage to true when a message is set
         });
 

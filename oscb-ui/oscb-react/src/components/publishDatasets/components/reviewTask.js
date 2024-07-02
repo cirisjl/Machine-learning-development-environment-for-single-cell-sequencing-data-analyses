@@ -27,8 +27,6 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
   };
   
   const handleTaskCompletion = () => {
-
-
     let documents = [];
 
     Object.entries(taskData.task_builder.selectedDatasets).forEach(([datasetId, datasetDetails]) => {
@@ -71,7 +69,6 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
         }
     });
     
-
     axios.post(`${NODE_API_URL}/submitTaskMetadata`, documents)
     .then(response => {
       const { data } = response;
@@ -111,7 +108,9 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     }));
 
     console.log("All tasks completed");
-    console.log(taskData);
+
+    window.location.href = "/benchmarks";
+    // console.log(taskData);
   };
 
   return (

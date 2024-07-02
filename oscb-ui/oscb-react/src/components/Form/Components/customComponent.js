@@ -254,7 +254,7 @@ class MyForm extends Component {
 
       axios.post(`${NODE_API_URL}/submitDatasetMetadata`, formData)
       .then(response => {
-        console.log('Form data submitted successfully');
+        console.log('Metadata is submitted successfully');
         this.setState({
           message: 'Dataset created Successfully!',
           hasMessage: true, // Set hasMessage to true when a message is set

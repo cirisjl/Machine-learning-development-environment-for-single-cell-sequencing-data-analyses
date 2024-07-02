@@ -122,7 +122,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       }));
       const postBody = body[0];
 
-      fetch(`${CELERY_BACKEND_API}/api/benchmarks/create`, {
+      fetch(`${CELERY_BACKEND_API}/benchmarks/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -143,7 +143,7 @@ const handleLogMessage = (event) => {
       }
 
  
-      const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
+      const response = await axios.post(`${CELERY_BACKEND_API}/tools/qc`, inputRequest);
       const taskInfo = response.data;
       const jobId = taskInfo.job_id;
       setjobId(jobId);
@@ -285,7 +285,7 @@ const handleAssaySelectionSubmit = async () => {
     }
 
   
-      const response = await axios.post(`${CELERY_BACKEND_API}/api/tools/qc`, inputRequest);
+      const response = await axios.post(`${CELERY_BACKEND_API}/tools/qc`, inputRequest);
 
       const taskInfo = response.data;
 

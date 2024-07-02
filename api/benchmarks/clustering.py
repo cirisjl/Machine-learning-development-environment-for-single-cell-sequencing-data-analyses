@@ -10,7 +10,7 @@ from datetime import datetime
 
 def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_type='clustering'):
     redislogger.info(job_id, "Start running benchmarks for clustering task.")
-    bm_ids = []
+    clustering_results = []
     y_values = {}
     y_values_ur = {}
     x_timepoints = None
@@ -54,7 +54,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values_ur['Scanpy_Memory'] = scanpy_results['mem_usage']
         y_values_ur['Scanpy_GPU'] = scanpy_results['gpu_mem_usage']
         x_timepoints = scanpy_results['time_points']
-        bm_ids.append(process_id)
+        clustering_results.append({'scanpy': scanpy_results})
         redislogger.info(job_id, "scanpy clustering is done.")
         redislogger.info(job_id, f"Silhouette: {scanpy_results['asw_score']}, NMI: {scanpy_results['nmi_score']}, ARI: {scanpy_results['ari_score']}")
 
@@ -75,6 +75,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             asw_seurat, nmi_seurat, ari_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, label)
 
             seurat_results = {
+                "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
                 "tool": "Seurat",
@@ -96,7 +97,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values_ur['Seurat_GPU'] = seurat_results['gpu_mem_usage']
         if len(x_timepoints) < len(seurat_results['time_points']):
             x_timepoints = seurat_results['time_points']
-        bm_ids.append(process_id)
+        clustering_results.append({'Seurat': seurat_results})
         redislogger.info(job_id, "Seurat clustering is done.")
         redislogger.info(job_id, f"Silhouette: {seurat_results['asw_score']}, NMI: {seurat_results['nmi_score']}, ARI: {seurat_results['ari_score']}")
 
@@ -117,6 +118,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label)
 
             scvi_results = {
+                "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
                 "tool": "scVI",
@@ -137,7 +139,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values_ur['scvi_GPU'] = scvi_results['gpu_mem_usage']
         if len(x_timepoints) < len(scvi_results['time_points']):
             x_timepoints = scvi_results['time_points']
-        bm_ids.append(process_id)
+        clustering_results.append({'scvi': scvi_results})
         redislogger.info(job_id, "scvi clustering is done.")
         redislogger.info(job_id, f"Silhouette: {scvi_results['asw_score']}, NMI: {scvi_results['nmi_score']}, ARI: {scvi_results['ari_score']}")
 
@@ -157,10 +159,11 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     
     results = {
         # "adata_path": adata_path,
+        "benchmarksId": benchmarksId,
         "datasetId": datasetId,
         "task_type": task_type,
         "metrics": metrics,
-        "bm_ids": bm_ids,
+        "results": clustering_results,
         "benchmarks_plot": benchmarks_plot,
         "utilization_plot": utilization_plot
     }
