@@ -1,6 +1,6 @@
 // Development
 export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001/node`;
-export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5005`;
+export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5005/api`;
 export const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
 export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5005`;
 export const UPPY_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3020`;

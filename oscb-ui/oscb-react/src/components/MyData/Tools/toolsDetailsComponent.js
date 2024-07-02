@@ -148,7 +148,7 @@ export default function ToolsDetailsComponent(props) {
             const titlesArray = datasetsArray.map(dataset => dataset.Title);
             const idsArray = datasetsArray.map(dataset => dataset.Id);
             formData.dataset = titlesArray;
-            formData.id = idsArray;
+            formData.datasetIds = idsArray;
 
              let inputArray = datasetsArray.map(dataset => {
               if (dataset.inputFiles.length > 1) {
@@ -163,7 +163,7 @@ export default function ToolsDetailsComponent(props) {
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
-            
+              formData.dataset_id = dataset.Id;
               if (dataset.inputFiles.length > 1) {
                 formData.input = extractDir(dataset.inputFiles[0]);
                 formData.output = formData.input + "/Results";
@@ -199,7 +199,6 @@ export default function ToolsDetailsComponent(props) {
           }
 
           formData.description = job_description;
-          formData.dataset_id = formData.id;
           formData.method = method;
           formData.process = filterStaticCategoryMap[filterCategory];
       

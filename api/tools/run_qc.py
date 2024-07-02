@@ -23,7 +23,7 @@ def run_qc(job_id, ds:dict, random_state=0):
     qc_output = []
     userID = ds['userID']
     input_path = unzip_file_if_compressed(job_id, ds['input'])
-    
+    datasetId = ds['dataset_id']
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
     assay_names = []
@@ -120,6 +120,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                     qc_output.append({"scanpy": output_path})
                     scanpy_results = None
                     redislogger.info(job_id, qc_results['info'])
+                    qc_results['datasetId'] = datasetId
                     create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 else:
                     # Run Scanpy QC 
@@ -145,6 +146,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                         scanpy_results.write_h5ad(output_path, compression='gzip')
                         scanpy_results = None
                         redislogger.info(job_id, qc_results['info'])
+                        qc_results['datasetId'] = datasetId
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                     except Exception as e:
                         detail = f"Error during scanpy QC: {str(e)}"
@@ -193,6 +195,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                     dropkick_results.write_h5ad(output_path, compression='gzip')
                     dropkick_results = None
                     redislogger.info(job_id, qc_results['info'])
+                    qc_results['datasetId'] = datasetId
                     create_pp_results(process_id, qc_results) # Insert pre-process results to database
                 else:
                     try:
@@ -218,6 +221,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                         qc_output.append({"Dropkick": output_path})
                         dropkick_results = None
                         redislogger.info(job_id, qc_results['info'])
+                        qc_results['datasetId'] = datasetId
                         create_pp_results(process_id, qc_results) # Insert pre-process results to database
                     except Exception as e:
                         detail = f"Error during Dropkick QC: {str(e)}"
@@ -274,6 +278,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                 redislogger.info(job_id, qc_results['info'])
                 # adata.write_h5ad(adata_path, compression='gzip')
                 qc_output.append({"Seurat": adata_path})
+                qc_results['datasetId'] = datasetId
                 create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 adata = None         
             except Exception as e:
@@ -346,6 +351,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                 qc_output.append({"Bioconductor": adata_path})
                 adata = None
                 redislogger.info(job_id, qc_results['info'])
+                qc_results['datasetId'] = datasetId
                 create_pp_results(process_id, qc_results)  # Insert pre-process results to database            
             except Exception as e:
                 detail = f"Error during Bioconductor QC: {str(e)}"
@@ -378,6 +384,8 @@ def run_qc(job_id, ds:dict, random_state=0):
     upsert_jobs(
         {
             "job_id": job_id, 
+            "datasetId": datasetId,
+            "process_ids": process_ids,
             "nCells": nCells,
             "output": qc_output,
             "default_assay": assay,

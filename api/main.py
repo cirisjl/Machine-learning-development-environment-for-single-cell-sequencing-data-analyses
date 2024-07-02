@@ -2,6 +2,7 @@ import time
 import uvicorn as uvicorn
 from fastapi import FastAPI, WebSocket, Request, Query
 from celery.result import AsyncResult
+from celery.app.control import Control
 import asyncio
 from fastapi.responses import HTMLResponse
 
@@ -41,6 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+celery_control = Control(app=celery)
 
 
 @app.middleware("http")
@@ -111,6 +114,22 @@ async def get_task_status(job_id: str) -> dict:
     Return the status of the submitted Task
     """
     return get_task_info(job_id)
+
+
+@app.post("/api/task/revoke/{job_id}")
+async def revoke_task(job_id: str) -> dict:
+    """
+    Revoke a submitted Task
+    """
+    celery_control.revoke(job_id, terminate=True)
+
+    result = {
+        "job_id": job_id,
+        "task_status": "Revoked",
+        "task_result": f"Task {job_id} is revoked."
+    }
+    
+    return result
 
 
 if __name__ == "__main__":

@@ -23,6 +23,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
+    datasetId = ds['dataset_id']
     parameters = ds['imputation_params']
     layer = parameters['layer']
     methods = parameters['methods']
@@ -81,6 +82,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 imputation_output.append({"MAGIC": output})
                 adata = None
                 redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
+                imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
             else:
                 adata = load_anndata(input)
@@ -133,6 +135,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                     redislogger.warning(job_id, "'MAGIC_imputed' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
 
+            imputation_results['datasetId'] = datasetId
             create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
@@ -179,6 +182,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 imputation_output.append({"SAVER": output})
                 adata = None
                 redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
+                imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
             else:
                 adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)   
@@ -243,6 +247,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 else: 
                     redislogger.warning(job_id, "'SAVER' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)

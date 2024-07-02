@@ -14,7 +14,7 @@ export default function Leaderboards() {
             <div className="main-content">
                 <h1>I'm inside Leaderboards page</h1>
             </div>
-            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
+            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
                 <RightRail />
             </div>)}
         </div>

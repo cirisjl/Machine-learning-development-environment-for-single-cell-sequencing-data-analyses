@@ -116,6 +116,7 @@ def run_integration(job_id, ids:dict):
                 integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                 adata = None
                 redislogger.info(job_id, integration_results['info'])
+                integration_results['datasetIds'] = datasetIds
                 create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
                 process_ids.append(process_id) 
 
@@ -141,6 +142,8 @@ def run_integration(job_id, ids:dict):
         {
             "job_id": job_id, 
             "output": integration_output,
+            "datasetIds": datasetIds,
+            "process_ids": process_ids,
             "results": results,
             "completed_on": datetime.now(),
             "status": "Success"

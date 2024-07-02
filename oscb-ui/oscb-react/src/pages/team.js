@@ -81,7 +81,7 @@ export default function Team() {
 
             
             </div>
-            {(jwtToken != undefined && jwtToken != '') && (<div className="right-rail">
+            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
                 <RightRail />
             </div>)}
         </div>
