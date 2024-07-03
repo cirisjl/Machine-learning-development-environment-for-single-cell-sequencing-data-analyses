@@ -55,7 +55,11 @@ export default function GetStarted() {
 
             <div className="right-rail">
                 <RightRail />
-            </div>        
+            </div>
+
+            <div style={{display: 'none'}}>
+                <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=fcfafa&w=a&t=tt&d=lOyy3dFp22wbqbeXPEE1e2nJSb_u_4KqYJPohHA8M4I&co=d8e1e8&cmo=f4acba&cmn=ff5353&ct=494545'></script>
+            </div>  
             
         </div>
     )

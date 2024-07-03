@@ -45,7 +45,7 @@ export default function Updates() {
                 {/* <LeftNav /> */}
             </div>
 
-            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
+            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
                 <h1>Updates from OSCB</h1>
                 {/* <h2>{user[user.length-1].Title} - {formatDate(user[user.length-1].Date_published)}</h2> */}
 

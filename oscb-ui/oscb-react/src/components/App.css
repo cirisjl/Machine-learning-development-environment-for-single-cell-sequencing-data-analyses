@@ -1771,6 +1771,10 @@ width
   margin-top:2rem;
 }
 
+.eighty-twenty-grid .main-content-no-scroll .task-builder-task {
+  margin-top: 2rem;
+}
+
 /* popupmodal.css */
 .session-manager-component .modal-overlay {
   position: fixed;
