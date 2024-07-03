@@ -1,7 +1,7 @@
 import RightRail from "../components/RightNavigation/rightRail";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import LeftNav from "../components/LeftNavigation/leftNav";
+// import LeftNav from "../components/LeftNavigation/leftNav";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
 
@@ -42,7 +42,7 @@ export default function Team() {
             </div>
         
 
-            <div className="main-content">
+            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
                 <div className="team-page-container">
                     <h1>OSCB Team</h1>
                     <div className="team-content">
@@ -81,9 +81,9 @@ export default function Team() {
 
             
             </div>
-            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
+            <div className="right-rail">
                 <RightRail />
-            </div>)}
+            </div>
         </div>
     )
 }

@@ -1,8 +1,8 @@
 export const uiSchema = {
   "parameters": {
-    "classNames": "category",
+    "ui:classNames": "category",
       "output_format": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "SelectComponent",
         'ui:options': {
           clearable: true ,
@@ -13,7 +13,7 @@ export const uiSchema = {
         }
       },
       "species": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "SelectComponent",
         'ui:options': {
           clearable: true ,
@@ -24,7 +24,7 @@ export const uiSchema = {
         }
       },
       "idtype": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "SelectComponent",
         'ui:options': {
           clearable: true ,
@@ -35,37 +35,37 @@ export const uiSchema = {
         }
       },
       "cluster_label": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"
       },
       "show_umap": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "toggle"
       },
       "show_error": {
-        "classNames": "sub-category",
+        "ui:classNames": "sub-category",
         "ui:widget": "toggle"
       },
       "qc_params": {
-        "classNames": "form-subset sub-category",
+        "ui:classNames": "form-subset sub-category",
         "methods": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "MultiSelectComponent",
         },
         "assay": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "layer": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         // "geneRange": {
-        //   "classNames": "sub-category",
+        //   "ui:classNames": "sub-category",
         //   "ui:widget": "geneRangeSlider",
         // },
         "min_genes": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:options': {
             title: 'Min Genes: ', // Title for the slider
@@ -84,7 +84,7 @@ export const uiSchema = {
           'ui:title': 'Min Genes', 
         },
         "max_genes": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:options': {
             title: 'Max Genes: ', // Title for the slider
@@ -103,7 +103,7 @@ export const uiSchema = {
           'ui:title': 'Max Genes', 
         },
         "min_cells": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:options': {
             title: 'Min Cells: ', // Title for the slider
@@ -121,7 +121,7 @@ export const uiSchema = {
           'ui:title': 'Min Cells', 
         },
         "target_sum": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'Target Sum: ', 
           'ui:options': {
@@ -137,7 +137,7 @@ export const uiSchema = {
           }
         },
         "n_top_genes": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'Highly Variable Genes (n_top_genes):', 
           'ui:options': {
@@ -155,7 +155,7 @@ export const uiSchema = {
           }
         },
         "n_neighbors": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'n_neighbors: ', 
           'ui:options': {
@@ -175,7 +175,7 @@ export const uiSchema = {
           }
         },
         "n_pcs": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'n_pcs: ', 
           'ui:options': {
@@ -196,7 +196,7 @@ export const uiSchema = {
           }
         },
         "resolution": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'Resolution: ', 
           'ui:options': {
@@ -214,7 +214,7 @@ export const uiSchema = {
           }
         },
         "doublet_rate": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'Expected Doublet Rate:', 
           'ui:options': {
@@ -232,47 +232,52 @@ export const uiSchema = {
           }
         },
         "regress_cell_cycle": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "SwitchComponent"
         },
         "colour_by": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "shape_by_1": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "shape_by_2": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "use_default": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "toggle"
         }
       },
+      "process_type":{
+        "ui:classNames": "sub-category",
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          placeholder: "Select the Output Format",
+          creatable: false,
+          searchable: true,
+          opts:["Normalization", "Imputation"] 
+        }
+      },
       "normalization_params": {
-      //  "ui:options": {
-      //     "classNames": "form-subset sub-category",
-      //     "visible": (formData) => formData.params_type === "Normalization"
-      //   },   
-      "ui:field": "custom",
-      "classNames": "form-subset sub-category",
+      "ui:classNames": "form-subset sub-category",
         "methods": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "MultiSelectComponent",
         },
         "assay": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "layer": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "n_neighbors": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'n_neighbors: ', 
           'ui:options': {
@@ -292,7 +297,7 @@ export const uiSchema = {
           }
         },
         "n_pcs": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'n_pcs: ', 
           'ui:options': {
@@ -313,7 +318,7 @@ export const uiSchema = {
           }
         },
         "resolution": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'Resolution: ', 
           'ui:options': {
@@ -331,31 +336,26 @@ export const uiSchema = {
           }
         },
         "use_default": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "toggle"
         }    
       },
       "imputation_params": {
-      //  "ui:options": {
-      //     "classNames": "form-subset sub-category",
-      //     "visible": (formData) => formData.params_type === "Imputation"
-      //   },        
-      "ui:field": "custom",
-      "classNames": "form-subset sub-category",   
+      "ui:classNames": "form-subset sub-category",   
         "methods": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "MultiSelectComponent",
         },
         "assay": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "layer": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
         "min_genes": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:options': {
             title: 'Min Genes: ', // Title for the slider
@@ -374,7 +374,7 @@ export const uiSchema = {
           'ui:title': 'Min Genes', 
         },
         "max_genes": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:options': {
             title: 'Max Genes: ', // Title for the slider
@@ -393,7 +393,7 @@ export const uiSchema = {
           'ui:title': 'Max Genes', 
         },
         "ncores": {
-          "classNames": "sub-category",
+          "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
           'ui:title': 'ncores: ', 
           'ui:options': {

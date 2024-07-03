@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import LeftNav from "../components/LeftNavigation/leftNav";
+// import LeftNav from "../components/LeftNavigation/leftNav";
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
@@ -45,7 +45,7 @@ export default function Updates() {
                 {/* <LeftNav /> */}
             </div>
 
-            <div className="main-content">
+            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
                 <h1>Updates from OSCB</h1>
                 {/* <h2>{user[user.length-1].Title} - {formatDate(user[user.length-1].Date_published)}</h2> */}
 
@@ -58,9 +58,9 @@ export default function Updates() {
                 ))}
             </div>
             
-            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
+            <div className="right-rail">
                 <RightRail />
-            </div>)}
+            </div>
         </div>
     )
 }

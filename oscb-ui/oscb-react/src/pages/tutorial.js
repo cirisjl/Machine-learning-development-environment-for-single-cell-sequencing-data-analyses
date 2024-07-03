@@ -43,12 +43,12 @@ export default function Tutorial() {
             <div className="left-nav">
                 {/* <LeftNav /> */}
             </div>
-            <div className="main-content">
+            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
-            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
+            <div className="right-rail">
                 <RightRail />
-            </div>)}
+            </div>
         </div>
     )
 }

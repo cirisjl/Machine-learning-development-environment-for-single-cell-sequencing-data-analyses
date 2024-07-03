@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from 'axios';
 import ReactMarkdown from "react-markdown"
-import LeftNav from "../components/LeftNavigation/leftNav";
+// import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
 import RightRail from "../components/RightNavigation/rightRail";
@@ -40,15 +40,14 @@ export default function Benchmarks() {
     
     return(
         <div className="benchmarks-container">
-            <div className="left-nav">
-                
+            <div className="left-nav">  
             </div>
-            <div className="main-content">
+            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
-            {(jwtToken !==undefined && jwtToken !=='') && (<div className="right-rail">
+            <div className="right-rail">
                 <RightRail />
-            </div>)}
+            </div>
         </div>
     )
 }
