@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react"
 import axios from 'axios';
 import ReactMarkdown from "react-markdown"
+import 'github-markdown-css';
+// import rehypeRaw from 'rehype-raw'
+// import rehypeSanitize from 'rehype-sanitize'
 // import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
@@ -43,7 +46,7 @@ export default function Competition() {
             <div className="left-nav">
                 {/* <LeftNav /> */}
             </div>
-            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
+            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
             <div className="right-rail">

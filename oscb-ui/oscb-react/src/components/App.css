@@ -329,7 +329,7 @@ Styles for Benchmarks page
   width: 100%;
 }
 
-.left-nav, .main-content, .right-rail {
+.left-nav, .main-content, .main-content-no-scroll, .right-rail {
   height: auto;
 }
 
@@ -341,7 +341,13 @@ Styles for Benchmarks page
 .main-content {
   padding: 15px;
   overflow-y: scroll;
-  height: 100vh;
+  min-height: 100vh;
+}
+
+.main-content-no-scroll  {
+  padding: 15px;
+  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .right-rail-container {
@@ -500,6 +506,7 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+
 
 /*
 Styles for Right Rail
@@ -974,7 +981,7 @@ ul li:hover > ul {
 /* Styles for Main-content */
 
 .main-content img{
-  max-width: 30rem;
+  max-width: 95%;
   max-height: 100%;
 }
 /* .main-content h2{
@@ -1036,6 +1043,77 @@ ul li:hover > ul {
   .preview-dataset-container span.fu {
     color: #06287e;
 } 
+
+
+.main-content-no-scroll img {
+  max-width: 95%;
+  max-height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* .main-content-no-scroll h2{
+  text-align: center;
+} */
+
+.main-content-no-scroll a {
+  color: #111849;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.main-content-no-scroll li {
+  list-style-type: disc;
+}
+
+.main-content-no-scroll ul {
+  list-style-type: disc;
+  padding-left: 3rem;
+}
+
+.main-content-no-scroll code {
+  font-size: 85%;
+  /* background-color: rgba(175, 184, 193, 0.2); */
+  padding: 0.2em 0.4em;
+  margin: 0px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+
+}
+
+.main-content-no-scroll pre {
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: rgb(246, 248, 250);
+  overflow-wrap: normal;
+  padding: 16px;
+  overflow: auto;
+  border-radius: 6px;
+  display: block;
+  font-family: monospace;
+  white-space: pre;
+  margin: 1em 0px;
+}
+
+
+/* Preview Datasets */
+
+.main-content-no-scroll code {
+  font-size: 14px;
+}
+
+
+/* .copy-to-clipboard-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    visibility: hidden;
+  } */
+.preview-dataset-container span.fu {
+  color: #06287e;
+}
 
 .preview-dataset-container span.ot {
   color: #007020;
