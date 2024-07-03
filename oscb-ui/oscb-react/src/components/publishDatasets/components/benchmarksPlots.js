@@ -20,7 +20,7 @@ function BenchmarksPlots({ benchmarksPlot, utilizationPlot }) {
       <h2>Benchmarks</h2>
       {benchmarksPlotData && <Plot data={benchmarksPlotData.data} layout={benchmarksPlotData.layout} />}
 
-      <h2>Computing assessments</h2>
+      <h2>Computing Assessments</h2>
       {utilizationPlotData && <Plot data={utilizationPlotData.data} layout={utilizationPlotData.layout} />}
     </div>
   );

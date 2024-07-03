@@ -42,7 +42,7 @@ export default function Team() {
             </div>
         
 
-            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
+            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
                 <div className="team-page-container">
                     <h1>OSCB Team</h1>
                     <div className="team-content">

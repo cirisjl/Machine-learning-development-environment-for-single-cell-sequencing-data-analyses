@@ -426,7 +426,7 @@ def plot_line(x=[], y={}):
     return {
         'data': [trace for trace in traces],
         'layout': {
-            'title': 'Computing assessments',
+            'title': 'Computing Assessments',
             'xaxis': {"title": 'Time points (s)'},
             'yaxis': {"title": 'Utilization (%)'},
             'margin': margin,
