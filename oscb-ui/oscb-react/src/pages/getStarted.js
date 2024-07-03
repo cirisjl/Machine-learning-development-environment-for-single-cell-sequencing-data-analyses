@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react"
 import axios from 'axios';
 import ReactMarkdown from "react-markdown"
+import 'github-markdown-css';
 // import LeftNav from "../components/LeftNavigation/leftNav";
 import gfm from "remark-gfm";
+// import rehypeRaw from 'rehype-raw'
 import remarkImgToJsx from "remark-unwrap-images";
+// import rehypeSanitize from 'rehype-sanitize'
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
@@ -46,7 +49,7 @@ export default function GetStarted() {
                 {/* <LeftNav /> */}
             </div>
 
-            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
+            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
 

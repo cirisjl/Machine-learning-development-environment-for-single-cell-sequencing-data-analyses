@@ -50,7 +50,8 @@ function App() {
     <div className="session-manager-component"><SessionReminder/> </div>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<RootLayout />}>
+        <Route path="/" element={<RootLayout/>}>
+          <Route path="/" element={<GetStarted/>} />
           <Route path='getStarted'   element={<GetStarted/>} />
           <Route path="updates"      element={<Updates/>} />
           <Route path="competitions" element={<Competitions/>}/>

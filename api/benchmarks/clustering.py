@@ -163,7 +163,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         "datasetId": datasetId,
         "task_type": task_type,
         "metrics": metrics,
-        "results": clustering_results,
+        "methods": clustering_results,
         "benchmarks_plot": benchmarks_plot,
         "utilization_plot": utilization_plot
     }
