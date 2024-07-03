@@ -118,7 +118,7 @@ export default function RootLayout() {
                                     </NavLink>
                                  </li> */}
                                  <li data-index="3" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                                    <NavLink to="benchmarks" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                    <NavLink to="#" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path opacity="0.5" d="M20.9022 5.10334L10.8012 10.8791L7.76318 9.11193C8.07741 8.56791 8.5256 8.11332 9.06512 7.7914L15.9336 3.73907C17.0868 3.08811 18.5002 3.26422 19.6534 3.91519L19.3859 3.73911C19.9253 4.06087 20.5879 4.56025 20.9022 5.10334Z" fill="currentColor"></path>
                                             <path d="M10.7999 10.8792V28.5483C10.2136 28.5475 9.63494 28.4139 9.10745 28.1578C8.5429 27.8312 8.074 27.3621 7.74761 26.7975C7.42122 26.2327 7.24878 25.5923 7.24756 24.9402V10.9908C7.25062 10.3319 7.42358 9.68487 7.74973 9.1123L10.7999 10.8792Z" fill="currentColor" fillOpacity="0.75"></path>
@@ -131,7 +131,7 @@ export default function RootLayout() {
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
 
                                         <ul className="ul-suboptions">
-                                            <li><NavLink to="benchmarks">Overview</NavLink></li>
+                                            { /* <li><NavLink to="benchmarks">Overview</NavLink></li> */}
                                             <li><NavLink to="benchmarks/clustering">Clustering</NavLink></li>
                                             <li><NavLink to="benchmarks/imputation">Imputation</NavLink></li>
                                             <li><NavLink to="benchmarks/maker-gene-identification">Marker Gene Identification</NavLink></li>
@@ -147,7 +147,7 @@ export default function RootLayout() {
                                     </div>
                                     </div>
                                  </li>
-                                 { /*<li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                 { /* <li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink to="leaderboards" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                                             <path className="uim-quaternary" d="M6 23H2a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1z" opacity=".25" fill="currentColor"></path>
@@ -188,7 +188,7 @@ export default function RootLayout() {
                                         Tutorial
                                     </NavLink>
                                  </li>
-                                 <li data-index="7">
+                                { /* <li data-index="7">
                                     <NavLink to="team" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path opacity="0.5" d="M20.9022 5.10334L10.8012 10.8791L7.76318 9.11193C8.07741 8.56791 8.5256 8.11332 9.06512 7.7914L15.9336 3.73907C17.0868 3.08811 18.5002 3.26422 19.6534 3.91519L19.3859 3.73911C19.9253 4.06087 20.5879 4.56025 20.9022 5.10334Z" fill="currentColor"></path>
@@ -197,8 +197,8 @@ export default function RootLayout() {
                                             <path opacity="0.5" d="M21.7937 10.8488L10.7825 10.8741V28.5486L21.7937 28.5234C23.3344 28.5234 24.5835 27.2743 24.5835 25.7335V13.6387C24.5835 12.0979 23.4365 11.1233 21.7937 10.8488Z" fill="currentColor"></path>
                                         </svg>
                                         Teams
-                                    </NavLink>
-                                 </li>
+                                    </NavLink> 
+                                 </li> */}
                                  <li data-index="8" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
