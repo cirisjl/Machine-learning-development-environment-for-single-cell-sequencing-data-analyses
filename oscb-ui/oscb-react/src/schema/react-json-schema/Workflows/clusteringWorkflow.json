@@ -147,10 +147,6 @@
         "process_type": {
           "type": "string",
           "title": "Process Type",
-          "enum": [
-            "Normalization",
-            "Imputation"
-          ],
           "default": "Normalization"
         }
       },
@@ -181,14 +177,25 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "DeSeq2"
+                        "DeSeq2",
+                        "FPKM",
+                        "LogCP10K",
+                        "LogCPM",
+                        "Pearson_Residuals",
+                        "RLE",
+                        "scran",
+                        "SCT",
+                        "SCT_V2",
+                        "TMM",
+                        "TPM",
+                        "UpperQuartile",
+                        "UQ"
                       ]
                     },
                     "default": [
                       "DeSeq2"
                     ],
-                    "uniqueItems": true,
-                    "minItems": 1
+                    "uniqueItems": true
                   },
                   "assay": {
                     "type": "string",
@@ -247,14 +254,15 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "Magic"
+                        "Magic",
+                        "Saver",
+                        "scGNN"
                       ]
                     },
                     "default": [
                       "Magic"
                     ],
-                    "uniqueItems": true,
-                    "minItems": 1
+                    "uniqueItems": true
                   },
                   "assay": {
                     "type": "string",

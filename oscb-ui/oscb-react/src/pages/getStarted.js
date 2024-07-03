@@ -46,12 +46,12 @@ export default function GetStarted() {
                 {/* <LeftNav /> */}
             </div>
 
-            <div className="main-content">
+            <div className={(jwtToken === undefined || jwtToken === '') ? '' : 'main-content'}>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
 
             <div className="right-rail">
-                {(jwtToken != undefined || jwtToken != '') && (<RightRail />)}
+                <RightRail />
             </div>        
             
         </div>

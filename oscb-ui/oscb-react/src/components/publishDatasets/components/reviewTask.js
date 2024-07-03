@@ -108,8 +108,10 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
     }));
 
     console.log("All tasks completed");
-
-    window.location.href = "/benchmarks";
+    setTimeout(() => {
+      window.location.href = "/benchmarks";
+    }, 2000);
+    
     // console.log(taskData);
   };
 
