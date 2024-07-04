@@ -279,7 +279,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         if process == 'QC':
             violin_plot = plot_violin(adata)
             scatter_plot = plot_scatter(adata)
-            highest_expr_genes_plot = plot_highest_expr_genes(adata)
+            if nCells < 10000: # If the dataset is too large, then skip the highest expressed genes
+                highest_expr_genes_plot = plot_highest_expr_genes(adata)
 
         if cluster_label is not None and cluster_label in adata.obs.keys():
             if labels_pred_leiden is not None:
