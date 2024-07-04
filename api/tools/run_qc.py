@@ -142,11 +142,11 @@ def run_qc(job_id, ds:dict, random_state=0):
                         qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         nCells = qc_results["nCells"]
                         redislogger.info(job_id, "Saving AnnData object.")
-                        
                         scanpy_results.write_h5ad(output_path, compression='gzip')
                         scanpy_results = None
                         redislogger.info(job_id, qc_results['info'])
                         qc_results['datasetId'] = datasetId
+                        
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                     except Exception as e:
                         detail = f"Error during scanpy QC: {str(e)}"
@@ -219,6 +219,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                         redislogger.info(job_id, output_path)
                         dropkick_results.write_h5ad(output_path, compression='gzip')
                         qc_output.append({"Dropkick": output_path})
+                        qc_output.append(output_path)
                         dropkick_results = None
                         redislogger.info(job_id, qc_results['info'])
                         qc_results['datasetId'] = datasetId
@@ -278,6 +279,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                 redislogger.info(job_id, qc_results['info'])
                 # adata.write_h5ad(adata_path, compression='gzip')
                 qc_output.append({"Seurat": adata_path})
+                qc_output.append(adata_path)
                 qc_results['datasetId'] = datasetId
                 create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 adata = None         
@@ -349,6 +351,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                 qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path)
                 nCells = qc_results["nCells"]
                 qc_output.append({"Bioconductor": adata_path})
+                qc_output.append(adata_path)
                 adata = None
                 redislogger.info(job_id, qc_results['info'])
                 qc_results['datasetId'] = datasetId
@@ -374,11 +377,12 @@ def run_qc(job_id, ds:dict, random_state=0):
 
     results = {
         "nCells": nCells,
+        "owner": userID,
         "output": qc_output,
         "default_assay": assay,
         "assay_names": assay_names,
         "md5": md5,
-        "process_ids": process_ids,
+        "process_ids": process_ids
     }
 
     upsert_jobs(
@@ -396,6 +400,11 @@ def run_qc(job_id, ds:dict, random_state=0):
         }
     )
 
-    shutil.rmtree(input_path) # Remove oringal input files after QC
+    # Remove oringal input files after QC for Benchmarks
+    if benchmarks_data:
+        if os.path.isdir(input_path):
+            shutil.rmtree(input_path) 
+        else:
+            os.remove(input_path)
 
     return results
