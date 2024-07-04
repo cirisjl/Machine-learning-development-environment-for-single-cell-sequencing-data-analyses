@@ -173,6 +173,7 @@ class MyForm extends Component {
       const species = formData.Species.value;
       const tissue = formData['Organ Part'].label;
       const author = formData['Author'];
+      const first_author = author.split(' ')[0]
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
@@ -191,8 +192,7 @@ class MyForm extends Component {
 
       // Check if cellCount is greater than 1000
       const useCellCount = cellCount && parseInt(cellCount) > 1000;
-
-      const constructedID = `${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${author}-${year}`;
+      const constructedID = `${species}-${tissue}${useCellCount ? `-${cellCount}` : ''}-${first_author}-${year}`;
 
       formData.Id = constructedID;
 
@@ -209,7 +209,7 @@ class MyForm extends Component {
       // Add inputs
       // formData.inputFiles = taskData.quality_control.file_paths;
       formData.inputFiles = [taskData.quality_control.qc_results[0]?.adata_path];
-        formData.files = taskData.quality_control.qc_results[0]?.adata_path;
+      formData.files = taskData.quality_control.qc_results[0]?.adata_path;
       formData.adata_path = taskData.quality_control.qc_results[0]?.adata_path;
 
       // formData.taskOptions = this.state.options["Task"];
@@ -237,7 +237,7 @@ class MyForm extends Component {
       // formData.output = taskData.quality_control.seurat_meta?.output;
 
       } else { // User Dataset
-        const constructedID = `U-${species}-${tissue}-${author}-${year}@${this.state.username}`; // U indicates user datasets
+        const constructedID = `U-${species}-${tissue}-${first_author}-${year}@${this.state.username}`; // U indicates user datasets
         formData.Id = constructedID;
         formData.fileDetails = taskData.upload.final_files;
         formData.files = taskData.upload.files;

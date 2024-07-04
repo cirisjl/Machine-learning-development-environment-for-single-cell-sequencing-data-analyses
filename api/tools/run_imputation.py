@@ -64,6 +64,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
         
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip MAGIC imputation.")
+            process_ids.append(process_id)
             imputation_output.append({"MAGIC": imputation_results["adata_path"]})
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
@@ -84,6 +85,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
+                process_ids.append(process_id)
             else:
                 adata = load_anndata(input)
                 if adata is None:
@@ -139,7 +141,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
             create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
-        process_ids.append(imputation_results)
+        process_ids.append(process_id)
         
 
     # if "scGNN" in methods:
@@ -163,6 +165,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
 
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip SAVER imputation.")
+            process_ids.append(process_id)
             imputation_output.append({"SAVER": imputation_results["adata_path"]})
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
@@ -184,6 +187,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
+                process_ids.append(process_id)
             else:
                 adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)   
                 if adata is None:
@@ -251,7 +255,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
-        process_ids.append(imputation_results)
+        process_ids.append(process_id)
         
     results = {
         "input": input,

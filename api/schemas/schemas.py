@@ -47,6 +47,9 @@ class imputationParameters(BaseModel):
     layer: Optional[str] = None
     genes: Optional[List[str]] = None
     ncores: Optional[int] = 12
+    n_neighbors: int = 15
+    n_pcs: int = 1 # Scanpy
+    resolution: float = 1
 
 
 
