@@ -149,7 +149,8 @@ function TaskDetailsComponent() {
       if (status?.toLowerCase() === "success" || status?.toLowerCase() === "failure"){
         setTaskStatus(status);
         if (status?.toLowerCase() === "success" && !plotLoaded) {
-          if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
+          // if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
+          if (results.process_ids) {
             setTaskResult(results);
             fetchProcessResults(results.process_ids);
             plotLoaded = true;

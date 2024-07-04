@@ -1,7 +1,7 @@
 import os
 import subprocess
 import sys
-
+import shutil
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
@@ -395,5 +395,7 @@ def run_qc(job_id, ds:dict, random_state=0):
             "status": "Success"
         }
     )
+
+    shutil.rmtree(input_path) # Remove oringal input files after QC
 
     return results
