@@ -55,7 +55,7 @@ async def add_process_time_header(request, call_next):
     return response
 
 
-@app.websocket("/{request_type}/{job_id}")
+@app.websocket("/wsapi/{request_type}/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str):
     await websocket.accept()
     try:
