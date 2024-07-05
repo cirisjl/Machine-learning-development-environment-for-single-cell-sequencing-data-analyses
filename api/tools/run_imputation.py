@@ -120,6 +120,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         imputation_output.append({"MAGIC": output})
                         adata = None
                         redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
+                        process_ids.append(process_id)
 
                     except Exception as e:
                         detail = f"MAGIC imputation is failed: {e}"
@@ -141,7 +142,6 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
             create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
-        process_ids.append(process_id)
         
 
     # if "scGNN" in methods:
@@ -226,6 +226,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                             imputation_output.append({"SAVER": output})
                             adata = None
                             redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
+                            process_ids.append(process_id)
                         else:
                             upsert_jobs(
                                 {
@@ -255,8 +256,9 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
-        process_ids.append(process_id)
-        
+    
+    process_ids = list(set(process_ids)) # De-duplicate process_ids
+
     results = {
         "input": input,
         "output": imputation_output,

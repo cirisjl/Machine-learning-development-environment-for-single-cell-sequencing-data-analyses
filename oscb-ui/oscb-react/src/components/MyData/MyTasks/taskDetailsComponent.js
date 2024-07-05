@@ -151,6 +151,7 @@ function TaskDetailsComponent() {
         if (status?.toLowerCase() === "success" && !plotLoaded) {
           // if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
           if (results.process_ids) {
+            console.log("results: ", results)
             setTaskResult(results);
             fetchProcessResults(results.process_ids);
             plotLoaded = true;
@@ -160,9 +161,10 @@ function TaskDetailsComponent() {
         }       
       } else if (data.task_status) {
         setTaskStatus(data.task_status);
-        if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
-          if (data.task_status === "SUCCESS" && !plotLoaded) {
+        if (data.task_status?.toLowerCase() === "success" || data.task_status?.toLowerCase() === "failure"){
+          if (data.task_status?.toLowerCase() === "success" && !plotLoaded) {
             if(data.task_result.process_ids) {
+              console.log("data.task_result: ", data.task_result)
               fetchProcessResults(data.task_result.process_ids);
               plotLoaded = true;
             } else {
@@ -196,7 +198,7 @@ function TaskDetailsComponent() {
           }
 
           if (jwtToken) {
-            fetch(NODE_API_URL + "/protected", { //to get username,id
+            fetch(NODE_API_URL + "/protected", { //to get username, id
               method: 'GET',
               credentials: 'include',
               headers: { 'Authorization': `Bearer ${jwtToken}` },
@@ -205,7 +207,7 @@ function TaskDetailsComponent() {
               .then((data) => {
 
                 if (data.authData !== null) {
-                  console.log("userdata: ", data.authData);
+                  // console.log("userdata: ", data.authData);
                   setUName(data.authData.username);
                   setUIat(data.authData.iat);
                 }
