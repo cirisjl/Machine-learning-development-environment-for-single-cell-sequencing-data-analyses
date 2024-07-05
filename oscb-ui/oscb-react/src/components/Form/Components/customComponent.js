@@ -171,7 +171,8 @@ class MyForm extends Component {
       // construct ID 
       // const task_abbv = formData.Task.value;
       const species = formData.Species.value;
-      const tissue = formData['Organ Part'].label;
+      const tissue = (formData['Sample Type'] + '_' + formData['Organ Part']).label.replace(' ', '_').replace('-', '_');
+
       const author = formData['Author'];
       const first_author = author.split(' ')[0]
       const submissionDate = formData['Submission Date'];
