@@ -230,6 +230,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_louvain = None
     cluster_embedding = None
     description = f'{method} {process}' 
+    scanpy_cluster = 'leiden'
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -249,6 +250,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                     labels_pred_louvain = adata.obs['louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
         else:
+            scanpy_cluster = layer + '_louvain'
             if cluster_label is not None:
                 cluster_label = adata.obs['cluster_label']
                 if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
@@ -259,7 +261,6 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
-        print(layers)
         cell_metadata_obs = adata.obs # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
@@ -272,9 +273,13 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             embeddings.append(name)
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
-            if layer+'_umap' in adata.obsm.keys():
+            if layer+'_umap' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
+                umap_plot = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster)
+            elif layer+'_umap' in adata.obsm.keys():
                 umap_plot = plot_UMAP(adata, layer=layer)
-            if layer+'_umap_3D' in adata.obsm.keys():
+            if layer+'_umap_3D' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
+                umap_plot_3d = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3)
+            elif layer+'_umap_3D' in adata.obsm.keys():
                 umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
         if process == 'QC':
             violin_plot = plot_violin(adata)
@@ -527,7 +532,7 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
     
     output_path = output_path.replace(" ", "_")
     print(output_path)
-    
+
     return output_path
 
 

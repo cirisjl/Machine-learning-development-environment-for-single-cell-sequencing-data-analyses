@@ -146,7 +146,7 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
   if(!"SCTRANSFORM" %in% names(srat@assays)){
     tryCatch({
       library(sctransform)
-      if("SCTRANSFORM"  %in% methods){
+      if(("SCTRANSFORM"  %in% methods) || ("SCT" %in% methods)){
         RedisInfo(unique_id, "Running SCTransform normalization.")
         # store mitochondrial percentage in object meta data
         srat <- PercentageFeatureSet(srat, pattern = "^MT-", col.name = "percent.mt")

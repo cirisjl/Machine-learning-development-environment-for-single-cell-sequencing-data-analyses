@@ -25,7 +25,10 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
     output = ds['output']
     datasetId = ds['dataset_id']
     parameters = ds['imputation_params']
-    layer = parameters['layer']
+    layer = None
+    if parameters['layer'] is not None and parameters['layer'].strip != "":
+        layer = parameters['layer']
+
     methods = parameters['methods']
     genes = parameters['genes']
     ncores = parameters['ncores']
@@ -78,7 +81,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"MAGIC": output})
                 adata = None
@@ -115,7 +118,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
                         adata.write_h5ad(output, compression='gzip')
                         imputation_output.append({"MAGIC": output})
                         adata = None
@@ -135,8 +138,8 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         os.remove(output)
                         raise CeleryTaskException(detail)
                 else: 
-                    redislogger.warning(job_id, "'MAGIC_imputed' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                    redislogger.warning(job_id, "'MAGIC' layer already exists.")
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
 
             imputation_results['datasetId'] = datasetId
             create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
@@ -162,6 +165,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
         imputation_results = pp_result_exists(process_id)
         adata = None
         output = get_output_path(output, process_id, dataset, method='SAVER_imputation')
+        csv_path = output.replace(".h5ad", ".csv")
 
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip SAVER imputation.")
@@ -179,7 +183,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
 
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"SAVER": output})
@@ -189,13 +193,14 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
                 process_ids.append(process_id)
             else:
-                adata, counts, csv_path = load_anndata_to_csv(input, output, layer, show_error)   
+                adata, counts, csv_path = load_anndata_to_csv(input, csv_path)
                 if adata is None:
-                    detail = f"File format is not supported: {input}"
+                    detail = f"Layer {layer} does not exist in AnnData file: {input}"
                     raise CeleryTaskException(detail)
                 elif 'SAVER' not in adata.layers.keys(): 
                     try:
-                        report_path = get_report_path(dataset, output, "SAVER")
+                        # report_path = get_report_path(dataset, output, "SAVER")
+                        report_path = output.replace(".h5ad", "_report.html")
                         
                         # Get the absolute path of the current file
                         current_file = os.path.abspath(__file__)
@@ -206,9 +211,11 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         # Get the absolute path of the desired file
                         saver_path = os.path.abspath(relative_path)
 
+                        redislogger.info(job_id, " Start SAVER imputation ...")
+
                         # saver_path = os.path.abspath("imputation/SAVER.Rmd")
-                        s = subprocess.call(["R -e \"rmarkdown::render('" + saver_path + "', params=list(dataset='" + str(dataset) + "', input='" + csv_path + "', output='" + output + "', output_format='AnnData', ncores=" + str(ncores) + "), output_file='" + report_path + "')\""], shell = True)
-                        redislogger.info(job_id, s)
+                        s = subprocess.call([f"R -e \"rmarkdown::render('{saver_path}', params=list(dataset='{dataset}', input='{csv_path}', output='{output}', output_format='AnnData', ncores={ncores}), output_file='{report_path}')\""], shell = True)
+                        # redislogger.info(job_id, str(s))
 
                         if os.path.exists(output):
                             adata = load_anndata(output)
@@ -220,10 +227,11 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                             adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
 
                             adata.write_h5ad(output, compression='gzip')
                             imputation_output.append({"SAVER": output})
+                            imputation_output.append({"Report": report_path})
                             adata = None
                             redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
                             process_ids.append(process_id)
@@ -231,12 +239,12 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                             upsert_jobs(
                                 {
                                     "job_id": job_id, 
-                                    "results": "AnnData file does not exist due to the failure of Bioconductor QC.",
+                                    "results": "AnnData file does not exist due to the failure of SAVER Imputation.",
                                     "completed_on": datetime.now(),
                                     "status": "Failure"
                                 }
                             )
-                            raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
+                            raise ValueError("AnnData file does not exist due to the failure of SAVER Imputation.")
                 
                     except Exception as e:
                         detail = f"SAVER imputation is failed: {e}"
@@ -251,24 +259,25 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(job_id, "'SAVER' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output, layer='SAVER')
                 imputation_results['datasetId'] = datasetId
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
-    
+        
     process_ids = list(set(process_ids)) # De-duplicate process_ids
 
     results = {
         "input": input,
         "output": imputation_output,
         "md5": md5,
-        "process_id": process_ids,
+        "process_ids": process_ids,
     }
 
     upsert_jobs(
         {
-            "job_id": job_id, 
+            "job_id": job_id,
+            "input": input, 
             "output": imputation_output,
             "results": results,
             "completed_on": datetime.now(),

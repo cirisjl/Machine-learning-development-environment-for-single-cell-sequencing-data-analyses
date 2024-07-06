@@ -29,7 +29,7 @@ export const defaultValues = {
     n_top_genes: 2000,
     n_neighbors: 15,
     n_pcs: 0, // None
-    resolution: 1,
+    resolution: 0.5,
     regress_cell_cycle: false,
     use_default: true,
     doublet_rate: 0.08
@@ -43,7 +43,7 @@ export const defaultValues = {
     n_top_genes: 2000,
     n_neighbors: 15,
     n_pcs: 1,
-    resolution: 1,
+    resolution: 0.5,
     doublet_rate: 0,
     regress_cell_cycle: false
   };
@@ -52,12 +52,12 @@ export const defaultValues = {
     assay: "RNA",
     n_neighbors: 15,
     n_pcs: 1,
-    resolution: 1,
+    resolution: 0.5,
   };
 
   export const defaultReductionParams = {
     assay: "RNA",
     n_neighbors: 15,
     n_pcs: 1,
-    resolution: 1,
+    resolution: 0.5,
   };

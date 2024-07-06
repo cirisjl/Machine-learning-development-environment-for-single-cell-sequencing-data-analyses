@@ -101,7 +101,7 @@
             "resolution": {
               "type": "number",
               "title": "Resolution:",
-              "default": 1
+              "default": 0.5
             },
             "doublet_rate": {
               "type": "number",

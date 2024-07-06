@@ -329,7 +329,7 @@ services:
       - /ps/code/oscb/results:/ps/data/results
       - /ps/code/oscb/uploads:/ps/data/upload
       - /ps/code/oscb/logs:/ps/data/logs
-      - /ps/code/oscb/user_storage:/ps/data/storage/
+      - /ps/code/oscb/user_storage:/usr/src/app/storage
       
 networks:
   oscb-network:

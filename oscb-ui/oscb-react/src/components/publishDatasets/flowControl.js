@@ -47,7 +47,7 @@ const FlowControl = () => {
         n_top_genes: 2000,
         n_neighbors: 15,
         n_pcs: 0, // None
-        resolution: 1,
+        resolution: 0.5,
         regress_cell_cycle: false,
         use_default: true,
         doublet_rate: 0.08
