@@ -25,7 +25,6 @@
         "params": {
           "type": "object",
           "title": "Integration Parameters",
-          "required": ["methods"],
           "properties": {
             "default_assay": {
               "type": "string",

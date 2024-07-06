@@ -58,16 +58,6 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
     # Get the absolute path for the given output
     # output = get_output(output, userID, job_id)
 
-    # methods = [x.upper() for x in methods if isinstance(x,str)]
-    seurat_path = get_output_path(output, "normalized", dataset, method='normalization', format='Seurat')
-    adata_path = get_output_path(output, "normalized", dataset, method='normalization', format='AnnData')
-    adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
-    
-    # methods = list_py_to_r(methods)
-    if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
-        input = seurat_path
-        redislogger.info(job_id, "Output already exists, start from the last run.")
-
     # Check if there is existing pre-process results
     methods_to_remove = []
     for method in methods:
@@ -89,8 +79,19 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
     if len(methods) > 0:
         try:
-            report_path = get_report_path(dataset, output, "normalization")
-
+            process_id = generate_process_id(md5, process, method, parameters)
+            # methods = [x.upper() for x in methods if isinstance(x,str)]
+            seurat_path = get_output_path(output, process_id, dataset, method='normalization', format='Seurat')
+            adata_path = get_output_path(output, process_id, dataset, method='normalization', format='AnnData')
+            adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
+            report_path = adata_path.replace(".h5ad", "_report.html")
+            
+            # methods = list_py_to_r(methods)
+            if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
+                input = seurat_path
+                redislogger.info(job_id, "Output already exists, start from the last run.")
+            # report_path = get_report_path(dataset, output, "normalization")
+            
             # Get the absolute path of the current file
             current_file = os.path.abspath(__file__)
 
@@ -111,7 +112,6 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                         continue
 
                     method = layer
-                    process_id = generate_process_id(md5, process, method, parameters)
                     if method != "SCTransform":
                         try:
                             redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
@@ -171,7 +171,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
             )
             raise CeleryTaskException(detail)
         normalization_output.append({'AnnData_path': adata_path})
-        normalization_output.append({'Seurat_path': output})
+        normalization_output.append({'Seurat_path': seurat_path})
         normalization_output.append({'Report': report_path})
         if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
