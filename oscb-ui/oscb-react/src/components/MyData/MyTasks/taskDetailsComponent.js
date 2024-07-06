@@ -170,6 +170,10 @@ function TaskDetailsComponent() {
             } else {
               setLoading(false);
             }
+
+            if(data.task_result.output){
+              setTaskOutput(data.task_result.output);
+            }
           } else {
             setLoading(false);
           } 
@@ -193,9 +197,9 @@ function TaskDetailsComponent() {
           // console.log("taskInfoData", taskInfoData);
           setTaskResult(taskInfoData.task_result);
           // console.log("taskInfoData.task_result", taskInfoData.task_result);
-          if ("output" in taskInfoData.task_result) {
-            setTaskOutput(taskInfoData.task_result.output);
-          }
+          // if (taskInfoData.task_result.output) {
+          //   setTaskOutput(taskInfoData.task_result.output);
+          // }
 
           if (jwtToken) {
             fetch(NODE_API_URL + "/protected", { //to get username, id

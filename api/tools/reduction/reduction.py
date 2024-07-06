@@ -83,7 +83,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
     return adata, msg
 
 
-def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0):
+def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0):
     if layer == "Pearson_residuals":
         print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
         return adata
@@ -97,7 +97,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0
                     random_state=random_state, n_iterations=3)
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
         adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
-        sc.tl.louvain(adata_temp, resolution=resolution)
+        sc.tl.louvain(adata_temp)
         adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
         adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
         adata_temp = None
@@ -106,14 +106,14 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=1, random_state=0
         louvain_key = "louvain_" + use_rep
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
-        sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
+        sc.tl.louvain(adata, key_added = louvain_key)
     elif layer is None and 'louvain' not in adata.obs.keys():
         # Clustering the neighborhood graph
         leiden_key = "leiden"
         louvain_key = "louvain"
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
-        sc.tl.louvain(adata, key_added = louvain_key, resolution=resolution)
+        sc.tl.louvain(adata, key_added = louvain_key)
     else:
         if layer is None: layer = 'X'
         print(f"Cluster for {layer} already exists, skipped.")

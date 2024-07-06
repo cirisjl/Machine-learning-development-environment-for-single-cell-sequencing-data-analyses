@@ -10,7 +10,7 @@ sc.settings.set_figure_params(dpi=80, facecolor='white')
 from utils.redislogger import redislogger
 
 
-def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=1, random_state=0):
+def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=0.5, random_state=0):
     if adata is None:
         raise ValueError("Failed to load AnnData object.")
     

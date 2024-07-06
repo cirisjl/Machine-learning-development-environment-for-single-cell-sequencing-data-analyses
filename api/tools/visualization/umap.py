@@ -13,5 +13,5 @@ def umap_plot(adata, svd_solver='arpack', key_added="cluster2", color=['leiden',
     # Clustering the neighborhood graph
     sc.tl.umap(adata)
     sc.tl.leiden(adata)
-    sc.tl.leiden(adata, resolution=1.5, key_added=key_added)
+    sc.tl.leiden(adata, resolution=0.5, key_added=key_added)
     sc.pl.umap(adata, color=color)

@@ -101,8 +101,8 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
             rmd_path = os.path.abspath(relative_path)
 
             # rmd_path = os.path.abspath("normalization/normalization.Rmd")
-            s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + job_id + "', dataset='" + str(dataset) + "', input='" + input + "', output='" + seurat_path + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + list_to_string(methods) + "', default_assay='" + default_assay + "', species='" + str(species) + "', idtype='" + str(idtype) + "'), output_file='" + report_path + "')\""], shell = True)
-            # redislogger.info(job_id, s)
+            s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output='{seurat_path}', adata_path='{adata_path}', output_format='{output_format}', methods='{list_to_string(methods)}', default_assay='{default_assay}', species='{species}', idtype='{idtype}'), output_file='{report_path}')\""], shell = True)
+            # redislogger.info(job_id, str(s))
 
             if os.path.exists(adata_path):
                 adata = load_anndata(adata_path)
@@ -170,8 +170,9 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                 }
             )
             raise CeleryTaskException(detail)
-        normalization_output.append({'adata_path': adata_path})
-        normalization_output.append({'seurat_path': output})
+        normalization_output.append({'AnnData_path': adata_path})
+        normalization_output.append({'Seurat_path': output})
+        normalization_output.append({'Report': report_path})
         if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
     results = {

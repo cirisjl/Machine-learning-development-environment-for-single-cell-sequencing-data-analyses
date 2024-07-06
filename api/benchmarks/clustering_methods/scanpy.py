@@ -19,6 +19,6 @@ def scanpy_clustering(adata, labels, layer=None):
 
     if layer is None: layer = "X"
     # asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsp['connectivities'])
-    asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden"], adata.obsm[layer + '_umap'])
+    asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["louvain"], adata.obsm[layer + '_umap'])
 
     return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
