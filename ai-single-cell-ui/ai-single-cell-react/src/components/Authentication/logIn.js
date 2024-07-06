@@ -79,15 +79,14 @@ function LoginPage (props) {
   return (
     <div className='login-container comn-container-auth'>
       <div className='inner-container-auth'>
-
         <h1>Log in</h1>
         <p>Please enter your username and password to log in.</p>
-        
+
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         <form onSubmit={handleLogin}>
           <div>
             <label htmlFor="username">Username:</label>
-            <input type="username" id="username" className="form-input" value={username} autoComplete="username" onChange={handleUsernameChange} placeholder="Username"/>
+            <input type="text" id="username" className="form-input" value={username} autoComplete="username" onChange={handleUsernameChange} placeholder="Username" />
           </div>
           <div>
             <label htmlFor="password">Password:</label>
@@ -96,10 +95,13 @@ function LoginPage (props) {
           <div className='checkbox'>
             <input type="checkbox" id="remember-me" checked={rememberMe} onChange={handleCheckboxChange} />
             <label htmlFor="remember-me">Remember Me</label>
-            <span className='span-class-link'>Forgot Login Details?</span>
           </div>
-          <button type="submit" className='btn-widget' >Login</button>
+          <div className='forgot-password'>
+            <NavLink to="/forgot-password" className='forgot-link'>Forgot Password?</NavLink>
+          </div>
+          <button type="submit" className='btn-widget'>Login</button>
         </form>
+
 
         <p>
           Don't have an account? <NavLink to="/signup" className="span-class-link">Sign Up</NavLink>

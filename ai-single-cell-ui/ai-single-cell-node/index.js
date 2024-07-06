@@ -12,6 +12,8 @@ const archiver = require('archiver');
 const util = require('util');
 const stat = util.promisify(fs.stat);
 const multer = require("multer");
+const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 // const fs1 = require('fs');
@@ -302,6 +304,143 @@ app.post('/api/login', (req, res) => {
             res.json({ status: 200, message: 'Logged in successfully', jwtToken });
         });
     });
+});
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com', 
+    port: 465,  
+    secure: true,  
+    auth: {
+      user: 'muloc.group@gmail.com', 
+      pass: 'hetyrefrqntjfcbv'  
+    },
+    tls: {
+      rejectUnauthorized: false  
+    }
+  });
+  const sendResetPasswordEmail = (email, resetToken) => {
+    const resetLink = `http://${process.env.HOST_URL}:3000/reset/${resetToken}`;
+    const mailOptions = {
+        from: 'muloc.group@gmail.com',
+        to: email,
+        subject: 'Password Reset',
+        html: `
+            <p>You are receiving this email because you (or someone else) have requested the reset of the password for your account.</p>
+            <p>Please click on the following link to reset your password:</p>
+            <p><a href="${resetLink}">${resetLink}</a></p>
+            <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+  
+// Endpoint to handle forgot password
+app.post('/api/forgot-password', (req, res) => {
+    const { email } = req.body;
+    console.log("email", email)
+    pool.query('SELECT user_id FROM users WHERE email = ?', [email], (err, results) => {
+        console.log("inside query")
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const userId = results[0].user_id;
+        const token = uuidv4();
+        const expiry = Date.now() + 3600000; // 1 hour from now
+
+        pool.query('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE user_id = ?', [token, expiry, userId], (err, results) => {
+            if (err) {
+                console.error('Database update error:', err);
+                return res.status(500).json({ message: 'Database error' });
+            }
+
+            // Send email with reset link using sendResetPasswordEmail function
+            sendResetPasswordEmail(email, token)
+                .then(() => {
+                    res.json({ message: 'Check your email for the reset link' });
+                })
+                .catch((error) => {
+                    console.error('Error sending email:', error);
+                    return res.status(500).json({ message: 'Error sending email' });
+                });
+        });
+    });
+});
+
+app.post('/api/reset-password', (req, res) => {
+    const { token, newPassword, confirmPassword } = req.body;
+    console.log("resetpass",newPassword);
+
+    // Validate token and ensure passwords match
+    if (!token || !newPassword || newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    // Validate the token and check if it's still valid
+    pool.query('SELECT user_id FROM users WHERE reset_token = ? AND reset_token_expiry > ?', [token, Date.now()], (err, results) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+
+        const userId = results[0].user_id;
+        console.log("userid",userId);
+        // const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hash the new password
+        // pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
+        //     if (err) {
+        //         console.error('Database update error:', err);
+        //         return res.status(500).json({ message: 'Datasbase error' });
+        //     }
+        //     res.json({ message: 'Password has been reset successfully' });
+        // });
+
+
+
+
+        bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+            if (err) {
+                console.error(err);
+                res.json({ status: 500, message: 'Internal Server Error' });
+                return;
+            }
+    
+            // Insert the user into the database
+                pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
+            if (err) {
+                console.error('Database update error:', err);
+                return res.status(500).json({ message: 'Datasbase error' });
+            }
+            res.json({ message: 'Password has been reset successfully' });
+    
+    
+            });
+        });
+    });
+});
+
+// Route for resetting password via email link
+app.get('/reset/:token', (req, res) => {
+    const { token } = req.params;
+    // Render a form where users can enter a new password
+    res.send(`
+       
+    `);
+});
+
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err.stack);
+    res.status(500).send('Unhandled Error in Node Application');
 });
 
 // Route to handle protected resource
