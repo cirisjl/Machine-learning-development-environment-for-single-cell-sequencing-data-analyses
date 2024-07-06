@@ -17,7 +17,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    methods = "UMAP"
+    method = "UMAP"
     datasetId = ds['dataset_id']
     parameters = ds['reduction_params']
     layer = None
@@ -27,6 +27,14 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+
+    upsert_jobs(
+        {
+            "job_id": job_id, 
+            "created_by": userID,
+            "status": "Processing"
+        }
+    )
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -35,7 +43,6 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     md5 = get_md5(input)
     # output = get_output(output, userID, job_id)
     adata = load_anndata(input)
-    method='MAGIC'
     process_id = generate_process_id(md5, process, method, parameters)
     reduction_results = pp_result_exists(process_id)
     if reduction_results is not None:
@@ -75,24 +82,24 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
         layers = reduction_results['layers']
 
     results = {
-        "output": output,
+        "output": [{method: output}],
         "layers": layers,
         "md5": md5,
-        "process_id": process_id
+        "process_ids": [process_id]
     }
 
     upsert_jobs(
         {
             "job_id": job_id, 
             "datasetId": datasetId,
-            "output": output,
+            "output": [{method: output}],
+            "process_ids": [process_id],
             "layers": layers,
             "results": results,
             "completed_on": datetime.now(),
             "status": "Success"
         }
     )
-
 
     return results
 

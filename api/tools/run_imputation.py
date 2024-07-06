@@ -268,7 +268,6 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
     process_ids = list(set(process_ids)) # De-duplicate process_ids
 
     results = {
-        "input": input,
         "output": imputation_output,
         "md5": md5,
         "process_ids": process_ids,
@@ -276,8 +275,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
 
     upsert_jobs(
         {
-            "job_id": job_id,
-            "input": input, 
+            "job_id": job_id, 
             "output": imputation_output,
             "results": results,
             "completed_on": datetime.now(),
