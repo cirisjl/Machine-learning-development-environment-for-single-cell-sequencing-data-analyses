@@ -48,7 +48,7 @@ function StatusChip({ status }) {
 function getFileNameFromURL(fileUrl){
   if (fileUrl) {
     try { 
-      filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+      const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
       return filename;
     } 
     catch (e) { 

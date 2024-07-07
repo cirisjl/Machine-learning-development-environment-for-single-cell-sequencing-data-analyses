@@ -136,6 +136,7 @@ def run_integration(job_id, ids:dict):
                     }
                 )
                 redislogger.error(job_id, f"Integration is failed: {e}")
+                raise CeleryTaskException(f"Integration is failed: {e}")
 
     results = {
         "output": integration_output,
