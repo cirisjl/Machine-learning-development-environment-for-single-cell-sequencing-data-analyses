@@ -112,7 +112,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                         continue
 
                     method = layer
-                    if method != "SCTransform":
+                    if method != "SCT" and method != "SCT V2":
                         try:
                             redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
                             adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
@@ -170,9 +170,10 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                 }
             )
             raise CeleryTaskException(detail)
-        normalization_output.append({'AnnData_path': adata_path})
-        normalization_output.append({'Seurat_path': seurat_path})
-        normalization_output.append({'Report': report_path})
+        
+        if os.path.exists(adata_path): normalization_output.append({'AnnData_path': adata_path})
+        if os.path.exists(seurat_path): normalization_output.append({'Seurat_path': seurat_path})
+        if os.path.exists(report_path): normalization_output.append({'Report': report_path})
         if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
     results = {
