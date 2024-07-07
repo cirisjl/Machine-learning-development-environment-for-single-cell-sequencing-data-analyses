@@ -716,62 +716,67 @@ app.post('/node/download', async (req, res) => {
     const { authToken } = req.query;
     const { pwd } = req.query;
 
-    const username = getUserFromToken(authToken);
-    if (fileList && Array.isArray(fileList)) {
-        const zipName = 'files.zip';
-        const output = fs.createWriteStream(zipName);
-        const archive = archiver('zip');
+    try {
+        const username = getUserFromToken(authToken);
+        if (fileList && Array.isArray(fileList)) {
+            const zipName = 'files.zip';
+            const output = fs.createWriteStream(zipName);
+            const archive = archiver('zip');
 
-        archive.pipe(output);
+            archive.pipe(output);
 
-        async function appendToArchive(filePath, archivePath) {
-            const fileStat = await stat(filePath);
+            async function appendToArchive(filePath, archivePath) {
+                const fileStat = await stat(filePath);
 
-            if (fileStat.isDirectory()) {
-                // Recursively append directory contents
-                const dirEntries = await fs.promises.readdir(filePath);
-                for (const entry of dirEntries) {
-                    const entryPath = path.join(filePath, entry);
-                    const entryArchivePath = path.join(archivePath, entry);
-                    await appendToArchive(entryPath, entryArchivePath);
+                if (fileStat.isDirectory()) {
+                    // Recursively append directory contents
+                    const dirEntries = await fs.promises.readdir(filePath);
+                    for (const entry of dirEntries) {
+                        const entryPath = path.join(filePath, entry);
+                        const entryArchivePath = path.join(archivePath, entry);
+                        await appendToArchive(entryPath, entryArchivePath);
+                    }
+                } else {
+                    // Append file to archive
+                    archive.append(fs.createReadStream(filePath), { name: archivePath });
                 }
-            } else {
-                // Append file to archive
-                archive.append(fs.createReadStream(filePath), { name: archivePath });
             }
+
+            for (const item of fileList) {
+                let filePath = "";
+                if (pwd && pwd.includes("publicDatasets")) {
+                    filePath = path.join(storageDir, item);
+                } else if (pwd && pwd.includes("jobResults")) {
+                    filePath = item;
+                }
+                else {
+                    filePath = path.join(storageDir, username, item);
+                }
+                const archivePath = item;
+                await appendToArchive(filePath, archivePath);
+            }
+
+            archive.finalize();
+
+            output.on('close', () => {
+                const zipPath = path.join(__dirname, zipName);
+                const zipSize = fs.statSync(zipPath).size;
+                res.setHeader('Content-disposition', 'attachment; filename=' + zipName);
+                res.setHeader('Content-type', 'application/zip');
+                res.setHeader('Content-length', zipSize);
+
+                const zipstream = fs.createReadStream(zipPath);
+                zipstream.pipe(res);
+
+                // Delete the zip file after it has been sent to the client
+                // fs.unlinkSync(zipPath);
+            });
+        } else {
+            return res.status(400).jsonp('Invalid request');
         }
-
-        for (const item of fileList) {
-            let filePath = "";
-            if (pwd && pwd.includes("publicDatasets")) {
-                filePath = path.join(storageDir, item);
-            } else if (pwd && pwd.includes("jobResults")) {
-                filePath = item;
-            }
-            else {
-                filePath = path.join(storageDir, username, item);
-            }
-            const archivePath = item;
-            await appendToArchive(filePath, archivePath);
-        }
-
-        archive.finalize();
-
-        output.on('close', () => {
-            const zipPath = path.join(__dirname, zipName);
-            const zipSize = fs.statSync(zipPath).size;
-            res.setHeader('Content-disposition', 'attachment; filename=' + zipName);
-            res.setHeader('Content-type', 'application/zip');
-            res.setHeader('Content-length', zipSize);
-
-            const zipstream = fs.createReadStream(zipPath);
-            zipstream.pipe(res);
-
-            // Delete the zip file after it has been sent to the client
-            // fs.unlinkSync(zipPath);
-        });
-    } else {
-        return res.status(400).jsonp('Invalid request');
+    } catch (error) {
+        console.error(error);
+        return res.status(400).jsonp(error);
     }
 });
 
@@ -793,35 +798,40 @@ app.get('/node/download', async (req, res) => {
     } else {
         filePath = path.join(storageDir, username, fileUrl);
     }
-  
-    const fileStat = await fs.promises.stat(filePath);
 
-    if (fileStat.isFile()) {
-        // Download file
-        const filename = path.basename(fileUrl);
-        const mimetype = mime.getType(filePath, { legacy: true });
+    try {
+        const fileStat = await fs.promises.stat(filePath);
 
-        res.setHeader('Content-disposition', 'attachment; filename=' + filename);
-        res.setHeader('Content-type', mimetype);
+        if (fileStat.isFile()) {
+            // Download file
+            const filename = path.basename(fileUrl);
+            const mimetype = mime.getType(filePath, { legacy: true });
 
-        const filestream = fs.createReadStream(filePath);
-        console.log('Filename: ' + filename)
-        filestream.pipe(res);
-    } else if (fileStat.isDirectory()) {
-        // Download folder as zip
-        const folderName = path.basename(filePath);
-        const archive = archiver('zip', { zlib: { level: 9 } });
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+            res.setHeader('Content-type', mimetype);
 
-        archive.directory(filePath, folderName);
-        archive.pipe(res);
+            const filestream = fs.createReadStream(filePath);
+            console.log('Filename: ' + filename)
+            filestream.pipe(res);
+        } else if (fileStat.isDirectory()) {
+            // Download folder as zip
+            const folderName = path.basename(filePath);
+            const archive = archiver('zip', { zlib: { level: 9 } });
 
-        res.setHeader('Content-disposition', 'attachment; filename=' + folderName + '.zip');
-        res.setHeader('Content-type', 'application/zip');
+            archive.directory(filePath, folderName);
+            archive.pipe(res);
 
-        archive.finalize();
-    } else {
-        return res.status(400).jsonp('Invalid request');
-    }
+            res.setHeader('Content-disposition', 'attachment; filename=' + folderName + '.zip');
+            res.setHeader('Content-type', 'application/zip');
+
+            archive.finalize();
+        } else {
+            return res.status(400).jsonp('Invalid request');
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(400).jsonp(error);
+    } 
 });
 
 

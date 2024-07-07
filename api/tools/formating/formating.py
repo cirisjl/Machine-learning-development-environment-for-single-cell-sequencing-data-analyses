@@ -259,6 +259,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs[layer+'_louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
+        
+        if('cluster.ids' in adata.obs.keys()):
+            scanpy_cluster = 'cluster.ids'
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
