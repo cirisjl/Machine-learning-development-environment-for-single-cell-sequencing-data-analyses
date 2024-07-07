@@ -21,7 +21,7 @@ def run_integration(job_id, ids:dict):
     userID = ids['userID']
     output = ids['output']
     methods = ids['methods']
-    output_format = ids['output_format']
+    # output_format = ids['output_format']
     parameters = ids['params']
     species = parameters['species']
     default_assay = parameters['default_assay']
@@ -87,8 +87,8 @@ def run_integration(job_id, ids:dict):
                 relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
                 # Get the absolute path of the desired file
                 rmd_path = os.path.abspath(relative_path)
-                s = subprocess.call(["R -e \"rmarkdown::render('" + rmd_path + "', params=list(unique_id='" + job_id + "', datasets='" + str(datasets) + "', inputs='" + str(input) + "', output_folder='" + output + "', adata_path='" + adata_path + "', output_format='" + output_format + "', methods='" + str(methods) + "', dims='" + str(dims) + "', npcs='" + str(npcs) + "', default_assay='" + default_assay + "', reference='" + str(reference) + "', genes='" + str(genes) + "'), output_file='" + report_path + "')\""], shell = True)
-                redislogger.info(job_id, s)
+                s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}', genes='{genes}'), output_file='{report_path}')\""], shell = True)
+                # redislogger.info(job_id, str(s))
 
                 if os.path.exists(adata_path):
                     redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")

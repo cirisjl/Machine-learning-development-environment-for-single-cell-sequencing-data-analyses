@@ -148,12 +148,12 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                     pp_results.append(normalization_results)
                     process_ids.append(process_id)
                     
-                    adata.write_h5ad(adata_sct_path, compression='gzip')
+                    adata_sct.write_h5ad(adata_sct_path, compression='gzip')
                     normalization_results['datasetId'] = datasetId
                     create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                 except Exception as e:
-                    redislogger.error(job_id, f"UMAP or clustering is failed for {layer}: {e}")
-                    failed_methods.append(f"UMAP or clustering is failed for {method}: {e}")
+                    redislogger.error(job_id, f"UMAP or clustering is failed for SCTransform: {e}")
+                    failed_methods.append(f"UMAP or clustering is failed for SCTransform: {e}")
                 adata.write_h5ad(adata_path, compression='gzip')
   
             print(failed_methods)
