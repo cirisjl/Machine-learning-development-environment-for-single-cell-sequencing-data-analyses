@@ -66,12 +66,18 @@ def run_integration(job_id, ids:dict):
 
     # #Get the absolute path for the given input
     # input = get_input_path(input, userID)
-    #Get the absolute path for the given output
+    # Get the absolute path for the given output
     # output = get_output(output, userID, job_id)
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
-        output = get_output_path(output, 'Integration', dataset=dataset, method=method, format='Seurat')
-        adata_path = get_output_path(output, 'Integration', dataset=dataset, method=method, format='AnnData')
+        output = os.path.join(os.path.dirname(inputs[0]), 'integration' ,method+"_integration.h5seurat")
+        if not os.path.exists(os.path.dirname(output)):
+            os.makedirs(os.path.dirname(output))
+        adata_path = output.replace(".h5seurat", ".h5ad")
+        report_path = output.replace(".h5seurat", ".html")
+
+        # output = get_output_path(output, 'Integration', dataset=dataset, method=method, format='Seurat')
+        # adata_path = get_output_path(output, 'Integration', dataset=dataset, method=method, format='AnnData')
 
         integration_results = pp_result_exists(process_id)
 
@@ -80,7 +86,7 @@ def run_integration(job_id, ids:dict):
             integration_output.append({method: integration_results[method]})
         else:
             try:
-                report_path = get_report_path(dataset, output, "integration")
+                # report_path = get_report_path(dataset, output, "integration")
                 # Get the absolute path of the current file
                 current_file = os.path.abspath(__file__)
                 # Construct the relative path to the desired file
@@ -104,12 +110,12 @@ def run_integration(job_id, ids:dict):
                     upsert_jobs(
                         {
                             "job_id": job_id, 
-                            "results": "AnnData file does not exist due to the failure of Bioconductor QC.",
+                            "results": "AnnData file does not exist due to the failure of Integration.",
                             "completed_on": datetime.now(),
                             "status": "Failure"
                         }
                     )
-                    raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
+                    raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output)
