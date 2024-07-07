@@ -150,7 +150,8 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
         RedisInfo(unique_id, "Running SCTransform normalization.")
         # store mitochondrial percentage in object meta data
         srat <- PercentageFeatureSet(srat, pattern = "^MT-", col.name = "percent.mt")
-        srat <- Seurat::SCTransform(srat, method = "glmGamPoi", vars.to.regress = params$vars.to.regress, verbose = FALSE)
+        # srat <- Seurat::SCTransform(srat, method = "glmGamPoi", vars.to.regress = params$vars.to.regress, verbose = FALSE)
+        srat <- Seurat::SCTransform(srat, vars.to.regress = "percent.mt", verbose = FALSE)
         DefaultAssay(object = srat) <- params$default_assay
         SaveSeurat(srat, params$output)
         RedisInfo(unique_id, "Seurat object for SCTransform is saved successfully.")
