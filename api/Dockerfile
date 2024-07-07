@@ -1,7 +1,7 @@
 # FROM u15ec104/oscb:celery-backend-base
 # FROM stormgod/oscb-api
 # FROM stormgod/oscb-seurat:5.02
-FROM stormgod/oscb-seurat:4.4
+FROM stormgod/oscb-seurat:4.4.1
 
 # RUN apt-get update && apt-get install -yq --no-install-recommends libglpk-dev libmagick++-dev
 

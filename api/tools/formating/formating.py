@@ -230,8 +230,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_louvain = None
     cluster_embedding = None
     description = f'{method} {process}' 
-    # scanpy_cluster = 'leiden'
-    scanpy_cluster = 'cluster.ids'
+    scanpy_cluster = 'leiden'
+    # scanpy_cluster = 'cluster.ids'
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -251,7 +251,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                     labels_pred_louvain = adata.obs['louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
         else:
-            # scanpy_cluster = layer + '_louvain'
+            scanpy_cluster = layer + '_leiden'
             if cluster_label is not None:
                 cluster_label = adata.obs['cluster_label']
                 if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
