@@ -79,7 +79,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
     if len(methods) > 0:
         try:
-            process_id = generate_process_id(md5, process, method, parameters)
+            process_id = generate_process_id(md5, process, methods, parameters)
             # methods = [x.upper() for x in methods if isinstance(x,str)]
             seurat_path = get_output_path(output, process_id, dataset, method='normalization', format='Seurat')
             adata_path = get_output_path(output, process_id, dataset, method='normalization', format='AnnData')
@@ -120,6 +120,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
                         redislogger.info(job_id, f"Clustering the neighborhood graph for layer {layer}.")
                         adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+                        adata.write_h5ad(adata_path, compression='gzip')
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
                         normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
@@ -154,7 +155,6 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                 except Exception as e:
                     redislogger.error(job_id, f"UMAP or clustering is failed for SCTransform: {e}")
                     failed_methods.append(f"UMAP or clustering is failed for SCTransform: {e}")
-                adata.write_h5ad(adata_path, compression='gzip')
   
             print(failed_methods)
             

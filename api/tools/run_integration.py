@@ -26,7 +26,7 @@ def run_integration(job_id, ids:dict):
     species = parameters['species']
     default_assay = parameters['default_assay']
     genes = parameters['genes']
-    reference = parameters['']
+    reference = parameters['reference']
     dims = parameters['dims']
     npcs = parameters['npcs']
     integration_output = []
