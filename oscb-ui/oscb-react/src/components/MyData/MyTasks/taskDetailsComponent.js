@@ -47,7 +47,13 @@ function StatusChip({ status }) {
 
 function getFileNameFromURL(fileUrl){
   if (fileUrl) {
-    return fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+    try { 
+      filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+      return filename;
+    } 
+    catch (e) { 
+      console.error(e); 
+    }
   } else{
     return '';
   }
@@ -59,8 +65,6 @@ function downloadFile(fileUrl) {
   const pwd = "jobResults";
 
   if (fileUrl) {
-    const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-
     fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}&pwd=${pwd}`)
       .then(response => {
         return response.blob();
@@ -68,6 +72,7 @@ function downloadFile(fileUrl) {
       .then(blob => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
+        const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
         link.href = url;
         link.download = filename;
 
@@ -329,9 +334,17 @@ function TaskDetailsComponent() {
                     { /* <Button onClick={downloadFile(datasetURL)}>
                       {getFileNameFromURL(datasetURL) || 'Not available'}
                     </Button> */ }
-                    <a download onClick={() => {downloadFile(datasetURL)}} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                    { process === "Integration" ?
+                    (<a download onClick={() => {downloadFile(datasetURL)}} style={{ marginLeft: '10px', textAlign: 'center' }}>
                       {getFileNameFromURL(datasetURL) || 'Not available'}
-                    </a> 
+                    </a>) :
+                    (
+                      datasetURL.map((inpput, index) => (
+                        <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                          {getFileNameFromURL(inpput) || 'Not available'}
+                        </a>
+                      ))
+                    ) }
                   </Typography>
                 </CardContent>
               </Card>
