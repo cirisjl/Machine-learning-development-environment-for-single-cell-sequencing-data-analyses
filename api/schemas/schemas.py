@@ -97,10 +97,9 @@ class Dataset(BaseModel):
 
 
 class integrationParameters(BaseModel):
-    # description: Optional[str] = None,
+    # description: Optional[str] = None
     # dataset_id: Optional[str] = None
-    # method: Optional[str] = None,
-    process: Optional[str] = None,
+    # method: Optional[str] = None
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
     default_assay: Optional[str] = 'RNA' # Required for Seurat
@@ -115,12 +114,14 @@ class integrationParameters(BaseModel):
 
 
 class IntegrationDataset(BaseModel):
+    process: Optional[str] = None
+    description: Optional[str] = None
     datasetIds: List[str] = None
     dataset: List[str] = None
     input: List[str] = None
     output: str
     userID: str
-    output_format: str
+    # output_format: str
     methods: List[str] = None
     params: integrationParameters = Field(default_factory=integrationParameters)
    
