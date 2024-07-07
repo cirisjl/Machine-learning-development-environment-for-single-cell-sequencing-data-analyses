@@ -7,7 +7,7 @@ params:
   datasets: NA # Strings  of the datasets names
   inputs: NA # Strings  of input file path to scRNA data.
   output_folder: NA # Output file path of the Seurat object.
-  output_format: Seurat  # Seurat or AnnDate
+  # output_format: Seurat  # Seurat or AnnData
   adata_path: NULL
   default_assay: RNA # Default assay for each integration method
   methods: NULL # Integration methods: "Seurat", "Harmony", "LIGER"
@@ -87,10 +87,11 @@ if("SEURAT" %in% methods) {
 
     DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
 
-    SaveSeurat(srats.integrated, params$output_folder)
-    adata <- SeuratToAnndata(srats.integrated, params$adata_path)
-    rm(adata)
+    SaveSeurat(srats.integrated, params$output_folder, )
     print("Seurat object for Seurat integration is saved successfully.")
+    adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, assay="SCT")
+    print("AnnData object for Seurat integration is saved successfully.")
+    rm(adata)
     }, error = function(e) {
     RedisWarning(unique_id, paste0("An error happened during Seurat integration, skipped: ", e$message))
   }) 
@@ -136,9 +137,10 @@ if("HARMONY" %in% methods) {
     PlotIntegratedClusters(srat.harmony)
 
     SaveSeurat(srat.harmony, params$output_folder)
-    adata <- SeuratToAnndata(srat.harmony, params$adata_path)
-    rm(adata)
     print("Seurat object for Harmony integration is saved successfully.")
+    adata <- SeuratToAnndata(srats.harmony, out_file=params$adata_path, assay="SCT")
+    print("AnnData object for Seurat integration is saved successfully.")
+    rm(adata)
     rm(srats.harmony)
   }, error = function(e) {
     RedisWarning(unique_id, paste0("An error happened during Harmony integration, skipped: ", e$message))
@@ -173,9 +175,10 @@ if("LIGER" %in% methods) {
     PlotIntegratedClusters(srat.liger)
 
     SaveSeurat(srat.liger, params$output_folder)
-    adata <- SeuratToAnndata(srat.liger, params$adata_path)
-    rm(adata)
     print("Seurat object for LIGER integration is saved successfully.")
+    adata <- SeuratToAnndata(srats.liger, out_file=params$adata_path, assay="SCT")
+    print("AnnData object for LIGER integration is saved successfully.")
+    rm(adata)
     rm(srat.liger)
   }, error = function(e) {
     RedisWarning(unique_id, paste0("An error happened during LIGER integration, skipped: ", e$message))
