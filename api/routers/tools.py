@@ -119,7 +119,19 @@ async def create_integration_task_async(ids: IntegrationDataset):
     """
     ids_dict = ids.dict()  # Convert the Pydantic model to a dict
     task = create_integration_task.apply_async(args=[ids_dict])
-    create_job(task.id, ids)
+
+    upsert_jobs(
+        {
+            "job_id": task.id, 
+            "description": ids_dict['description'],
+            "datasetIds": ids_dict['datasetIds'],
+            "method": ids_dict['method'],
+            "datasetURL": ids_dict['input'],
+            "process": ids_dict['process'],
+            "created_on": datetime.now(), 
+            "status": "Queued"
+        }
+    )
 
     return JSONResponse({"job_id": task.id})
 

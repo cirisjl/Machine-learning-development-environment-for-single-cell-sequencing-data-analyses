@@ -123,6 +123,7 @@ class IntegrationDataset(BaseModel):
     userID: str
     # output_format: str
     methods: List[str] = None
+    method: Optional[str] = None,
     params: integrationParameters = Field(default_factory=integrationParameters)
    
 
