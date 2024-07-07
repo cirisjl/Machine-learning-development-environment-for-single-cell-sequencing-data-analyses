@@ -209,6 +209,7 @@ export default function ToolsDetailsComponent(props) {
               formData.userID = authData.username;
 
               const RELATIVE_PATH = filterCategoryMap[filterCategory];
+              console.log("formData: ", formData)
               fetch(CELERY_BACKEND_API + RELATIVE_PATH, {
                 method: 'POST',
                 headers: {

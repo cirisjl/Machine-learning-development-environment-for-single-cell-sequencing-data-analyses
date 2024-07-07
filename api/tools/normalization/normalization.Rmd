@@ -143,7 +143,7 @@ SCTransform calculates a model of technical noise in scRNA-seq data using 'regul
 ```{r SCTransform, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in% methods) || ("SCT_V2" %in% methods)){
   
-  if(!"SCTRANSFORM" %in% names(srat@assays)){
+  if(!"SCTransform" %in% names(srat@assays)){
     tryCatch({
       library(sctransform)
       if(("SCTRANSFORM"  %in% methods) || ("SCT" %in% methods)){

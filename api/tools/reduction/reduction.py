@@ -1,6 +1,8 @@
 import warnings
 import scanpy as sc
 from anndata import AnnData
+from sklearn.manifold import TSNE
+from umap import UMAP
 
 
 def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0):
@@ -9,49 +11,34 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         msg = "Normalize Pearson_residuals may create NaN values, which are not accepted by PCA."
         return adata, msg
 
-    if layer is not None: # and (layer+'_umap' not in adata.obsm.keys() or layer+'_umap_3D' not in adata.obsm.keys()):
-        adata_temp = adata.copy()
-        adata_temp.X = adata_temp.layers[layer]
-
+    if layer is not None and layer in adata.layers.keys(): # and (layer+'_umap' not in adata.obsm.keys() or layer+'_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
-        sc.tl.pca(adata_temp, svd_solver='arpack', random_state=random_state)
-        adata.uns['pca'] = adata_temp.uns["pca"].copy()
-        adata.obsm[layer+'_pca'] = adata_temp.obsm["X_pca"].copy()
+        adata.obsm[layer+'_pca'] = sc.pp.pca(adata.layers[layer])
+        
+        # tSNE
+        tsne = TSNE(n_components=2, random_state=random_state)
+        adata.obsm[layer+'_tsne'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
+        
+        # UMAP
+        umap_2d = UMAP(n_components=2, init='random', random_state=random_state)
+        umap_3d = UMAP(n_components=3, init='random', random_state=random_state)
+        adata.obsm[layer+'_umap'] = umap_2d.fit_transform(adata.obsm[layer+'_pca'])
+        adata.obsm[layer+"_umap_3D"] = umap_3d.fit_transform(adata.obsm[layer+'_pca'])
 
-        if use_rep is not None and adata_temp.obsm[use_rep].shape[1] < n_pcs:
-            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata_temp.obsm[use_rep].shape[1]}."
-            n_pcs = adata_temp.obsm[use_rep].shape[1]
+        if use_rep is not None and adata.obsm[use_rep].shape[1] < n_pcs:
+            msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
+            n_pcs = adata.obsm[use_rep].shape[1]
+
+        if use_rep is None:
+            adata.obsm[layer] = adata.layers[layer]
+            use_rep = layer
 
         # Computing the neighborhood graph
-        sc.pp.neighbors(adata_temp, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
-        adata.uns['neighbors'] = adata_temp.uns["neighbors"].copy()
-        adata.obsp['distances'] = adata_temp.obsp['distances'].copy()
-        adata.obsp['connectivities'] = adata_temp.obsp['connectivities'].copy()
-
-        # tSNE
-        sc.tl.tsne(adata_temp)
-        adata.uns['tsne'] = adata_temp.uns["tsne"].copy()
-        adata.obsm[layer+'_tsne'] = adata_temp.obsm["X_tsne"].copy()
-
-        # 2D UMAP
-        # if layer+'_umap' not in adata.obsm.keys():
-        sc.tl.umap(adata_temp, random_state=random_state, 
-                    init_pos="spectral", n_components=2, 
-                    copy=False, maxiter=None)
-        adata.uns['umap'] = adata_temp.uns["umap"].copy()
-        adata.obsm[layer+'_umap'] = adata_temp.obsm["X_umap"].copy()
-
-        # 3D UMAP
-        # if layer+'_umap_3D' not in adata.obsm.keys():
-        adata_3D = sc.tl.umap(adata_temp, random_state=random_state, 
-                        init_pos="spectral", n_components=3, 
-                        copy=True, maxiter=None)
-        adata.obsm[layer+"_umap_3D"] = adata_3D.obsm["X_umap"]
-        adata_3D = None
+        sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
     elif layer is None: # and ('X_umap' not in adata.obsm.keys() or 'X_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
-        sc.tl.pca(adata, svd_solver='arpack', random_state=random_state)
+        sc.pp.pca(adata, svd_solver='arpack', random_state=random_state)
 
         if use_rep is not None and adata.obsm[use_rep].shape[1] < n_pcs:
             msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
@@ -76,9 +63,10 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
                         copy=True, maxiter=None)
         adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
         adata_3D = None
-    # else:
-    #     if layer is None: layer = 'X'
-    #     msg = f"{layer}_umap already exists, skipped."
+    else:
+        # if layer is None: layer = 'X'
+        # msg = f"{layer}_umap already exists, skipped."
+        msg = f"{layer} does not exist, skipped."
 
     return adata, msg
 
