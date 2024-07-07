@@ -143,7 +143,7 @@ SCTransform calculates a model of technical noise in scRNA-seq data using 'regul
 ```{r SCTransform, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in% methods) || ("SCT_V2" %in% methods)){
   
-  if(!"SCTransform" %in% names(srat@assays)){
+  if(!"SCT" %in% names(srat@assays)){
     tryCatch({
       library(sctransform)
       if(("SCTRANSFORM"  %in% methods) || ("SCT" %in% methods)){
@@ -166,7 +166,7 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
 
       #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
       adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-      adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCTransform")
+      adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
       # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
       RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
       adata_sct <- NULL
@@ -177,13 +177,13 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
     RedisInfo(unique_id, "SCTransform assay already exists, skipped.")
     #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
     adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-    adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCTransform")
+    adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
     # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
     RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
     adata_sct <- NULL
   }
-  knitr::kable(head(srat[['SCTransform']]@data), align='cccc', format = "html", caption = 'SCTransform')
-  if(params$show_umap) seurat_cluster_umap(srat, assay = 'SCTransform', title = "SCTransform normalization")
+  knitr::kable(head(srat[['SCT']]@data), align='cccc', format = "html", caption = 'SCTransform')
+  if(params$show_umap) seurat_cluster_umap(srat, assay = 'SCT', title = "SCTransform normalization")
 } else {
   print("Not selected by user, skipped.")
 }
