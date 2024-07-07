@@ -16,8 +16,8 @@ def run_integration(job_id, ids:dict):
     process_ids = []
     process = "Integration"
     datasetIds = ids['datasetIds']
-    datasets = ids['datasets']
-    inputs = ids['inputs']
+    datasets = ids['dataset']
+    inputs = ids['input']
     userID = ids['userID']
     output = ids['output']
     methods = ids['methods']

@@ -97,9 +97,9 @@ class Dataset(BaseModel):
 
 
 class integrationParameters(BaseModel):
-    description: Optional[str] = None,
-    dataset_id: Optional[str] = None
-    method: Optional[str] = None,
+    # description: Optional[str] = None,
+    # dataset_id: Optional[str] = None
+    # method: Optional[str] = None,
     process: Optional[str] = None,
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
