@@ -331,10 +331,10 @@
     vertical-align: top;
     cursor: pointer;
 }
-
+/* 
 .task-builder-task .dialog-container .table-results {
   overflow-y: auto;
-}
+} */
 
 .task-builder-task .dialog-container .table-results table{
 

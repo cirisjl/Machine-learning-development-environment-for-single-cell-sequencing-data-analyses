@@ -40,6 +40,7 @@ import SessionReminder from './Session/sessionManager';
 import { SessionProvider } from './Session/context/sessionContext'; 
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
+import TreeTableComponent from './common_components/treeTableComponent';
 
 function App() {
   
@@ -84,7 +85,7 @@ function App() {
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
-          <Route path="testapi"         element={<QualityControlParameters/>}/>
+          <Route path="testapi"         element={<TreeTableComponent/>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>

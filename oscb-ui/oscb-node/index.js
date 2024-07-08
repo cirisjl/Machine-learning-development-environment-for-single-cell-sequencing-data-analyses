@@ -2525,7 +2525,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     'Source': "$Source",
                     'Submission Date': "$Submission Date",
                     'inputFiles': "$inputFiles",
-                    'adata_path': "$adata_path"
+                    'adata_path': "$adata_path",
+                    'process_ids':"$process_ids"
                 }
               }
             ],
