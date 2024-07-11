@@ -335,16 +335,16 @@ function TaskDetailsComponent() {
                       {getFileNameFromURL(datasetURL) || 'Not available'}
                     </Button> */ }
                     { process === "Integration" ?
-                    (<a download onClick={() => {downloadFile(datasetURL)}} style={{ marginLeft: '10px', textAlign: 'center' }}>
-                      {getFileNameFromURL(datasetURL) || 'Not available'}
-                    </a>) :
-                    (
-                      datasetURL.map((inpput, index) => (
-                        <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
-                          {getFileNameFromURL(inpput) || 'Not available'}
-                        </a>
-                      ))
-                    ) }
+                      ( datasetURL.map((inpput, index) => (
+                          <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                            {getFileNameFromURL(inpput) || 'Not available'}
+                          </a>
+                        ))
+                      ) :
+                      (<a download onClick={() => { downloadFile(datasetURL) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                        {getFileNameFromURL(datasetURL) || 'Not available'}
+                      </a>)
+                    }
                   </Typography>
                 </CardContent>
               </Card>
