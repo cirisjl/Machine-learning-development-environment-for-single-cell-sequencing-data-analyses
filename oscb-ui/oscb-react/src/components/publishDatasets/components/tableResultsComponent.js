@@ -14,7 +14,7 @@ import axios from 'axios';
 import {NODE_API_URL} from '../../../constants/declarations'
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem }) => {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
@@ -55,7 +55,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             ...prevVisibleColumns,
             [column]: !prevVisibleColumns[column],
         }));
-        console.log(visibleColumns[column]);
     };
 
     const resetColumnVisibility = () => {
@@ -73,14 +72,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         });
     };
 
-    // const isSelected = datasetId => !!selectedDatasets[datasetId];
-    // const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
-
-    // const handleEdit = (dataset) => {
-    //     console.log("Editing dataset: ", dataset);
-    //     // Implement your edit logic here
-    // };
-    
     const handleVisualize = (dataset) => {
         console.log("Visualizing dataset: ", dataset);
         // Implement your visualization logic here
@@ -128,15 +119,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         style={{ cursor:'pointer' }}
                         onChange={() => onSelectDataset(item)}
                         checked={!!selectedDatasets[item["Id"]]}
-                        // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
 
                     />
-                    { /* <button
-                        onClick={() => handleEdit(item["Id"])}
-                        className="action-button"
-                    >
-                        <FontAwesomeIcon icon={faEdit} />
-                    </button> */ }
+
                     <button
                         onClick={() => handleVisualize(item["Id"])}
                         className="action-button"
@@ -152,18 +137,33 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     }, [data, selectedDatasets, visibleColumns]);
 
     const fetchSubItems = async (process_ids) => {
+        const process_ids_key = process_ids.join(',');
+        
+        // Check if data already exists for this process_ids_key
+        if (subItemsData[process_ids_key]) {
+            return; // Data already exists, no need to fetch again
+        }
+    
         try {
             const response = await axios.post(NODE_API_URL + '/getPreProcessResults', { processIds: process_ids });
             setSubItemsData(prevData => ({
                 ...prevData,
-                [process_ids.join(',')]: response.data // Store the result with concatenated process_ids as key
+                [process_ids_key]: response.data // Store the result with concatenated process_ids as key
             }));
         } catch (error) {
             console.error("Error fetching sub-items:", error);
         }
     };
+    
 
     const expandedRowRender = (record) => {
+
+        const process_ids_key = record.process_ids.join(',');
+
+        // Fetch sub-items only if not already fetched
+        if (!subItemsData[process_ids_key]) {
+            fetchSubItems(record.process_ids);
+        }
         const subColumns = [
             {
                 title: 'Description',
@@ -194,12 +194,14 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 title: 'Action',
                 key: 'operation',
                 render: (text, subRecord) => (
-                    <Checkbox onChange={() => console.log(`Selected sub-item adata_path: ${subRecord.adata_path}`)} />
+                    <Checkbox 
+                    onChange={() => onSelectSubItem(record, subRecord)} 
+                    checked={selectedDatasets[record.Id]?.selectedSubItem?.process_id === subRecord.process_id}
+                    />
                 ),
             },
         ];
 
-        const process_ids_key = record.process_ids.join(',');
         const subData = subItemsData[process_ids_key] || [];
         return <Table columns={subColumns} dataSource={subData} pagination={false} />;
     };
