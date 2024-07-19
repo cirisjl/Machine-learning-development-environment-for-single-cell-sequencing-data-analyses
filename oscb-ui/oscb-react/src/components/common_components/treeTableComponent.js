@@ -66,9 +66,9 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
         });
     };
 
-    const handleVisualize = (dataset) => {
-        console.log("Visualizing dataset: ", dataset);
-        // Implement your visualization logic here
+    const handleVisualize = (benchmarksId) => {
+        console.log("Visualizing benchmarksId: ", benchmarksId);
+        window.open(`/benchmarks/viewDetails?benchmarksId=${benchmarksId}`, '_blank');
     };
 
     const columns = useMemo(() => {
@@ -104,16 +104,16 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
         const actionColumn = {
             title: 'Actions',
             key: 'actions',
-            render: (text, item) => {
+            render: item => {
                 return (
                     <div className="action-buttons">
                         <Checkbox
                             style={{ cursor: 'pointer' }}
                             onChange={() => onSelectDataset(item)}
-                            checked={!!selectedDatasets[item["benchmarksId"]]}
+                            checked={!!selectedDatasets[item["Benchmarks ID"]]}
                         />
                         <Button
-                            onClick={() => handleVisualize(item["benchmarksId"])}
+                            onClick={() => handleVisualize(item["Benchmarks ID"])}
                             className="action-button"
                         >
                             <FontAwesomeIcon icon={faEye} />

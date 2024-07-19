@@ -41,6 +41,7 @@ import { SessionProvider } from './Session/context/sessionContext';
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 import TreeTableComponent from './common_components/treeTableComponent';
+import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
 
 function App() {
   
@@ -56,6 +57,7 @@ function App() {
           <Route path="benchmarks"   element={<Benchmarks/>}/>
           <Route path="benchmarks/uploads"   element={<FlowControl/>}/>
           <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>
+          <Route path="benchmarks/viewDetails"   element={<BenchmarksViewDetailsComponent/>}/>
           <Route path="benchmarks/imputation" element={<TaskResultsComponent task_type="Imputation" />} />
           <Route path="benchmarks/maker-gene-identification" element={<TaskResultsComponent task_type="Marker Gene Identification" />} />
           <Route path="benchmarks/trajectory" element={<TaskResultsComponent task_type="Trajectory" />} />

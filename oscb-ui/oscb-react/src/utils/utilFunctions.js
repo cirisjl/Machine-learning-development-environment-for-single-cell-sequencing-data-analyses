@@ -158,3 +158,40 @@ export async function copyFilesToPrivateStorage(selectedFiles, userId){
     let errorMessage = error.response ? error.response.data.message : error.message;
     return { success: false, message: errorMessage };  }
 };
+
+
+export function downloadFile(fileUrl) {
+  const apiUrl = `${NODE_API_URL}/download`;
+  const pwd = "jobResults";
+
+  if (fileUrl) {
+    const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+
+    fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${getCookie("jwtToken")}&pwd=${pwd}`)
+      .then(response => {
+        return response.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+
+        document.body.appendChild(link);
+        link.click();
+        // Remove the link from the DOM
+        // document.body.removeChild(link);
+      })
+      .catch(error => {
+        console.error('Error downloading file:', error);
+      });
+  }
+};
+
+export function getFileNameFromURL(fileUrl){
+  if (fileUrl) {
+    return fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+  } else{
+    return '';
+  }
+};
