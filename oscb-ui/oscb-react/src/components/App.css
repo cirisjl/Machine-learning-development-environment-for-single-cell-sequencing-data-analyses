@@ -11,6 +11,19 @@ body {
   pointer-events: none;
 }
 
+.forgot-password {
+  margin-top: 10px; /* Adjust the top margin as needed */
+}
+
+.forgot-link {
+  color: #007bff; /* Change link color if needed */
+  text-decoration: none; /* Remove underline */
+}
+
+.forgot-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
 html{
   width: 100%;
   -webkit-text-size-adjust: 100%;
@@ -22,6 +35,19 @@ html{
   font-family: Source Sans Pro,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
   
 }
+.forgot-password {
+  margin-top: 10px; /* Adjust the top margin as needed */
+}
+
+.forgot-link {
+  color: #007bff; /* Change link color if needed */
+  text-decoration: none; /* Remove underline */
+}
+
+.forgot-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

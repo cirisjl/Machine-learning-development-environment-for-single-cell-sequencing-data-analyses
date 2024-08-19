@@ -12,6 +12,8 @@ const archiver = require('archiver');
 const util = require('util');
 const stat = util.promisify(fs.stat);
 const multer = require("multer");
+const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
@@ -306,6 +308,142 @@ app.post('/node/login', (req, res) => {
         });
     });
 });
+
+
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST, 
+    port: process.env.EMAIL_PORT,  
+    secure: true,  
+    auth: {
+      user: process.env.EMAIL_ACCOUNT, 
+      pass: process.env.EMAIL_PWD  
+    },
+    tls: {
+      rejectUnauthorized: false  
+    }
+  });
+  const sendResetPasswordEmail = (email, resetToken) => {
+    const resetLink = `https://${process.env.HOST_URL}:3000/reset/${resetToken}`;
+    const mailOptions = {
+        from: process.env.EMAIL_ACCOUNT,
+        to: email,
+        subject: 'Password Reset',
+        html: `
+            <p>You are receiving this email because you (or someone else) have requested the reset of the password for your account.</p>
+            <p>Please click on the following link to reset your password:</p>
+            <p><a href="${resetLink}">${resetLink}</a></p>
+            <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+  
+// Endpoint to handle forgot password
+app.post('/node/forgot-password', (req, res) => {
+    const { email } = req.body;
+    console.log("email", email)
+    pool.query('SELECT user_id FROM users WHERE email = ?', [email], (err, results) => {
+        console.log("inside query")
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const userId = results[0].user_id;
+        const token = uuidv4();
+        const expiry = Date.now() + 3600000; // 1 hour from now
+
+        pool.query('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE user_id = ?', [token, expiry, userId], (err, results) => {
+            if (err) {
+                console.error('Database update error:', err);
+                return res.status(500).json({ message: 'Database error' });
+            }
+
+            // Send email with reset link using sendResetPasswordEmail function
+            sendResetPasswordEmail(email, token)
+                .then(() => {
+                    res.json({ message: 'Please check your email for password reset link.' });
+                })
+                .catch((error) => {
+                    console.error('Error when sending email:', error);
+                    return res.status(500).json({ message: 'Error when sending email' });
+                });
+        });
+    });
+});
+
+
+app.post('/node/reset-password', (req, res) => {
+    const { token, newPassword, confirmPassword } = req.body;
+    console.log("resetpass",newPassword);
+
+    // Validate token and ensure passwords match
+    if (!token || !newPassword || newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    // Validate the token and check if it's still valid
+    pool.query('SELECT user_id FROM users WHERE reset_token = ? AND reset_token_expiry > ?', [token, Date.now()], (err, results) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+
+        const userId = results[0].user_id;
+        console.log("userid",userId);
+        // const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hash the new password
+        // pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
+        //     if (err) {
+        //         console.error('Database update error:', err);
+        //         return res.status(500).json({ message: 'Datasbase error' });
+        //     }
+        //     res.json({ message: 'Password has been reset successfully' });
+        // });
+
+        bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+            if (err) {
+                console.error(err);
+                res.json({ status: 500, message: 'Internal Server Error' });
+                return;
+            }
+    
+            // Insert the user into the database
+                pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
+            if (err) {
+                console.error('Database update error:', err);
+                return res.status(500).json({ message: 'Datasbase error' });
+            }
+            res.json({ message: 'Password has been reset successfully. Redirecting to Login page...' }); 
+            });
+        });
+    });
+});
+
+
+// Route for resetting password via email link
+app.get('/reset/:token', (req, res) => {
+    const { token } = req.params;
+    // Render a form where users can enter a new password
+    res.send(`
+       
+    `);
+});
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err.stack);
+    res.status(500).send('Unhandled Error in Node Application');
+});
+
 
 // Route to handle protected resource
 app.get('/node/protected', verifyToken, (req, res) => {
@@ -832,6 +970,65 @@ app.get('/node/download', async (req, res) => {
         console.error(error);
         return res.status(400).jsonp(error);
     } 
+});
+
+
+// Define the route handler for downloading a file
+app.get('/node/download2/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        // Create a new MongoClient
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+
+        // Connect to the MongoDB server
+        await client.connect();
+        console.log('Connected to MongoDB'); // Log message indicating successful connection
+
+        // Select the database
+        const db = client.db(dbName);
+        console.log(`Selected database: ${db}`); // Log message indicating selected database
+
+        // Select the collection
+        const collection = db.collection(datasetCollection);
+        console.log(`Selected collection: ${datasetCollection}`); // Log message indicating selected collection
+
+        // Fetch the document where the ID matches
+        const document = await collection.findOne({ Id: id });
+
+        if (!document) {
+            console.error('Document not found for ID:', id);
+            res.status(404).send('Document not found');
+            return;
+        }
+
+        // Get the adata_path from the matched document
+        const filePath = document.adata_path;
+
+        // Check if the file exists
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                console.error('Error accessing file:', err);
+                res.status(404).send('File not found');
+                return;
+            }
+
+            // Set appropriate headers for file download
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+            res.setHeader('Content-Type', 'application/octet-stream');
+            res.setHeader('Content-Length', fs.statSync(filePath).size); // Set Content-Length based on file size
+
+            // Pipe the file stream directly to the response
+            const fileStream = fs.createReadStream(filePath);
+            fileStream.pipe(res);
+        });
+
+        // Close the MongoDB connection when done
+        await client.close();
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 

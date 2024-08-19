@@ -38,6 +38,8 @@ import TaskResultsComponent from './Benchmarks/taskResultsComponent';
 import UploadDataset from './MyData/UploadData/uploadDataset';
 import SessionReminder from './Session/sessionManager';
 import { SessionProvider } from './Session/context/sessionContext'; 
+import ForgotPasswordPage from '../pages/login/ForgotPasswordPage'
+import ResetPasswordPage from '../pages/login/ResetPasswordPage';
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 import HandleVisualize from './publishDatasets/components/handleVisualize';
@@ -88,8 +90,8 @@ function App() {
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
           <Route path="testapi"         element={<QualityControlParameters/>}/>
-          <Route path="handleVisualize/:id"           element={<HandleVisualize/>}/>
-
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="reset/:token"         element={<ResetPasswordPage/>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>
