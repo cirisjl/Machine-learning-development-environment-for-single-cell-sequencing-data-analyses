@@ -45,6 +45,36 @@ export default function MyData() {
         setSelectedDatasets(currentSelectedDatasets)
     };
 
+  // Function to handle selection of sub-items
+  const onSelectSubItem = (mainItem, subItem) => {
+    const mainItemId = mainItem.Id;
+    let currentSelectedDatasets = { ...selectedDatasets };
+  
+    // Check if the main item is already selected
+    if (currentSelectedDatasets[mainItemId]) {
+        // If sub-item is already selected, deselect it
+        if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
+            delete currentSelectedDatasets[mainItemId];
+        } else {
+            // Update the selected main item with the selected sub-item
+            currentSelectedDatasets[mainItemId] = {
+                ...mainItem,
+                selectedSubItem: subItem
+            };
+        }
+    } else {
+        // Select the main item and the sub-item
+        currentSelectedDatasets = {
+            [mainItemId]: {
+                ...mainItem,
+                selectedSubItem: subItem
+            }
+        };
+    }
+  
+    setSelectedDatasets(currentSelectedDatasets);
+  };
+
     return (
         <div className="page-container">
             <div className="left-nav">
@@ -59,6 +89,7 @@ export default function MyData() {
                         isVisible={true}
                         selectedDatasets={selectedDatasets}
                         fromToolsPage={true}
+                        onSelectSubItem = {onSelectSubItem}
                     />
                 </div>
             </div>

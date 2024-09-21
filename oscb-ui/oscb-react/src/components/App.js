@@ -43,7 +43,8 @@ import ResetPasswordPage from '../pages/login/ResetPasswordPage';
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 import HandleVisualize from './publishDatasets/components/handleVisualize';
-
+import TreeTableComponent from './common_components/treeTableComponent';
+import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
 
 function App() {
   
@@ -60,6 +61,7 @@ function App() {
           <Route path="benchmarks"   element={<Benchmarks/>}/>
           <Route path="benchmarks/uploads"   element={<FlowControl/>}/>
           <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>
+          <Route path="benchmarks/viewDetails"   element={<BenchmarksViewDetailsComponent/>}/>
           <Route path="benchmarks/imputation" element={<TaskResultsComponent task_type="Imputation" />} />
           <Route path="benchmarks/maker-gene-identification" element={<TaskResultsComponent task_type="Marker Gene Identification" />} />
           <Route path="benchmarks/trajectory" element={<TaskResultsComponent task_type="Trajectory" />} />
@@ -89,7 +91,7 @@ function App() {
           <Route path="custom"         element={<MyForm/>}/>
           <Route path="accessDenied"         element={<AccessDenied/>}/>
           <Route path="manageOptions"         element={<ManageOptions/>}/>
-          <Route path="testapi"         element={<QualityControlParameters/>}/>
+          <Route path="testapi"         element={<TreeTableComponent/>}/>
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="reset/:token"         element={<ResetPasswordPage/>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}

@@ -4,8 +4,9 @@ import {NODE_API_URL} from '../../../constants/declarations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import FilterComponent from '../../publishDatasets/components/filtersComponent';
-import Pagination from '../../publishDatasets/components/tablePaginationComponent';
+// import Pagination from '../../publishDatasets/components/tablePaginationComponent';
 import ResultsTable from '../../publishDatasets/components/tableResultsComponent';
+import TreeTable from '../../common_components/treeTableComponent';
 
 function SearchTasks({taskType}) {
     const [filters, setFilters] = useState({});
@@ -61,14 +62,14 @@ function SearchTasks({taskType}) {
 const onSelectDataset = (dataset) => {
     // Get a copy of the current selected datasets from the state or props
     const currentSelectedDatasets = { ...selectedTasks };
-    const datasetId = dataset.Id; // Make sure 'Id' is the correct field for dataset ID
+    const benchmarksId = dataset.benchmarksId; 
   
-    if (currentSelectedDatasets[datasetId]) {
+    if (currentSelectedDatasets[benchmarksId]) {
         // Dataset is currently selected, deselect it
-        delete currentSelectedDatasets[datasetId];
+        delete currentSelectedDatasets[benchmarksId];
     } else {
         // Dataset is not selected, select it
-        currentSelectedDatasets[datasetId] = dataset;
+        currentSelectedDatasets[benchmarksId] = dataset;
     }
   
     setSelectedTasks(currentSelectedDatasets);
@@ -209,15 +210,15 @@ const onPageChange = (newPage) => {
                   )}
                 </div>
 
-                <div className='table-pagination'>
+                {/* <div className='table-pagination'>
                   <Pagination
                     pagination={pagination}
                     onPageChange={onPageChange}
                   />
-                </div>
+                </div> */}
                 
                 <div className='table-results'>
-                  <ResultsTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination} showEdit={false} showDelete={false} />
+                     <TreeTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination}/>
                 </div>
               </div>
               

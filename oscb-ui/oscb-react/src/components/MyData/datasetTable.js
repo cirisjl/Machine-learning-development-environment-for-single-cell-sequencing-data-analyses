@@ -10,7 +10,7 @@ import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } 
 import { ScaleLoader } from 'react-spinners';
 import { getCookie } from '../../utils/utilFunctions';
 
-const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage }) => {
+const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, onSelectSubItem }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -270,7 +270,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage }) 
                         </div>                
                         
                         <div className='table-results'>
-                          <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} showEdit={true} showDelete={true} />
+                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem}/>
                         </div>
 
                         <div className='table-pagination'>

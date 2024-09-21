@@ -24,6 +24,7 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from tools.evaluation.clustering import clustering_scores
+# from tools.utils.gzip_str import *
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
@@ -200,7 +201,7 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden'): 
     layers = None
     cell_metadata_obs = None
     nCells = 0
@@ -230,8 +231,6 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_louvain = None
     cluster_embedding = None
     description = f'{method} {process}' 
-    scanpy_cluster = 'leiden'
-    # scanpy_cluster = 'cluster.ids'
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -243,8 +242,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     if adata is not None and isinstance(adata, AnnData):
         if layer is None:
             layer = "X"
-            if cluster_label is not None:
-                cluster_label = adata.obs['cluster_label']
+            if cluster_label is not None and cluster_label in adata.obs.keys():
+                cluster_label = adata.obs[cluster_label]
                 if 'leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_leiden = adata.obs['leiden']
                 if 'louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
@@ -252,25 +251,27 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 cluster_embedding = adata.obsm[layer+'_umap']
         else:
             scanpy_cluster = layer + '_leiden'
-            if cluster_label is not None:
-                cluster_label = adata.obs['cluster_label']
+            if cluster_label is not None and cluster_label in adata.obs.keys():
+                cluster_label = adata.obs[cluster_label]
                 if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_leiden = adata.obs[layer+'_leiden']
                 if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs[layer+'_louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
         
-        if('cluster.ids' in adata.obs.keys()):
-            scanpy_cluster = 'cluster.ids'
+        # if('cluster.ids' in adata.obs.keys()):
+        #     scanpy_cluster = 'cluster.ids'
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
         cell_metadata_obs = adata.obs # pandas dataframe
+        # cell_metadata_obs = gzip_df(adata.obs) # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
-        genes = adata.var_names.to_list() # Cell IDs
-        cells = adata.obs_names.to_list() # Gene IDs
+        genes = adata.var_names.to_list() # Gene IDs
+        cells = adata.obs_names.to_list() # Cell IDs
         gene_metadata = adata.var # pandas dataframe
+        # gene_metadata = gzip_df(adata.var) # pandas dataframe
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
             # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
@@ -278,20 +279,28 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
             if layer+'_umap' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
+                # umap_plot = gzip_str(plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster))
                 umap_plot = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster)
             elif layer+'_umap' in adata.obsm.keys():
+                # umap_plot = gzip_str(plot_UMAP(adata, layer=layer))
                 umap_plot = plot_UMAP(adata, layer=layer)
             if layer+'_umap_3D' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
+                # umap_plot_3d = gzip_str(plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3))
                 umap_plot_3d = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3)
             elif layer+'_umap_3D' in adata.obsm.keys():
+                # umap_plot_3d = gzip_str(plot_UMAP(adata, layer=layer, n_dim=3))
                 umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+
         if process == 'QC':
+            # violin_plot = gzip_str(plot_violin(adata))
+            # scatter_plot = gzip_str(plot_scatter(adata))
             violin_plot = plot_violin(adata)
             scatter_plot = plot_scatter(adata)
             if nCells < 10000: # If the dataset is too large, then skip the highest expressed genes plot
+                # highest_expr_genes_plot = gzip_str(plot_highest_expr_genes(adata))
                 highest_expr_genes_plot = plot_highest_expr_genes(adata)
 
-        if cluster_label is not None and cluster_label in adata.obs.keys():
+        if cluster_label is not None:
             if labels_pred_leiden is not None:
                 asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_scores(cluster_label, labels_pred_leiden, cluster_embedding)
                 evaluation_results.append(

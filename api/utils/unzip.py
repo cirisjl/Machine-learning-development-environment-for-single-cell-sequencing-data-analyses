@@ -85,14 +85,15 @@ def unzip_file_if_compressed(unique_id, file_path):
     if os.path.exists(file_path):
         try:
             if file_path.endswith(".zip"):
+                redislogger.info(unique_id, "Extracting ZIP file ...")
                 extract_path = extract_zip_all(unique_id, file_path)
             elif file_path.endswith(".rar"):
+                redislogger.info(unique_id, "Extracting RAR file ...")
                 extract_path = extract_rar_all(unique_id, file_path)
             elif is_tarfile(file_path) or file_path.endswith(".gz"):
+                redislogger.info(unique_id, "Extracting GZ file ...")
                 extract_path = extract_tar_all(unique_id, file_path)
-            else:
-                # redislogger.info(unique_id, f"No compressed file is found in: {file_path}")
-                redislogger.info(unique_id, f"No compressed file is found.")
+
         except Exception as e:
             redislogger.error(unique_id, f"Error extracting {file_path}: {str(e)}")
             extract_path = file_path  # Return the original path in case of error

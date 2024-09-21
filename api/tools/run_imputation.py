@@ -68,7 +68,8 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip MAGIC imputation.")
             process_ids.append(process_id)
-            imputation_output.append({"MAGIC": imputation_results["adata_path"]})
+            imputation_output = imputation_results["outputs"]
+
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(job_id, "Output already exists, start from the result of the last run.")
@@ -84,6 +85,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"MAGIC": output})
+                imputation_results["outputs"] = imputation_output
                 adata = None
                 redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
@@ -121,6 +123,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
                         adata.write_h5ad(output, compression='gzip')
                         imputation_output.append({"MAGIC": output})
+                        imputation_results["outputs"] = imputation_output
                         adata = None
                         redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
                         process_ids.append(process_id)
@@ -170,7 +173,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip SAVER imputation.")
             process_ids.append(process_id)
-            imputation_output.append({"SAVER": imputation_results["adata_path"]})
+            imputation_output = imputation_results["outputs"]
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(job_id, "Output already exists, start from the last run.")
@@ -187,6 +190,8 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
 
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"SAVER": output})
+                imputation_output.append({"Report": report_path})
+                imputation_results["outputs"] = imputation_output
                 adata = None
                 redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
@@ -230,8 +235,10 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                             imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
 
                             adata.write_h5ad(output, compression='gzip')
+                            
                             imputation_output.append({"SAVER": output})
                             imputation_output.append({"Report": report_path})
+                            imputation_results["outputs"] = imputation_output
                             adata = None
                             redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
                             process_ids.append(process_id)

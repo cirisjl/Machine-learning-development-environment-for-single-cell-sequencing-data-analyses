@@ -95,6 +95,35 @@ export default function ToolsDetailsComponent(props) {
     setSelectedDatasets(currentSelectedDatasets)
   };
 
+  // Function to handle selection of sub-items
+const onSelectSubItem = (mainItem, subItem) => {
+  const mainItemId = mainItem.Id;
+  let currentSelectedDatasets = { ...selectedDatasets };
+
+  // Check if the main item is already selected
+  if (currentSelectedDatasets[mainItemId]) {
+      // If sub-item is already selected, deselect it
+      if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
+          delete currentSelectedDatasets[mainItemId];
+      } else {
+          // Update the selected main item with the selected sub-item
+          currentSelectedDatasets[mainItemId] = {
+              ...mainItem,
+              selectedSubItem: subItem
+          };
+      }
+  } else {
+      // Select the main item and the sub-item
+      currentSelectedDatasets = {
+          [mainItemId]: {
+              ...mainItem,
+              selectedSubItem: subItem
+          }
+      };
+  }
+
+  setSelectedDatasets(currentSelectedDatasets);
+};
   const onDeleteDataset = (id) => {
     const currentSelectedDatasets = { ...selectedDatasets};
   
@@ -148,27 +177,37 @@ export default function ToolsDetailsComponent(props) {
             const titlesArray = datasetsArray.map(dataset => dataset.Title);
             const idsArray = datasetsArray.map(dataset => dataset.Id);
             formData.dataset = titlesArray;
-            formData.datasetIds = idsArray;
+            formData.id = idsArray;
 
              let inputArray = datasetsArray.map(dataset => {
-              if (dataset.inputFiles.length > 1) {
-                return extractDir(dataset.inputFiles[0]); // Assuming extractDir is a function defined elsewhere
+
+                // Check if selectedSubItem is present and has a non-null adata_path
+                let adataPath;
+                if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
+                  adataPath = dataset.selectedSubItem.adata_path;
               } else {
-                return dataset.inputFiles[0];
+                  adataPath = dataset.adata_path;
               }
+                return adataPath;
             });
 
-            formData.input = inputArray;
-            formData.output = "/IntegrationResults";
+            formData.input = inputArray;           // if the input file is at location /usr/src/storage/dataset1/filename.h5ad
+            formData.output = "/IntegrationResults"; // Integration results are stored at the output location /usr/src/storage/dataset1/IntegrationResults/
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
-              formData.dataset_id = dataset.Id;
-              if (dataset.inputFiles.length > 1) {
-                formData.input = extractDir(dataset.inputFiles[0]);
-                formData.output = formData.input + "/Results";
-              } else if (dataset.inputFiles.length === 1) {
-                formData.input = dataset.inputFiles[0];
+            
+              // Check if selectedSubItem is present and has a non-null adata_path
+              let adata_path;
+              if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
+                console.log("Inside sub item");
+                adata_path = dataset.selectedSubItem.adata_path;
+              } else {
+                adata_path = dataset.adata_path;
+              }
+
+             if (adata_path) {
+                formData.input = adata_path;
                 const directory = extractDir(formData.input);
                 formData.output = directory + "/Results";
               }
@@ -199,6 +238,7 @@ export default function ToolsDetailsComponent(props) {
           }
 
           formData.description = job_description;
+          formData.dataset_id = formData.id;
           formData.method = method;
           formData.process = filterStaticCategoryMap[filterCategory];
       
@@ -422,7 +462,7 @@ export default function ToolsDetailsComponent(props) {
       <div>
         <InputDataComponent handleDatasetChange={handleDatasetChange} handleMultipleDatasetChange={handleMultipleDatasetChange} 
         formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}
-        onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset}/>
+        onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem}/>
       </div>
             
         {filterSchema && UIfilterSchema ? (

@@ -2763,7 +2763,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     'Source': "$Source",
                     'Submission Date': "$Submission Date",
                     'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
-                    'adata_path': "$adata_path"
+                    'adata_path': "$adata_path",
+                    'process_ids':"$process_ids"
                 }
               }
             ],
@@ -3037,6 +3038,57 @@ app.get('/node/fetchGraphData/:process_id', async (req, res) => {
     } finally {
         // Ensure the client will close when you finish/error
         await client.close();
+    }
+});
+
+
+  // API endpoint to get Benchmarks results based on benchmarksId
+  app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res) => {
+    let client;
+    try {
+
+        const benchmarksId = req.body.benchmarksId;
+
+        if (!benchmarksId) {
+            return res.status(400).json({ error: 'No BenchmarksId is provided' });
+        }
+
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+        const collection  = db.collection(benchmarksCollection);
+
+    // Fetching the benchmark result with the corresponding dataset details
+    const benchmarksResults = await collection.aggregate([
+        {
+            $match: { benchmarksId: benchmarksId }
+        },
+        {
+            $lookup: {
+                from: datasetCollection,
+                localField: 'datasetId',
+                foreignField: 'Id',
+                as: 'datasetDetails'
+            }
+        },
+        {
+            $unwind: {
+                path: '$datasetDetails',
+                preserveNullAndEmptyArrays: true
+            }
+        }
+    ]).toArray();
+
+
+        res.status(200).json(benchmarksResults);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (client) {
+            await client.close();
+        }
     }
 });
 

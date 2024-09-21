@@ -103,13 +103,9 @@ class integrationParameters(BaseModel):
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
     default_assay: Optional[str] = 'RNA' # Required for Seurat
-    layer: Optional[str] = None
-    species: Optional[str] = None
-    idtype: Optional[str] = None 
-    genes: Optional[List[str]] = None
-    reference: Optional[int] = 12
-    show_umap: Optional[bool] = True
-    show_error: Optional[bool] = True
+    reference: Optional[str] = None
+    # show_umap: Optional[bool] = True
+    # show_error: Optional[bool] = True
 
 
 

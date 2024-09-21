@@ -14,22 +14,23 @@ params:
   dims: 30
   npcs: 30
   reference: NULL # Reference dataset for Seurat integration
-  genes: NULL # Genes for MAGIC integration
-  show_code: TRUE
-  show_warning: TRUE
+  show_code: FALSE
+  show_warning: FALSE
   show_message: TRUE
   show_error: TRUE
 output: html_document
 ---
 ```{r setup, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-knitr::opts_chunk$set(echo=params$show_code, warning=params$show_warning, message=params$show_message)
+knitr::opts_chunk$set(echo=params$show_code, include=TRUE, warning=params$show_warning, message=params$show_message)
 ```
 # Integration
 
 ```{r Load data, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+unique_id <- params$unique_id
 datasets <- strsplit(params$datasets, ",")[[1]]
 inputs <- strsplit(params$inputs, ",")[[1]]
-
+npcs <- params$npcs
+dims <- params$dims
 methods <- strsplit(params$methods, ",")[[1]]
 methods = toupper(methods)
 if(is.null(params$methods)) stop("No integration method is selected.")
@@ -42,6 +43,7 @@ library(RColorBrewer)
 library(dplyr)
 source("../formating/formating.R")
 
+RedisInfo(unique_id, "Loading datasets ...")
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
@@ -61,9 +63,10 @@ names(srats.list) <-datasets
 ```{r Seurat, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("SEURAT" %in% methods) {
   tryCatch({
+    RedisInfo(unique_id, "Start Seurat integration ...")
     srats.integrated <- NULL
     if(params$default_assay == 'SCT' && !is.null(params$reference)) {
-      if(!params$reference %in%datasets) stop(paste(params$reference, "does not exist."))
+      if(!params$reference %in% datasets) stop(paste(params$reference, "does not exist."))
       srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
       srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
       reference_dataset <- which(names(srats.list) == params$reference)
@@ -75,24 +78,46 @@ if("SEURAT" %in% methods) {
       srats.anchors <- FindIntegrationAnchors(object.list = srats.list, normalization.method = "SCT", anchor.features = srats.features)
       srats.integrated <- IntegrateData(anchorset = srats.anchors, normalization.method = "SCT")
     } else {
-      srats.anchors <- FindIntegrationAnchors(object.list = srats.list, dims = 1:params$dims)
-      srats.integrated <- IntegrateData(anchorset = srats.anchors, dims = 1:params$dims)
+      srats.anchors <- FindIntegrationAnchors(object.list = srats.list, dims = 1:dims)
+      srats.integrated <- IntegrateData(anchorset = srats.anchors, dims = 1:dims)
     }
 
+    RedisInfo(unique_id, "Seurat integration is done.")
+
     # Visulization
+    # Before integration
+    DefaultAssay(srats.integrated) <- "RNA"
+    srats.integrated <- NormalizeData(srats.integrated, verbose = F)
+    srats.integrated <- FindVariableFeatures(srats.integrated, selection.method = "vst", nfeatures = 2000, verbose = F)
+    srats.integrated <- ScaleData(srats.integrated, verbose = F)
+    srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
+    srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
+
+    DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " before integration")
+
+    # After integration
     DefaultAssay(srats.integrated) <- "integrated"
     srats.integrated <- ScaleData(srats.integrated, verbose = F)
     srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
-    srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:params$dims) 
+    srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
 
     DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
+    DimPlot(srats.integrated, reduction = "umap", split.by = "orig.ident") + NoLegend()
 
-    SaveSeurat(srats.integrated, params$output_folder, )
-    print("Seurat object for Seurat integration is saved successfully.")
-    adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, assay="SCT")
-    print("AnnData object for Seurat integration is saved successfully.")
+    srats.integrated <- FindNeighbors(srats.integrated, dims = 1:dims, k.param = 10, verbose = F)
+    srats.integrated <- FindClusters(srats.integrated, verbose = F)
+    DimPlot(srats.integrated, label = T) + NoLegend()
+
+    PlotIntegratedClusters(srats.integrated) 
+
+    SaveSeurat(srats.integrated, params$output_folder)
+    RedisInfo(unique_id, "Seurat object for Seurat integration is saved successfully.")
+    adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, main_layer="data", assay="integrated")
+    RedisInfo(unique_id, "AnnData object for Seurat integration is saved successfully.")
     rm(adata)
-    }, error = function(e) {
+    rm(srats.integrated)
+  }, error = function(e) {
+    print(e$message)
     RedisWarning(unique_id, paste0("An error happened during Seurat integration, skipped: ", e$message))
   }) 
 } else {
@@ -104,16 +129,18 @@ if("SEURAT" %in% methods) {
 ```{r Harmony, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("HARMONY" %in% methods) {
   tryCatch({
+    RedisInfo(unique_id, "Start Harmony integration ...")
     library(harmony)
     library(cowplot)
     srat.harmony <- Reduce(merge, srats.list)
     srat.harmony <- NormalizeData(srat.harmony, verbose = F)
     srat.harmony <- FindVariableFeatures(srat.harmony, selection.method = "vst", nfeatures = 2000, verbose = F)
     srat.harmony <- ScaleData(srat.harmony, verbose = F)
-    srat.harmony <- RunPCA(srat.harmony, npcs = params$npcs, verbose = F)
-    srat.harmony <- RunUMAP(srat.harmony, reduction = "pca", dims = 1:params$dims, verbose = F)
+    srat.harmony <- RunPCA(srat.harmony, npcs = npcs, verbose = F)
+    srat.harmony <- RunUMAP(srat.harmony, reduction = "pca", dims = 1:dims, verbose = F)
     srat.harmony <- srat.harmony %>% RunHarmony("orig.ident", plot_convergence = T)
     harmony_embeddings <- Embeddings(srat.harmony, 'harmony')
+    RedisInfo(unique_id, "Harmony integration is done.")
     harmony_embeddings[1:5, 1:5]
 
     p1 <- DimPlot(object = srat.harmony, reduction = "harmony", pt.size = .1, group.by = "orig.ident") + NoLegend()
@@ -121,8 +148,8 @@ if("HARMONY" %in% methods) {
     plot_grid(p1,p2)
 
     srat.harmony <- srat.harmony %>% 
-    RunUMAP(reduction = "harmony", dims = 1:params$dims, verbose = F) %>% 
-    FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:params$dims) %>% 
+    RunUMAP(reduction = "harmony", dims = 1:dims, verbose = F) %>% 
+    FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:dims) %>% 
     FindClusters() %>% 
     identity()
 
@@ -137,12 +164,13 @@ if("HARMONY" %in% methods) {
     PlotIntegratedClusters(srat.harmony)
 
     SaveSeurat(srat.harmony, params$output_folder)
-    print("Seurat object for Harmony integration is saved successfully.")
-    adata <- SeuratToAnndata(srats.harmony, out_file=params$adata_path, assay="SCT")
-    print("AnnData object for Seurat integration is saved successfully.")
+    RedisInfo(unique_id, "Seurat object for Harmony integration is saved successfully.")
+    adata <- SeuratToAnndata(srat.harmony, out_file=params$adata_path)
+    RedisInfo(unique_id, "AnnData object for Harmony integration is saved successfully.")
     rm(adata)
-    rm(srats.harmony)
+    rm(srat.harmony)
   }, error = function(e) {
+    print(e$message)
     RedisWarning(unique_id, paste0("An error happened during Harmony integration, skipped: ", e$message))
   }) 
 } else {
@@ -154,6 +182,7 @@ if("HARMONY" %in% methods) {
 ```{r Liger, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 if("LIGER" %in% methods) {
   tryCatch({
+    RedisInfo(unique_id, "Start LIGER integration ...")
     library(rliger)
     srat.liger <- Reduce(merge, srats.list)
     srat.liger <- NormalizeData(srat.liger)
@@ -161,8 +190,10 @@ if("LIGER" %in% methods) {
     srat.liger <- ScaleData(srat.liger, split.by = "orig.ident", do.center = F)
     srat.liger <- RunOptimizeALS(srat.liger, k = 30, lambda = 5, split.by = "orig.ident") ## this one takes a while
     srat.liger <- RunQuantileNorm(srat.liger, split.by = "orig.ident")
-    srat.liger <- FindNeighbors(srat.liger, reduction = "iNMF", k.param = 10, dims = 1:params$dims)
+    srat.liger <- FindNeighbors(srat.liger, reduction = "iNMF", k.param = 10, dims = 1:dims)
     srat.liger <- FindClusters(srat.liger)
+
+    RedisInfo(unique_id, "LIGER integration is done.")
 
     srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["iNMF"]]), reduction = "iNMF", verbose = F)
     srat.liger <- SetIdent(srat.liger,value = "orig.ident")
@@ -175,9 +206,9 @@ if("LIGER" %in% methods) {
     PlotIntegratedClusters(srat.liger)
 
     SaveSeurat(srat.liger, params$output_folder)
-    print("Seurat object for LIGER integration is saved successfully.")
-    adata <- SeuratToAnndata(srats.liger, out_file=params$adata_path, assay="SCT")
-    print("AnnData object for LIGER integration is saved successfully.")
+    RedisInfo(unique_id, "Seurat object for LIGER integration is saved successfully.")
+    adata <- SeuratToAnndata(srat.liger, out_file=params$adata_path)
+    RedisInfo(unique_id, "AnnData object for LIGER integration is saved successfully.")
     rm(adata)
     rm(srat.liger)
   }, error = function(e) {
