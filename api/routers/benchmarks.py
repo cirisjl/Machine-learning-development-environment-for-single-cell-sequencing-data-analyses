@@ -492,10 +492,13 @@ async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
         try:
             # Check if the file is of a specific type
             if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')):
+                if file.endswith(('.h5Seurat', 'h5seurat')):
+                    seurat_path = file
                 # Process as specified for these file types
                 adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file, assay=assay_name)
                 results.append({
                     'adata_path': adata_path,
+                    'seurat_path': seurat_path,
                     'assay_names': assay_names,
                     'default_assay': default_assay,
                     "inputfile": fileDetails,

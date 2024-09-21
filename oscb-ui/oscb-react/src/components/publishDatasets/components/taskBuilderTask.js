@@ -302,6 +302,57 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Call onSelect with the updated selected datasets
     handleSelectDatasets(currentSelectedDatasets);
   };
+
+    // Function to handle selection of sub-items
+const onSelectSubItem = (mainItem, subItem) => {
+  const mainItemId = mainItem.Id;
+  let currentSelectedDatasets = { ...taskData.task_builder.selectedDatasets };
+
+  // Check if the main item is already selected
+  if (currentSelectedDatasets[mainItemId]) {
+      // If sub-item is already selected, deselect it
+      if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
+          delete currentSelectedDatasets[mainItemId];
+      } else {
+          // Update the selected main item with the selected sub-item
+          currentSelectedDatasets[mainItemId] = {
+              ...mainItem,
+              selectedSubItem: subItem
+          };
+      }
+  } else {
+      // Select the main item and the sub-item
+      currentSelectedDatasets = {
+          [mainItemId]: {
+              ...mainItem,
+              selectedSubItem: subItem
+          }
+      };
+  }
+
+    Object.keys(currentSelectedDatasets).forEach(key => {
+      currentSelectedDatasets[key] = {
+          ...currentSelectedDatasets[key],
+          taskType: null,
+          taskLabel: '',
+          dataSplit: {
+            trainFraction: 0.8,
+            validationFraction: 0.1,
+            testFraction: 0.1,
+            dataSplitPerformed: false,
+            archivePath: ''
+          }
+        };
+    });
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+          ...prevTaskData.task_builder,
+          selectedDatasets: currentSelectedDatasets
+      },
+  }));
+
+  };
   
 
   return (
@@ -319,6 +370,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
               onClose={handleCloseDialog}
               isVisible={isDialogOpen !== false}
               selectedDatasets={taskData.task_builder.selectedDatasets}
+              onSelectSubItem = {onSelectSubItem}
             />
           )}
         </div>

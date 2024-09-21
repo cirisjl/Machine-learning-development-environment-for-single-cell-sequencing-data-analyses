@@ -10,6 +10,7 @@ library(Signac)
 library(BiocParallel)
 # library(loomR)
 library(redux)
+library(Matrix)
 
 
 # Redis connection for logging
@@ -347,6 +348,7 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     if("percent.mt" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.mt"] <-"pct_counts_mt"
     if("percent.rb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.rb"] <-"pct_counts_rb"
     if("percent.hb" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="percent.hb"] <-"pct_counts_hb"
+    # if("seurat_clusters" %in% names(obj@meta.data)) names(obj@meta.data)[names(obj@meta.data) =="seurat_clusters"] <-"leiden"
 
     obs <- .regularise_df(obj@meta.data, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
 
@@ -354,14 +356,18 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
 
     obsm <- NULL
     reductions <- names(obj@reductions)
-    if (length(reductions) > 0) {
-        obsm <- sapply(
-        reductions,
-        function(name) as.matrix(Seurat::Embeddings(obj, reduction=name)),
-        simplify = FALSE
-        )
-        names(obsm) <- paste0("X_", tolower(names(obj@reductions)))
-    }
+    tryCatch({
+        if (length(reductions) > 0) {
+            obsm <- sapply(
+            reductions,
+            function(name) as.matrix(Seurat::Embeddings(obj, reduction=name)),
+            simplify = FALSE
+            )
+            names(obsm) <- paste0("X_", tolower(names(obj@reductions)))
+        }
+    }, error = function(e) {
+        print(paste0("An error happened when saving obsm, skipped: ", e$message))
+    }) 
 
     layers <- list()
     for (layer in transfer_layers) {
@@ -379,7 +385,7 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
 
     if (!is.null(out_file)) {
         write_h5ad(adata, out_file, compression = "gzip")
-        print("AnnData object is saved successfully.")
+        # print("AnnData object is saved successfully.")
     }
 
     adata
@@ -658,6 +664,9 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   obs_df <- .obs2metadata(adata$obs)
   var_df <- .var2feature_metadata(adata$var)
   X <- t(adata$X)
+  if (class(X) != "dgCMatrix"){
+    X <- as.matrix(X)
+  }
   colnames(X) <- rownames(obs_df)
   rownames(X) <- rownames(var_df)
 
@@ -675,7 +684,11 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   # Add AnnData layers to assays
   for (layer in names(adata$layers)){
     if (layer != 'scale.data'){
-        srat[[layer]] <- CreateAssayObject(data = t(adata$layers[layer]))
+        layer_data <- t(adata$layers[layer])
+        if (class(layer_data) != "dgCMatrix"){
+            layer_data <- as.matrix(layer_data)
+        }
+        srat[[layer]] <- CreateAssayObject(data=layer_data)
     }
     message("Adding AnnData layers to Seurat assays")
   }

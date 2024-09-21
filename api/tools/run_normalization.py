@@ -15,7 +15,7 @@ from datetime import datetime
 
 def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
-    pp_results = []
+    # pp_results = []
     process_ids = []
     normalization_output = []
     pp_stage = "Normalized"
@@ -67,7 +67,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
         if normalization_results is not None:
             redislogger.info(job_id, f"Found existing pre-process results in database, skip {method} normalization.")
-            pp_results.append(normalization_results)
+            normalization_output = normalization_results['outputs']
             process_ids.append(process_id)
             methods_to_remove.append(method)
 
@@ -124,7 +124,12 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
                         normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
-                        pp_results.append(normalization_results)
+                        if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
+                        if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
+                        if os.path.exists(report_path): normalization_output.append({'Report': report_path})
+                        normalization_results['outputs'] = normalization_output
+                        
+                        # pp_results.append(normalization_results)
                         process_ids.append(process_id)
                         normalization_results['datasetId'] = datasetId
                         create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
@@ -146,7 +151,10 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
                     redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
                     normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
-                    pp_results.append(normalization_results)
+                    if os.path.exists(adata_sct_path): normalization_output.append({'AnnData_sct': adata_sct_path})
+                    normalization_results['outputs'] = normalization_output
+                    
+                    # pp_results.append(normalization_results)
                     process_ids.append(process_id)
                     
                     adata_sct.write_h5ad(adata_sct_path, compression='gzip')
@@ -170,11 +178,6 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                 }
             )
             raise CeleryTaskException(detail)
-        
-        if os.path.exists(adata_path): normalization_output.append({'AnnData_path': adata_path})
-        if os.path.exists(seurat_path): normalization_output.append({'Seurat_path': seurat_path})
-        if os.path.exists(report_path): normalization_output.append({'Report': report_path})
-        if os.path.exists(adata_sct_path): normalization_output.append({'adata_sct_path': adata_sct_path})
 
     results = {
             "output": normalization_output,

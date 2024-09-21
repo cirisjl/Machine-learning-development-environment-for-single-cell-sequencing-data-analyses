@@ -23,10 +23,8 @@ def run_integration(job_id, ids:dict):
     methods = ids['methods']
     # output_format = ids['output_format']
     parameters = ids['params']
-    species = parameters['species']
     default_assay = parameters['default_assay']
-    genes = parameters['genes']
-    reference = parameters['reference']
+    # reference = parameters['reference']
     dims = parameters['dims']
     npcs = parameters['npcs']
     integration_output = []
@@ -60,7 +58,6 @@ def run_integration(job_id, ids:dict):
     if datasets is not None:
         dataset = datasets[0]
     datasets = list_to_string(datasets)
-    methods = list_to_string(methods)
     input = list_to_string_default(abs_inputList)
     
 
@@ -70,7 +67,7 @@ def run_integration(job_id, ids:dict):
     # output = get_output(output, userID, job_id)
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
-        output = os.path.join(os.path.dirname(inputs[0]), 'integration' ,method+"_integration.h5seurat")
+        output = os.path.join(os.path.dirname(inputs[0]), 'integration', f"{method}_integration.h5seurat")
         if not os.path.exists(os.path.dirname(output)):
             os.makedirs(os.path.dirname(output))
         adata_path = output.replace(".h5seurat", ".h5ad")
@@ -83,7 +80,8 @@ def run_integration(job_id, ids:dict):
 
         if integration_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip Integration.")
-            integration_output.append({method: integration_results[method]})
+            integration_output = integration_results['outputs']
+            process_ids.append(process_id)
         else:
             try:
                 # report_path = get_report_path(dataset, output, "integration")
@@ -93,13 +91,18 @@ def run_integration(job_id, ids:dict):
                 relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
                 # Get the absolute path of the desired file
                 rmd_path = os.path.abspath(relative_path)
-                s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}', genes='{genes}'), output_file='{report_path}')\""], shell = True)
+                # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
+                s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                 # redislogger.info(job_id, str(s))
+                # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
                 if os.path.exists(adata_path):
-                    redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")
+                    redislogger.info(job_id, "Adding 2D & 3D UMAP to AnnData object.")
                     adata = load_anndata(adata_path)
                     sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
+                    adata = sc.tl.umap(adata, random_state=0, 
+                                    init_pos="spectral", n_components=2, 
+                                    copy=True, maxiter=None)
                     adata_3D = sc.tl.umap(adata, random_state=0, 
                                     init_pos="spectral", n_components=3, 
                                     copy=True, maxiter=None)
@@ -118,8 +121,12 @@ def run_integration(job_id, ids:dict):
                     raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output)
-                integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
+                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster='orig.ident')
+                # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
+                integration_output.append({f"{method}_AnnDate": adata_path})
+                integration_output.append({f"{method}_Seurat": output})
+                integration_output.append({f"{method}_Report": report_path})
+                integration_results['outputs'] = integration_output
                 adata = None
                 redislogger.info(job_id, integration_results['info'])
                 integration_results['datasetIds'] = datasetIds
@@ -135,8 +142,8 @@ def run_integration(job_id, ids:dict):
                         "status": "Failure"
                     }
                 )
-                redislogger.error(job_id, f"Integration is failed: {e}")
-                raise CeleryTaskException(f"Integration is failed: {e}")
+                redislogger.error(job_id, f"{method} integration is failed: {e}")
+                raise CeleryTaskException(f"{method} integration is failed: {e}")
 
     results = {
         "output": integration_output,

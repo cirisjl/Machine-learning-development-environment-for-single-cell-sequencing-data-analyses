@@ -66,21 +66,15 @@ if (countDocuments === 0) {
 },
 {
 	"field": "Species",
-	"name": "human",
+	"name": "Human",
 	"username": "default",
 	"abbreviation": "h"
 },
 {
 	"field": "Species",
-	"name": "mouse",
+	"name": "Mouse",
 	"username": "default",
 	"abbreviation": "m"
-},
-{
-	"field": "Species",
-	"name": "virus",
-	"username": "default",
-	"abbreviation": "v"
 }
   ]);
   print("Default data inserted successfully.");

@@ -9,11 +9,15 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ListItemText from '@material-ui/core/ListItemText';
+import { Table } from 'antd';
+import axios from 'axios';
+import {NODE_API_URL} from '../../../constants/declarations'
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, showEdit=false, showDelete=false }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, showEdit=false, showDelete=false }) => {
 
     const [anchorEl, setAnchorEl] = useState(null);
+    const [subItemsData, setSubItemsData] = useState({});
 
     // Destructure the pagination object for easier access to its properties
     const { page, pageSize, totalCount } = pagination;
@@ -50,7 +54,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             ...prevVisibleColumns,
             [column]: !prevVisibleColumns[column],
         }));
-        console.log(visibleColumns[column]);
     };
 
     const resetColumnVisibility = () => {
@@ -67,14 +70,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             'Source': false,
         });
     };
-
-    // const isSelected = datasetId => !!selectedDatasets[datasetId];
-    // const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
-
-    // const handleEdit = (dataset) => {
-    //     console.log("Editing dataset: ", dataset);
-    //     // Implement your edit logic here
-    // };
     
     const handleVisualize = (dataset) => {
         console.log("Visualizing dataset: ", dataset);
@@ -99,9 +94,10 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         const baseColumns = Object.keys(data[0])
         .filter(key => visibleColumns[key])
         .map(key => ({
-            Header: key,
-            accessor: item => {
-                const value = item[key];
+            title: key,
+            dataIndex: key,
+            key: key,
+            render: value => {
                 let res = '';
                 if (value && typeof value === 'object' && value.label) {
                     res = value.label;
@@ -122,9 +118,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }));
 
         const actionColumn = {
-            id: 'actions',
-            Header: 'Actions',
-            accessor: item => {
+            title: 'Actions',
+            key: 'actions',
+            render: item => {
                 return(
                 <div className="action-buttons">
                     <input
@@ -159,13 +155,75 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets, visibleColumns]);
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data },useRowSelect);
+    const fetchSubItems = async (process_ids) => {
+        const process_ids_key = process_ids.join(',');
+        
+        // Check if data already exists for this process_ids_key
+        if (subItemsData[process_ids_key]) {
+            return; // Data already exists, no need to fetch again
+        }
+    
+        try {
+            const response = await axios.post(NODE_API_URL + '/getPreProcessResults', { processIds: process_ids });
+            setSubItemsData(prevData => ({
+                ...prevData,
+                [process_ids_key]: response.data // Store the result with concatenated process_ids as key
+            }));
+        } catch (error) {
+            console.error("Error fetching sub-items:", error);
+        }
+    };
+    
+
+    const expandedRowRender = (record) => {
+
+        const process_ids_key = record.process_ids.join(',');
+
+        // Fetch sub-items only if not already fetched
+        if (!subItemsData[process_ids_key]) {
+            fetchSubItems(record.process_ids);
+        }
+        const subColumns = [
+            {
+                title: 'Description',
+                dataIndex: 'description',
+                key: 'description',
+            },
+            {
+                title: 'Stage',
+                dataIndex: 'stage',
+                key: 'stage',
+            },
+            {
+                title: 'Process',
+                dataIndex: 'process',
+                key: 'process',
+            },
+            {
+                title: 'Method',
+                dataIndex: 'method',
+                key: 'method',
+            },
+            {
+                title: 'nCells',
+                dataIndex: 'nCells',
+                key: 'nCells',
+            },
+            {
+                title: 'Action',
+                key: 'operation',
+                render: (text, subRecord) => (
+                    <Checkbox 
+                    onChange={() => onSelectSubItem(record, subRecord)} 
+                    checked={selectedDatasets[record.Id]?.selectedSubItem?.process_id === subRecord.process_id}
+                    />
+                ),
+            },
+        ];
+
+        const subData = subItemsData[process_ids_key] || [];
+        return <Table columns={subColumns} dataSource={subData} pagination={false} />;
+    };
 
     return (
         <div>
@@ -218,29 +276,23 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 </Menu>
             </div>
 
-            <table {...getTableProps()} className="table-container">
-            <   thead>
-                    {headerGroups.map((headerGroup, index) => (
-                        <tr {...headerGroup.getHeaderGroupProps()} key={index}>
-                            {headerGroup.headers.map((column, colIndex) => (
-                                <th {...column.getHeaderProps()} key={colIndex}>{column.render('Header')}</th>
-                            ))}
-                        </tr>
-                    ))}
-                </thead>
-                <tbody {...getTableBodyProps()}>
-                    {rows.map((row, rowIndex) => {
-                        prepareRow(row);
-                        return (
-                            <tr {...row.getRowProps()} key={rowIndex}>
-                                {row.cells.map((cell, cellIndex) => {
-                                    return <td {...cell.getCellProps()} key={cellIndex}>{cell.value}</td>;
-                                })}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+            <Table
+                className="table-container"
+                columns={columns}
+                dataSource={data}
+                rowKey="Id"
+                pagination={{
+                    position: ["bottomCenter"]
+                }}
+                expandable={{
+                    expandedRowRender: (record) => {
+                        fetchSubItems(record.process_ids); // Pass process_ids array
+                        return expandedRowRender(record);
+                    },
+                    rowExpandable: (record) => Array.isArray(record.process_ids) && record.process_ids.length > 0,
+                }}
+            />
+
         </div>
     );
 };

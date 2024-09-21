@@ -10,7 +10,7 @@ import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } 
 import { ScaleLoader } from 'react-spinners';
 import { getCookie } from '../../../utils/utilFunctions';
 
-const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, fromToolsPage }) => {
+const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, selectedDatasets, fromToolsPage, onSelectSubItem }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -275,15 +275,15 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                           )}
                         </div>
 
-                        <div className='table-pagination'>
+                        {/* <div className='table-pagination'>
                           <Pagination
                             pagination={pagination}
                             onPageChange={onPageChange}
                           />
-                        </div>
+                        </div> */}
                         
                         <div className='table-results'>
-                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination} showEdit={false} showDelete={false} />
+                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={multiple} pagination={pagination} onSelectSubItem={onSelectSubItem}/>
                         </div>
                     </div>
                   ) : (

@@ -81,8 +81,9 @@ export default function InputDataComponent(props) {
                                 multiple={filterCategory === "integration"}
                                 onClose={handleCloseDialog}
                                 isVisible={isDialogOpen !== false}
-                                selectedDatasets={selectedDatasets}
+                                selectedDatasets={props.selectedDatasets}
                                 fromToolsPage={true}
+                                onSelectSubItem= {props.onSelectSubItem}
                             />
                         )}
                     </div>
