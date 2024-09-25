@@ -178,7 +178,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }
     
         try {
-            const response = await axios.post(NODE_API_URL + '/getPreProcessResults/partial', { processIds: process_ids });
+            const response = await axios.post(NODE_API_URL + '/getPreProcessResults', { processIds: process_ids, details: "PARTIAL" });
             setSubItemsData(prevData => ({
                 ...prevData,
                 [process_ids_key]: response.data // Store the result with concatenated process_ids as key

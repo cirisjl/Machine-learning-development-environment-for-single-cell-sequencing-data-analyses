@@ -134,7 +134,7 @@ function TaskDetailsComponent() {
       if (!processIds.length) return;
   
       try {
-        const response = await axios.post(`${NODE_API_URL}/getPreProcessResults/complete`, { processIds });
+        const response = await axios.post(`${NODE_API_URL}/getPreProcessResults`, { processIds :processIds, details: "FULL"});
         console.log('Process Results:', response.data);
         setToolResultsFromMongo(response.data);
         setLoading(false);
