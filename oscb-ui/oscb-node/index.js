@@ -69,6 +69,7 @@ function verifyToken(req, res, next) {
     }
 }
 
+
 // Middleware to verify the token
 const verifyJWTToken = (req, res, next) => {
     const bearerHeader = req.headers['authorization'];
@@ -2184,8 +2185,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const searchResultsPipeline = [
         { $match: matchStage },
         // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
+        // { $skip: (page - 1) * pageSize },
+        // { $limit: pageSize },
       ];
   
       // Get the paginated search results
@@ -2339,8 +2340,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     ], */
                     // Documents facet for pagination
                     documents: [
-                        { $skip: (page - 1) * pageSize },
-                        { $limit: pageSize },
+                        // { $skip: (page - 1) * pageSize },
+                        // { $limit: pageSize },
                         {
                             $project: {
                                 "Benchmarks ID": "$benchmarksId",
@@ -2745,8 +2746,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
           $facet: {
             totalCount: [{ $count: "total" }],
             documents: [
-              { $skip: (page - 1) * pageSize }, 
-              { $limit: pageSize },
+            //   { $skip: (page - 1) * pageSize }, 
+            //   { $limit: pageSize },
               { $project: {
                     Title: "$Title",
                     Id: "$Id",
@@ -2863,9 +2864,39 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   });
 
   // API endpoint to get process results based on an array of process_ids
-app.post('/node/getPreProcessResults', async (req, res) => {
+app.post('/node/getPreProcessResults/complete', async (req, res) => {
     let client;
     const projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
+    try {
+        const processIds = req.body.processIds;
+        if (!processIds || !processIds.length) {
+            return res.status(400).json({ error: 'No process ID is provided.' });
+        }
+
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        // Fetching documents where process_id is in the provided array of process IDs
+        const processResults = await collection.find({
+            process_id: { $in: processIds }
+        }).project(projection).toArray();
+
+        res.status(200).json(processResults);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        client.close();
+    }
+});
+
+  // API endpoint to get process results based on an array of process_ids
+  app.post('/node/getPreProcessResults/partial', async (req, res) => {
+    let client;
+    const projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 0, info: 0, cell_metadata_obs: 0, default_assay: 0, assay_names: 0, umap_plot: 0, umap_plot_3d: 0, violin_plot: 0, scatter_plot: 0, highest_expr_genes_plot: 0, evaluation_results: 0 };
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {

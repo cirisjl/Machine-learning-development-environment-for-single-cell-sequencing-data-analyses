@@ -19,12 +19,26 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
 
+    const [paginationState, setPagination] = useState({
+        current: 1,
+        position: ["topCenter"],
+        pageSize: 10, // default number of rows per page
+        pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
+        showSizeChanger: true, // show the dropdown to select page size
+      });
+
+    // Handle pagination change (page number and page size)
+    const handleTableChange = (pagination) => {
+        setPagination({
+        ...pagination,
+        });
+    };
     // Destructure the pagination object for easier access to its properties
-    const { page, pageSize, totalCount } = pagination;
+    // const { page, pageSize, totalCount } = pagination;
 
     // Calculate the starting and ending result numbers for the current page
-    const startResult = (page - 1) * pageSize + 1;
-    const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
+    // const startResult = (page - 1) * pageSize + 1;
+    // const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
@@ -164,7 +178,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }
     
         try {
-            const response = await axios.post(NODE_API_URL + '/getPreProcessResults', { processIds: process_ids });
+            const response = await axios.post(NODE_API_URL + '/getPreProcessResults/partial', { processIds: process_ids });
             setSubItemsData(prevData => ({
                 ...prevData,
                 [process_ids_key]: response.data // Store the result with concatenated process_ids as key
@@ -230,7 +244,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             {/* Dropdown for editing columns */}
             <div className="dropdown">
                 <div className='total-results-count'>
-                <p>Results {startResult} - {endResult} of {totalCount}</p>
+                    {/* Do not remove this div. It will remove styles. If you want to remove this div, Add alternate styles to the edit columns without breaking it. */}
                 </div>
                 <Button variant="contained" aria-controls="edit-columns-menu" aria-haspopup="true" onClick={handleMenuClick} >
                     Edit Columns
@@ -281,9 +295,8 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 columns={columns}
                 dataSource={data}
                 rowKey="Id"
-                pagination={{
-                    position: ["bottomCenter"]
-                }}
+                pagination={paginationState}
+                onChange={handleTableChange}
                 expandable={{
                     expandedRowRender: (record) => {
                         fetchSubItems(record.process_ids); // Pass process_ids array

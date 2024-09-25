@@ -180,17 +180,44 @@ function HandleVisualize() {
            <p>{visualizeDataset['Model Organ'].label}</p>
            <hr/>
            <h2>Selected Cell Types</h2>
-          <p>{visualizeDataset['Selected Cell Types'].label}</p>
+            {visualizeDataset['Selected Cell Types'] && visualizeDataset['Selected Cell Types'].length > 0 ? (
+              <ul>
+                {visualizeDataset['Selected Cell Types'].map((cellType, index) => (
+                  <li key={index}>{cellType.label}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No cell types selected.</p>
+            )}
           <hr/>
-           <h2>Disease Status (Specimen)</h2>
-           <p>{visualizeDataset['Disease Status (Specimen)'].label}</p>
-           <hr/>
-           <h2>Disease Status (Donor)</h2>
-           <p>{visualizeDataset['Disease Status (Donor)'].label}</p>
-           <hr/>
-           <h2>Development Stage</h2>
-           <p>{visualizeDataset['Development Stage']}</p>
-           <hr/>
+          <h2>Disease Status (Specimen)</h2>
+          {visualizeDataset['Disease Status (Specimen)'] && visualizeDataset['Disease Status (Specimen)'].length > 0 ? (
+            <ul>
+              {visualizeDataset['Disease Status (Specimen)'].map((status, index) => (
+                <li key={index}>{status.label}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No disease status (specimen) selected.</p>
+          )}
+          <hr/>
+
+          <h2>Disease Status (Donor)</h2>
+          {visualizeDataset['Disease Status (Donor)'] && visualizeDataset['Disease Status (Donor)'].length > 0 ? (
+            <ul>
+              {visualizeDataset['Disease Status (Donor)'].map((status, index) => (
+                <li key={index}>{status.label}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No disease status (donor) selected.</p>
+          )}
+          <hr/>
+
+          <h2>Development Stage</h2>
+          <p>{visualizeDataset['Development Stage'] ? visualizeDataset['Development Stage'] : 'No development stage selected.'}</p>
+          <hr/>
+
            <h2>Donor Count</h2>
            <p>{visualizeDataset['Donor Count']}</p>
            <hr/>

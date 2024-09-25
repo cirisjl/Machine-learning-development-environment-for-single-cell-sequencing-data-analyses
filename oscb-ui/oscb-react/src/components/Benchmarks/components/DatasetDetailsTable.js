@@ -11,8 +11,22 @@ const DatasetDetailsTable = ({ detail, downloadFile, getFileNameFromURL }) => {
       <Descriptions.Item label="Species">{detail.datasetDetails.Species?.label || detail.datasetDetails.Species}</Descriptions.Item>
       <Descriptions.Item label="Cell Count Estimate">{detail.datasetDetails["Cell Count Estimate"]}</Descriptions.Item>
       <Descriptions.Item label="Organ Part">{detail.datasetDetails["Organ Part"]?.label || detail.datasetDetails["Organ Part"]}</Descriptions.Item>
-      <Descriptions.Item label="Selected Cell Types">{detail.datasetDetails["Selected Cell Types"]?.label || detail.datasetDetails["Selected Cell Types"]}</Descriptions.Item>
-      <Descriptions.Item label="Disease Status (Specimen)">{detail.datasetDetails["Disease Status (Specimen)"]?.label || detail.datasetDetails["Disease Status (Specimen)"]}</Descriptions.Item>
+      <Descriptions.Item label="Selected Cell Types">
+        {Array.isArray(detail.datasetDetails["Selected Cell Types"]) 
+          ? detail.datasetDetails["Selected Cell Types"].map((cellType, index) => (
+              <span key={index}>{cellType.label}{index < detail.datasetDetails["Selected Cell Types"].length - 1 ? ', ' : ''}</span>
+            ))
+          : detail.datasetDetails["Selected Cell Types"]?.label || detail.datasetDetails["Selected Cell Types"]
+        }
+      </Descriptions.Item>
+      <Descriptions.Item label="Disease Status (Specimen)">
+        {Array.isArray(detail.datasetDetails["Disease Status (Specimen)"]) 
+          ? detail.datasetDetails["Disease Status (Specimen)"].map((status, index) => (
+              <span key={index}>{status.label}{index < detail.datasetDetails["Disease Status (Specimen)"].length - 1 ? ', ' : ''}</span>
+            ))
+          : detail.datasetDetails["Disease Status (Specimen)"]?.label || detail.datasetDetails["Disease Status (Specimen)"]
+        }
+      </Descriptions.Item>
       <Descriptions.Item label="Submission Date">{detail.datasetDetails["Submission Date"]}</Descriptions.Item>
       <Descriptions.Item label="AnnData File">
         <a

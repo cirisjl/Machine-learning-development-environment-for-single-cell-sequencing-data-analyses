@@ -74,14 +74,14 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     'Anatomical Entity': '',
     'Organ Part': '',
     'Model Organ': '',
-    'Selected Cell Types': '',
+    'Selected Cell Types': [],
     'Library Construction Method': '',
     'Nucleic Acid Source': '',
     'Paired End': false,
     'Analysis Protocol': '',
-    'Disease Status (Specimen)': '',
-    'Disease Status (Donor)': '',
-    'Development Stage': '',
+    'Disease Status (Specimen)': [],
+    'Disease Status (Donor)': [],
+    'Development Stage': [],
     'Donor Count': 0,
     'Source': '',
     'Source Key': '',
@@ -253,8 +253,15 @@ const clearMessageAfterTimeout = () => {
         [fieldName]: selectedOption,
       }));
     };
+
+    const handleMultiSelectChange = (field, selectedOptions) => {
+      // Update the state with an array of selected options (which are objects with label and value)
+      setFormData((prevState) => ({
+          ...prevState,
+          [field]: selectedOptions || [] // Handle deselection case by setting an empty array
+      }));
+    };
   
-    
 
     // const isSelected = datasetId => !!selectedDatasets[datasetId];
     // const isDisabled = () => !multiple && Object.keys(selectedDatasets).length >= 1;
@@ -748,11 +755,11 @@ axios.post(`${NODE_API_URL}/editDatasetMetadata`, formData)
             <CreatableSelect
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
-
+              isMulti
               isClearable
               isSearchable
             //   isLoading={isLoading}
-              onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => handleMultiSelectChange('Selected Cell Types', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => handleCreateOption('Selected Cell Types', inputValue)}
               options={options['Selected Cell Types']} // Set options to the fetched options
             />
@@ -849,7 +856,7 @@ axios.post(`${NODE_API_URL}/editDatasetMetadata`, formData)
               isClearable
               isSearchable
             //   isLoading={isLoading}
-              onChange={(selectedOption) => handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => handleMultiSelectChange('Disease Status (Specimen)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => handleCreateOption('Disease Status (Specimen)', inputValue)}
               options={options['Disease Status (Specimen)']} // Set options to the fetched options
             />
@@ -867,7 +874,7 @@ axios.post(`${NODE_API_URL}/editDatasetMetadata`, formData)
               isClearable
               isSearchable
             //   isLoading={isLoading}
-              onChange={(selectedOption) => handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => handleMultiSelectChange('Disease Status (Donor)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => handleCreateOption('Disease Status (Donor)', inputValue)}
               options={options['Disease Status (Donor)']} // Set options to the fetched options
             />
@@ -884,7 +891,7 @@ axios.post(`${NODE_API_URL}/editDatasetMetadata`, formData)
               isClearable
               isSearchable
             //   isLoading={isLoading}
-              onChange={(selectedOption) => handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => handleMultiSelectChange('Development Stage', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => handleCreateOption('Development Stage', inputValue)}
               options={options['Development Stage']} // Set options to the fetched options
               className="form-input"

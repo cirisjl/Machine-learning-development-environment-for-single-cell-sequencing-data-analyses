@@ -209,13 +209,6 @@ const onPageChange = (newPage) => {
                           </div>
                   )}
                 </div>
-
-                {/* <div className='table-pagination'>
-                  <Pagination
-                    pagination={pagination}
-                    onPageChange={onPageChange}
-                  />
-                </div> */}
                 
                 <div className='table-results'>
                      <TreeTable data={results} onSelectDataset={onSelectDataset} selectedDatasets={selectedTasks} multiple="true" pagination={pagination}/>

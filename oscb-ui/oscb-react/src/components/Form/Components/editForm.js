@@ -105,6 +105,15 @@ class EditForm extends Component {
     }));
   }
 
+  handleMultiSelectChange(fieldName, selectedOptions) {
+    this.setState((prevState) => ({
+      formData: {
+        ...prevState.formData,
+        [fieldName]: selectedOptions || [],
+      },
+    }));
+  }
+
   handleCreateOption = (fieldName, inputValue) => {
 
       // Check if the option has already been created to prevent duplicate calls
@@ -337,13 +346,13 @@ class EditForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    if (!formData['Selected Cell Types'] || (formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '')) {
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length === 0) {
       errors['Selected Cell Types'] = 'Selected Cell Types is required';
     }
-    if (!formData['Disease Status (Specimen)'] || (formData['Disease Status (Specimen)'] && formData['Disease Status (Specimen)'].value === '')) {
+    if (!formData['Disease Status (Specimen)'] || formData['Disease Status (Specimen)'].length === 0) {
       errors['Disease Status (Specimen)'] = 'Disease Status (Specimen) is required';
     }
-    // if (!formData['Disease Status (Donor)'] || (formData['Disease Status (Donor)'] && formData['Disease Status (Donor)'].value === '')) {
+    // if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
     //   errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
     // }
     if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
@@ -599,9 +608,10 @@ class EditForm extends Component {
               value={formData['Selected Cell Types']}
               isClearable
               isSearchable
+              isMulti
               required
               isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => this.handleMultiSelectChange('Selected Cell Types', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
               options={options['Selected Cell Types']} // Set options to the fetched options
               className={`form-input ${errors['Selected Cell Types'] ? 'error' : ''}`}
@@ -689,8 +699,9 @@ class EditForm extends Component {
               value={formData['Disease Status (Specimen)']}
               isClearable
               isSearchable
+              isMulti
               isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Disease Status (Specimen)', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Specimen)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
               options={options['Disease Status (Specimen)']} // Set options to the fetched options
               className={`form-input ${errors['Disease Status (Specimen)'] ? 'error' : ''}`}
@@ -708,8 +719,9 @@ class EditForm extends Component {
               value={formData['Disease Status (Donor)']}
               isClearable
               isSearchable
+              isMulti
               isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Disease Status (Donor)', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Donor)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
               options={options['Disease Status (Donor)']} // Set options to the fetched options
               className="form-input"
@@ -724,8 +736,9 @@ class EditForm extends Component {
               value={formData['Development Stage']}
               isClearable
               isSearchable
+              isMulti
               isLoading={isLoading}
-              onChange={(selectedOption) => this.handleSelectChange('Development Stage', selectedOption)} // Use handleSelectChange              
+              onChange={(selectedOptions) => this.handleMultiSelectChange('Development Stage', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}
               options={options['Development Stage']} // Set options to the fetched options
               className="form-input"
