@@ -2864,7 +2864,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   });
 
   // API endpoint to get process results based on an array of process_ids
-app.post('/node/getPreProcessResults/complete', async (req, res) => {
+app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
     let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
     try {
