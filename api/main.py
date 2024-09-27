@@ -7,7 +7,7 @@ import asyncio
 from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, worlkflows
+from routers import tools, benchmarks, workflows
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -25,6 +25,7 @@ def create_app() -> FastAPI:
     current_app.celery_app = create_celery()
     current_app.include_router(tools.router)
     current_app.include_router(benchmarks.router)
+    current_app.include_router(workflows.router)
     return current_app
 
 
