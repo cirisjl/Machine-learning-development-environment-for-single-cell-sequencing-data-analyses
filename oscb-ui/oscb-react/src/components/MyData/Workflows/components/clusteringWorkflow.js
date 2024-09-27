@@ -89,6 +89,35 @@ export function ClusteringWorkFlowComponent(props) {
         UseDefaultSwitch: UseDefaultSwitch
       };
 
+          // Function to handle selection of sub-items
+  const onSelectSubItem = (mainItem, subItem) => {
+    const mainItemId = mainItem.Id;
+    let currentSelectedDatasets = { ...selectedDatasets };
+  
+    // Check if the main item is already selected
+    if (currentSelectedDatasets[mainItemId]) {
+        // If sub-item is already selected, deselect it
+        if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
+            delete currentSelectedDatasets[mainItemId];
+        } else {
+            // Update the selected main item with the selected sub-item
+            currentSelectedDatasets[mainItemId] = {
+                ...mainItem,
+                selectedSubItem: subItem
+            };
+        }
+    } else {
+        // Select the main item and the sub-item
+        currentSelectedDatasets = {
+            [mainItemId]: {
+                ...mainItem,
+                selectedSubItem: subItem
+            }
+        };
+    }
+  
+    setSelectedDatasets(currentSelectedDatasets);
+    };
     const handleSubmit = ({ formData }) => {
         formData = formData.parameters;
         console.log("In submit function");
@@ -250,7 +279,7 @@ export function ClusteringWorkFlowComponent(props) {
 
       <div>
         <InputDataComponent formErrors={formErrors} filterCategory={props.selectedWorkflow} selectedDatasets={selectedDatasets}
-            onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset}/>
+            onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem}/>
       </div>
 
       <div>
