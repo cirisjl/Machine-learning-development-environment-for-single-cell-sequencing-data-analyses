@@ -241,3 +241,10 @@ class QualityControlRequest(BaseModel):
     use_default: bool
     doublet_rate: float
     unique_id: str
+
+
+class ProcessResultsRequest(BaseModel):
+    process_ids: List[str]
+    clustering_plot_type: Optional[str] = 'leiden'
+    annotation: Optional[str] = None
+    selected_cell_intersection: Optional[List[str]]= None

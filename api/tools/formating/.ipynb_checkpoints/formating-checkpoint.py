@@ -174,7 +174,7 @@ def get_metadata_from_anndata(adata):
     print(adata)
     if adata is not None and isinstance(adata, AnnData):
         layers = list(adata.layers.keys())
-        cell_metadata_obs = adata.obs # pandas dataframe
+        cell_metadata = adata.obs # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
         genes = adata.var_names.to_list() # Cell IDs
@@ -186,7 +186,7 @@ def get_metadata_from_anndata(adata):
         scatter_plot = plot_scatter(adata)
         highest_expr_genes_plot = plot_highest_expr_genes(adata)
         
-    return layers, cell_metadata_obs, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
+    return layers, cell_metadata, gene_metadata, nCells, nGenes, genes, cells, embeddings, umap_plot, violin_plot, scatter_plot, highest_expr_genes_plot
 
 
 # Convert Seurat/Single-Cell Experiment object to Anndata object and return the path of Anndata object

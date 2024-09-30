@@ -18,17 +18,17 @@ import jax
 import jax.numpy as jnp
 from collections import OrderedDict
 from anndata import AnnData
-from tools.visualization.plot import plot_UMAP, plot_scatter, plot_highest_expr_genes, plot_violin
+from tools.visualization.plot import highest_expr_genes
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from tools.evaluation.clustering import clustering_scores
-# from tools.utils.gzip_str import *
+from tools.utils.gzip_str import *
 
 from typing import Any, List, Optional
 from attrdict import AttrDict
-# import json_numpy
+import json_numpy
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -201,20 +201,42 @@ def get_metadata_from_seurat(path):
     return info, default_assay, assay_names, metadata, nCells, nGenes, genes, cells, HVGsID, pca, tsne, umap
 
 
+def arr_to_list(arr:np.ndarray):
+    arr_list = []
+    for i in range(len(arr[0])):
+        arr_list.append(arr[:, i].tolist())
+    return arr_list
+
+
+def df_to_dict(df:pd.DataFrame):
+    df_dict = {}
+    df_columns = df.columns.values.tolist()
+    df_index = df.index.values.tolist()
+    df_dict['columns'] = df_columns
+    df_dict['index'] = df_index
+    
+    for name in df_columns:
+        df_dict[name] = df[name].tolist()
+        
+    return df_dict
+
+
 def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden'): 
     layers = None
-    cell_metadata_obs = None
+    cell_metadata = None
+    obs_names = None
     nCells = 0
     nGenes = 0
     genes = None
-    cells = None
-    gene_metadata = None
+    # gene_metadata = None
     embeddings = []
-    umap_plot = None
-    umap_plot_3d = None
-    violin_plot = None
-    scatter_plot = None
-    highest_expr_genes_plot = None
+    umap = None
+    tsne = None
+    umap_3d = None
+    # violin_plot = None
+    # scatter_plot = None
+    # highest_expr_genes_plot = None
+    top_genes = None
     info = None
     pp_results = None
     adata_size = None
@@ -264,14 +286,25 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 
         info = adata.__str__()
         layers = list(adata.layers.keys())
-        cell_metadata_obs = adata.obs # pandas dataframe
-        # cell_metadata_obs = gzip_df(adata.obs) # pandas dataframe
+        obs = regularise_df(adata.obs)
+        obs_names = obs.columns.values.tolist()
+        obs_dict = obs.to_dict('list') # Pandas dataframe
+        obs_dict['index'] = obs.index.tolist()
+        cell_metadata = gzip_dict(obs_dict)
+        # cell_metadata = gzip_df(adata.obs) # pandas dataframe
         nCells = adata.n_obs # Number of cells
         nGenes = adata.n_vars # Number of genes
-        genes = adata.var_names.to_list() # Gene IDs
-        cells = adata.obs_names.to_list() # Cell IDs
-        gene_metadata = adata.var # pandas dataframe
-        # gene_metadata = gzip_df(adata.var) # pandas dataframe
+        if "highly_variable" in adata.var.keys():
+            genes = gzip_list(adata.var[adata.var['highly_variable']==True].index.tolist())
+            # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
+        elif "vst.variable" in adata.var.keys():
+            genes = gzip_list(adata.var[adata.var['vst.variable']==True].index.tolist())
+            # gene_metadata = adata.var[adata.var['vst.variable']==True] # pandas dataframe
+        else:
+            genes = gzip_list(adata.var_names.to_list()) # Gene IDs
+            # gene_metadata = adata.var # pandas dataframe
+        # gene_metadata = adata.var # pandas dataframe
+
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
             # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
@@ -279,26 +312,30 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
             if layer+'_umap' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
-                # umap_plot = gzip_str(plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster))
-                umap_plot = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster)
+                umap = json_numpy.dumps(adata.obsm[layer+'_umap'])
+                # umap_plot = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster)
             elif layer+'_umap' in adata.obsm.keys():
-                # umap_plot = gzip_str(plot_UMAP(adata, layer=layer))
-                umap_plot = plot_UMAP(adata, layer=layer)
+                umap = json_numpy.dumps(adata.obsm[layer+'_umap'])
+                # umap_plot = plot_UMAP(adata, layer=layer)
+            
             if layer+'_umap_3D' in adata.obsm.keys() and scanpy_cluster in adata.obs.keys():
-                # umap_plot_3d = gzip_str(plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3))
-                umap_plot_3d = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3)
+                umap_3d = json_numpy.dumps(adata.obsm[layer+'_umap_3D'])
+                # umap_plot_3d = plot_UMAP(adata, layer=layer, clustering_plot_type=scanpy_cluster, n_dim=3)
             elif layer+'_umap_3D' in adata.obsm.keys():
-                # umap_plot_3d = gzip_str(plot_UMAP(adata, layer=layer, n_dim=3))
-                umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+                umap_3d = json_numpy.dumps(adata.obsm[layer+'_umap_3D'])
+                # umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
+
+            if layer+'_tsne' in adata.obsm.keys():
+                tsne = json_numpy.dumps(adata.obsm[layer+'_tsne'])
 
         if process == 'QC':
             # violin_plot = gzip_str(plot_violin(adata))
             # scatter_plot = gzip_str(plot_scatter(adata))
-            violin_plot = plot_violin(adata)
-            scatter_plot = plot_scatter(adata)
-            if nCells < 10000: # If the dataset is too large, then skip the highest expressed genes plot
-                # highest_expr_genes_plot = gzip_str(plot_highest_expr_genes(adata))
-                highest_expr_genes_plot = plot_highest_expr_genes(adata)
+            # violin_plot = plot_violin(adata)
+            # scatter_plot = plot_scatter(adata)
+            #if nCells < 10000: # If the dataset is too large, then skip the highest expressed genes plot
+            counts_top_genes, columns = highest_expr_genes(adata)
+            top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
 
         if cluster_label is not None:
             if labels_pred_leiden is not None:
@@ -351,19 +388,22 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "adata_size": adata_size,
             "seurat_size": seurat_size,
             "sce_size": sce_size,
+            "layer": layer,
             "layers": layers,
-            "cell_metadata_obs": cell_metadata_obs.to_dict(),
-            "gene_metadata": gene_metadata.to_dict(),
+            "obs_names": obs_names,
+            "cell_metadata": cell_metadata,
+            # "gene_metadata": gene_metadata.to_dict('list'),
             "nCells": nCells,
             "nGenes": nGenes,
             "genes": genes,
-            # "cells": cells,
             "embeddings": embeddings,
-            "umap_plot": umap_plot,
-            "umap_plot_3d": umap_plot_3d,
-            "violin_plot": violin_plot,
-            "scatter_plot": scatter_plot,
-            "highest_expr_genes_plot": highest_expr_genes_plot,
+            "umap": umap,
+            "umap_3d": umap_3d,
+            "tsne": tsne,
+            "highest_expr_genes": top_genes,
+            # "violin_plot": violin_plot,
+            # "scatter_plot": scatter_plot,
+            # "highest_expr_genes_plot": highest_expr_genes_plot,
             "evaluation_results": evaluation_results
             }
         
@@ -911,3 +951,12 @@ def convert_from_r(item: Any, date_cols: Optional[List[str]] = None, name: str =
 #                 if show_error: print(e)
 
 #     return adata
+
+# Remove NA and single value columns
+def regularise_df(df):
+    df = df.dropna(axis=1, how='all')
+    res = df
+    for col in df.columns:
+        if len(df[col].unique()) == 1:
+            res = res.drop(col,axis=1)
+    return res

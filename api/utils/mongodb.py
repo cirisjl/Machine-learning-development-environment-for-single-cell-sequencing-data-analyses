@@ -3,6 +3,8 @@ import os
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from boltons.iterutils import remap
+from tools.utils.gzip_str import *
+import json_numpy
 
 
 mongo_url = "mongodb://mongodb:65530"
@@ -42,6 +44,8 @@ def pp_result_exists(process_id):
 
 def create_pp_results(process_id, pp_results):
     pp_results = clear_dict(pp_results)
+    # pp_results = removeNullNoneEmpty(pp_results)
+
     try:
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
     except DuplicateKeyError:
@@ -49,6 +53,47 @@ def create_pp_results(process_id, pp_results):
     if "_id" in pp_results: 
         pp_results.pop("_id")
     return
+
+
+def get_pp_results(process_ids, umap=False):
+    pp_results = None
+    if not umap:
+        pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 })
+    else:
+        pp_results = pp_results_collection.find({'process_id': {"$in": process_ids }}, { "_id": 0, "tsne": 0, "process_id": 0, "description": 0, "stage": 0, "process": 0, "method": 0, "nCells": 0, "adata_path": 0, "md5": 0, "info": 0, "default_assay": 0, "assay_names": 0, "highest_expr_genes": 0, "evaluation_results": 0 })
+    pp_results = list(pp_results)
+    results = []
+
+    if len(pp_results) != 0:
+        for pp_result in pp_results:
+            if 'cell_metadata' in pp_result.keys():
+                obs_dict = gunzip_dict(pp_result['cell_metadata'])
+                obs = pd.DataFrame.from_dict(obs_dict)
+                obs = obs.set_index('index')  
+                pp_result['cell_metadata'] = obs
+
+            if 'genes' in pp_result.keys():
+                genes = gunzip_list(pp_result['genes'])
+
+            # if 'gene_metadata' in pp_result.keys():
+            #     pp_result['gene_metadata'] = gunzip_df(pp_result['gene_metadata'])
+
+            if 'umap' in pp_result.keys():
+                pp_result['umap'] = json_numpy.loads(pp_result['umap'])
+
+            if 'umap_3d' in pp_result.keys():
+                pp_result['umap_3d'] =json_numpy.loads(pp_result['umap_3d'])
+
+            if 'tsne' in pp_result.keys():
+                pp_result['tsne'] = json_numpy.loads(pp_result['tsne'])
+            
+            if 'highest_expr_genes' in pp_result.keys():
+                pp_result['highest_expr_genes']['counts_top_genes'] = json_numpy.loads(pp_result['highest_expr_genes']['counts_top_genes'])
+            
+            results.append(pp_result)
+    
+    return results
+
 
 # Append new process_ids to dataset after each process
 def append_pp_ids_to_ds(process_ids, dataset_id):
@@ -131,3 +176,26 @@ def clear_dict(d):
     drop_falsey = lambda path, key, value: value is not None and value != [] and value != {} and value != [{}]
     d = remap(d, visit=drop_falsey)
     return d
+
+
+def removeNullNoneEmpty(ob):
+    l = {}
+    for k, v in ob.items():
+        if(isinstance(v, dict)):
+            x = removeNullNoneEmpty(v)
+            if(len(x.keys())>0):
+                l[k] = x
+        
+        elif(isinstance(v, list)):
+            p = []
+            for c in v:
+                if(isinstance(c, dict)):
+                    x = removeNullNoneEmpty(c)
+                    if(len(x.keys())>0):
+                        p.append(x)
+                elif(c is not None and c != ''):
+                    p.append(c)
+            l[k] = p
+        elif(v is not None and v!=''):
+            l[k] = v
+    return l

@@ -14,8 +14,7 @@ from scipy.sparse import csr_matrix
 from tools.visualization.plotConstants import *
 
 
-def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
-    obs = obs
+def plot_UMAP_obs(obs, umap, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
@@ -118,7 +117,7 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="seurat_clusters", selected_ce
         })
 
 
-def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP(adata, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
     
     obs = adata.obs
@@ -139,10 +138,7 @@ def plot_UMAP(adata, layer=None, clustering_plot_type="seurat_clusters", selecte
     return results
 
 
-def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_counts_rb'], show_points=False):
-    var    = adata.var
-    obs    = adata.obs
-
+def plot_violin(obs, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_counts_rb'], show_points=False):
     traces = []
     
     x_pos  = 1
@@ -156,8 +152,8 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
         if (show_points == False):
             traces.append({
                 "type": "violin",
-                "y": adata.obs_vector(i).tolist(), 
-                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "y": obs[i].tolist(), 
+                # "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
                 "opacity": 0.7,
                 "box": {
                     "visible": True
@@ -172,13 +168,13 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
         
         elif (show_points == "all"):
             #kernel = gaussian_kde(adata.obs_vector(i))
-            jittered_x = x_pos + 0.1 * np.random.standard_normal(len(adata.obs_vector(i)))
+            jittered_x = x_pos + 0.1 * np.random.standard_normal(len(obs[i]))
 
             traces.append({
                 "type": "violin",
                 "x": jittered_x.tolist(),
-                "y": adata.obs_vector(i).tolist(), 
-                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "y": obs[i].tolist(), 
+                # "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
                 "mode": "markers",
                 "opacity": 0.7,
                 "marker": {
@@ -207,17 +203,15 @@ def plot_violin(adata, features=['n_counts', 'n_genes', 'pct_counts_mt', 'pct_co
     })
 
 
-def plot_scatter(adata, feature1 = "n_counts", feature2 = "n_genes"):
-    obs = adata.obs
-
+def plot_scatter(obs, feature1 = "n_counts", feature2 = "n_genes"):
     traces = []
 
     if feature1 in obs.columns and feature2 in obs.columns:
         traces.append({
                 "type": "scatter",
-                "x": adata.obs_vector(feature1).tolist(), 
-                "y": adata.obs_vector(feature2).tolist(), 
-                "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
+                "x": obs[feature1].tolist(), 
+                "y": obs[feature2].tolist(), 
+                # "text": ["Cell ID: " + str(cell_id) for cell_id in obs.index.astype(str)],
                 "mode":'markers',
                 "marker": {
                     'size': point_size_2d,
@@ -243,7 +237,7 @@ def plot_scatter(adata, feature1 = "n_counts", feature2 = "n_genes"):
     })
 
 
-def plot_highest_expr_genes(adata, n_top=30):
+def highest_expr_genes(adata, n_top=30):
     import scanpy as sc
     from scipy.sparse import issparse
 
@@ -259,11 +253,17 @@ def plot_highest_expr_genes(adata, n_top=30):
         mean_percent = norm_dict["X"].mean(axis=0)
         top_idx = np.argsort(mean_percent)[::-1][:n_top]
         counts_top_genes = norm_dict["X"][:, top_idx]
-    columns = (
-        adata.var_names[top_idx]
-    )
+    columns = adata.var_names[top_idx].to_list()
+
+    return counts_top_genes, columns
+
+
+def plot_highest_expr_genes(counts_top_genes, columns):
+    # counts_top_genes = pd.DataFrame(
+    #     counts_top_genes, index=adata.obs_names, columns=columns
+    # )
     counts_top_genes = pd.DataFrame(
-        counts_top_genes, index=adata.obs_names, columns=columns
+        counts_top_genes, columns=columns
     )
 
     y = counts_top_genes.columns.tolist()
