@@ -69,6 +69,7 @@ function verifyToken(req, res, next) {
     }
 }
 
+
 // Middleware to verify the token
 const verifyJWTToken = (req, res, next) => {
     const bearerHeader = req.headers['authorization'];
@@ -105,6 +106,30 @@ function getUserFromToken(token) {
         return 'Unauthorized';
     }
 }
+
+
+function removeFiles(fileList){
+    if (fileList && Array.isArray(fileList)) {
+        let successCount = 0;
+        let errorCount = 0;
+        for (const filePath of fileList) {           
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.removeSync(filePath);
+                    // file or folder removed
+                    successCount++;
+                } else {
+                    console.log('Error Deleting: ' + filePath);
+                    errorCount++;
+                }
+            } catch (err) {
+                console.error(err);
+                errorCount++;
+            }
+        }
+    }
+}
+
 const createDirectoryIfNotExists = async (dirPath) => {
     try {
       await fs.mkdir(dirPath, { recursive: true });
@@ -1656,65 +1681,69 @@ app.get('/node/options', async (req, res) => {
     }
 });
 
+
 app.post('/node/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    
+
     try {
-    const formData = req.body; // This assumes you have middleware to parse JSON in the request body
-    const makeItpublic = formData.makeItpublic;
-    let files = formData.files;
-    let username = formData.Owner;
-    
-      // Connect to the MongoDB server
-      await client.connect();
-      const db = client.db(dbName);
+        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+        const makeItpublic = formData.makeItpublic;
+        let files = formData.files;
+        let inputFiles = formData.inputFiles;
+        formData.inputFiles = formData.adata_path;
+        let username = formData.Owner;
 
-       const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
-    
-  
-  
-      // Check if a document with the provided Id already exists
-      const existingDocument = await collection.findOne({ Id: formData.Id });
-  
-      if (existingDocument) {
-        console.log('Document with Id already exists:', formData.Id);
-        res.status(400).json({ error: 'Document with the provided Id already exists' });
-      } else {
-        // Document with the provided Id does not exist, proceed with insertion
-        await collection.insertOne(formData);
-          console.log('Metadata is  submitted successfully');
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
 
-        if(makeItpublic) {
-            console.log("Transfering files from local to public folder");
-            try {
-                let dirName = "";
-                const fromPublic = false;
-                if (files && files.length > 0) {
-                    dirName = path.dirname(files[0])
-                } 
-    
-                let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
-    
-                // Copy files from user's private storage to public dataset directory
-                await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
-    
-             } catch (err) {
-                console.error(err);
+        // Check if a document with the provided Id already exists
+        const existingDocument = await collection.findOne({ Id: formData.Id });
+
+        if (existingDocument) {
+            console.log('Document with Id already exists:', formData.Id);
+            removeFiles(inputFiles); // Remove original input files
+            res.status(400).json({ error: 'Document with the provided Id already exists' });
+        } else {
+            // Document with the provided Id does not exist, proceed with insertion
+            await collection.insertOne(formData);
+            console.log('Metadata is submitted successfully');
+
+            if (makeItpublic) {
+                console.log("Transfering files from local to public folder");
+                try {
+                    let dirName = "";
+                    const fromPublic = false;
+                    if (files && files.length > 0) {
+                        dirName = path.dirname(files[0]);
+                    }
+
+                    let userPrivateStorageDir = storageDir + username; // Change this to the user's private storage path
+                    removeFiles(inputFiles); // Remove original input files
+
+                    // Copy files from user's private storage to public dataset directory
+                    await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
+
+                } catch (err) {
+                    console.error(err);
+                }
             }
-          }
-        res.status(200).json({ message: 'Metadata is submitted successfully' });
-      }
+
+
+            res.status(200).json({ message: 'Metadata is submitted successfully' });
+        }
     } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
+        // Ensure the client will close when you finish/error
+        await client.close();
     }
-  });
+});
 
 
-  app.post('/node/submitTaskMetadata', async (req, res) => {
+app.post('/node/submitTaskMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
   
     try {
@@ -2184,8 +2213,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const searchResultsPipeline = [
         { $match: matchStage },
         // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
+        // { $skip: (page - 1) * pageSize },
+        // { $limit: pageSize },
       ];
   
       // Get the paginated search results
@@ -2339,8 +2368,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     ], */
                     // Documents facet for pagination
                     documents: [
-                        { $skip: (page - 1) * pageSize },
-                        { $limit: pageSize },
+                        // { $skip: (page - 1) * pageSize },
+                        // { $limit: pageSize },
                         {
                             $project: {
                                 "Benchmarks ID": "$benchmarksId",
@@ -2745,8 +2774,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
           $facet: {
             totalCount: [{ $count: "total" }],
             documents: [
-              { $skip: (page - 1) * pageSize }, 
-              { $limit: pageSize },
+            //   { $skip: (page - 1) * pageSize }, 
+            //   { $limit: pageSize },
               { $project: {
                     Title: "$Title",
                     Id: "$Id",
@@ -2863,13 +2892,19 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   });
 
   // API endpoint to get process results based on an array of process_ids
-app.post('/node/getPreProcessResults', async (req, res) => {
+  app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
-    const projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
+    let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {
             return res.status(400).json({ error: 'No process ID is provided.' });
+        }
+
+        const detailsType = req.body.details;
+        
+        if(detailsType === "PARTIAL") {
+            projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 0, info: 0, cell_metadata_obs: 0, default_assay: 0, assay_names: 0, umap_plot: 0, umap_plot_3d: 0, violin_plot: 0, scatter_plot: 0, highest_expr_genes_plot: 0, evaluation_results: 0 };
         }
 
         client = new MongoClient(mongoUrl);

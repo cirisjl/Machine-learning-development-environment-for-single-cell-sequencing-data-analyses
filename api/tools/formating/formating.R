@@ -354,6 +354,8 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
 
     var <- .regularise_df(Seurat::GetAssay(obj, assay=assay)@meta.features, drop_single_values=drop_single_values, drop_na_values=drop_na_values)
 
+    colnames(var) <- sub("vst.variable", "highly_variable", colnames(var))
+
     obsm <- NULL
     reductions <- names(obj@reductions)
     tryCatch({

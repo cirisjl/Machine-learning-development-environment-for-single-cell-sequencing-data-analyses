@@ -26,9 +26,8 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
             elif "raw_counts" in adata.layers.keys():
                 adata.layers["normalized_X"] = adata.X.copy()
                 adata.X = adata.layers['raw_counts'].copy()
-
-        if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
-            raise ValueError("Scanpy QC only take raw counts, not normalized data.")
+            else:
+                raise ValueError("Scanpy QC only take raw counts, not normalized data.")
         
         adata.var_names_make_unique()
 
@@ -71,10 +70,8 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # adata=adata[adata.obs.n_genes_by_counts < 2500, :]
         # adata=adata[adata.obs.pct_counts_mt < 5, :]
 
-        if adata.raw is None:
-            adata.raw = adata # freeze the state in `.raw`
-        else: 
-            adata.layers["raw_counts"] = adata.X.copy() # preserve counts
+        adata.raw = adata # Freeze the state in `.raw`
+        adata.layers["raw_counts"] = adata.X.copy() # Preserve raw counts
 
         try:
             if expected_doublet_rate !=0 and 'predicted_doublets' not in adata.obs.keys():

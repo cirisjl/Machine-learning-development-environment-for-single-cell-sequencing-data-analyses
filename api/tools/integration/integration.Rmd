@@ -60,7 +60,7 @@ names(srats.list) <-datasets
 ```
 ## Seurat
 
-```{r Seurat, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r Seurat, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
 if("SEURAT" %in% methods) {
   tryCatch({
     RedisInfo(unique_id, "Start Seurat integration ...")
@@ -126,7 +126,7 @@ if("SEURAT" %in% methods) {
 ```
 ## Harmony
 
-```{r Harmony, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r Harmony, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
 if("HARMONY" %in% methods) {
   tryCatch({
     RedisInfo(unique_id, "Start Harmony integration ...")
@@ -179,7 +179,7 @@ if("HARMONY" %in% methods) {
 ```
 ## Liger
 
-```{r Liger, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
+```{r Liger, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
 if("LIGER" %in% methods) {
   tryCatch({
     RedisInfo(unique_id, "Start LIGER integration ...")

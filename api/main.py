@@ -1,6 +1,6 @@
 import time
 import uvicorn as uvicorn
-from fastapi import FastAPI, WebSocket, Request, Query
+from fastapi import FastAPI, WebSocket, Request, Query, HTTPException
 from celery.result import AsyncResult
 from celery.app.control import Control
 import asyncio
@@ -13,6 +13,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
 from utils.redislogger import *
+from utils.mongodb import get_pp_results
+from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
+from schemas.schemas import ProcessResultsRequest
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 
@@ -130,6 +133,76 @@ async def revoke_task(job_id: str) -> dict:
     }
     
     return result
+
+
+@app.post("/api/getPreProcessResults/")
+async def getPreProcessResults(req: ProcessResultsRequest) -> list:
+    """
+    Get details of pp_results
+    """
+    req_dict = req.dict() 
+    process_ids = req_dict['process_ids']
+    if len(process_ids) == 0:
+        raise HTTPException(status_code=400, detail="No process ID is provided.")
+
+    pp_results = get_pp_results(process_ids)
+    results = []
+
+    if len(pp_results) == 0:
+        raise HTTPException(status_code=404, detail="No pp_result is found.")
+    
+    for pp_result in pp_results:
+        obs = pp_result['cell_metadata']
+        pp_result['cell_metadata'] = obs.head().fillna('NaN').to_dict() # Replace NA 
+
+        if 'umap' in pp_result.keys():
+            pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
+            pp_result.pop('umap')
+
+        if 'umap_3d' in pp_result.keys():
+            pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
+            pp_result.pop('umap_3d')
+
+        if pp_result['process'] == 'QC':
+            pp_result['violin_plot'] = plot_violin(obs)
+            pp_result['scatter_plot'] = plot_scatter(obs)
+            if 'highest_expr_genes' in pp_result.keys():
+                pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
+                pp_result.pop('highest_expr_genes')
+
+        results.append(pp_result)
+
+    return results
+
+
+@app.post("/api/plotumap/")
+async def umapplot(req: ProcessResultsRequest) -> list:
+    """
+    Get details of pp_results
+    """
+    req_dict = req.dict() 
+    process_ids = req_dict['process_ids']
+    clustering_plot_type = req_dict['clustering_plot_type']
+    annotation = req_dict['annotation']
+
+    umap_plots = []
+    if len(process_ids) == 0:
+        raise HTTPException(status_code=400, detail="No process ID is provided.")
+
+    pp_results = get_pp_results(process_ids, umap=True)
+
+    if len(pp_results) == 0:
+        raise HTTPException(status_code=404, detail="No UMAP is found.")
+    
+    for pp_result in pp_results:
+        umap_plot = {}
+        if 'umap' in pp_result.keys():
+            umap_plot['umap_plot'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap'], clustering_plot_type=clustering_plot_type, annotation=annotation)
+        if 'umap_3d' in pp_result.keys():
+            umap_plot['umap_plot_3d'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap_3d'], clustering_plot_type=clustering_plot_type, n_dim=3, annotation=annotation)
+        umap_plots.append(umap_plot)
+    
+    return umap_plots
 
 
 if __name__ == "__main__":

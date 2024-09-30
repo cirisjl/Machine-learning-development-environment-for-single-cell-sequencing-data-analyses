@@ -331,7 +331,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                 
                 # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
                 s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment'), output_file='{report_path}')\""], shell = True)
-                redislogger.info(job_id, s)
+                # redislogger.info(job_id, s)
 
                 if os.path.exists(adata_path):
                     redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")
@@ -398,11 +398,11 @@ def run_qc(job_id, ds:dict, random_state=0):
         }
     )
 
-    # Remove oringal input files after QC for Benchmarks
-    if benchmarks_data:
-        if os.path.isdir(input_path):
-            shutil.rmtree(input_path) 
-        else:
-            os.remove(input_path)
+    # Remove oringal input files after QC for Benchmarks. Input files will be removed when submiting metadata form
+    # if benchmarks_data:
+    #     if os.path.isdir(input_path):
+    #         shutil.rmtree(input_path) 
+    #     else:
+    #         os.remove(input_path)
 
     return results

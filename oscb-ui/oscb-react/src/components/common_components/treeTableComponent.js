@@ -14,11 +14,26 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
     const [anchorEl, setAnchorEl] = useState(null);
 
     // Destructure the pagination object for easier access to its properties
-    const { page, pageSize, totalCount } = pagination;
+    // const { page, pageSize, totalCount } = pagination;
 
-    // Calculate the starting and ending result numbers for the current page
-    const startResult = (page - 1) * pageSize + 1;
-    const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
+    // // Calculate the starting and ending result numbers for the current page
+    // const startResult = (page - 1) * pageSize + 1;
+    // const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
+
+    const [paginationState, setPagination] = useState({
+        current: 1,
+        position: ["topCenter"],
+        pageSize: 10, // default number of rows per page
+        pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
+        showSizeChanger: true, // show the dropdown to select page size
+      });
+
+    // Handle pagination change (page number and page size)
+    const handleTableChange = (pagination) => {
+        setPagination({
+        ...pagination,
+        });
+    };
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
@@ -131,7 +146,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
             {/* Dropdown for editing columns */}
             <div className="dropdown">
                 <div className='total-results-count'>
-                    <p>Results {startResult} - {endResult} of {totalCount}</p>
+                    {/* Do not remove this div. It will remove styles. If you want to remove this div, Add alternate styles to the edit columns without breaking it. */}
                 </div>
                 <Button variant="contained" onClick={handleMenuClick}>
                     Edit Columns
@@ -181,9 +196,8 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                 columns={columns}
                 dataSource={data}
                 rowKey="Id"
-                pagination={{
-                    position: ["bottomCenter"]
-                }}
+                pagination={paginationState}
+                onChange={handleTableChange}
             />
         </div>
     );

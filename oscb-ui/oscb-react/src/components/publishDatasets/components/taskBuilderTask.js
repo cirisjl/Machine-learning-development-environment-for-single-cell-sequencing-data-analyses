@@ -400,7 +400,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                   Please Choose the Label:
                 </Typography>
                 <Select
-                  options={Object.keys(JSON.parse(dataset.cell_metadata_obs)).map((key) => ({
+                  options={Object.keys(JSON.parse(dataset.cell_metadata)).map((key) => ({
                     label: key,
                     value: key,
                   }))}
@@ -416,7 +416,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                   )} */}
 
                 <div className="label-table-container">
-                  <TableComponent cellMetadataObs={JSON.parse(dataset.cell_metadata_obs)} />
+                  <TableComponent cellMetadataObs={JSON.parse(dataset.cell_metadata)} />
                 </div>
                 
                 <Typography variant="body2" component="p" style={{ marginTop: '20px' }}>
