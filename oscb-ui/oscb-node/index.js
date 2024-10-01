@@ -1729,8 +1729,6 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
                     console.error(err);
                 }
             }
-
-
             res.status(200).json({ message: 'Metadata is submitted successfully' });
         }
     } catch (err) {
@@ -2212,7 +2210,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       // Build the pipeline for search results with pagination
       const searchResultsPipeline = [
         { $match: matchStage },
-        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
+        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_head:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
         // { $skip: (page - 1) * pageSize },
         // { $limit: pageSize },
       ];
@@ -2894,7 +2892,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
   // API endpoint to get process results based on an array of process_ids
   app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
-    let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
+    let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata: 1, default_assay: 1, assay_names: 1, evaluation_results: 1 };
     try {
         const processIds = req.body.processIds;
         if (!processIds || !processIds.length) {
@@ -2904,7 +2902,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
         const detailsType = req.body.details;
         
         if(detailsType === "PARTIAL") {
-            projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 0, info: 0, cell_metadata_obs: 0, default_assay: 0, assay_names: 0, umap_plot: 0, umap_plot_3d: 0, violin_plot: 0, scatter_plot: 0, highest_expr_genes_plot: 0, evaluation_results: 0 };
+            projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, cell_metadata: 1 };
         }
 
         client = new MongoClient(mongoUrl);

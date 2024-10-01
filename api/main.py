@@ -142,10 +142,11 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     """
     req_dict = req.dict() 
     process_ids = req_dict['process_ids']
+    record_type = req_dict['record_type']
     if len(process_ids) == 0:
         raise HTTPException(status_code=400, detail="No process ID is provided.")
 
-    pp_results = get_pp_results(process_ids)
+    pp_results = get_pp_results(process_ids, record_type=record_type)
     results = []
 
     if len(pp_results) == 0:
@@ -153,22 +154,24 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     
     for pp_result in pp_results:
         obs = pp_result['cell_metadata']
-        pp_result['cell_metadata'] = obs.head().fillna('NaN').to_dict() # Replace NA 
+        pp_result.pop('cell_metadata')
 
-        if 'umap' in pp_result.keys():
-            pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
-            pp_result.pop('umap')
+        if record_type == None:
+            pp_result['cell_metadata_head'] = obs.head().fillna('NaN').to_dict() # Replace NA
+            if 'umap' in pp_result.keys():
+                pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
+                pp_result.pop('umap')
 
-        if 'umap_3d' in pp_result.keys():
-            pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
-            pp_result.pop('umap_3d')
+            if 'umap_3d' in pp_result.keys():
+                pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
+                pp_result.pop('umap_3d')
 
-        if pp_result['process'] == 'QC':
-            pp_result['violin_plot'] = plot_violin(obs)
-            pp_result['scatter_plot'] = plot_scatter(obs)
-            if 'highest_expr_genes' in pp_result.keys():
-                pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
-                pp_result.pop('highest_expr_genes')
+            if pp_result['process'] == 'QC':
+                pp_result['violin_plot'] = plot_violin(obs)
+                pp_result['scatter_plot'] = plot_scatter(obs)
+                if 'highest_expr_genes' in pp_result.keys():
+                    pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
+                    pp_result.pop('highest_expr_genes')
 
         results.append(pp_result)
 

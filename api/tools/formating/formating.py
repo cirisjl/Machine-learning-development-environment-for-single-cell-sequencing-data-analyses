@@ -333,9 +333,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # scatter_plot = gzip_str(plot_scatter(adata))
             # violin_plot = plot_violin(adata)
             # scatter_plot = plot_scatter(adata)
-            #if nCells < 10000: # If the dataset is too large, then skip the highest expressed genes plot
-            counts_top_genes, columns = highest_expr_genes(adata)
-            top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
+            if nCells < 12000: # If the dataset is too large, then skip the highest expressed genes plot
+                counts_top_genes, columns = highest_expr_genes(adata)
+                top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
 
         if cluster_label is not None:
             if labels_pred_leiden is not None:

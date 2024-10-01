@@ -25,6 +25,7 @@ np.random.seed(0)
 def scvi_clustering(adata, labels):
     # Start monitoring
     monitor = Monitor(1)
+    sys_info = monitor.get_sys_info()
     scvi.model.SCVI.setup_anndata(adata)
     model = scvi.model.SCVI(adata)
     model.train()
@@ -46,7 +47,7 @@ def scvi_clustering(adata, labels):
 
     asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
 
-    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return sys_info, asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
 
 
 

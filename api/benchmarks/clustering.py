@@ -13,11 +13,12 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     clustering_results = []
     y_values = {}
     y_values_ur = {}
-    x_timepoints = None
+    x_timepoints = []
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
     current_date_and_time = datetime.now()
+    sys_info = None
 
     #static array to define the metrics evaluated for the clustering methods
     metrics = ['ARI', 'Silhouette', 'NMI']
@@ -32,8 +33,9 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scanpy Benchmarks results in database, skip scanpy.")
         else:
             # Call scanpy_clustering method
-            asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, label)
+            sys_info, asw_scanpy, nmi_scanpy, ari_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, label)
             scanpy_results = {
+                "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
@@ -49,6 +51,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             }
             create_bm_results(process_id, scanpy_results)
 
+        sys_info = scanpy_results['sys_info']
         y_values['scanpy'] = [scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score']]
         y_values_ur['Scanpy_CPU'] = scanpy_results['cpu_usage']
         y_values_ur['Scanpy_Memory'] = scanpy_results['mem_usage']
@@ -72,9 +75,10 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing Seurat Benchmarks results in database, skip Seurat.")
         else:
             # Call seurat_clustering method
-            asw_seurat, nmi_seurat, ari_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, label)
+            sys_info, asw_seurat, nmi_seurat, ari_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, label)
 
             seurat_results = {
+                "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
@@ -91,6 +95,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             }
             create_bm_results(process_id, seurat_results)
 
+        sys_info = seurat_results['sys_info']
         y_values['Seurat'] = [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score']]
         y_values_ur['Seurat_CPU'] = seurat_results['cpu_usage']
         y_values_ur['Seurat_Memory'] = seurat_results['mem_usage']
@@ -115,9 +120,10 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
             # Call scvi_clustering method
-            asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label)
+            sys_info, asw_scvi, nmi_scvi, ari_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label)
 
             scvi_results = {
+                "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
@@ -133,6 +139,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             }
             create_bm_results(process_id, scvi_results)
 
+        sys_info = scvi_results['sys_info']
         y_values['scvi'] = [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score']]
         y_values_ur['scvi_CPU'] = scvi_results['cpu_usage']
         y_values_ur['scvi_Memory'] = scvi_results['mem_usage']
@@ -153,7 +160,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
 
     redislogger.info(job_id, "Creating line plot for computing resourses utilization rate.")
     # Call the plot_line function with an empty array for x
-    utilization_plot = plot_line(x=x_timepoints, y=y_values_ur)
+    utilization_plot = plot_line(x=x_timepoints, y=y_values_ur, sysinfo=sys_info)
 
     adata = None # Release memory
     
@@ -164,6 +171,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         "task_type": task_type,
         "metrics": metrics,
         "methods": clustering_results,
+        # "sys_info": sys_info,
         "benchmarks_plot": benchmarks_plot,
         "utilization_plot": utilization_plot
     }

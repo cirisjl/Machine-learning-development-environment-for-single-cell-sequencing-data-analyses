@@ -55,10 +55,13 @@ def create_pp_results(process_id, pp_results):
     return
 
 
-def get_pp_results(process_ids, umap=False):
+def get_pp_results(process_ids, umap=False, record_type=None):
     pp_results = None
     if not umap:
-        pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 })
+        if record_type == None:
+            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 })
+        elif record_type == 'table':
+            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1 })
     else:
         pp_results = pp_results_collection.find({'process_id': {"$in": process_ids }}, { "_id": 0, "tsne": 0, "process_id": 0, "description": 0, "stage": 0, "process": 0, "method": 0, "nCells": 0, "adata_path": 0, "md5": 0, "info": 0, "default_assay": 0, "assay_names": 0, "highest_expr_genes": 0, "evaluation_results": 0 })
     pp_results = list(pp_results)

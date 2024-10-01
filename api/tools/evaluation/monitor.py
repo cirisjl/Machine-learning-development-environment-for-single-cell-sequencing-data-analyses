@@ -36,7 +36,40 @@ class Monitor(Thread):
         return self.time_points, self.cpu_usage, self.mem_usage, self.gpu_mem_usage
     
 
-    def nvidia_info(self):
+    def get_sys_info(self) -> dict:
+        sys_info: dict = {}
+        cpu, ram = self.get_cpu_mem_info()
+        gpus = self.get_nvidia_info()
+        sys_info['CPU'] = cpu
+        sys_info['RAM'] = ram
+        if len(gpus['gpus']) > 0:
+            gpu_list = []
+            for i in range(len(gpus['gpus'])):
+                gpu = f"{gpus['gpus'][i]['gpu_model']} @ {gpus['gpus'][i]['total']} GB"
+                gpu_list.append(gpu)
+            
+            sys_info['GPU'] = gpu_list
+
+        return sys_info
+    
+
+    def get_cpu_mem_info(self):
+        import platform
+
+        n_cores = psutil.cpu_count(logical=False)
+        # n_thread = psutil.cpu_count()
+        freq = psutil.cpu_freq().max / 1000 # GHz
+        cpu_model = platform.processor()
+        mem_total = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2) # GB
+        # mem_free = round(psutil.virtual_memory().available / 1024 / 1024 / 1024, 2) # GB
+        # mem_process_used = round(psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024, 2) # GB
+        cpu = f"{cpu_model} {n_cores}-core @ {freq} GHz"
+        ram = f"{mem_total} GB"
+
+        return cpu, ram
+    
+
+    def get_nvidia_info(self):
         nvidia_dict = {
             "state": True,
             "nvidia_version": "",
@@ -51,10 +84,10 @@ class Monitor(Thread):
                 handle = nvmlDeviceGetHandleByIndex(i)
                 memory_info = nvmlDeviceGetMemoryInfo(handle)
                 gpu = {
-                    "gpu_name": nvmlDeviceGetName(handle),
-                    "total": memory_info.total,
-                    "free": memory_info.free,
-                    "used": memory_info.used,
+                    "gpu_model": nvmlDeviceGetName(handle),
+                    "total": round(memory_info.total / 1024 / 1024 / 1024, 2), # GB
+                    "free": round(memory_info.free / 1024 / 1024 / 1024, 2), # GB
+                    "used": round(memory_info.used / 1024 / 1024 / 1024, 2), # GB
                     "temperature": f"{nvmlDeviceGetTemperature(handle, 0)}℃",
                     "powerStatus": nvmlDeviceGetPowerState(handle)
                 }
@@ -73,7 +106,7 @@ class Monitor(Thread):
 
     def gpu_mem_percent(self):
         mem_rate = 0.0
-        info = self.nvidia_info()
+        info = self.get_nvidia_info()
         if len(info['gpus']) > 0:
             used = info['gpus'][0]['used']
             tot = info['gpus'][0]['total']

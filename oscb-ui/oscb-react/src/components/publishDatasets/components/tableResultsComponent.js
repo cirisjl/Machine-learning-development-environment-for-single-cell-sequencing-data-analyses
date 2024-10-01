@@ -11,7 +11,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Table } from 'antd';
 import axios from 'axios';
-import {NODE_API_URL} from '../../../constants/declarations'
+import { CELERY_BACKEND_API } from '../../../constants/declarations'
 
 
 const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, showEdit=false, showDelete=false }) => {
@@ -178,7 +178,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }
     
         try {
-            const response = await axios.post(NODE_API_URL + '/getPreProcessResults', { processIds: process_ids, details: "PARTIAL" });
+            const response = await axios.post(CELERY_BACKEND_API + '/getPreProcessResults', { process_ids: process_ids, record_type: "table" });
             setSubItemsData(prevData => ({
                 ...prevData,
                 [process_ids_key]: response.data // Store the result with concatenated process_ids as key

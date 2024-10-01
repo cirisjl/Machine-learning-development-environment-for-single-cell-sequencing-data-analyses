@@ -16,6 +16,7 @@ ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat.R
 def seurat_clustering(path, labels, layer=None):
     # Start monitoring
     monitor = Monitor(1)
+    sys_info = monitor.get_sys_info()
 
     seurat_clustering_r = ro.globalenv['clustering']
     results = seurat_clustering_r(path, "cluster.ids")
@@ -31,4 +32,4 @@ def seurat_clustering(path, labels, layer=None):
     if layer is None: layer = "X"
     asw_score, nmi_score, ari_score = clustering_scores(labels, labels_pred, umap)
 
-    return asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return sys_info, asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
