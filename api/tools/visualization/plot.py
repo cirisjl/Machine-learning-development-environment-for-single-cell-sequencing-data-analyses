@@ -392,7 +392,7 @@ def get_line_style(key):
     return style
 
 
-def plot_line(x=[], y={}):
+def plot_line(x=[], y={}, sysinfo={}):
     x = [n for n in range(len(x))]
     traces = []
 
@@ -423,20 +423,57 @@ def plot_line(x=[], y={}):
     if not traces:
         print("[DEBUG] no traces added to line plot")
 
-    return {
-        'data': [trace for trace in traces],
-        'layout': {
-            'title': 'Computing Assessments',
-            'xaxis': {"title": 'Time points (s)'},
-            'yaxis': {"title": 'Utilization (%)'},
-            'margin': margin,
-            'hovermode': 'closest',
-            'transition': {'duration': 100},
-            'autosize': True,
-            'width': 4 * scale,
-            'height': 3 * scale
+    if len(sysinfo) == 0:
+        return {
+            'data': [trace for trace in traces],
+            'layout': {
+                'title': 'Computing Assessments',
+                'xaxis': {"title": 'Time points (s)'},
+                'yaxis': {"title": 'Utilization (%)'},
+                'margin': margin,
+                'hovermode': 'closest',
+                'transition': {'duration': 100},
+                'autosize': True,
+                'width': 4 * scale,
+                'height': 3 * scale
+            }
         }
-    }
+    else:
+        if 'GPU' in sysinfo.keys():
+            annotation = f"CPU: {sysinfo['CPU']}, RAM: {sysinfo['RAM']}, GPU: {sysinfo['GPU']}"
+        else:
+            annotation = f"CPU: {sysinfo['CPU']}, RAM: {sysinfo['RAM']}"
+        return {
+            'data': [trace for trace in traces],
+            'layout': {
+                'title': 'Computing Assessments',
+                'xaxis': {"title": 'Time points (s)'},
+                'yaxis': {"title": 'Utilization (%)'},
+                'margin': margin,
+                'hovermode': 'closest',
+                'transition': {'duration': 100},
+                'autosize': True,
+                'width': 4 * scale,
+                'height': 3 * scale,
+                'annotations': [             
+                    {
+                        'xref': 'paper',
+                        'yref': 'paper',
+                        # 'x': 0.5,
+                        # 'y': -0.03,
+                        'xanchor': 'center',
+                        'yanchor': 'top',
+                        'text': annotation,
+                        'showarrow': False,
+                        'font': {
+                            'family': 'Arial',
+                            'size': 12,
+                            'color': 'rgb(150,150,150)'
+                        }
+                    }
+                ]
+            }
+        }
 
 
 def plot_bar(x=[], y={}, title="Benchmarks"):

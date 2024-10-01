@@ -25,7 +25,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         adata.obsm[layer+'_umap'] = umap_2d.fit_transform(adata.obsm[layer+'_pca'])
         adata.obsm[layer+"_umap_3D"] = umap_3d.fit_transform(adata.obsm[layer+'_pca'])
 
-        if use_rep is not None and adata.obsm[use_rep].shape[1] < n_pcs:
+        if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
             msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
             n_pcs = adata.obsm[use_rep].shape[1]
 
@@ -40,7 +40,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         # Principal component analysis
         sc.pp.pca(adata, svd_solver='arpack', random_state=random_state)
 
-        if use_rep is not None and adata.obsm[use_rep].shape[1] < n_pcs:
+        if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
             msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
             n_pcs = adata.obsm[use_rep].shape[1]
 

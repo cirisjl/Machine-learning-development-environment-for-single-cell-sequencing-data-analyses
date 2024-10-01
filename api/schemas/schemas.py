@@ -247,4 +247,5 @@ class ProcessResultsRequest(BaseModel):
     process_ids: List[str]
     clustering_plot_type: Optional[str] = 'leiden'
     annotation: Optional[str] = None
+    record_type: Optional[str] = None
     selected_cell_intersection: Optional[List[str]]= None

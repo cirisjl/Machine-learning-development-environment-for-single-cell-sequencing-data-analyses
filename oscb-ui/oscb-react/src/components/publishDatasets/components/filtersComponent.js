@@ -15,7 +15,8 @@ const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, on
 
     // Ensure options is always treated as an array
     const filteredOptions = options.filter(option => 
-        option._id.toLowerCase().includes(searchTerm.toLowerCase())
+        // option._id.toLowerCase().includes(searchTerm.toLowerCase())
+        option._id.includes(searchTerm.toLowerCase())
     );
 
     return (

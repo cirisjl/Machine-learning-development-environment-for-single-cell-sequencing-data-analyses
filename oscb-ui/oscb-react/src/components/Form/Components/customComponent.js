@@ -217,7 +217,7 @@ class MyForm extends Component {
       // formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
       // formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
       // formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
-      formData.cell_metadata_obs = JSON.stringify(taskData.quality_control.qc_results[0]?.cell_metadata_obs);
+      formData.cell_metadata_head = JSON.stringify(taskData.quality_control.qc_results[0]?.cell_metadata_head);
       // formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
       // formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
       // formData.embeddings = taskData.quality_control.qc_results[0]?.metadata?.embeddings;
