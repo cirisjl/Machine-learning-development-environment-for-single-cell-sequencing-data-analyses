@@ -440,9 +440,9 @@ def plot_line(x=[], y={}, sysinfo={}):
         }
     else:
         if 'GPU' in sysinfo.keys():
-            annotation = f"CPU: {sysinfo['CPU']}, RAM: {sysinfo['RAM']}, GPU: {sysinfo['GPU']}"
+            annotation = f"CPU: {sysinfo['CPU']}<br>RAM: {sysinfo['RAM']}<br>GPU: {sysinfo['GPU']}"
         else:
-            annotation = f"CPU: {sysinfo['CPU']}, RAM: {sysinfo['RAM']}"
+            annotation = f"CPU: {sysinfo['CPU']}<br>RAM: {sysinfo['RAM']}"
         return {
             'data': [trace for trace in traces],
             'layout': {
