@@ -2175,30 +2175,67 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       // Define the pipeline for facets
       const facetsPipeline = [
         { $match: matchStage },
+        { $unwind: '$Selected Cell Types' },
+        { $unwind: '$Disease Status (Specimen)' },
         { $facet: {
           'Species': [
-            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+                { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                }, 
+                { $sort: { count: -1 } } 
           ],
           'Author': [
-            { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+                { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
+                { $sort: { count: -1 } }
           ],
         //   'Anatomical Entity': [
         //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
         //   ],
           'Organ Part': [
-            { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+                { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
+                { $sort: { count: -1 } }
           ],
           'Selected Cell Types': [
-            { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+                { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
+                { $sort: { count: -1 } }
           ],
           'Disease Status (Specimen)': [
-            { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+                { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
+                { $sort: { count: -1 } }
           ],
         //   'Disease Status (Donor)': [
         //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
         //   ],
           // ... add other facets here
-        }},
+        }}
       ];
   
       // Get the facets
@@ -2333,15 +2370,29 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 
         
         const facetAndDocumentsPipeline = [
+            { $unwind: '$Selected Cell Types' },
+            { $unwind: '$Disease Status (Specimen)' },
             {
                 $facet: {
                     // Each facet is a direct property of the `$facet` object
                     Species: [
-                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ],
                     Author: [
-                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Author', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ],
                     /* 'Anatomical Entity': [
@@ -2349,15 +2400,33 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ], */
                     'Organ Part': [
-                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ],
                     'Disease Status (Specimen)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ],
                     /* 'Disease Status (Donor)': [
@@ -2768,6 +2837,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
       // Initial aggregation pipeline
       let pipeline = [
         { $match: matchStage },
+        { $unwind: '$Selected Cell Types' },
+        { $unwind: '$Disease Status (Specimen)' },
         { 
           $facet: {
             totalCount: [{ $count: "total" }],
@@ -2797,15 +2868,33 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             ],
             // Each facet is directly within $facet and maps to its pipeline
             'Species': [
-                { $group: { _id: '$Species.label', count: { $sum: 1 } } },
+                { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             'Category': [
-                { $group: { _id: '$Category', count: { $sum: 1 } } },
+                { $group: { _id: '$Category', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             'Author': [
-                { $group: { _id: '$Author', count: { $sum: 1 } } },
+                { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             // 'Anatomical Entity': [
@@ -2814,15 +2903,33 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             // ],
             // More facets as per your requirement
             'Organ Part': [
-                { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
+                { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             'Selected Cell Types': [
-                { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+                { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             'Disease Status (Specimen)': [
-                { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+                { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                {
+                    $project: {
+                        _id: '$_id',
+                        count: { $size: "$uniqueValues" }
+                    }
+                },
                 { $sort: { count: -1 } }
             ],
             // 'Disease Status (Donor)': [
