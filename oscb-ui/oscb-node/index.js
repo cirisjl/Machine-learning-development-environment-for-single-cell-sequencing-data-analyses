@@ -2277,7 +2277,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
   });
 
 
-  app.post('/node/tasks/search', async (req, res) => {
+app.post('/node/tasks/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -2291,7 +2291,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         const pageSize = parseInt(req.query.pageSize, 10) || 10;
         const globalSearchQuery = req.query.q || '';
         const filters = req.body.filters;
-      
+
         //Update this field accordingly whenever you add a new facet 
         // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
         const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
@@ -2368,15 +2368,15 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         const countResults = await tasksCollection.aggregate(countPipeline).toArray();
         const totalTasksCount = countResults.length > 0 ? countResults[0].total : 0;
 
-        
+
         const facetAndDocumentsPipeline = [
-            { $unwind: '$Selected Cell Types' },
-            { $unwind: '$Disease Status (Specimen)' },
+            { $unwind: '$datasetDetails.Selected Cell Types' },
+            { $unwind: '$datasetDetails.Disease Status (Specimen)' },
             {
                 $facet: {
                     // Each facet is a direct property of the `$facet` object
                     Species: [
-                        { $group: { _id: '$datasetDetails.Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$datasetDetails.Species.label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2386,7 +2386,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     Author: [
-                        { $group: { _id: '$datasetDetails.Author', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$datasetDetails.Author', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2396,11 +2396,17 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     /* 'Anatomical Entity': [
-                        { $group: { _id: '$datasetDetails.Anatomical Entity.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Anatomical Entity.label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
                         { $sort: { count: -1 } }
                     ], */
                     'Organ Part': [
-                        { $group: { _id: '$datasetDetails.Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$datasetDetails.Organ Part.label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2410,7 +2416,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2420,7 +2426,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     'Disease Status (Specimen)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2430,15 +2436,21 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     /* 'Disease Status (Donor)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        }, 
                         { $sort: { count: -1 } }
                     ], */
                     // Documents facet for pagination
                     documents: [
                         // { $skip: (page - 1) * pageSize },
                         // { $limit: pageSize },
-                        {
-                            $project: {
+                        { $group: { 
+                            _id: {
                                 "Benchmarks ID": "$benchmarksId",
                                 Title: "$datasetDetails.Title",
                                 'Task': "$task_type",
@@ -2453,19 +2465,37 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                                 'Source': "$datasetDetails.Source",
                                 'Submission Date': "$datasetDetails.Submission Date",
                             }
+                         } },
+                        {
+                            $project: {
+                                _id: '$_id.Benchmarks ID',
+                                "Benchmarks ID": "$_id.Benchmarks ID",
+                                Title: "$_id.Title",
+                                'Task': "$_id.Task",
+                                Species: "$_id.Species",
+                                'Organ Part': "$_id.Organ Part",
+                                'Cell Count Estimate': "$_id.Cell Count Estimate",
+                                'Development Stage': "$_id.Development Stage",
+                                // 'Anatomical Entity': "$_id.Anatomical Entity",
+                                // 'Disease Status (Donor)': "$_id.Disease Status (Donor)",
+                                Author: "$_id.Author",
+                                TaskLabel: "$_id.TaskLabel",
+                                'Source': "$_id.Source",
+                                'Submission Date': "$_id.Submission Date",
+                            }
                         }
                     ]
                 }
             }
         ];
-        
-        
+
+
         const finalPipeline = basePipeline.concat(facetAndDocumentsPipeline);
-        
+
         const aggregatedResults = await tasksCollection.aggregate(finalPipeline).toArray();
 
         console.log(aggregatedResults);
-        
+
         // Extract the first (and only) element of the aggregatedResults, which contains your facets and documents
         const aggregationResult = aggregatedResults[0];
 
@@ -2494,7 +2524,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 pageCount: Math.ceil(totalTasksCount / pageSize),
                 totalCount: totalTasksCount,
             }
-        });    
+        });
     } catch (error) {
         console.error('API request failed:', error);
         res.status(500).send('An error occurred while fetching tasks.');
@@ -2504,6 +2534,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         }
     }
 });
+
 
 // app.post('/node/test', async (req, res) => {
 //   let client;
@@ -2734,27 +2765,28 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 
 // }
 
+
 app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
     let client;
     try {
-      client = new MongoClient(mongoUrl);
-      await client.connect();
-      const db = client.db(dbName);
-      let owner = req.user.username;
-      const {
-        q: globalSearchQuery,
-        page: queryPage = 1,
-        pageSize: queryPageSize = 10,
-        private: isPrivate,
-        public: isPublic,
-        shared: isShared
-      } = req.query;
+        client = new MongoClient(mongoUrl);
+        await client.connect();
+        const db = client.db(dbName);
+        let owner = req.user.username;
+        const {
+            q: globalSearchQuery,
+            page: queryPage = 1,
+            pageSize: queryPageSize = 10,
+            private: isPrivate,
+            public: isPublic,
+            shared: isShared
+        } = req.query;
 
-      const page = parseInt(queryPage, 10);
-      const pageSize = parseInt(queryPageSize, 10);
-      const filters = req.body.filters;
+        const page = parseInt(queryPage, 10);
+        const pageSize = parseInt(queryPageSize, 10);
+        const filters = req.body.filters;
 
-          //Update this field accordingly whenever you add a new facet 
+        //Update this field accordingly whenever you add a new facet 
         // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
         const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
@@ -2764,240 +2796,266 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             res.json({ message: "No action performed.", results: [], facets: {}, pagination: {} });
             return;
         }
-      let matchConditions = [];
-  
-      if (globalSearchQuery) {
-        matchConditions.push({
-            $or: [
-                { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
-                // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
-            ],
-        });
-    }
+        let matchConditions = [];
 
-    // Apply additional filters
-    if (filters) {
-        Object.keys(filters).forEach((filterCategory) => {
-            const filterValue = filters[filterCategory];
-            if (Array.isArray(filterValue) && filterValue.length > 0) {
-                let condition = {};
+        if (globalSearchQuery) {
+            matchConditions.push({
+                $or: [
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+                ],
+            });
+        }
 
-                // Check if the filter category should use the 'label' property
-                if (fieldsWithLabel.includes(filterCategory)) {
-                    condition[`${filterCategory}.label`] = { $in: filterValue };
-                } else {
-                    // Directly use the filter category for other fields
-                    condition[filterCategory] = { $in: filterValue };
+        // Apply additional filters
+        if (filters) {
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    let condition = {};
+
+                    // Check if the filter category should use the 'label' property
+                    if (fieldsWithLabel.includes(filterCategory)) {
+                        condition[`${filterCategory}.label`] = { $in: filterValue };
+                    } else {
+                        // Directly use the filter category for other fields
+                        condition[filterCategory] = { $in: filterValue };
+                    }
+
+                    // Add this condition to the matchConditions array
+                    matchConditions.push(condition);
                 }
+            });
+        }
 
-                // Add this condition to the matchConditions array
-                matchConditions.push(condition);
+        let categoryConditions = [];
+
+        if (isPublic === 'true') {
+            categoryConditions.push({ 'Category': 'Public' });
+        }
+        if (isPrivate === 'true') {
+            categoryConditions.push({ 'Owner': owner });
+        }
+        if (isShared === 'true') {
+            categoryConditions.push({ 'Category': 'Shared' });
+        }
+
+        // Now, use $or to apply these category conditions if more than one flag is true
+        if (categoryConditions.length > 0) {
+            matchConditions.push({ $or: categoryConditions });
+        }
+
+        // Determine the initial collection based on flags
+        let initialCollectionName;
+
+        if (isPublic === 'true') {
+            initialCollectionName = datasetCollection;
+        } else if (isPrivate === 'true' || isShared === 'true') {
+            initialCollectionName = userDatasetsCollection;
+        }
+
+
+        let matchStage = {};
+        if (matchConditions.length > 0) {
+            matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+        }
+        // Initial aggregation pipeline
+        let pipeline = [
+            { $match: matchStage },
+            { $unwind: '$Selected Cell Types' },
+            { $unwind: '$Disease Status (Specimen)' },
+            {
+                $facet: {
+                    // totalCount: [{ $count: "total" }],
+                    documents: [
+                        {
+                            $group: {
+                                _id: {
+                                    Title: "$Title",
+                                    Id: "$Id",
+                                    Category: "$Category",
+                                    Owner: "$Owner",
+                                    Species: "$Species.label",
+                                    'Organ Part': "$Organ Part.label",
+                                    'Cell Count Estimate': "$Cell Count Estimate",
+                                    'Development Stage': "$Development Stage",
+                                    // 'Disease Status (Specimen)': "$Disease Status (Specimen).label",
+                                    // 'Anatomical Entity': "$Anatomical Entity.label",
+                                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
+                                    Author: "$Author",
+                                    'Source': "$Source",
+                                    'Submission Date': "$Submission Date",
+                                    'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
+                                    'adata_path': "$adata_path",
+                                    'process_ids': "$process_ids"
+                                }, 
+                                uniqueValues: { $addToSet: '$Id' }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: "$_id.Id",
+                                Title: "$_id.Title",
+                                Id: "$_id.Id",
+                                Category: "$_id.Category",
+                                Owner: "$_id.Owner",
+                                Species: "$_id.Species.label",
+                                'Organ Part': "$_id.Organ Part.label",
+                                'Cell Count Estimate': "$_id.Cell Count Estimate",
+                                'Development Stage': "$_id.Development Stage",
+                                // 'Disease Status (Specimen)': "$_id.Disease Status (Specimen).label",
+                                // 'Anatomical Entity': "$Anatomical Entity.label",
+                                // 'Disease Status (Donor)': "$Disease Status (Donor).label",
+                                Author: "$_id.Author",
+                                'Source': "$_id.Source",
+                                'Submission Date': "$_id.Submission Date",
+                                'inputFiles': "$_id.inputFiles",// We want inputFiles to read data from tools page
+                                'adata_path': "$_id.adata_path",
+                                'process_ids': "$_id.process_ids",
+                                totalCount: { $size: "$uniqueValues" }
+                            }
+                        }
+                    ],
+                    // Each facet is directly within $facet and maps to its pipeline
+                    'Species': [
+                        { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Category': [
+                        { $group: { _id: '$Category', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Author': [
+                        { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Anatomical Entity': [
+                    //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                    // More facets as per your requirement
+                    'Organ Part': [
+                        { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Specimen)': [
+                        { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Disease Status (Donor)': [
+                    //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                }
+            }
+        ];
+
+
+        // If both flags are true, use $unionWith to combine collections
+        if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
+            pipeline.unshift({
+                $unionWith: {
+                    coll: userDatasetsCollection,
+                }
+            });
+            // pipeline.push({ $group: { _id: "$Id" }});
+            initialCollectionName = datasetCollection; // Start with the "public" datasets collection
+        }
+
+        const collection = db.collection(initialCollectionName);
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Assuming the first element contains the desired structure
+        const data = result[0];
+        const totalCount = data.documents[0].totalCount ? data.documents[0].totalCount.total : 0;
+
+        // Extract and transform facets, excluding facets that would result in an empty array
+        const facets = Object.keys(data)
+            .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+            .reduce((acc, key) => {
+                // Check if data[key] exists, is an array, and has length before mapping
+                if (Array.isArray(data[key]) && data[key].length > 0) {
+                    acc[key] = data[key].map(facet => ({
+                        _id: facet._id, // Assuming each object has an _id field
+                        count: facet.count // Assuming each object has a count field
+                    }));
+                }
+                // If data[key] doesn't exist, isn't an array, or is empty, it's not included
+                return acc;
+            }, {});
+
+
+        res.json({
+            results: data.documents,
+            facets: facets,
+            pagination: {
+                totalCount: totalCount,
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalCount / pageSize),
             }
         });
-    }
-
-    let categoryConditions = [];
-
-    if (isPublic === 'true') {
-        categoryConditions.push({ 'Category': 'Public' });
-    }
-    if (isPrivate === 'true') {
-        categoryConditions.push({ 'Owner': owner});
-    }
-    if (isShared === 'true') {
-        categoryConditions.push({ 'Category': 'Shared' });
-    }
-    
-    // Now, use $or to apply these category conditions if more than one flag is true
-    if (categoryConditions.length > 0) {
-        matchConditions.push({ $or: categoryConditions });
-    }
-
-    // Determine the initial collection based on flags
-    let initialCollectionName;
-    
-    if (isPublic === 'true') {
-        initialCollectionName = datasetCollection;
-    } else if (isPrivate === 'true' || isShared === 'true') {
-        initialCollectionName = userDatasetsCollection;
-    }
-
-
-    let matchStage = {};
-    if (matchConditions.length > 0) {
-        matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
-    }
-      // Initial aggregation pipeline
-      let pipeline = [
-        { $match: matchStage },
-        { $unwind: '$Selected Cell Types' },
-        { $unwind: '$Disease Status (Specimen)' },
-        { 
-          $facet: {
-            totalCount: [{ $count: "total" }],
-            documents: [
-            //   { $skip: (page - 1) * pageSize }, 
-            //   { $limit: pageSize },
-              { $project: {
-                    Title: "$Title",
-                    Id: "$Id",
-                    Category: "$Category",
-                    Owner: "$Owner",
-                    Species: "$Species.label",
-                    'Organ Part': "$Organ Part.label",
-                    'Cell Count Estimate': "$Cell Count Estimate",
-                    'Development Stage': "$Development Stage",
-                    'Disease Status (Specimen)': "$Disease Status (Specimen).label",
-                    // 'Anatomical Entity': "$Anatomical Entity.label",
-                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
-                    Author: "$Author",
-                    'Source': "$Source",
-                    'Submission Date': "$Submission Date",
-                    'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
-                    'adata_path': "$adata_path",
-                    'process_ids':"$process_ids"
-                }
-              }
-            ],
-            // Each facet is directly within $facet and maps to its pipeline
-            'Species': [
-                { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            'Category': [
-                { $group: { _id: '$Category', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            'Author': [
-                { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            // 'Anatomical Entity': [
-            //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
-            //     { $sort: { count: -1 } }
-            // ],
-            // More facets as per your requirement
-            'Organ Part': [
-                { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            'Selected Cell Types': [
-                { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            'Disease Status (Specimen)': [
-                { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-            ],
-            // 'Disease Status (Donor)': [
-            //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
-            //     { $sort: { count: -1 } }
-            // ],
-          }
-        }
-      ];
-
-
-      // If both flags are true, use $unionWith to combine collections
-      if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
-        pipeline.unshift({
-          $unionWith: {
-            coll: userDatasetsCollection,
-          }
-        });
-        // pipeline.push({ $group: { _id: "$Id" }});
-        initialCollectionName = datasetCollection; // Start with the "public" datasets collection
-      }
-  
-      const collection = db.collection(initialCollectionName);
-      
-      const result = await collection.aggregate(pipeline).toArray();
-  
-      // Assuming the first element contains the desired structure
-      const data = result[0];
-      const totalCount = data.totalCount[0] ? data.totalCount[0].total : 0;
-       
-    // Extract and transform facets, excluding facets that would result in an empty array
-    const facets = Object.keys(data)
-    .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
-    .reduce((acc, key) => {
-        // Check if data[key] exists, is an array, and has length before mapping
-        if (Array.isArray(data[key]) && data[key].length > 0) {
-            acc[key] = data[key].map(facet => ({
-                _id: facet._id, // Assuming each object has an _id field
-                count: facet.count // Assuming each object has a count field
-            }));
-        }
-        // If data[key] doesn't exist, isn't an array, or is empty, it's not included
-        return acc;
-    }, {});
-
-  
-      res.json({
-        results: data.documents,
-        facets: facets,
-        pagination: {
-          totalCount: totalCount,
-          page,
-          pageSize,
-          pageCount: Math.ceil(totalCount / pageSize),
-        }
-      });
     } catch (error) {
-      console.error('Search failed:', error);
-      res.status(500).send('An error occurred while searching.');
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while searching.');
     } finally {
-      if (client) {
-        await client.close();
-      }
+        if (client) {
+            await client.close();
+        }
     }
-  });
+});
 
-  // API endpoint to get process results based on an array of process_ids
-  app.post('/node/getPreProcessResults', async (req, res) => {
+
+// API endpoint to get process results based on an array of process_ids
+app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
     let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata: 1, default_assay: 1, assay_names: 1, evaluation_results: 1 };
     try {
