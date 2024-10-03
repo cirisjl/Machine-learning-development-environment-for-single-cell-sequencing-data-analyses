@@ -4,7 +4,7 @@ import axios from 'axios';
 import { NODE_API_URL } from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
-import { Card, CardContent, Typography } from '@material-ui/core';
+import {Card, CardContent, Typography ,List, ListItem, ListItemText } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';
@@ -158,7 +158,7 @@ const DatasetInfoComponent = () => {
                 <React.Fragment>
                   <Card className="dataset-info-results">
                     <CardContent>
-                      <Typography variant="body2">PreProcess Results for {detail.datasetId}</Typography>
+                      {/* <Typography variant="body2">PreProcess Results for {detail.datasetId}</Typography> */}
                         <div>
                             {detail.preProcessResults.length > 0 ? (
                                 detail.preProcessResults.map((preProcessResult, index) => (
@@ -167,9 +167,34 @@ const DatasetInfoComponent = () => {
                                             <Typography>{preProcessResult.description}</Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>
-                                            <Typography>
-                                                
-                                            </Typography>
+                                            <Descriptions title="Pre Process Result" bordered column={1}>
+                                                <Descriptions.Item label="Description">{preProcessResult.description}</Descriptions.Item>
+                                                <Descriptions.Item label="Stage">{preProcessResult.stage}</Descriptions.Item>
+                                                <Descriptions.Item label="Process">{preProcessResult.process}</Descriptions.Item>
+                                                <Descriptions.Item label="Method">{preProcessResult.method}</Descriptions.Item>
+                                                <Descriptions.Item label="Parameters">
+                                                <Card sx={{ maxWidth: 600, margin: '20px auto' }}>
+                                                    <CardContent>
+                                                        <List>
+                                                        {Object.entries(preProcessResult.parameters).map(([key, value]) => (
+                                                            <ListItem key={key} divider>
+                                                            <ListItemText
+                                                                primary={key}
+                                                                secondary={String(value)}
+                                                                primaryTypographyProps={{ variant: 'body1', fontWeight: 'bold' }}
+                                                                secondaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                            />
+                                                            </ListItem>
+                                                        ))}
+                                                        </List>
+                                                    </CardContent>
+                                                </Card>
+                                                </Descriptions.Item>
+                                                <Descriptions.Item label="Files"></Descriptions.Item>
+                                            </Descriptions>
+                                            <div>
+                                                <p>Plots: </p>
+                                            </div>
                                         </AccordionDetails>
                                     </Accordion>
                                 ))
