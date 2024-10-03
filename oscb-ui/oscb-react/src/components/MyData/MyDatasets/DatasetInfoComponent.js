@@ -9,14 +9,14 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';
 import BenchmarksPlots from '../../publishDatasets/components/benchmarksPlots';
-import DatasetDetailsTable from './DatasetDetailsTable';
-import TaskInfoTable
- from './TaskInfoTable';
 import RightRail from '../../RightNavigation/rightRail';
-const BenchmarksViewDetailsComponent = () => {
+import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
+
+
+const DatasetInfoComponent = () => {
   const location = useLocation();
-  const [benchmarksId, setBenchmarksId] = useState(null);
-  const [benchmarksDetails, setBenchmarksDetails] = useState([]);
+  const [datasetId, setDatasetId] = useState(null);
+  const [datasetDetails, setDatasetDetails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
@@ -24,8 +24,7 @@ const BenchmarksViewDetailsComponent = () => {
 
   const [sectionsVisibility, setSectionsVisibility] = useState({
     metadataInfo: true,
-    taskInfo: true,
-    benchmarks: true,
+    preprocessResults: true
   });
 
   const toggleSectionVisibility = (section) => {
@@ -37,22 +36,22 @@ const BenchmarksViewDetailsComponent = () => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const id = queryParams.get('benchmarksId');
-    setBenchmarksId(id);
+    const id = queryParams.get('datasetId');
+    setDatasetId(id);
 
     if (id) {
-      // Fetch the dataset based on benchmarksId using axios
-      axios.post(`${NODE_API_URL}/single/getBenchmarksResultsWithDatasetDetails`, { benchmarksId: id })
+      // Fetch the dataset based on datasetId using axios
+      axios.post(`${NODE_API_URL}/item/getDatasetInfoWithPreProcessResults`, { datasetId: id })
         .then(response => {
-          setBenchmarksDetails(response.data);
-          setMessage(`Successfully fetched details for the benchmarks ID - ${id}.`);
+          setDatasetDetails(response.data);
+          setMessage(`Successfully fetched details for the dataset ID - ${id}.`);
           setHasMessage(true);
           setIsError(false);
           setLoading(false);
         })
         .catch(error => {
-          console.error(`Error fetching benchmarks details for benchmark ID - ${id}:`, error);
-          setMessage(`Error fetching benchmarks details for benchmark ID - ${id}.`);
+          console.error(`Error fetching dataset details for dataset ID - ${id}:`, error);
+          setMessage(`Error fetching dataset details for dataset ID - ${id}.`);
           setHasMessage(true);
           setIsError(true);
           setLoading(false);
@@ -71,14 +70,14 @@ const BenchmarksViewDetailsComponent = () => {
   }
 
   return (
-    <div className="single-benchmark-details-page eighty-twenty-grid">
+    <div className="single-dataset-details-page eighty-twenty-grid">
         <div className="main-content">
       {hasMessage && (
         <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />
       )}
-      <h1>Details for BenchmarksId - {benchmarksId}</h1>
-      {benchmarksDetails.length > 0 ? (
-        benchmarksDetails.map((detail, index) => (
+      <h1>Details for dataset Id - {datasetId}</h1>
+      {datasetDetails.length > 0 ? (
+        datasetDetails.map((detail, index) => (
           <div key={index}>
             <div className='section'>
               <div className='section-heading' onClick={() => toggleSectionVisibility('metadataInfo')}>
@@ -90,7 +89,7 @@ const BenchmarksViewDetailsComponent = () => {
                 </span>
               </div>
               <div className='section-content' style={{ display: sectionsVisibility.metadataInfo ? 'block' : 'none' }}>
-                <Card className="benchmarks-results">
+                <Card className="dataset-info-results">
                   <CardContent>
                     <DatasetDetailsTable 
                       datasetDetails={detail.datasetDetails} 
@@ -102,44 +101,23 @@ const BenchmarksViewDetailsComponent = () => {
               </div>
             </div>
             <div className='section'>
-              <div className='section-heading' onClick={() => toggleSectionVisibility('taskInfo')}>
-                <h3>Task Info</h3>
-                <span className="category-icon">
-                  <FontAwesomeIcon
-                    icon={sectionsVisibility.taskInfo ? faAngleDown : faAngleRight}
-                  />
-                </span>
-              </div>
-              <div className='section-content' style={{ display: sectionsVisibility.taskInfo ? 'block' : 'none' }}>
-                <Card className="benchmarks-results">
-                  <CardContent>
-                    <TaskInfoTable 
-                      detail={detail} 
-                      downloadFile={downloadFile} 
-                      getFileNameFromURL={getFileNameFromURL} 
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-            <div className='section'>
-              <div className='section-heading' onClick={() => toggleSectionVisibility('benchmarks')}>
+              <div className='section-heading' onClick={() => toggleSectionVisibility('preprocessResults')}>
                 <h3>Benchmarks</h3>
                 <span className="category-icon">
                   <FontAwesomeIcon
-                    icon={sectionsVisibility.benchmarks ? faAngleDown : faAngleRight}
+                    icon={sectionsVisibility.preprocessResults ? faAngleDown : faAngleRight}
                   />
                 </span>
               </div>
-              <div className='section-content' style={{ display: sectionsVisibility.benchmarks ? 'block' : 'none' }}>
+              <div className='section-content' style={{ display: sectionsVisibility.preprocessResults ? 'block' : 'none' }}>
                 <React.Fragment>
                   <Card className="benchmarks-results">
                     <CardContent>
-                      <Typography variant="body2">Benchmark Results for {detail.datasetId}</Typography>
-                      <BenchmarksPlots
+                      <Typography variant="body2">PreProcess Results for {detail.datasetId}</Typography>
+                      {/* <BenchmarksPlots
                         benchmarksPlot={detail.benchmarks_plot}
                         utilizationPlot={detail.utilization_plot}
-                      />
+                      /> */}
                     </CardContent>
                   </Card>
                 </React.Fragment>
@@ -161,4 +139,4 @@ const BenchmarksViewDetailsComponent = () => {
   );
 };
 
-export default BenchmarksViewDetailsComponent;
+export default DatasetInfoComponent;

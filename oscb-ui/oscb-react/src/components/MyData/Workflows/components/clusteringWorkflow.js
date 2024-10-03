@@ -132,7 +132,6 @@ export function ClusteringWorkFlowComponent(props) {
             formData.userID = authData.username;
             console.log("Adding user data");
             if(Object.keys(selectedDatasets).length > 0) {
-              console.log("Inside if");
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset
               formData.dataset = dataset.Title;
               if (dataset.inputFiles.length > 1) {
@@ -170,6 +169,7 @@ export function ClusteringWorkFlowComponent(props) {
               setHasMessage(true);
               setMessage(response.status ? response.status : "Job Successfully Submitted.");
               setIsError(false);
+              navigate("/mydata/taskDetails", { state: { job_id: jobId, method: "", datasetURL: formData.input, description: "Clustering workflow", process: "Clustering" } });
               // let datasetName = "";
               // if (typeof formData.dataset === 'string') {
               //   datasetName = formData.dataset

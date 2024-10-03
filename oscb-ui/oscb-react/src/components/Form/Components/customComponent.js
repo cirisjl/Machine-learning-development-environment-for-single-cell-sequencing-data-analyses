@@ -1,11 +1,9 @@
 import React, { Component , useEffect} from 'react';
-import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { NODE_API_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
-import AccessDenied from '../../AccessDeniedPage';
 
 class MyForm extends Component {
   constructor(props) {
@@ -116,33 +114,39 @@ class MyForm extends Component {
   
 
   handleCreateOption = (fieldName, inputValue) => {
-
-      // Check if the option has already been created to prevent duplicate calls
-      if (!this.optionAlreadyCreated(fieldName, inputValue)) {
-        this.addNewOptionToMongoDB(fieldName, inputValue);
-      }
-      this.setState((prevState) => {
-        const newOption = { value: inputValue, label: inputValue };
-        const updatedOptions = { ...prevState.options };
-        updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
-    
-        const updatedFormData = {
-          ...prevState.formData,
-          [fieldName]: newOption,
-        };
-
-        const updatedNewOptions = [
-          ...prevState.newOptions,
-          { field: fieldName, name: inputValue },
-        ];
-
-        return {
-          options: updatedOptions,
-          formData: updatedFormData,
-          newOptions: updatedNewOptions,
-        };
-      });
+    // Check if the option has already been created to prevent duplicate calls
+    if (!this.optionAlreadyCreated(fieldName, inputValue)) {
+      this.addNewOptionToMongoDB(fieldName, inputValue);
+    }
+  
+    this.setState((prevState) => {
+      const newOption = { value: inputValue, label: inputValue };
+      const updatedOptions = { ...prevState.options };
+      updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+  
+      // Determine if the field should be treated as an array or a single value field
+      const isArrayField = Array.isArray(prevState.formData[fieldName]);
+  
+      const updatedFormData = {
+        ...prevState.formData,
+        [fieldName]: isArrayField
+          ? [...(prevState.formData[fieldName] || []), newOption] // Append to array field
+          : newOption, // Set as single value for non-array field
+      };
+  
+      const updatedNewOptions = [
+        ...prevState.newOptions,
+        { field: fieldName, name: inputValue },
+      ];
+  
+      return {
+        options: updatedOptions,
+        formData: updatedFormData,
+        newOptions: updatedNewOptions,
+      };
+    });
   };
+  
 
   optionAlreadyCreated = (fieldName, inputValue) => {
     return this.state.newOptions.some(
@@ -623,7 +627,6 @@ class MyForm extends Component {
               isMulti
               value={formData['Selected Cell Types']}
               isClearable
-              isSearchable
               required
               isLoading={isLoading}
               onChange={(selectedOptions) => this.handleMultiSelectChange('Selected Cell Types', selectedOptions)} // Use handleSelectChange              
@@ -714,7 +717,6 @@ class MyForm extends Component {
               value={formData['Disease Status (Specimen)']}
               isMulti
               isClearable
-              isSearchable
               isLoading={isLoading}
               onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Specimen)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
@@ -734,7 +736,6 @@ class MyForm extends Component {
               value={formData['Disease Status (Donor)']}
               isMulti
               isClearable
-              isSearchable
               isLoading={isLoading}
               onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Donor)', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Donor)', inputValue)}
@@ -751,7 +752,6 @@ class MyForm extends Component {
               value={formData['Development Stage']}
               isMulti
               isClearable
-              isSearchable
               isLoading={isLoading}
               onChange={(selectedOptions) => this.handleMultiSelectChange('Development Stage', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}

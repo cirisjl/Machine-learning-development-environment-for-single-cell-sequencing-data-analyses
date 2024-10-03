@@ -18,7 +18,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -74,20 +74,20 @@ function verifyToken(req, res, next) {
 const verifyJWTToken = (req, res, next) => {
     const bearerHeader = req.headers['authorization'];
     if (bearerHeader) {
-      const bearerToken = bearerHeader.split(' ')[1];
-      jwt.verify(bearerToken, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-          return res.status(403).send({ message: 'Failed to authenticate token.' });
-        }
-        // If token is successfully verified, you can attach decoded info to request
-        req.user = decoded;
-        next();
-      });
+        const bearerToken = bearerHeader.split(' ')[1];
+        jwt.verify(bearerToken, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(403).send({ message: 'Failed to authenticate token.' });
+            }
+            // If token is successfully verified, you can attach decoded info to request
+            req.user = decoded;
+            next();
+        });
     } else {
-      // If no token is provided
-      res.status(403).send({ message: 'No token provided.' });
+        // If no token is provided
+        res.status(403).send({ message: 'No token provided.' });
     }
-  };
+};
 
 function getUserFromToken(token) {
     if (typeof token !== 'string') {
@@ -108,63 +108,63 @@ function getUserFromToken(token) {
 }
 const createDirectoryIfNotExists = async (dirPath) => {
     try {
-      await fs.mkdir(dirPath, { recursive: true });
-      console.log(`Directory "${dirPath}" created successfully.`);
+        await fs.mkdir(dirPath, { recursive: true });
+        console.log(`Directory "${dirPath}" created successfully.`);
     } catch (err) {
-      if (err.code !== 'EEXIST') {
-        console.error('Error creating the directory:', err);
-      }
+        if (err.code !== 'EEXIST') {
+            console.error('Error creating the directory:', err);
+        }
     }
-  };
+};
 
 const createUniqueFolder = (destinationDir, folderName, index = 1) => {
-    const targetFolderName = index === 1 ?  path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
+    const targetFolderName = index === 1 ? path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
     const targetFolderPath = path.join(__dirname, targetFolderName);
-  
+
     if (!fs.existsSync(targetFolderPath)) {
-      try {
-        fs.mkdirSync(targetFolderPath);
-        console.log(`Directory "${targetFolderName}" created successfully.`);
-        return targetFolderName;
-      } catch (err) {
-        console.error('Error creating the directory:', err);
-        return null;
-      }
+        try {
+            fs.mkdirSync(targetFolderPath);
+            console.log(`Directory "${targetFolderName}" created successfully.`);
+            return targetFolderName;
+        } catch (err) {
+            console.error('Error creating the directory:', err);
+            return null;
+        }
     } else {
-      return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
+        return createUniqueFolder(destinationDir, folderName, index + 1); // Try with the next index
     }
-  };
+};
 
 // Function to copy files from source directory to destination directory
 const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
     try {
 
-  
-      for (let file of files) {
-        const sourceFilePath = path.join(sourceDir, file);
-        let destinationFilePath = "";
-        if(fromPublic) {
-            file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
-            destinationFilePath = path.join(destinationDir, file);
-        } else {
-            destinationFilePath = path.join(destinationDir, file);
+
+        for (let file of files) {
+            const sourceFilePath = path.join(sourceDir, file);
+            let destinationFilePath = "";
+            if (fromPublic) {
+                file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
+                destinationFilePath = path.join(destinationDir, file);
+            } else {
+                destinationFilePath = path.join(destinationDir, file);
+            }
+
+            const sourceFileDir = path.dirname(sourceFilePath);
+            const destinationFileDir = path.dirname(destinationFilePath);
+
+            // Ensure the destination directory exists before copying files
+            await createDirectoryIfNotExists(destinationFileDir);
+
+            // Perform the actual file copy
+            await fs.copyFile(sourceFilePath, destinationFilePath);
         }
-
-        const sourceFileDir = path.dirname(sourceFilePath);
-        const destinationFileDir = path.dirname(destinationFilePath);
-  
-        // Ensure the destination directory exists before copying files
-        await createDirectoryIfNotExists(destinationFileDir);
-
-        // Perform the actual file copy
-        await fs.copyFile(sourceFilePath, destinationFilePath);
-      }
     } catch (error) {
-      console.error('Error copying files:', error);
+        console.error('Error copying files:', error);
     }
-  };
+};
 
-  app.post('/node/copyFiles', async (req, res) => {
+app.post('/node/copyFiles', async (req, res) => {
 
     const { selectedFiles, userId } = req.body;
 
@@ -173,43 +173,43 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
         let dirName = ""
 
         // Logic to Copy files from public storage to user private storage if it is a public Dataset.
-        for (const file of selectedFiles) {                      
-          if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
-              filesFromPublic = true;
-              break;
-          }
-      }
-  
-      if(filesFromPublic) {
-  
-          if (selectedFiles.length > 0) {
-              dirName = path.dirname(selectedFiles[0])
-          } 
-  
-          let userPrivateStorageDir = storageDir + userId // Change this to the user's private storage path
-  
-          // Copy files from public dataset directory to user's private storage
-          copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, selectedFiles, filesFromPublic);
-          res.json({ status: 200, message: 'Files copied successfully' });
-      }
+        for (const file of selectedFiles) {
+            if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+                filesFromPublic = true;
+                break;
+            }
+        }
+
+        if (filesFromPublic) {
+
+            if (selectedFiles.length > 0) {
+                dirName = path.dirname(selectedFiles[0])
+            }
+
+            let userPrivateStorageDir = storageDir + userId // Change this to the user's private storage path
+
+            // Copy files from public dataset directory to user's private storage
+            copyFiles("/usr/src/app/storage/", userPrivateStorageDir, dirName, selectedFiles, filesFromPublic);
+            res.json({ status: 200, message: 'Files copied successfully' });
+        }
     } catch (error) {
         res.json({ status: 500, message: 'Error while copying files from source to destination' });
     }
-  });
+});
 
-  // Refresh token endpoint
+// Refresh token endpoint
 app.get('/node/refresh-token', verifyToken, (req, res) => {
     jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
-        if(err) {
+        if (err) {
             res.sendStatus(403);
         } else {
-            if(authData.username !== null && authData.username !== undefined) {
-                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
-                res.cookie('jwtToken', newToken, { maxAge: 60 * 60 * 1000, path:"/" });
-                res.json({ status:200, message: 'Token refreshed', token: newToken });
+            if (authData.username !== null && authData.username !== undefined) {
+                const newToken = jwt.sign({ username: authData.username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+                res.cookie('jwtToken', newToken, { maxAge: 60 * 60 * 1000, path: "/" });
+                res.json({ status: 200, message: 'Token refreshed', token: newToken });
             }
         }
-    })    
+    })
 });
 
 // Route to handle user signup
@@ -238,7 +238,7 @@ app.post('/node/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+                    const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -292,7 +292,7 @@ app.post('/node/login', (req, res) => {
             }
 
             // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+            const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
             // the cookie will be set with the name "jwtToken" and the value of the token
             // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -312,18 +312,18 @@ app.post('/node/login', (req, res) => {
 
 
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST, 
-    port: process.env.EMAIL_PORT,  
-    secure: true,  
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: true,
     auth: {
-      user: process.env.EMAIL_ACCOUNT, 
-      pass: process.env.EMAIL_PWD  
+        user: process.env.EMAIL_ACCOUNT,
+        pass: process.env.EMAIL_PWD
     },
     tls: {
-      rejectUnauthorized: false  
+        rejectUnauthorized: false
     }
-  });
-  const sendResetPasswordEmail = (email, resetToken) => {
+});
+const sendResetPasswordEmail = (email, resetToken) => {
     const resetLink = `https://${process.env.HOST_URL}:3000/reset/${resetToken}`;
     const mailOptions = {
         from: process.env.EMAIL_ACCOUNT,
@@ -340,7 +340,7 @@ const transporter = nodemailer.createTransport({
     return transporter.sendMail(mailOptions);
 };
 
-  
+
 // Endpoint to handle forgot password
 app.post('/node/forgot-password', (req, res) => {
     const { email } = req.body;
@@ -381,7 +381,7 @@ app.post('/node/forgot-password', (req, res) => {
 
 app.post('/node/reset-password', (req, res) => {
     const { token, newPassword, confirmPassword } = req.body;
-    console.log("resetpass",newPassword);
+    console.log("resetpass", newPassword);
 
     // Validate token and ensure passwords match
     if (!token || !newPassword || newPassword !== confirmPassword) {
@@ -399,7 +399,7 @@ app.post('/node/reset-password', (req, res) => {
         }
 
         const userId = results[0].user_id;
-        console.log("userid",userId);
+        console.log("userid", userId);
         // const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hash the new password
         // pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
         //     if (err) {
@@ -415,14 +415,14 @@ app.post('/node/reset-password', (req, res) => {
                 res.json({ status: 500, message: 'Internal Server Error' });
                 return;
             }
-    
+
             // Insert the user into the database
-                pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
-            if (err) {
-                console.error('Database update error:', err);
-                return res.status(500).json({ message: 'Datasbase error' });
-            }
-            res.json({ message: 'Password has been reset successfully. Redirecting to Login page...' }); 
+            pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
+                if (err) {
+                    console.error('Database update error:', err);
+                    return res.status(500).json({ message: 'Datasbase error' });
+                }
+                res.json({ message: 'Password has been reset successfully. Redirecting to Login page...' });
             });
         });
     });
@@ -456,18 +456,18 @@ app.get('/node/protected', verifyToken, (req, res) => {
                 pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
                     if (err) {
                         console.error(err);
-                        res.json({ message: 'Internal Server Error'});
+                        res.json({ message: 'Internal Server Error' });
                         return;
                     }
-            
+
                     if (results.length === 0) {
-                        res.json({ message: 'Invalid credentials'});
+                        res.json({ message: 'Invalid credentials' });
                         return;
                     }
-            
+
                     const adminFlag = results[0].isAdmin;
 
-                    authData.isAdmin = (adminFlag == 1) ? true: false;
+                    authData.isAdmin = (adminFlag == 1) ? true : false;
 
                     res.json({ message: 'You have access to the protected resource', authData });
                 });
@@ -485,18 +485,18 @@ app.post('/node/createDataset', async (req, res) => {
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-    
-        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+
+        if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
-        } 
+        }
 
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
@@ -550,8 +550,8 @@ app.post('/node/createDataset', async (req, res) => {
                         const datasetId = datasetResult.insertId;
 
                         for (let file of files) {
-                            if(filesFromPublic) {
-                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            if (filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/');
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
@@ -575,23 +575,23 @@ app.post('/node/createDataset', async (req, res) => {
         });
     });
 
-    if(makeItpublic) {
+    if (makeItpublic) {
         try {
             let dirName = "";
             const fromPublic = false;
             if (files.length > 0) {
                 dirName = path.dirname(files[0])
-            } 
+            }
 
             let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
             // Copy files from user's private storage to public dataset directory
             await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
 
-         } catch (err) {
+        } catch (err) {
             console.error(err);
         }
-      }
+    }
 });
 
 app.put('/node/updateDataset', async (req, res) => {
@@ -606,19 +606,19 @@ app.put('/node/updateDataset', async (req, res) => {
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
+        if (file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
 
 
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
             dirName = path.dirname(files[0])
-        } 
+        }
 
         let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
 
@@ -685,8 +685,8 @@ app.put('/node/updateDataset', async (req, res) => {
                             return res.status(500).send('Dataset update error');
                         }
                         for (let file of insertList) {
-                            if(filesFromPublic) {
-                                file = file.replace(/^\/?publicDatasets\//, '/'); 
+                            if (filesFromPublic) {
+                                file = file.replace(/^\/?publicDatasets\//, '/');
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
                         }
@@ -825,7 +825,7 @@ app.post('/node/renameFile', async (req, res) => {
             return res.status(409).json({ status: 409, message: 'Directory already exists' });
         } else {
             if (oldName.includes("publicDatasets") && newName.includes("publicDatasets")) {
-                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {    
+                fs.rename(`/usr/src/app/storage/${oldName}`, `/usr/src/app/storage/${newName}`, (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).json({ status: 500, message: 'Internal Server Error' });
@@ -835,7 +835,7 @@ app.post('/node/renameFile', async (req, res) => {
                     }
                 });
             } else {
-                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {    
+                fs.rename(`${storageDir}${uname}/${oldName}`, `${storageDir}${uname}/${newName}`, (err) => {
                     if (err) {
                         console.error(err);
                         return res.status(500).json({ status: 500, message: 'Internal Server Error' });
@@ -929,8 +929,8 @@ app.get('/node/download', async (req, res) => {
     if (!fileUrl) {
         return res.status(400).jsonp('Invalid request');
     }
-    
-    if(pwd && pwd.includes("publicDatasets")) {
+
+    if (pwd && pwd.includes("publicDatasets")) {
         filePath = path.join(storageDir, fileUrl);
     } else if (pwd && pwd.includes("jobResults")) {
         filePath = fileUrl;
@@ -970,7 +970,7 @@ app.get('/node/download', async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(400).jsonp(error);
-    } 
+    }
 });
 
 
@@ -1098,7 +1098,7 @@ app.delete('/node/deleteFiles', async (req, res) => {
                     return;
                 } else {
                     let filePath = ""
-                    if(pwd.includes("publicDatasets")) {
+                    if (pwd.includes("publicDatasets")) {
                         filePath = `${storageDir}${file}`;
                     } else {
                         filePath = `${storageDir}${uname}/${file}`;
@@ -1159,17 +1159,17 @@ app.get('/node/getDirContents', async (req, res) => {
         subdir = req.query.subdir;
         var directoryPath = ""
 
-        
+
         var directoryPath = path.join(storageDir + uid + "/" + dirPath + "/");
-        
+
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
 
-        if(dirPath == "publicDatasets") {
+        if (dirPath == "publicDatasets") {
             directoryPath = publicStorage;
         }
 
-        if(dirPath.includes("publicDatasets/")) {
+        if (dirPath.includes("publicDatasets/")) {
             directoryPath = "/usr/src/app/storage/" + dirPath;
         }
 
@@ -1181,7 +1181,7 @@ app.get('/node/getDirContents', async (req, res) => {
         } else {
             console.log(`Directory "${directoryPath}" already exists.`);
         }
-        
+
         const directoryContents = fs.readdirSync(directoryPath);
         const dirList = [];
         const fileList = [];
@@ -1213,12 +1213,12 @@ app.get('/node/getDirContents', async (req, res) => {
 
 
 app.post('/node/upload', async (req, res) => {
-    let { uploadDir, authToken ,publicDatasetFlag} = req.query;
+    let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
+    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir;
 
-    let tempDir = './uploads'; 
+    let tempDir = './uploads';
 
     let storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -1267,7 +1267,7 @@ app.post('/node/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
     let folderPath = ""
-    if(pwd.includes("publicDatasets")) {
+    if (pwd.includes("publicDatasets")) {
         folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
     } else {
         folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
@@ -1410,30 +1410,30 @@ app.get('/node/tools/leftnav', function (req, res) {
 
 app.post('/node/job/create', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    
+
     try {
         const date = new Date();
         const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
         const formData = req.body;
         formData.created_on = timestamp;
-        
+
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
 
         const collection = db.collection(jobsCollection);
-        
+
         await collection.insertOne(formData);
         console.log('Job is created successfully');
 
         res.status(200).json({ message: 'Job is created successfully' });
-        
+
     } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: err});
+        console.error('Error:', err);
+        res.status(500).json({ error: err });
     } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
+        // Ensure the client will close when you finish/error
+        await client.close();
     }
 });
 
@@ -1447,44 +1447,44 @@ app.get('/node/getTasks', async (req, res) => {
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
     try {
-      // Connect to the MongoDB server
-      await client.connect();
-      const db = client.db(dbName);
-  
-      // Get reference to the task_results collection
-      const collection = db.collection(jobsCollection);
-  
-      // Query documents from the collection
-      if (top === 0) {
-        const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray();
-        // Respond with the tasks data
-        const totalCount = await collection.countDocuments({ created_by: username });
-        res.status(200).json(
-            {
-                results: tasks,
-                pagination: {
-                    page,
-                    pageSize,
-                    pageCount: Math.ceil(totalCount / pageSize),
-                    totalCount
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+
+        // Get reference to the task_results collection
+        const collection = db.collection(jobsCollection);
+
+        // Query documents from the collection
+        if (top === 0) {
+            const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray();
+            // Respond with the tasks data
+            const totalCount = await collection.countDocuments({ created_by: username });
+            res.status(200).json(
+                {
+                    results: tasks,
+                    pagination: {
+                        page,
+                        pageSize,
+                        pageCount: Math.ceil(totalCount / pageSize),
+                        totalCount
+                    }
                 }
-            }
-        );
-      }
-      else{
-          const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(top).toArray();
-        // Respond with the tasks data
-        res.status(200).json(tasks);
-      }
-      
+            );
+        }
+        else {
+            const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(top).toArray();
+            // Respond with the tasks data
+            res.status(200).json(tasks);
+        }
+
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'An error occurred while fetching jobs' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'An error occurred while fetching jobs' });
     } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
+        // Ensure the client will close when you finish/error
+        await client.close();
     }
-  });
+});
 
 
 app.delete('/node/deleteJob', async (req, res) => {
@@ -1625,8 +1625,8 @@ app.get('/node/options', async (req, res) => {
         const db = client.db(dbName);
         const collection = db.collection(optionsCollectionName);
 
-         // Define the unique compound index on 'field' and 'name'
-         await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
 
         // Use the aggregation framework to group options by field
         const pipeline = [
@@ -1659,136 +1659,136 @@ app.get('/node/options', async (req, res) => {
 
 app.post('/node/submitDatasetMetadata', async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    
+
     try {
-    const formData = req.body; // This assumes you have middleware to parse JSON in the request body
-    const makeItpublic = formData.makeItpublic;
-    let files = formData.files;
-    let username = formData.Owner;
-    
-      // Connect to the MongoDB server
-      await client.connect();
-      const db = client.db(dbName);
+        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+        const makeItpublic = formData.makeItpublic;
+        let files = formData.files;
+        let username = formData.Owner;
 
-       const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
-    
-  
-  
-      // Check if a document with the provided Id already exists
-      const existingDocument = await collection.findOne({ Id: formData.Id });
-  
-      if (existingDocument) {
-        console.log('Document with Id already exists:', formData.Id);
-        res.status(400).json({ error: 'Document with the provided Id already exists' });
-      } else {
-        // Document with the provided Id does not exist, proceed with insertion
-        await collection.insertOne(formData);
-          console.log('Metadata is  submitted successfully');
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
 
-        if(makeItpublic) {
-            console.log("Transfering files from local to public folder");
-            try {
-                let dirName = "";
-                const fromPublic = false;
-                if (files && files.length > 0) {
-                    dirName = path.dirname(files[0])
-                } 
-    
-                let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
-    
-                // Copy files from user's private storage to public dataset directory
-                await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
-    
-             } catch (err) {
-                console.error(err);
-            }
-          }
-        res.status(200).json({ message: 'Metadata is submitted successfully' });
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
-    }
-  });
+        const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
 
 
-  app.post('/node/submitTaskMetadata', async (req, res) => {
-    const client = new MongoClient(mongoUrl);
-  
-    try {
-      await client.connect();
-      const db = client.db(dbName);
-      const collection = db.collection(benchmarksCollection);
-  
-      let documents = req.body;
-      // Ensure documents is always an array for consistency
-      if (!Array.isArray(documents)) {
-        documents = [documents];
-      }
-  
-      const updateResults = [];
-      for (const formData of documents) {
-        // // Check if a document with the provided Id already exists
-        // const existingDocument = await collection.findOne({ Id: formData.Id });
-  
-        // if (existingDocument) {
-        //   console.log('Document with Id already exists:', formData.Id);
-        //   updateResults.push({
-        //     Id: formData.Id,
-        //     status: 'error',
-        //     message: 'Document with the provided Id already exists',
-        //   });
-        // } else {
-        //   // Document with the provided Id does not exist, proceed with insertion
-        //   await collection.insertOne(formData);
-        //   console.log('Form data submitted successfully for Id:', formData.Id);
-        //   updateResults.push({
-        //     Id: formData.Id,
-        //     status: 'success',
-        //     message: 'Form data submitted successfully',
-        //   });
-        // }
-        const query = { benchmarksId: formData.Id };
-        const update = { $set: formData };
-        // const options = { upsert: true };
-        // await collection.updateOne(query, update, options);
-        await collection.updateOne(query, update);
-          console.log('Benchmarks submitted successfully for Id:', formData.Id);
 
-        updateResults.push({
-            Id: formData.Id,
-            status: 'success',
-            message: 'Benchmarks submitted successfully',
-        });
-      }
-  
-      // If handling multiple documents, you might want to aggregate results and respond accordingly
-      if (updateResults.length > 1) {
-        // Respond with the aggregated results for multiple documents
-        res.status(200).json(updateResults);
-      } else if (updateResults.length === 1) {
-        // For a single document, you can respond with the single result
-        const result = updateResults[0];
-        if (result.status === 'success') {
-          res.status(200).json({ message: result.message });
+        // Check if a document with the provided Id already exists
+        const existingDocument = await collection.findOne({ Id: formData.Id });
+
+        if (existingDocument) {
+            console.log('Document with Id already exists:', formData.Id);
+            res.status(400).json({ error: 'Document with the provided Id already exists' });
         } else {
-          res.status(400).json({ error: result.message });
+            // Document with the provided Id does not exist, proceed with insertion
+            await collection.insertOne(formData);
+            console.log('Metadata is  submitted successfully');
+
+            if (makeItpublic) {
+                console.log("Transfering files from local to public folder");
+                try {
+                    let dirName = "";
+                    const fromPublic = false;
+                    if (files && files.length > 0) {
+                        dirName = path.dirname(files[0])
+                    }
+
+                    let userPrivateStorageDir = storageDir + username // Change this to the user's private storage path
+
+                    // Copy files from user's private storage to public dataset directory
+                    await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
+
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            res.status(200).json({ message: 'Metadata is submitted successfully' });
         }
-      } else {
-        // No documents were processed
-        res.status(400).json({ error: 'No documents were submitted' });
-      }
     } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     } finally {
-      await client.close();
+        // Ensure the client will close when you finish/error
+        await client.close();
     }
-  });
-  
+});
+
+
+app.post('/node/submitTaskMetadata', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(benchmarksCollection);
+
+        let documents = req.body;
+        // Ensure documents is always an array for consistency
+        if (!Array.isArray(documents)) {
+            documents = [documents];
+        }
+
+        const updateResults = [];
+        for (const formData of documents) {
+            // // Check if a document with the provided Id already exists
+            // const existingDocument = await collection.findOne({ Id: formData.Id });
+
+            // if (existingDocument) {
+            //   console.log('Document with Id already exists:', formData.Id);
+            //   updateResults.push({
+            //     Id: formData.Id,
+            //     status: 'error',
+            //     message: 'Document with the provided Id already exists',
+            //   });
+            // } else {
+            //   // Document with the provided Id does not exist, proceed with insertion
+            //   await collection.insertOne(formData);
+            //   console.log('Form data submitted successfully for Id:', formData.Id);
+            //   updateResults.push({
+            //     Id: formData.Id,
+            //     status: 'success',
+            //     message: 'Form data submitted successfully',
+            //   });
+            // }
+            const query = { benchmarksId: formData.Id };
+            const update = { $set: formData };
+            // const options = { upsert: true };
+            // await collection.updateOne(query, update, options);
+            await collection.updateOne(query, update);
+            console.log('Benchmarks submitted successfully for Id:', formData.Id);
+
+            updateResults.push({
+                Id: formData.Id,
+                status: 'success',
+                message: 'Benchmarks submitted successfully',
+            });
+        }
+
+        // If handling multiple documents, you might want to aggregate results and respond accordingly
+        if (updateResults.length > 1) {
+            // Respond with the aggregated results for multiple documents
+            res.status(200).json(updateResults);
+        } else if (updateResults.length === 1) {
+            // For a single document, you can respond with the single result
+            const result = updateResults[0];
+            if (result.status === 'success') {
+                res.status(200).json({ message: result.message });
+            } else {
+                res.status(400).json({ error: result.message });
+            }
+        } else {
+            // No documents were processed
+            res.status(400).json({ error: 'No documents were submitted' });
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
 
 // API endpoint to get datasets
 app.get('/node/getDatasets', async (req, res) => {
@@ -1822,31 +1822,31 @@ app.post('/node/addNewOption', async (req, res) => {
         field: field,
         name: name,
         username: username
-    };  
+    };
     try {
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-      await client.connect();
-  
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-      
-    // Define the unique compound index on 'field' and 'name'
-    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
-  
-      // Insert the new option into the collection
-      const insertResult = await collection.insertOne(newOption);
-  
-      client.close();
-  
-      res.status(200).json({
-        message: `New option "${name}" added to MongoDB for field "${field}"`,
-        insertedId: insertResult.insertedId,
-      });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+        // Insert the new option into the collection
+        const insertResult = await collection.insertOne(newOption);
+
+        client.close();
+
+        res.status(200).json({
+            message: `New option "${name}" added to MongoDB for field "${field}"`,
+            insertedId: insertResult.insertedId,
+        });
     } catch (error) {
-      console.error('Error adding new option to MongoDB:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error adding new option to MongoDB:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 // Connect to MongoDB and retrieve options
 app.get('/node/groupedUserOptions', async (req, res) => {
@@ -1863,7 +1863,7 @@ app.get('/node/groupedUserOptions', async (req, res) => {
         const isAdmin = req.query.isAdmin;
 
         // Define the match stage of the aggregation pipeline
-        const matchStage = isAdmin=== 'true' ? {} : { username: username };
+        const matchStage = isAdmin === 'true' ? {} : { username: username };
 
         // Aggregation pipeline stages
         const pipeline = [
@@ -1871,7 +1871,7 @@ app.get('/node/groupedUserOptions', async (req, res) => {
             {
                 $group: {
                     _id: '$field',
-                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation:'$abbreviation' } },
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation: '$abbreviation' } },
                 },
             },
         ];
@@ -1898,35 +1898,35 @@ app.get('/node/groupedUserOptions', async (req, res) => {
 // Define a DELETE route to delete selected options
 app.delete('/node/deleteOptions', async (req, res) => {
     try {
-      const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
+        const optionIds = req.body.optionIds; // Assuming the request body contains an array of option IDs
 
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
 
-      // Connect to the MongoDB server
-      await client.connect();
+        // Connect to the MongoDB server
+        await client.connect();
 
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-  
-      // Convert optionIds to MongoDB ObjectIDs
-      const objectIds = optionIds.map(id => new ObjectId(id));
-  
-      // Delete the options with the specified ObjectIDs
-      const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
-  
-      client.close();
-  
-      if (deleteResult.deletedCount > 0) {
-        res.status(200).json({ message: 'Options deleted successfully' });
-      } else {
-        res.status(404).json({ message: 'Options not found' });
-      }
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Convert optionIds to MongoDB ObjectIDs
+        const objectIds = optionIds.map(id => new ObjectId(id));
+
+        // Delete the options with the specified ObjectIDs
+        const deleteResult = await collection.deleteMany({ _id: { $in: objectIds } });
+
+        client.close();
+
+        if (deleteResult.deletedCount > 0) {
+            res.status(200).json({ message: 'Options deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Options not found' });
+        }
     } catch (error) {
-      console.error('Error deleting options:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error deleting options:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  });
-  
+});
+
 
 // Define a route to handle adding a new option for Task field to MongoDB
 app.post('/node/addTaskOption', async (req, res) => {
@@ -1938,36 +1938,36 @@ app.post('/node/addTaskOption', async (req, res) => {
         name: name,
         username: username,
         abbreviation: abbreviation
-    };  
+    };
     try {
-      const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
-      await client.connect();
-  
-      const db = client.db(dbName);
-      const collection = db.collection(optionsCollectionName);
-      
-    // Define the unique compound index on 'field' and 'name'
-    await collection.createIndex({ field: 1, name: 1 }, { unique: true });
-  
-      // Insert the new option into the collection
-      const insertResult = await collection.insertOne(newOption);
-  
-      client.close();
-  
-      res.status(200).json({
-        message: `New option "${name}" added to MongoDB for field "${field}"`,
-        insertedId: insertResult.insertedId,
-      });
+        const client = new MongoClient(mongoUrl, { useUnifiedTopology: true });
+        await client.connect();
+
+        const db = client.db(dbName);
+        const collection = db.collection(optionsCollectionName);
+
+        // Define the unique compound index on 'field' and 'name'
+        await collection.createIndex({ field: 1, name: 1 }, { unique: true });
+
+        // Insert the new option into the collection
+        const insertResult = await collection.insertOne(newOption);
+
+        client.close();
+
+        res.status(200).json({
+            message: `New option "${name}" added to MongoDB for field "${field}"`,
+            insertedId: insertResult.insertedId,
+        });
     } catch (error) {
-      console.error('Error adding new option to MongoDB:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error adding new option to MongoDB:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 
-  //API to move files from one folder to another
-  app.post('/node/move-files', (req, res) => {
-      const { newDirectoryPath, isBenchmarks, jwtToken } = req.body;
+//API to move files from one folder to another
+app.post('/node/move-files', (req, res) => {
+    const { newDirectoryPath, isBenchmarks, jwtToken } = req.body;
     const username = getUserFromToken(jwtToken);
     let destinationPath = ""
     if (isBenchmarks) {
@@ -1978,22 +1978,22 @@ app.post('/node/addTaskOption', async (req, res) => {
     let sourcePath = `${storageDir}/tempStorage`;
 
     if (!fs.existsSync(destinationPath)) {
-      fs.mkdirSync(destinationPath, { recursive: true });
+        fs.mkdirSync(destinationPath, { recursive: true });
     }
-  
-    const files = fs.readdirSync(sourcePath);
-  
-    files.forEach((filename) => {
-      const sourcePathFile = path.join(sourcePath, filename);
-      const destinationPathFile = path.join(destinationPath, filename);
-      
-      fs.renameSync(sourcePathFile, destinationPathFile);
-    });
-  
-    res.sendStatus(200);
-  });
 
-  
+    const files = fs.readdirSync(sourcePath);
+
+    files.forEach((filename) => {
+        const sourcePathFile = path.join(sourcePath, filename);
+        const destinationPathFile = path.join(destinationPath, filename);
+
+        fs.renameSync(sourcePathFile, destinationPathFile);
+    });
+
+    res.sendStatus(200);
+});
+
+
 app.delete('/node/storage/delete-file', (req, res) => {
 
     try {
@@ -2002,10 +2002,10 @@ app.delete('/node/storage/delete-file', (req, res) => {
         const uname = getUserFromToken(authToken);
         if (uname == 'Unauthorized')
             return res.status(403).jsonp('Unauthorized');
-    
+
         let filepath = `${storageDir}/${newDirectoryPath}/${fileName}`;
-        
-    
+
+
         fs.unlink(filepath, (err) => {
             if (err) {
                 console.error("Error deleting file:", err);
@@ -2026,7 +2026,7 @@ app.post('/node/storage/renameFile', async (req, res) => {
         let { oldName } = req.query;
         let { newName } = req.query;
 
-        fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {    
+        fs.rename(`${storageDir}${oldName}`, `${storageDir}${newName}`, (err) => {
             if (err) {
                 console.error(err);
                 res.status(500).json({ error: 'Internal Server Error' });
@@ -2090,19 +2090,18 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 
         const db = client.db(dbName);
         const datasetType = req.query.datasetType; // New parameter
-        const collection = datasetType === "myDatasets" ?   db.collection(userDatasetsCollection)  : db.collection(datasetCollection);
+        const collection = datasetType === "myDatasets" ? db.collection(userDatasetsCollection) : db.collection(datasetCollection);
 
 
-      const page = parseInt(req.query.page, 10) || 1;
-      const pageSize = parseInt(req.query.pageSize, 10) || 10;
-      let globalSearchQuery = req.query.q; 
-      const filters = req.body.filters;
+        const page = parseInt(req.query.page, 10) || 1;
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+        let globalSearchQuery = req.query.q;
+        const filters = req.body.filters;
 
-      //Update this field accordingly whenever you add a new facet 
-      // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
-      const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
+        //Update this field accordingly whenever you add a new facet 
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
-      let matchConditions = [];
+        let matchConditions = [];
 
         // Add the global search query to the match conditions
         if (globalSearchQuery) {
@@ -2112,12 +2111,29 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
                     // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'Selected Cell Types': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
                 ],
             });
         }
+
 
         // Apply additional filters
         if (filters) {
@@ -2126,9 +2142,11 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
-                    // Check if the filter category should use the 'label' property
+                    // Check if the filter category should use the 'label' property for array of objects
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[filterCategory] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
                     } else {
                         // Directly use the filter category for other fields
                         condition[filterCategory] = { $in: filterValue };
@@ -2146,75 +2164,87 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
             matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
         }
 
-      // Define the pipeline for facets
-      const facetsPipeline = [
-        { $match: matchStage },
-        { $facet: {
-          'Species': [
-            { $group: { _id: '$Species.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Author': [
-            { $group: { _id: '$Author', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-        //   'Anatomical Entity': [
-        //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-        //   ],
-          'Organ Part': [
-            { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Selected Cell Types': [
-            { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-          'Disease Status (Specimen)': [
-            { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-          ],
-        //   'Disease Status (Donor)': [
-        //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-        //   ],
-          // ... add other facets here
-        }},
-      ];
-  
-      // Get the facets
-      const facetsResult = await collection.aggregate(facetsPipeline).toArray();
-  
-      // Pagination: Get total count for the query
-      const totalCount = await collection.countDocuments(matchStage);
-  
-      // Build the pipeline for search results with pagination
-      const searchResultsPipeline = [
-        { $match: matchStage },
-        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
-        // { $skip: (page - 1) * pageSize },
-        // { $limit: pageSize },
-      ];
-  
-      // Get the paginated search results
-      const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
-  
-      res.json({
-        facets: facetsResult[0],
-        results: searchResults,
-        pagination: {
-          page,
-          pageSize,
-          pageCount: Math.ceil(totalCount / pageSize),
-          totalCount
-        }
-      });
+        // Define the pipeline for facets
+        const facetsPipeline = [
+            { $match: matchStage },
+            {
+                $facet: {
+                    'Species': [
+                        { $group: { _id: '$Species.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Author': [
+                        { $group: { _id: '$Author', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Anatomical Entity': [
+                    //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, 
+                    //     { $sort: { count: -1 } }
+                    // ],
+                    'Organ Part': [
+                        { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $unwind: '$Selected Cell Types' }, // Unwind the array
+                        { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Specimen)': [
+                        { $unwind: '$Disease Status (Specimen)' }, // Unwind the array
+                        { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Disease Status (Donor)': [
+                    //     { $unwind: '$Disease Status (Donor)' }, // Unwind the array
+                    //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, 
+                    //     { $sort: { count: -1 } } 
+                    // ],
+                    // ... add other facets here
+                }
+            },
+        ];
+
+        // Get the facets
+        const facetsResult = await collection.aggregate(facetsPipeline).toArray();
+
+        // Pagination: Get total count for the query
+        const totalCount = await collection.countDocuments(matchStage);
+
+        // Build the pipeline for search results with pagination
+        const searchResultsPipeline = [
+            { $match: matchStage },
+            // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_obs:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
+            // { $skip: (page - 1) * pageSize },
+            // { $limit: pageSize },
+        ];
+
+        // Get the paginated search results
+        const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
+
+        res.json({
+            facets: facetsResult[0],
+            results: searchResults,
+            pagination: {
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalCount / pageSize),
+                totalCount
+            }
+        });
     } catch (error) {
-      console.error('Search failed:', error);
-      res.status(500).send('An error occurred while searching.');
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while searching.');
     } finally {
         // Ensure the MongoDB client is always closed, even if an error occurs
         if (client) {
-          await client.close();
+            await client.close();
         }
-      }
-  });
+    }
+});
 
 
-  app.post('/node/tasks/search', async (req, res) => {
+app.post('/node/tasks/search', async (req, res) => {
     let client;
     try {
         client = new MongoClient(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -2228,7 +2258,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         const pageSize = parseInt(req.query.pageSize, 10) || 10;
         const globalSearchQuery = req.query.q || '';
         const filters = req.body.filters;
-      
+
         //Update this field accordingly whenever you add a new facet 
         // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
         const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
@@ -2248,9 +2278,25 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
                     // { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'datasetDetails.Selected Cell Types': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'datasetDetails.Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'datasetDetails.Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
                 ]
             });
         }
@@ -2262,9 +2308,13 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 const filterValue = filters[filterCategory];
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
+                    // Check if the filter category should use the 'label' property for array of objects
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`datasetDetails.${filterCategory}.label`] = { $in: filterValue };
+                        condition[`datasetDetails.${filterCategory}`] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
                     } else {
+                        // Directly use the filter category for other fields
                         condition[`datasetDetails.${filterCategory}`] = { $in: filterValue };
                     }
                     matchConditions.push(condition);
@@ -2305,17 +2355,17 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         const countResults = await tasksCollection.aggregate(countPipeline).toArray();
         const totalTasksCount = countResults.length > 0 ? countResults[0].total : 0;
 
-        
+
         const facetAndDocumentsPipeline = [
             {
                 $facet: {
                     // Each facet is a direct property of the `$facet` object
                     Species: [
-                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Species.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     Author: [
-                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Author', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     /* 'Anatomical Entity': [
@@ -2323,21 +2373,24 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ], */
                     'Organ Part': [
-                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } }, 
+                        { $group: { _id: '$datasetDetails.Organ Part.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } }, 
+                        { $unwind: '$datasetDetails.Selected Cell Types' }, // Unwind the array
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Disease Status (Specimen)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } }, 
+                        { $unwind: '$datasetDetails.Disease Status (Specimen)' }, // Unwind the array
+                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
-                    /* 'Disease Status (Donor)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', count: { $sum: 1 } } }, 
-                        { $sort: { count: -1 } }
-                    ], */
+                    // 'Disease Status (Donor)': [
+                    //     { $unwind: '$Disease Status (Donor)' }, // Unwind the array
+                    //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, 
+                    //     { $sort: { count: -1 } } 
+                    // ],
                     // Documents facet for pagination
                     documents: [
                         // { $skip: (page - 1) * pageSize },
@@ -2352,7 +2405,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                                 'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
                                 'Development Stage': "$datasetDetails.Development Stage",
                                 // 'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
-                                // 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
+                                // 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor)",
                                 Author: "$datasetDetails.Author",
                                 TaskLabel: "$task_label",
                                 'Source': "$datasetDetails.Source",
@@ -2363,14 +2416,14 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 }
             }
         ];
-        
-        
+
+
         const finalPipeline = basePipeline.concat(facetAndDocumentsPipeline);
-        
+
         const aggregatedResults = await tasksCollection.aggregate(finalPipeline).toArray();
 
         console.log(aggregatedResults);
-        
+
         // Extract the first (and only) element of the aggregatedResults, which contains your facets and documents
         const aggregationResult = aggregatedResults[0];
 
@@ -2399,7 +2452,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 pageCount: Math.ceil(totalTasksCount / pageSize),
                 totalCount: totalTasksCount,
             }
-        });    
+        });
     } catch (error) {
         console.error('API request failed:', error);
         res.status(500).send('An error occurred while fetching tasks.');
@@ -2475,7 +2528,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 //         const categories = ['private', 'shared']
 //             .filter(flag => req.query[flag] === 'true')
 //             .map(value => value.charAt(0).toUpperCase() + value.slice(1)); // Transform 'private' to 'Private' and 'shared' to 'Shared'
-        
+
 //         if (categories.length > 0) {
 //             matchConditions.push({ Category: { $in: categories } });
 //         }
@@ -2490,13 +2543,13 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 
 //     const mergeFacets = (facetsArray) => {
 //         const combinedFacets = {};
-    
+
 //         facetsArray.forEach(facets => {
 //             Object.keys(facets).forEach(category => {
 //                 if (!combinedFacets[category]) {
 //                     combinedFacets[category] = {};
 //                 }
-    
+
 //                 facets[category].forEach(facet => {
 //                     if (!combinedFacets[category][facet._id]) {
 //                         combinedFacets[category][facet._id] = 0;
@@ -2505,7 +2558,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 //                 });
 //             });
 //         });
-    
+
 //         // Convert back to the array structure
 //         const facetsArrayStructure = {};
 //         Object.keys(combinedFacets).forEach(category => {
@@ -2514,13 +2567,13 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 //                 count: value
 //             }));
 //         });
-    
+
 //         return facetsArrayStructure;
 //     };
-    
+
 //     // Assume results is an array of results from your collection queries
 //     const combinedFacets = mergeFacets(results.map(result => result.facets));
-    
+
 
 //     const pageCount = Math.ceil(combinedTotalCount / pageSize);
 
@@ -2534,7 +2587,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 //             totalCount: combinedTotalCount,
 //         }
 //     });
-    
+
 
 //   } catch (error) {
 //     console.error('Search failed:', error);
@@ -2642,24 +2695,24 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
     let client;
     try {
-      client = new MongoClient(mongoUrl);
-      await client.connect();
-      const db = client.db(dbName);
-      let owner = req.user.username;
-      const {
-        q: globalSearchQuery,
-        page: queryPage = 1,
-        pageSize: queryPageSize = 10,
-        private: isPrivate,
-        public: isPublic,
-        shared: isShared
-      } = req.query;
+        client = new MongoClient(mongoUrl);
+        await client.connect();
+        const db = client.db(dbName);
+        let owner = req.user.username;
+        const {
+            q: globalSearchQuery,
+            page: queryPage = 1,
+            pageSize: queryPageSize = 10,
+            private: isPrivate,
+            public: isPublic,
+            shared: isShared
+        } = req.query;
 
-      const page = parseInt(queryPage, 10);
-      const pageSize = parseInt(queryPageSize, 10);
-      const filters = req.body.filters;
+        const page = parseInt(queryPage, 10);
+        const pageSize = parseInt(queryPageSize, 10);
+        const filters = req.body.filters;
 
-          //Update this field accordingly whenever you add a new facet 
+        //Update this field accordingly whenever you add a new facet 
         // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
         const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
 
@@ -2669,201 +2722,221 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             res.json({ message: "No action performed.", results: [], facets: {}, pagination: {} });
             return;
         }
-      let matchConditions = [];
-  
-      if (globalSearchQuery) {
-        matchConditions.push({
-            $or: [
-                { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
-                // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
-                { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
-            ],
-        });
-    }
+        let matchConditions = [];
 
-    // Apply additional filters
-    if (filters) {
-        Object.keys(filters).forEach((filterCategory) => {
-            const filterValue = filters[filterCategory];
-            if (Array.isArray(filterValue) && filterValue.length > 0) {
-                let condition = {};
+        if (globalSearchQuery) {
+            matchConditions.push({
+                $or: [
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'Selected Cell Types': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
+                    { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+                ],
+            });
+        }
 
-                // Check if the filter category should use the 'label' property
-                if (fieldsWithLabel.includes(filterCategory)) {
-                    condition[`${filterCategory}.label`] = { $in: filterValue };
-                } else {
-                    // Directly use the filter category for other fields
-                    condition[filterCategory] = { $in: filterValue };
+        // Apply additional filters
+        if (filters) {
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    let condition = {};
+
+                    // Check if the filter category should use the 'label' property for array of objects
+                    if (fieldsWithLabel.includes(filterCategory)) {
+                        condition[filterCategory] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
+                    } else {
+                        // Directly use the filter category for other fields
+                        condition[filterCategory] = { $in: filterValue };
+                    }
+
+                    // Add this condition to the matchConditions array
+                    matchConditions.push(condition);
                 }
+            });
+        }
 
-                // Add this condition to the matchConditions array
-                matchConditions.push(condition);
+        let categoryConditions = [];
+
+        if (isPublic === 'true') {
+            categoryConditions.push({ 'Category': 'Public' });
+        }
+        if (isPrivate === 'true') {
+            categoryConditions.push({ 'Owner': owner });
+        }
+        if (isShared === 'true') {
+            categoryConditions.push({ 'Category': 'Shared' });
+        }
+
+        // Now, use $or to apply these category conditions if more than one flag is true
+        if (categoryConditions.length > 0) {
+            matchConditions.push({ $or: categoryConditions });
+        }
+
+        // Determine the initial collection based on flags
+        let initialCollectionName;
+
+        if (isPublic === 'true') {
+            initialCollectionName = datasetCollection;
+        } else if (isPrivate === 'true' || isShared === 'true') {
+            initialCollectionName = userDatasetsCollection;
+        }
+
+
+        let matchStage = {};
+        if (matchConditions.length > 0) {
+            matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+        }
+        // Initial aggregation pipeline
+        let pipeline = [
+            { $match: matchStage },
+            {
+                $facet: {
+                    totalCount: [{ $count: "total" }],
+                    documents: [
+                        //   { $skip: (page - 1) * pageSize }, 
+                        //   { $limit: pageSize },
+                        {
+                            $project: {
+                                Title: "$Title",
+                                Id: "$Id",
+                                Category: "$Category",
+                                Owner: "$Owner",
+                                Species: "$Species.label",
+                                'Organ Part': "$Organ Part.label",
+                                'Cell Count Estimate': "$Cell Count Estimate",
+                                'Development Stage': "$Development Stage",
+                                'Disease Status (Specimen)': "$Disease Status (Specimen)",
+                                // 'Anatomical Entity': "$Anatomical Entity.label",
+                                // 'Disease Status (Donor)': "$Disease Status (Donor)",
+                                Author: "$Author",
+                                'Source': "$Source",
+                                'Submission Date': "$Submission Date",
+                                'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
+                                'adata_path': "$adata_path",
+                                'process_ids': "$process_ids"
+                            }
+                        }
+                    ],
+                    // Each facet is directly within $facet and maps to its pipeline
+                    'Species': [
+                        { $group: { _id: '$Species.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Category': [
+                        { $group: { _id: '$Category', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Author': [
+                        { $group: { _id: '$Author', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Anatomical Entity': [
+                    //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                    // More facets as per your requirement
+                    'Organ Part': [
+                        { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $unwind: '$Selected Cell Types' }, // Unwind the array
+                        { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Specimen)': [
+                        { $unwind: '$Disease Status (Specimen)' }, // Unwind the array
+                        { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Disease Status (Donor)': [
+                    //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                }
+            }
+        ];
+
+
+        // If both flags are true, use $unionWith to combine collections
+        if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
+            pipeline.unshift({
+                $unionWith: {
+                    coll: userDatasetsCollection,
+                }
+            });
+            // pipeline.push({ $group: { _id: "$Id" }});
+            initialCollectionName = datasetCollection; // Start with the "public" datasets collection
+        }
+
+        const collection = db.collection(initialCollectionName);
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Assuming the first element contains the desired structure
+        const data = result[0];
+        const totalCount = data.totalCount[0] ? data.totalCount[0].total : 0;
+
+        // Extract and transform facets, excluding facets that would result in an empty array
+        const facets = Object.keys(data)
+            .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+            .reduce((acc, key) => {
+                // Check if data[key] exists, is an array, and has length before mapping
+                if (Array.isArray(data[key]) && data[key].length > 0) {
+                    acc[key] = data[key].map(facet => ({
+                        _id: facet._id, // Assuming each object has an _id field
+                        count: facet.count // Assuming each object has a count field
+                    }));
+                }
+                // If data[key] doesn't exist, isn't an array, or is empty, it's not included
+                return acc;
+            }, {});
+
+
+        res.json({
+            results: data.documents,
+            facets: facets,
+            pagination: {
+                totalCount: totalCount,
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalCount / pageSize),
             }
         });
-    }
-
-    let categoryConditions = [];
-
-    if (isPublic === 'true') {
-        categoryConditions.push({ 'Category': 'Public' });
-    }
-    if (isPrivate === 'true') {
-        categoryConditions.push({ 'Owner': owner});
-    }
-    if (isShared === 'true') {
-        categoryConditions.push({ 'Category': 'Shared' });
-    }
-    
-    // Now, use $or to apply these category conditions if more than one flag is true
-    if (categoryConditions.length > 0) {
-        matchConditions.push({ $or: categoryConditions });
-    }
-
-    // Determine the initial collection based on flags
-    let initialCollectionName;
-    
-    if (isPublic === 'true') {
-        initialCollectionName = datasetCollection;
-    } else if (isPrivate === 'true' || isShared === 'true') {
-        initialCollectionName = userDatasetsCollection;
-    }
-
-
-    let matchStage = {};
-    if (matchConditions.length > 0) {
-        matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
-    }
-      // Initial aggregation pipeline
-      let pipeline = [
-        { $match: matchStage },
-        { 
-          $facet: {
-            totalCount: [{ $count: "total" }],
-            documents: [
-            //   { $skip: (page - 1) * pageSize }, 
-            //   { $limit: pageSize },
-              { $project: {
-                    Title: "$Title",
-                    Id: "$Id",
-                    Category: "$Category",
-                    Owner: "$Owner",
-                    Species: "$Species.label",
-                    'Organ Part': "$Organ Part.label",
-                    'Cell Count Estimate': "$Cell Count Estimate",
-                    'Development Stage': "$Development Stage",
-                    'Disease Status (Specimen)': "$Disease Status (Specimen).label",
-                    // 'Anatomical Entity': "$Anatomical Entity.label",
-                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
-                    Author: "$Author",
-                    'Source': "$Source",
-                    'Submission Date': "$Submission Date",
-                    'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
-                    'adata_path': "$adata_path",
-                    'process_ids':"$process_ids"
-                }
-              }
-            ],
-            // Each facet is directly within $facet and maps to its pipeline
-            'Species': [
-                { $group: { _id: '$Species.label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            'Category': [
-                { $group: { _id: '$Category', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            'Author': [
-                { $group: { _id: '$Author', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            // 'Anatomical Entity': [
-            //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
-            //     { $sort: { count: -1 } }
-            // ],
-            // More facets as per your requirement
-            'Organ Part': [
-                { $group: { _id: '$Organ Part.label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            'Selected Cell Types': [
-                { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            'Disease Status (Specimen)': [
-                { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-            ],
-            // 'Disease Status (Donor)': [
-            //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
-            //     { $sort: { count: -1 } }
-            // ],
-          }
-        }
-      ];
-
-
-      // If both flags are true, use $unionWith to combine collections
-      if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
-        pipeline.unshift({
-          $unionWith: {
-            coll: userDatasetsCollection,
-          }
-        });
-        // pipeline.push({ $group: { _id: "$Id" }});
-        initialCollectionName = datasetCollection; // Start with the "public" datasets collection
-      }
-  
-      const collection = db.collection(initialCollectionName);
-      
-      const result = await collection.aggregate(pipeline).toArray();
-  
-      // Assuming the first element contains the desired structure
-      const data = result[0];
-      const totalCount = data.totalCount[0] ? data.totalCount[0].total : 0;
-       
-    // Extract and transform facets, excluding facets that would result in an empty array
-    const facets = Object.keys(data)
-    .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
-    .reduce((acc, key) => {
-        // Check if data[key] exists, is an array, and has length before mapping
-        if (Array.isArray(data[key]) && data[key].length > 0) {
-            acc[key] = data[key].map(facet => ({
-                _id: facet._id, // Assuming each object has an _id field
-                count: facet.count // Assuming each object has a count field
-            }));
-        }
-        // If data[key] doesn't exist, isn't an array, or is empty, it's not included
-        return acc;
-    }, {});
-
-  
-      res.json({
-        results: data.documents,
-        facets: facets,
-        pagination: {
-          totalCount: totalCount,
-          page,
-          pageSize,
-          pageCount: Math.ceil(totalCount / pageSize),
-        }
-      });
     } catch (error) {
-      console.error('Search failed:', error);
-      res.status(500).send('An error occurred while searching.');
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while searching.');
     } finally {
-      if (client) {
-        await client.close();
-      }
+        if (client) {
+            await client.close();
+        }
     }
-  });
+});
 
-  // API endpoint to get process results based on an array of process_ids
+// API endpoint to get process results based on an array of process_ids
 app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
     let projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 1, info: 1, cell_metadata_obs: 1, default_assay: 1, assay_names: 1, umap_plot: 1, umap_plot_3d: 1, violin_plot: 1, scatter_plot: 1, highest_expr_genes_plot: 1, evaluation_results: 1 };
@@ -2874,9 +2947,9 @@ app.post('/node/getPreProcessResults', async (req, res) => {
         }
 
         const detailsType = req.body.details;
-        
-        if(detailsType === "PARTIAL") {
-            projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, md5: 0, info: 0, cell_metadata_obs: 0, default_assay: 0, assay_names: 0, umap_plot: 0, umap_plot_3d: 0, violin_plot: 0, scatter_plot: 0, highest_expr_genes_plot: 0, evaluation_results: 0 };
+
+        if (detailsType === "PARTIAL") {
+            projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1 };
         }
 
         client = new MongoClient(mongoUrl);
@@ -2899,8 +2972,8 @@ app.post('/node/getPreProcessResults', async (req, res) => {
     }
 });
 
-  // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/node/getBenchmarksResults', async (req, res) => {
+// API endpoint to get Benchmarks results based on benchmarksId
+app.post('/node/getBenchmarksResults', async (req, res) => {
     let client;
     try {
 
@@ -3048,8 +3121,8 @@ app.get('/node/fetchGraphData/:process_id', async (req, res) => {
 });
 
 
-  // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res) => {
+// API endpoint to get Benchmarks results based on benchmarksId
+app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res) => {
     let client;
     try {
 
@@ -3063,28 +3136,28 @@ app.get('/node/fetchGraphData/:process_id', async (req, res) => {
 
         await client.connect();
         const db = client.db(dbName);
-        const collection  = db.collection(benchmarksCollection);
+        const collection = db.collection(benchmarksCollection);
 
-    // Fetching the benchmark result with the corresponding dataset details
-    const benchmarksResults = await collection.aggregate([
-        {
-            $match: { benchmarksId: benchmarksId }
-        },
-        {
-            $lookup: {
-                from: datasetCollection,
-                localField: 'datasetId',
-                foreignField: 'Id',
-                as: 'datasetDetails'
+        // Fetching the benchmark result with the corresponding dataset details
+        const benchmarksResults = await collection.aggregate([
+            {
+                $match: { benchmarksId: benchmarksId }
+            },
+            {
+                $lookup: {
+                    from: datasetCollection,
+                    localField: 'datasetId',
+                    foreignField: 'Id',
+                    as: 'datasetDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$datasetDetails',
+                    preserveNullAndEmptyArrays: true
+                }
             }
-        },
-        {
-            $unwind: {
-                path: '$datasetDetails',
-                preserveNullAndEmptyArrays: true
-            }
-        }
-    ]).toArray();
+        ]).toArray();
 
 
         res.status(200).json(benchmarksResults);
@@ -3127,6 +3200,61 @@ app.delete('/node/deleteDataset', async (req, res) => {
         await client.close();
     }
 });
+
+// API endpoint to get complete dataset details along with preprocess results based on datasetId
+app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
+    let client;
+    try {
+        const datasetId = req.body.datasetId;
+
+        if (!datasetId) {
+            return res.status(400).json({ error: 'No datasetId is provided' });
+        }
+
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+
+        // Select appropriate collection based on datasetId pattern
+        let collection = (datasetId.startsWith("U-") && datasetId.includes("@")) 
+            ? db.collection(userDatasetsCollection) 
+            : db.collection(datasetCollection);
+
+        // Fetch dataset details along with preprocessing results using lookup and match
+        const datasetInfo = await collection.aggregate([
+            {
+                $match: { Id: datasetId }  // Match dataset based on datasetId
+            },
+            {
+                $lookup: {
+                    from: preProcessResultsCollection,  // Collection containing pre-process results
+                    localField: 'process_ids',          // Array field in dataset collection
+                    foreignField: 'process_id',         // Field in preprocessResults matching process_ids
+                    as: 'preProcessResults'             // Output array field for pre-process results
+                }
+            },
+            {
+                $project: {
+                    datasetDetails: { $mergeObjects: "$$ROOT" },  // Get all fields from the original dataset
+                    preProcessResults: 1,                         // Include the preProcessResults array
+                    _id: 0,                                       // Exclude the _id field from the final result
+                }
+            }
+        ]).toArray();
+        
+
+        res.status(200).json(datasetInfo);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+});
+
 
 
 // Start the server

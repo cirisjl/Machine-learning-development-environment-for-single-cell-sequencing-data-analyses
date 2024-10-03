@@ -85,9 +85,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         });
     };
     
-    const handleVisualize = (dataset) => {
-        console.log("Visualizing dataset: ", dataset);
-        // Implement your visualization logic here
+    const handleVisualize = (datasetId) => {
+        console.log("Dataset Id: ", datasetId);
+        window.open(`/mydata/view-dataset-info?datasetId=${datasetId}`, '_blank');
     };
 
     const handleEdit = (dataset) => {
