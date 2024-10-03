@@ -8,10 +8,14 @@ import { Card, CardContent, Typography } from '@material-ui/core';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';
-import BenchmarksPlots from '../../publishDatasets/components/benchmarksPlots';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 
+import { styled } from '@mui/material/styles';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordion from '@mui/material/Accordion';
+import MuiAccordionSummary from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
 
 const DatasetInfoComponent = () => {
   const location = useLocation();
@@ -21,6 +25,47 @@ const DatasetInfoComponent = () => {
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [expanded, setExpanded] = React.useState(0);
+
+  const Accordion = styled((props) => (
+    <MuiAccordion disableGutters elevation={0} square {...props} />
+  ))(({ theme }) => ({
+    border: `1px solid ${theme.palette.divider}`,
+    '&:not(:last-child)': {
+      borderBottom: 0,
+    },
+    '&::before': {
+      display: 'none',
+    },
+  }));
+  
+  const AccordionSummary = styled((props) => (
+    <MuiAccordionSummary
+      expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
+      {...props}
+    />
+  ))(({ theme }) => ({
+    backgroundColor: 'rgba(0, 0, 0, .03)',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+      transform: 'rotate(90deg)',
+    },
+    '& .MuiAccordionSummary-content': {
+      marginLeft: theme.spacing(1),
+    },
+    ...theme.applyStyles('dark', {
+      backgroundColor: 'rgba(255, 255, 255, .05)',
+    }),
+  }));
+  
+  const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+    padding: theme.spacing(2),
+    borderTop: '1px solid rgba(0, 0, 0, .125)',
+  }));
+
+  const handleChange = (panel) => (event, newExpanded) => {
+    setExpanded(newExpanded ? panel : false);
+  };
 
   const [sectionsVisibility, setSectionsVisibility] = useState({
     metadataInfo: true,
@@ -102,7 +147,7 @@ const DatasetInfoComponent = () => {
             </div>
             <div className='section'>
               <div className='section-heading' onClick={() => toggleSectionVisibility('preprocessResults')}>
-                <h3>Benchmarks</h3>
+                <h3>Pre Process Results</h3>
                 <span className="category-icon">
                   <FontAwesomeIcon
                     icon={sectionsVisibility.preprocessResults ? faAngleDown : faAngleRight}
@@ -111,13 +156,27 @@ const DatasetInfoComponent = () => {
               </div>
               <div className='section-content' style={{ display: sectionsVisibility.preprocessResults ? 'block' : 'none' }}>
                 <React.Fragment>
-                  <Card className="benchmarks-results">
+                  <Card className="dataset-info-results">
                     <CardContent>
                       <Typography variant="body2">PreProcess Results for {detail.datasetId}</Typography>
-                      {/* <BenchmarksPlots
-                        benchmarksPlot={detail.benchmarks_plot}
-                        utilizationPlot={detail.utilization_plot}
-                      /> */}
+                        <div>
+                            {detail.preProcessResults.length > 0 ? (
+                                detail.preProcessResults.map((preProcessResult, index) => (
+                                    <Accordion expanded={expanded === index} onChange={handleChange(index)}>
+                                        <AccordionSummary>
+                                            <Typography>{preProcessResult.description}</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Typography>
+                                                
+                                            </Typography>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                ))
+                            )  : (
+                                <p>No Pre Process Results to show for the dataset.</p>
+                            )}              
+                        </div>
                     </CardContent>
                   </Card>
                 </React.Fragment>
