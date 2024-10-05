@@ -368,10 +368,10 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
             payload.assay_name = taskData.upload.selectedAssayName;
         }
 
-        const response = await axios.post(`${CELERY_BACKEND_API}/tools/qc`, inputRequest);
-        const taskInfo = response.data;
-        const jobId = taskInfo.job_id;
-        setjobId(jobId);
+        // const response = await axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload));
+        // const taskInfo = response.data;
+        // const jobId = taskInfo.job_id;
+        // setjobId(jobId);
     
         // Make the API call
         axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
