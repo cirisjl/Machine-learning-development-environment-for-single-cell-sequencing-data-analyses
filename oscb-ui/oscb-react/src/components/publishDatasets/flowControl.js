@@ -124,7 +124,7 @@ const FlowControl = () => {
 
 
   const startFromBeginning = () => {
-    setFlow('upload');
+    setFlow("Benchmark");
     setActiveTask(1);
   };
 
@@ -144,7 +144,7 @@ const FlowControl = () => {
         }
       
         <div>
-            {flow === 'upload' && <div><PublishDataset taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask} flow={flow} setFlow={setFlow}/></div>}
+            {flow === "Benchmark" && <div><PublishDataset taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask} flow={flow} setFlow={setFlow}/></div>}
             {flow === 'taskBuilder' && <div><TaskBuilder taskStatus={taskStatus} setTaskStatus={setTaskStatus} taskData={taskData} setTaskData={setTaskData} activeTask={activeTask} setActiveTask={setActiveTask} flow={flow} setFlow={setFlow}/></div>}
         </div>
     </div>

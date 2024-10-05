@@ -14,8 +14,7 @@ export default function MyData() {
     const [selectedDatasets, setSelectedDatasets] = useState({});
 
     useEffect(() => {
-        let jwtToken = getCookie('jwtToken');
-        if (jwtToken === undefined || jwtToken === '') {
+        if (getCookie('jwtToken') === undefined || getCookie('jwtToken') === '') {
             navigate('/routing');
         }
     }, []);

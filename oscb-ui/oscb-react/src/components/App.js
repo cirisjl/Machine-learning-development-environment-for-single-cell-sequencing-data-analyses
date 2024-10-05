@@ -45,6 +45,7 @@ import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 import HandleVisualize from './publishDatasets/components/handleVisualize';
 import TreeTableComponent from './common_components/treeTableComponent';
 import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
+import DatasetInfoComponent from './MyData/MyDatasets/DatasetInfoComponent';
 
 function App() {
   
@@ -73,6 +74,7 @@ function App() {
           <Route path="benchmarks/cell-type" element={<TaskResultsComponent task_type="Cell Type" />} />
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
+          <Route path="mydata/view-dataset-info"  element={<DatasetInfoComponent/>}></Route>
           <Route path="mydata/upload-data"       element={<UploadDataset/>}></Route>
           <Route path="mydata/update-dataset"       element={<UploadData/>}></Route>
           <Route path="mydata/preview-datasets" element={<PreviewDatasets/>}></Route>

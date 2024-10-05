@@ -93,7 +93,7 @@ const BenchmarksViewDetailsComponent = () => {
                 <Card className="benchmarks-results">
                   <CardContent>
                     <DatasetDetailsTable 
-                      detail={detail} 
+                      datasetDetails={detail.datasetDetails} 
                       downloadFile={downloadFile} 
                       getFileNameFromURL={getFileNameFromURL} 
                     />

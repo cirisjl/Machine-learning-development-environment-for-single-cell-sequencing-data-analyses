@@ -1,8 +1,8 @@
 import os
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Body, APIRouter, status
-from schemas.schemas import ConversionRequest, ConvertRequest, ConversionResponse, InputFilesRequest, CombinedQCResult, AnndataMetadata, DataSplitRequest, SubsetDataRequest, BenchmarksRequest, QualityControlRequest
-from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_metadata_from_anndata, get_metadata_from_seurat, get_md5
+from schemas.schemas import InputFilesRequest, DataSplitRequest, SubsetDataRequest, BenchmarksRequest
+from tools.formating.formating import get_metadata_from_seurat
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
@@ -458,55 +458,55 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
 #         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
-@router.post('/to_adata_or_srat')
-async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
+# @router.post('/to_adata_or_srat')
+# async def convert_files_to_adata_or_srat(request_body: ConvertRequest):
 
-    fileDetails = request_body.fileDetails
-    userID = request_body.userID
-    assay_name = request_body.assay_name
-    results = []
+#     fileDetails = request_body.fileDetails
+#     userID = request_body.userID
+#     assay_name = request_body.assay_name
+#     results = []
 
-    # Check if only one file is provided
-    if len(fileDetails) == 1:
-        file = unzip_file_if_compressed(userID, fileDetails[0])
-        try:
-            # Check if the file is of a specific type
-            if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')):
-                if file.endswith(('.h5Seurat', 'h5seurat')):
-                    seurat_path = file
-                # Process as specified for these file types
-                adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file, assay=assay_name)
-                results.append({
-                    'adata_path': adata_path,
-                    'seurat_path': seurat_path,
-                    'assay_names': assay_names,
-                    'default_assay': default_assay,
-                    "inputfile": fileDetails,
-                    "format": "h5seurat"
-                })
-            else:
-                adata_path = change_file_extension(file, 'h5ad')
-                adata = load_anndata(file)
-                adata.write_h5ad(adata_path)
-                results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
-        except Exception as e:
-            # Handle the exception and return an error response
-            raise HTTPException(status_code=500, detail=str(e))
+#     # Check if only one file is provided
+#     if len(fileDetails) == 1:
+#         file = unzip_file_if_compressed(userID, fileDetails[0])
+#         try:
+#             # Check if the file is of a specific type
+#             if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')):
+#                 if file.endswith(('.h5Seurat', 'h5seurat')):
+#                     seurat_path = file
+#                 # Process as specified for these file types
+#                 adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file, assay=assay_name)
+#                 results.append({
+#                     'adata_path': adata_path,
+#                     'seurat_path': seurat_path,
+#                     'assay_names': assay_names,
+#                     'default_assay': default_assay,
+#                     "inputfile": fileDetails,
+#                     "format": "h5seurat"
+#                 })
+#             else:
+#                 adata_path = change_file_extension(file, 'h5ad')
+#                 adata = load_anndata(file)
+#                 adata.write_h5ad(adata_path)
+#                 results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
+#         except Exception as e:
+#             # Handle the exception and return an error response
+#             raise HTTPException(status_code=500, detail=str(e))
 
-    elif len(fileDetails) > 1:
-        parent_directory = os.path.dirname(unzip_file_if_compressed(userID, fileDetails[0]))
+#     elif len(fileDetails) > 1:
+#         parent_directory = os.path.dirname(unzip_file_if_compressed(userID, fileDetails[0]))
         
-        # Optionally, verify that all files are in the same directory
-        if not all(os.path.dirname(unzip_file_if_compressed(userID, file)) == parent_directory for file in fileDetails):
-            raise HTTPException(status_code=400, detail="Not all files are in the same directory.")
+#         # Optionally, verify that all files are in the same directory
+#         if not all(os.path.dirname(unzip_file_if_compressed(userID, file)) == parent_directory for file in fileDetails):
+#             raise HTTPException(status_code=400, detail="Not all files are in the same directory.")
 
-        try:
-            # Now, use the parent directory to load the dataset
-            adata = load_anndata(parent_directory)
-            adata_path = os.path.join(parent_directory, "combined_dataset.h5ad")
-            adata.write_h5ad(adata_path)
-            results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+#         try:
+#             # Now, use the parent directory to load the dataset
+#             adata = load_anndata(parent_directory)
+#             adata_path = os.path.join(parent_directory, "combined_dataset.h5ad")
+#             adata.write_h5ad(adata_path)
+#             results.append({"inputfile": fileDetails, "adata_path": adata_path, "format": "h5ad"})
+#         except Exception as e:
+#             raise HTTPException(status_code=500, detail=str(e))
  
-    return results
+#     return results

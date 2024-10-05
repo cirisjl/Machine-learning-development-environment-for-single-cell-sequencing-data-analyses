@@ -83,3 +83,40 @@
     display: block;
   }
   
+.label-table-container .table-container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  margin: 1rem; /* Add some spacing around the table */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+}
+
+.label-table-container .table-container table {
+  /* width: 100%; /* Full width of the container */
+  width: auto !important;
+  border-collapse: collapse; /* Collapse borders */
+  background-color: #fff; /* White background for the table */
+}
+
+.label-table-container .table-container th, td {
+  padding: 0.5rem 1rem; /* Padding for table cells */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid #ddd; /* Light grey border for rows */
+}
+
+.label-table-container .table-container th {
+  background-color: #f8f8f8; /* Slightly grey background for headers */
+  font-weight: bold; /* Make header text bold */
+}
+
+.label-table-container .table-container tr:hover {
+  background-color: #f1f1f1; /* Highlight row on hover */
+}
+
+/* Responsive table */
+@media screen and (max-width: 600px) {
+  .label-table-container .table-container {
+    margin: 0; /* Remove margin in small screens */
+  }
+  .label-table-container .table-container th, td {
+    padding: 0.5rem; /* Smaller padding for small screens */
+  }
+}

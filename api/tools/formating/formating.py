@@ -1,5 +1,6 @@
 import scanpy as sc
 import os
+import math
 import hashlib
 import sys
 import subprocess
@@ -208,17 +209,48 @@ def arr_to_list(arr:np.ndarray):
     return arr_list
 
 
-def df_to_dict(df:pd.DataFrame):
-    df_dict = {}
-    df_columns = df.columns.values.tolist()
-    df_index = df.index.values.tolist()
-    df_dict['columns'] = df_columns
-    df_dict['index'] = df_index
+# def df_to_dict(df:pd.DataFrame):
+#     df_dict = {}
+#     df_columns = df.columns.values.tolist()
+#     df_index = df.index.values.tolist()
+#     df_dict['columns'] = df_columns
+#     df_dict['index'] = df_index
     
-    for name in df_columns:
-        df_dict[name] = df[name].tolist()
+#     for name in df_columns:
+#         df_dict[name] = df[name].tolist()
         
-    return df_dict
+#     return df_dict
+
+
+def get_cell_metadata(adata, adata_path=None):
+    cell_metadata = None
+    obs_names = None
+    nCells = 0
+    nGenes = 0
+    layers = None
+    info = None
+    adata_size = None
+    cell_metadata_head = None
+    embeddings = []
+
+    if adata_path is not None and os.path.exists(adata_path):
+        adata_size = file_size(adata_path)
+    
+    if adata is not None and isinstance(adata, AnnData):
+        info = adata.__str__()
+        layers = list(adata.layers.keys())
+        obs = regularise_df(adata.obs)
+        obs_names = obs.columns.values.tolist()
+        nCells = adata.n_obs # Number of cells
+        nGenes = adata.n_vars # Number of genes
+        cell_metadata = df_to_dict(obs)
+        cell_metadata_head = obs.dropna().head().to_dict()
+        embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        for name in embedding_names:
+            # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
+            embeddings.append(name)
+    
+    return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings
 
 
 def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden'): 
@@ -960,3 +992,49 @@ def regularise_df(df):
         if len(df[col].unique()) == 1:
             res = res.drop(col,axis=1)
     return res
+
+
+# Drop numerical columns for cell type annotation
+def drop_num_col(df):
+    col_to_drop = []
+
+    for i, v in df.dtypes.items():
+        if 'float' in str(v) or 'int' in str(v) or is_number(df[i][0]):
+            col_to_drop.append(i)
+    
+    if len(col_to_drop) > 0:
+        df = df.drop(columns=col_to_drop)
+    
+    return df
+
+
+# Convert dataframe to dict for cell type selection
+def df_to_dict(df):
+    df_dict = {}
+    # df = regularise_df(df)
+    df = drop_num_col(df)
+    for col in df.columns:
+        col_dict = {}
+        if len(df[col].unique()) < 500 and isinstance(df[col][0], str): # The known human cell types are less than 500
+            col_dict[col] = [x for x in df[col].unique().tolist() if isinstance(x, str) or not math.isnan(x)]
+            # col_dict[col] = df[col].unique().tolist()
+            df_dict[col] = col_dict
+    
+    return df_dict
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+ 
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+ 
+    return False

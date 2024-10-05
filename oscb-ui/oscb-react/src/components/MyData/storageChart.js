@@ -3,9 +3,6 @@ import { Chart } from 'chart.js/auto';
 import { getCookie } from '../../utils/utilFunctions';
 import { NODE_API_URL } from '../../constants/declarations'
 
-
-let jwtToken = getCookie('jwtToken');
-
 const StorageChart = () => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -15,9 +12,7 @@ const StorageChart = () => {
 
   const getStorageDetails = async () => {
 
-    jwtToken = getCookie('jwtToken');
-
-    fetch(`${NODE_API_URL}/getStorageDetails?authToken=${jwtToken}`)
+    fetch(`${NODE_API_URL}/getStorageDetails?authToken=${getCookie('jwtToken')}`)
       .then(response => {
         if (response.status === 403) {
           throw new Error('Please log in first');
@@ -74,7 +69,7 @@ const StorageChart = () => {
     };
   }, [totalStorage, usedStorage]);
 
-  if (jwtToken === undefined || jwtToken === '') {
+  if (getCookie('jwtToken') !== undefined || getCookie('jwtToken') !== '') {
     return (
       <>
         <h2>My Data</h2> <br />
