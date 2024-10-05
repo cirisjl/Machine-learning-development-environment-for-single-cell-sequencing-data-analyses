@@ -219,7 +219,7 @@ class BenchmarksRequest(BaseModel):
 
 
 
-class ConvertRequest(BaseModel):
+class UploadRequest(BaseModel):
     fileDetails: List[str]
     assay_name: Optional[str] = None
     userID: str

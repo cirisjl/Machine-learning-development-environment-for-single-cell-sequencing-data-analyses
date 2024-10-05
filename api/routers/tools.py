@@ -1,13 +1,14 @@
+import os
 from celery import group
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task
-from schemas.schemas import Dataset, IntegrationDataset, PathRequest, UMAPRequest
-from tools.formating.formating import load_anndata
+from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task, load_metadata_task
+from schemas.schemas import Dataset, IntegrationDataset, PathRequest, UMAPRequest, UploadRequest
 from datetime import datetime
 from utils.mongodb import upsert_jobs
+
 router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"description": "API Not found"}})
 
 
@@ -145,5 +146,13 @@ async def create_evaluation_task_async(ds: Dataset):
     ds_dict = ds.dict() 
     task = create_evaluation_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'layer':ds['layer'], 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     create_job(task.id, ds_dict)
+
+    return JSONResponse({"job_id": task.id})
+
+
+@router.post('/metadata')
+async def load_metadata_async(request_body: UploadRequest):
+    file_dict = request_body.dict()
+    task = load_metadata_task.apply_async(args=[file_dict])
 
     return JSONResponse({"job_id": task.id})

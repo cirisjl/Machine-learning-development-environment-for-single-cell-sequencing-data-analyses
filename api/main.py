@@ -7,13 +7,14 @@ import asyncio
 from fastapi.responses import HTMLResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, worlkflows
+from routers import tools, benchmarks, workflows
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from dash_app.dashboard import app as dashboard
 from utils.redislogger import *
 from utils.mongodb import get_pp_results
+from tools.formating.formating import df_to_dict
 from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
 from schemas.schemas import ProcessResultsRequest
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     current_app.celery_app = create_celery()
     current_app.include_router(tools.router)
     current_app.include_router(benchmarks.router)
+    current_app.include_router(workflows.router)
     return current_app
 
 
@@ -154,10 +156,10 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     
     for pp_result in pp_results:
         obs = pp_result['cell_metadata']
-        pp_result.pop('cell_metadata')
+        pp_result['cell_metadata'] = df_to_dict(obs)
 
         if record_type == None:
-            pp_result['cell_metadata_head'] = obs.head().fillna('NaN').to_dict() # Replace NA
+            pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
             if 'umap' in pp_result.keys():
                 pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
                 pp_result.pop('umap')

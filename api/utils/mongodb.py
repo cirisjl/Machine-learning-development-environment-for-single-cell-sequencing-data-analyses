@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from boltons.iterutils import remap
 from tools.utils.gzip_str import *
+from tools.formating.formating import regularise_df
 import json_numpy
 
 
@@ -202,3 +203,4 @@ def removeNullNoneEmpty(ob):
         elif(v is not None and v!=''):
             l[k] = v
     return l
+

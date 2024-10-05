@@ -406,8 +406,8 @@ const onSelectSubItem = (mainItem, subItem) => {
                   }))}
                   onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
                   value={dataset.taskLabel}
-                  />
-{/* 
+                />
+              {/* 
                   {dataset.tablePlot && (
                     <>
                       <h2>Table: </h2>

@@ -18,7 +18,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection} = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -89,6 +89,7 @@ const verifyJWTToken = (req, res, next) => {
     }
   };
 
+
 function getUserFromToken(token) {
     if (typeof token !== 'string') {
         return 'Unauthorized';
@@ -130,6 +131,7 @@ function removeFiles(fileList){
     }
 }
 
+
 const createDirectoryIfNotExists = async (dirPath) => {
     try {
       await fs.mkdir(dirPath, { recursive: true });
@@ -141,8 +143,9 @@ const createDirectoryIfNotExists = async (dirPath) => {
     }
   };
 
+
 const createUniqueFolder = (destinationDir, folderName, index = 1) => {
-    const targetFolderName = index === 1 ?  path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
+    const targetFolderName = index === 1 ? path.join(destinationDir, folderName) : path.join(destinationDir, `${folderName}(${index})`);
     const targetFolderPath = path.join(__dirname, targetFolderName);
   
     if (!fs.existsSync(targetFolderPath)) {
@@ -159,6 +162,7 @@ const createUniqueFolder = (destinationDir, folderName, index = 1) => {
     }
   };
 
+
 // Function to copy files from source directory to destination directory
 const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) => {
     try {
@@ -167,7 +171,7 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
       for (let file of files) {
         const sourceFilePath = path.join(sourceDir, file);
         let destinationFilePath = "";
-        if(fromPublic) {
+        if (fromPublic) {
             file = file.replace(/^\/?publicDatasets\//, '/'); // Remove "PUBLIC_DATASETS" from the start
             destinationFilePath = path.join(destinationDir, file);
         } else {
@@ -188,7 +192,8 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     }
   };
 
-  app.post('/node/copyFiles', async (req, res) => {
+
+app.post('/node/copyFiles', async (req, res) => {
 
     const { selectedFiles, userId } = req.body;
 
@@ -198,13 +203,13 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
 
         // Logic to Copy files from public storage to user private storage if it is a public Dataset.
         for (const file of selectedFiles) {                      
-          if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+          if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
               filesFromPublic = true;
               break;
           }
       }
   
-      if(filesFromPublic) {
+      if (filesFromPublic) {
   
           if (selectedFiles.length > 0) {
               dirName = path.dirname(selectedFiles[0])
@@ -221,20 +226,22 @@ const copyFiles = async (sourceDir, destinationDir, dirName, files, fromPublic) 
     }
   });
 
-  // Refresh token endpoint
+
+// Refresh token endpoint
 app.get('/node/refresh-token', verifyToken, (req, res) => {
     jwt.verify(req.token, process.env.JWT_TOKEN_SECRET, (err, authData) => {
-        if(err) {
+        if (err) {
             res.sendStatus(403);
         } else {
-            if(authData.username !== null && authData.username !== undefined) {
-                const newToken = jwt.sign({username:authData.username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
-                res.cookie('jwtToken', newToken, { maxAge: 60 * 60 * 1000, path:"/" });
-                res.json({ status:200, message: 'Token refreshed', token: newToken });
+            if (authData.username !== null && authData.username !== undefined) {
+                const newToken = jwt.sign({ username: authData.username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+                res.cookie('jwtToken', newToken, { maxAge: 60 * 60 * 1000, path: "/" });
+                res.json({ status: 200, message: 'Token refreshed', token: newToken });
             }
         }
     })    
 });
+
 
 // Route to handle user signup
 app.post('/node/signup', (req, res) => {
@@ -262,7 +269,7 @@ app.post('/node/signup', (req, res) => {
                         fs.promises.mkdir(storageDir + username);
 
                     // Create JWT token and send it back to the client
-                    const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+                    const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
                     // the cookie will be set with the name "jwtToken" and the value of the token
                     // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -284,6 +291,7 @@ app.post('/node/signup', (req, res) => {
         });
     });
 });
+
 
 // Route to handle user login
 app.post('/node/login', (req, res) => {
@@ -316,7 +324,7 @@ app.post('/node/login', (req, res) => {
             }
 
             // Create JWT token and send it back to the client
-            const jwtToken = jwt.sign({username}, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
+            const jwtToken = jwt.sign({ username }, process.env.JWT_TOKEN_SECRET, { expiresIn: '1h' });
 
             // the cookie will be set with the name "jwtToken" and the value of the token
             // the "httpOnly" and "secure" options help prevent XSS and cookie theft
@@ -405,7 +413,7 @@ app.post('/node/forgot-password', (req, res) => {
 
 app.post('/node/reset-password', (req, res) => {
     const { token, newPassword, confirmPassword } = req.body;
-    console.log("resetpass",newPassword);
+    console.log("resetpass", newPassword);
 
     // Validate token and ensure passwords match
     if (!token || !newPassword || newPassword !== confirmPassword) {
@@ -423,7 +431,7 @@ app.post('/node/reset-password', (req, res) => {
         }
 
         const userId = results[0].user_id;
-        console.log("userid",userId);
+        console.log("userid", userId);
         // const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hash the new password
         // pool.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?', [hashedPassword, userId], (err, results) => {
         //     if (err) {
@@ -480,18 +488,18 @@ app.get('/node/protected', verifyToken, (req, res) => {
                 pool.query('SELECT isAdmin FROM users WHERE username = ?', authData.username, (err, results) => {
                     if (err) {
                         console.error(err);
-                        res.json({ message: 'Internal Server Error'});
+                        res.json({ message: 'Internal Server Error' });
                         return;
                     }
             
                     if (results.length === 0) {
-                        res.json({ message: 'Invalid credentials'});
+                        res.json({ message: 'Invalid credentials' });
                         return;
                     }
             
                     const adminFlag = results[0].isAdmin;
 
-                    authData.isAdmin = (adminFlag == 1) ? true: false;
+                    authData.isAdmin = (adminFlag == 1) ? true : false;
 
                     res.json({ message: 'You have access to the protected resource', authData });
                 });
@@ -499,6 +507,7 @@ app.get('/node/protected', verifyToken, (req, res) => {
         }
     });
 });
+
 
 app.post('/node/createDataset', async (req, res) => {
 
@@ -510,12 +519,12 @@ app.post('/node/createDataset', async (req, res) => {
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
     
-        if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+        if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
@@ -574,7 +583,7 @@ app.post('/node/createDataset', async (req, res) => {
                         const datasetId = datasetResult.insertId;
 
                         for (let file of files) {
-                            if(filesFromPublic) {
+                            if (filesFromPublic) {
                                 file = file.replace(/^\/?publicDatasets\//, '/'); 
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
@@ -599,7 +608,7 @@ app.post('/node/createDataset', async (req, res) => {
         });
     });
 
-    if(makeItpublic) {
+    if (makeItpublic) {
         try {
             let dirName = "";
             const fromPublic = false;
@@ -630,14 +639,14 @@ app.put('/node/updateDataset', async (req, res) => {
 
     // Logic to Copy files from public storage to user private storage if it is a public Dataset.
     for (const file of files) {
-        if(file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
+        if (file.startsWith("publicDatasets") || file.startsWith("/publicDatasets")) {
             filesFromPublic = true;
             break;
         }
     }
 
 
-    if(filesFromPublic) {
+    if (filesFromPublic) {
         let dirName = ""
 
         if (files.length > 0) {
@@ -709,7 +718,7 @@ app.put('/node/updateDataset', async (req, res) => {
                             return res.status(500).send('Dataset update error');
                         }
                         for (let file of insertList) {
-                            if(filesFromPublic) {
+                            if (filesFromPublic) {
                                 file = file.replace(/^\/?publicDatasets\//, '/'); 
                             }
                             connection.query('INSERT INTO file (file_loc, dataset_id) VALUES (?, ?)', [file, datasetId]);
@@ -738,6 +747,7 @@ app.put('/node/updateDataset', async (req, res) => {
         });
     });
 });
+
 
 // app.delete('/node/deleteDataset', async (req, res) => {
 //     const { authToken, dataset } = req.query;
@@ -954,7 +964,7 @@ app.get('/node/download', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
     
-    if(pwd && pwd.includes("publicDatasets")) {
+    if (pwd && pwd.includes("publicDatasets")) {
         filePath = path.join(storageDir, fileUrl);
     } else if (pwd && pwd.includes("jobResults")) {
         filePath = fileUrl;
@@ -1101,6 +1111,7 @@ app.get('/node/fetchPreview', async (req, res) => {
     }
 });
 
+
 app.delete('/node/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
@@ -1122,7 +1133,7 @@ app.delete('/node/deleteFiles', async (req, res) => {
                     return;
                 } else {
                     let filePath = ""
-                    if(pwd.includes("publicDatasets")) {
+                    if (pwd.includes("publicDatasets")) {
                         filePath = `${storageDir}${file}`;
                     } else {
                         filePath = `${storageDir}${uname}/${file}`;
@@ -1153,7 +1164,6 @@ app.delete('/node/deleteFiles', async (req, res) => {
         return res.status(400).jsonp('Invalid request');
     }
 });
-
 
 
 const formatDate = (dateString) => {
@@ -1189,11 +1199,11 @@ app.get('/node/getDirContents', async (req, res) => {
         if (subdir != undefined)
             directoryPath = path.join(storageDir + uid + "/", subdir);
 
-        if(dirPath == "publicDatasets") {
+        if (dirPath == "publicDatasets") {
             directoryPath = publicStorage;
         }
 
-        if(dirPath.includes("publicDatasets/")) {
+        if (dirPath.includes("publicDatasets/")) {
             directoryPath = "/usr/src/app/storage/" + dirPath;
         }
 
@@ -1237,10 +1247,10 @@ app.get('/node/getDirContents', async (req, res) => {
 
 
 app.post('/node/upload', async (req, res) => {
-    let { uploadDir, authToken ,publicDatasetFlag} = req.query;
+    let { uploadDir, authToken, publicDatasetFlag } = req.query;
     let username = getUserFromToken(authToken);
 
-    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir ;
+    let destDir = publicDatasetFlag === "true" ? "./storage/" + uploadDir : "./storage/" + username + uploadDir;
 
     let tempDir = './uploads'; 
 
@@ -1291,7 +1301,7 @@ app.post('/node/createNewFolder', (req, res) => {
     const { pwd, folderName, authToken } = req.query;
     const username = getUserFromToken(authToken);
     let folderPath = ""
-    if(pwd.includes("publicDatasets")) {
+    if (pwd.includes("publicDatasets")) {
         folderPath = `/usr/src/app/storage/${pwd}/${folderName}`;
     } else {
         folderPath = `${storageDir}/${username}/${pwd}/${folderName}`;
@@ -1454,7 +1464,7 @@ app.post('/node/job/create', async (req, res) => {
         
     } catch (err) {
       console.error('Error:', err);
-      res.status(500).json({ error: err});
+      res.status(500).json({ error: err });
     } finally {
       // Ensure the client will close when you finish/error
       await client.close();
@@ -1495,7 +1505,7 @@ app.get('/node/getTasks', async (req, res) => {
             }
         );
       }
-      else{
+        else {
           const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(top).toArray();
         // Respond with the tasks data
         res.status(200).json(tasks);
@@ -1587,6 +1597,7 @@ app.put('/node/updateTaskStatus', (req, res) => {
         });
     });
 });
+
 
 // app.get('/getTasks', (req, res) => {
 //     const { authToken } = req.query;
@@ -1690,13 +1701,12 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
         const makeItpublic = formData.makeItpublic;
         let files = formData.files;
         let inputFiles = formData.inputFiles;
-        formData.inputFiles = formData.adata_path;
         let username = formData.Owner;
 
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
-        const collection = formData.flow == 'upload' ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
+        const collection = formData.flow == "Benchmark" ? db.collection(datasetCollection) : db.collection(userDatasetsCollection);
 
         // Check if a document with the provided Id already exists
         const existingDocument = await collection.findOne({ Id: formData.Id });
@@ -1720,7 +1730,10 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
                     }
 
                     let userPrivateStorageDir = storageDir + username; // Change this to the user's private storage path
-                    removeFiles(inputFiles); // Remove original input files
+                    if (formData.flow == "Benchmark"){
+                        removeFiles(inputFiles); // Remove original input files
+                        formData.inputFiles = formData.adata_path;
+                    }
 
                     // Copy files from user's private storage to public dataset directory
                     await copyFiles(userPrivateStorageDir, publicStorage, dirName, files, fromPublic);
@@ -1839,6 +1852,8 @@ app.get('/node/getDatasets', async (req, res) => {
         await client.close();
     }
 });
+
+
 // Define a route to handle adding a new option to MongoDB
 app.post('/node/addNewOption', async (req, res) => {
     const { field, name, username } = req.body;
@@ -1874,6 +1889,7 @@ app.post('/node/addNewOption', async (req, res) => {
     }
   });
 
+
 // Connect to MongoDB and retrieve options
 app.get('/node/groupedUserOptions', async (req, res) => {
     try {
@@ -1889,7 +1905,7 @@ app.get('/node/groupedUserOptions', async (req, res) => {
         const isAdmin = req.query.isAdmin;
 
         // Define the match stage of the aggregation pipeline
-        const matchStage = isAdmin=== 'true' ? {} : { username: username };
+        const matchStage = isAdmin === 'true' ? {} : { username: username };
 
         // Aggregation pipeline stages
         const pipeline = [
@@ -1897,7 +1913,7 @@ app.get('/node/groupedUserOptions', async (req, res) => {
             {
                 $group: {
                     _id: '$field',
-                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation:'$abbreviation' } },
+                    options: { $addToSet: { _id: '$_id', name: '$name', username: '$username', abbreviation: '$abbreviation' } },
                 },
             },
         ];
@@ -1920,6 +1936,7 @@ app.get('/node/groupedUserOptions', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 // Define a DELETE route to delete selected options
 app.delete('/node/deleteOptions', async (req, res) => {
@@ -2045,6 +2062,7 @@ app.delete('/node/storage/delete-file', (req, res) => {
     }
 });
 
+
 app.post('/node/storage/renameFile', async (req, res) => {
 
     try {
@@ -2067,6 +2085,7 @@ app.post('/node/storage/renameFile', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 app.post('/node/errorlogdata', async (req, res) => {
     console.log(mongoUrl)
@@ -2116,7 +2135,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
 
         const db = client.db(dbName);
         const datasetType = req.query.datasetType; // New parameter
-        const collection = datasetType === "myDatasets" ?   db.collection(userDatasetsCollection)  : db.collection(datasetCollection);
+        const collection = datasetType === "myDatasets" ? db.collection(userDatasetsCollection) : db.collection(datasetCollection);
 
 
       const page = parseInt(req.query.page, 10) || 1;
@@ -2125,8 +2144,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const filters = req.body.filters;
 
       //Update this field accordingly whenever you add a new facet 
-      // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
-      const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
+      // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
+      const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)'];
 
       let matchConditions = [];
 
@@ -2138,9 +2157,25 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
                     // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'Selected Cell Types': {
+                            $elemMatch: {
+                                value: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
                 ],
             });
         }
@@ -2152,9 +2187,11 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
-                    // Check if the filter category should use the 'label' property
+                    // Check if the filter category should use the 'label' property for array of objects
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[filterCategory] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
                     } else {
                         // Directly use the filter category for other fields
                         condition[filterCategory] = { $in: filterValue };
@@ -2176,7 +2213,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const facetsPipeline = [
         { $match: matchStage },
         { $unwind: '$Selected Cell Types' },
-        { $unwind: '$Disease Status (Specimen)' },
+        { $unwind: '$Disease Status (Donor)' },
         { $facet: {
           'Species': [
                 { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
@@ -2212,7 +2249,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 { $sort: { count: -1 } }
           ],
           'Selected Cell Types': [
-                { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
                 {
                     $project: {
                         _id: '$_id',
@@ -2221,8 +2258,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 },
                 { $sort: { count: -1 } }
           ],
-          'Disease Status (Specimen)': [
-                { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+          'Disease Status (Donor)': [
+                { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
                 {
                     $project: {
                         _id: '$_id',
@@ -2293,8 +2330,8 @@ app.post('/node/tasks/search', async (req, res) => {
         const filters = req.body.filters;
 
         //Update this field accordingly whenever you add a new facet 
-        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
-        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
+        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)'];
 
         if (!taskType) {
             return res.status(400).send('task_type is required');
@@ -2311,9 +2348,25 @@ app.post('/node/tasks/search', async (req, res) => {
                     { 'datasetDetails.Author': { $regex: globalSearchQuery, $options: 'i' } },
                     // { 'datasetDetails.Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'datasetDetails.Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'datasetDetails.Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // { 'datasetDetails.Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'datasetDetails.Selected Cell Types': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'datasetDetails.Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'datasetDetails.Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
                 ]
             });
         }
@@ -2325,9 +2378,13 @@ app.post('/node/tasks/search', async (req, res) => {
                 const filterValue = filters[filterCategory];
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
+                    // Check if the filter category should use the 'label' property for array of objects
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`datasetDetails.${filterCategory}.label`] = { $in: filterValue };
+                        condition[`datasetDetails.${filterCategory}`] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
                     } else {
+                        // Directly use the filter category for other fields
                         condition[`datasetDetails.${filterCategory}`] = { $in: filterValue };
                     }
                     matchConditions.push(condition);
@@ -2371,7 +2428,7 @@ app.post('/node/tasks/search', async (req, res) => {
 
         const facetAndDocumentsPipeline = [
             { $unwind: '$datasetDetails.Selected Cell Types' },
-            { $unwind: '$datasetDetails.Disease Status (Specimen)' },
+            { $unwind: '$datasetDetails.Disease Status (Donor)' },
             {
                 $facet: {
                     // Each facet is a direct property of the `$facet` object
@@ -2416,7 +2473,7 @@ app.post('/node/tasks/search', async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$datasetDetails.Selected Cell Types.label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
+                        { $group: { _id: '$datasetDetails.Selected Cell Types.value', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2425,8 +2482,8 @@ app.post('/node/tasks/search', async (req, res) => {
                         },
                         { $sort: { count: -1 } }
                     ],
-                    'Disease Status (Specimen)': [
-                        { $group: { _id: '$datasetDetails.Disease Status (Specimen).label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
+                    'Disease Status (Donor)': [
+                        { $group: { _id: '$datasetDetails.Disease Status (Donor).label', uniqueValues: { $addToSet: '$datasetDetails.Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2550,7 +2607,7 @@ app.post('/node/tasks/search', async (req, res) => {
 //     const filters = req.body.filters;
 
 //     //Update this field accordingly whenever you add a new facet 
-//     const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
+//     const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
 
 //     let matchConditions = [];
 
@@ -2563,8 +2620,8 @@ app.post('/node/tasks/search', async (req, res) => {
 //                 { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
 //                 { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
 //                 { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-//                 { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-//                 { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Selected Cell Types.value': { $regex: globalSearchQuery, $options: 'i' } },
+//                 { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
 //                 { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
 //                 { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
 //             ],
@@ -2601,7 +2658,7 @@ app.post('/node/tasks/search', async (req, res) => {
 //         const categories = ['private', 'shared']
 //             .filter(flag => req.query[flag] === 'true')
 //             .map(value => value.charAt(0).toUpperCase() + value.slice(1)); // Transform 'private' to 'Private' and 'shared' to 'Shared'
-        
+
 //         if (categories.length > 0) {
 //             matchConditions.push({ Category: { $in: categories } });
 //         }
@@ -2616,13 +2673,13 @@ app.post('/node/tasks/search', async (req, res) => {
 
 //     const mergeFacets = (facetsArray) => {
 //         const combinedFacets = {};
-    
+
 //         facetsArray.forEach(facets => {
 //             Object.keys(facets).forEach(category => {
 //                 if (!combinedFacets[category]) {
 //                     combinedFacets[category] = {};
 //                 }
-    
+
 //                 facets[category].forEach(facet => {
 //                     if (!combinedFacets[category][facet._id]) {
 //                         combinedFacets[category][facet._id] = 0;
@@ -2631,7 +2688,7 @@ app.post('/node/tasks/search', async (req, res) => {
 //                 });
 //             });
 //         });
-    
+
 //         // Convert back to the array structure
 //         const facetsArrayStructure = {};
 //         Object.keys(combinedFacets).forEach(category => {
@@ -2640,13 +2697,13 @@ app.post('/node/tasks/search', async (req, res) => {
 //                 count: value
 //             }));
 //         });
-    
+
 //         return facetsArrayStructure;
 //     };
-    
+
 //     // Assume results is an array of results from your collection queries
 //     const combinedFacets = mergeFacets(results.map(result => result.facets));
-    
+
 
 //     const pageCount = Math.ceil(combinedTotalCount / pageSize);
 
@@ -2660,7 +2717,7 @@ app.post('/node/tasks/search', async (req, res) => {
 //             totalCount: combinedTotalCount,
 //         }
 //     });
-    
+
 
 //   } catch (error) {
 //     console.error('Search failed:', error);
@@ -2709,11 +2766,11 @@ app.post('/node/tasks/search', async (req, res) => {
 //                     { $sort: { count: -1 } }
 //                 ],
 //                 'Selected Cell Types': [
-//                     { $group: { _id: '$Selected Cell Types.label', count: { $sum: 1 } } },
+//                     { $group: { _id: '$Selected Cell Types.value', count: { $sum: 1 } } },
 //                     { $sort: { count: -1 } }
 //                 ],
-//                 'Disease Status (Specimen)': [
-//                     { $group: { _id: '$Disease Status (Specimen).label', count: { $sum: 1 } } },
+//                 'Disease Status (Donor)': [
+//                     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
 //                     { $sort: { count: -1 } }
 //                 ],
 //                 'Disease Status (Donor)': [
@@ -2787,8 +2844,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
         const filters = req.body.filters;
 
         //Update this field accordingly whenever you add a new facet 
-        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)', 'Disease Status (Donor)'];
-        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Specimen)'];
+        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)'];
 
 
         // If no flags are provided, do not query any collection.
@@ -2806,9 +2863,25 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
                     // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Selected Cell Types.label': { $regex: globalSearchQuery, $options: 'i' } },
-                    { 'Disease Status (Specimen).label': { $regex: globalSearchQuery, $options: 'i' } },
-                    // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'Selected Cell Types': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'Disease Status (Specimen)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
                     { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
                 ],
             });
@@ -2821,9 +2894,11 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
-                    // Check if the filter category should use the 'label' property
+                    // Check if the filter category should use the 'label' property for array of objects
                     if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[filterCategory] = {
+                            $elemMatch: { label: { $in: filterValue } }
+                        };
                     } else {
                         // Directly use the filter category for other fields
                         condition[filterCategory] = { $in: filterValue };
@@ -2870,7 +2945,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
         let pipeline = [
             { $match: matchStage },
             { $unwind: '$Selected Cell Types' },
-            { $unwind: '$Disease Status (Specimen)' },
+            { $unwind: '$Disease Status (Donor)' },
             {
                 $facet: {
                     // totalCount: [{ $count: "total" }],
@@ -2886,7 +2961,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                     'Organ Part': "$Organ Part.label",
                                     'Cell Count Estimate': "$Cell Count Estimate",
                                     'Development Stage': "$Development Stage",
-                                    // 'Disease Status (Specimen)': "$Disease Status (Specimen).label",
+                                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
                                     // 'Anatomical Entity': "$Anatomical Entity.label",
                                     // 'Disease Status (Donor)': "$Disease Status (Donor).label",
                                     Author: "$Author",
@@ -2910,7 +2985,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 'Organ Part': "$_id.Organ Part.label",
                                 'Cell Count Estimate': "$_id.Cell Count Estimate",
                                 'Development Stage': "$_id.Development Stage",
-                                // 'Disease Status (Specimen)': "$_id.Disease Status (Specimen).label",
+                                // 'Disease Status (Donor)': "$_id.Disease Status (Donor).label",
                                 // 'Anatomical Entity': "$Anatomical Entity.label",
                                 // 'Disease Status (Donor)': "$Disease Status (Donor).label",
                                 Author: "$_id.Author",
@@ -2970,7 +3045,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     'Selected Cell Types': [
-                        { $group: { _id: '$Selected Cell Types.label', uniqueValues: { $addToSet: '$Id' } } },
+                        { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -2979,8 +3054,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                         },
                         { $sort: { count: -1 } }
                     ],
-                    'Disease Status (Specimen)': [
-                        { $group: { _id: '$Disease Status (Specimen).label', uniqueValues: { $addToSet: '$Id' } } },
+                    'Disease Status (Donor)': [
+                        { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
                         {
                             $project: {
                                 _id: '$_id',
@@ -3054,6 +3129,287 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
 });
 
 
+// app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
+//     let client;
+//     try {
+//         client = new MongoClient(mongoUrl);
+//         await client.connect();
+//         const db = client.db(dbName);
+//         let owner = req.user.username;
+//         const {
+//             q: globalSearchQuery,
+//             page: queryPage = 1,
+//             pageSize: queryPageSize = 10,
+//             private: isPrivate,
+//             public: isPublic,
+//             shared: isShared
+//         } = req.query;
+
+//         const page = parseInt(queryPage, 10);
+//         const pageSize = parseInt(queryPageSize, 10);
+//         const filters = req.body.filters;
+
+//         //Update this field accordingly whenever you add a new facet 
+//         // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
+//         const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)'];
+
+
+//         // If no flags are provided, do not query any collection.
+//         if (isPublic === 'false' && isPrivate === 'false' && isShared === 'false') {
+//             res.json({ message: "No action performed.", results: [], facets: {}, pagination: {} });
+//             return;
+//         }
+//         let matchConditions = [];
+
+//         if (globalSearchQuery) {
+//             matchConditions.push({
+//                 $or: [
+//                     { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+//                     // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Selected Cell Types.value': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+//                     // { 'Disease Status (Donor).label': { $regex: globalSearchQuery, $options: 'i' } },
+//                     { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+//                 ],
+//             });
+//         }
+
+//         // Apply additional filters
+//         if (filters) {
+//             Object.keys(filters).forEach((filterCategory) => {
+//                 const filterValue = filters[filterCategory];
+//                 if (Array.isArray(filterValue) && filterValue.length > 0) {
+//                     let condition = {};
+
+//                     // Check if the filter category should use the 'label' property
+//                     if (fieldsWithLabel.includes(filterCategory)) {
+//                         condition[`${filterCategory}.label`] = { $in: filterValue };
+//                     } else {
+//                         // Directly use the filter category for other fields
+//                         condition[filterCategory] = { $in: filterValue };
+//                     }
+
+//                     // Add this condition to the matchConditions array
+//                     matchConditions.push(condition);
+//                 }
+//             });
+//         }
+
+//         let categoryConditions = [];
+
+//         if (isPublic === 'true') {
+//             categoryConditions.push({ 'Category': 'Public' });
+//         }
+//         if (isPrivate === 'true') {
+//             categoryConditions.push({ 'Owner': owner });
+//         }
+//         if (isShared === 'true') {
+//             categoryConditions.push({ 'Category': 'Shared' });
+//         }
+
+//         // Now, use $or to apply these category conditions if more than one flag is true
+//         if (categoryConditions.length > 0) {
+//             matchConditions.push({ $or: categoryConditions });
+//         }
+
+//         // Determine the initial collection based on flags
+//         let initialCollectionName;
+
+//         if (isPublic === 'true') {
+//             initialCollectionName = datasetCollection;
+//         } else if (isPrivate === 'true' || isShared === 'true') {
+//             initialCollectionName = userDatasetsCollection;
+//         }
+
+
+//         let matchStage = {};
+//         if (matchConditions.length > 0) {
+//             matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+//         }
+
+//         // Initial aggregation pipeline
+//         let facetsPipeline = [
+//             { $match: matchStage },
+//             { $unwind: '$Selected Cell Types' },
+//             { $unwind: '$Disease Status (Donor)' },
+//             {
+//                 $facet: {
+//                     // Each facet is directly within $facet and maps to its pipeline
+//                     'Species': [
+//                         { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     'Category': [
+//                         { $group: { _id: '$Category', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     'Author': [
+//                         { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     // 'Anatomical Entity': [
+//                     //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+//                     //     { $sort: { count: -1 } }
+//                     // ],
+//                     // More facets as per your requirement
+//                     'Organ Part': [
+//                         { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     'Selected Cell Types': [
+//                         { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     'Disease Status (Donor)': [
+//                         { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
+//                         {
+//                             $project: {
+//                                 _id: '$_id',
+//                                 count: { $size: "$uniqueValues" }
+//                             }
+//                         },
+//                         { $sort: { count: -1 } }
+//                     ],
+//                     // 'Disease Status (Donor)': [
+//                     //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+//                     //     { $sort: { count: -1 } }
+//                     // ],
+//                     // totalCount: [{ $count: "total" }],
+//                     // documents: [
+//                     //     //   { $skip: (page - 1) * pageSize }, 
+//                     //     //   { $limit: pageSize },
+//                     //     {
+//                     //         $project: {
+//                     //             Title: "$Title",
+//                     //             Id: "$Id",
+//                     //             Category: "$Category",
+//                     //             Owner: "$Owner",
+//                     //             Species: "$Species.label",
+//                     //             'Organ Part': "$Organ Part.label",
+//                     //             'Cell Count Estimate': "$Cell Count Estimate",
+//                     //             'Development Stage': "$Development Stage",
+//                     //             'Disease Status (Donor)': "$Disease Status (Donor).label",
+//                     //             // 'Anatomical Entity': "$Anatomical Entity.label",
+//                     //             // 'Disease Status (Donor)': "$Disease Status (Donor).label",
+//                     //             Author: "$Author",
+//                     //             'Source': "$Source",
+//                     //             'Submission Date': "$Submission Date",
+//                     //             'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
+//                     //             'adata_path': "$adata_path",
+//                     //             'process_ids': "$process_ids"
+//                     //         }
+//                     //     }
+//                     // ],
+//                 }
+//             }
+//         ];
+
+//         // Build the pipeline for search results with pagination
+//         let searchResultsPipeline = [
+//             { $match: matchStage },
+//         ];
+
+//         // If both flags are true, use $unionWith to combine collections
+//         if (isPrivate === 'true' || (isPublic === 'true' && (isPrivate === 'true' || isShared === 'true'))) {
+//             facetsPipeline.unshift({
+//                 $unionWith: {
+//                     coll: userDatasetsCollection,
+//                 }
+//             });
+
+//             searchResultsPipeline.unshift({
+//                 $unionWith: {
+//                     coll: userDatasetsCollection,
+//                 }
+//             });
+//             // pipeline.push({ $group: { _id: "$Id" }});
+//             initialCollectionName = datasetCollection; // Start with the "public" datasets collection
+//         }
+
+//         const collection = db.collection(initialCollectionName);
+
+//         const facetResult = await collection.aggregate(facetsPipeline).toArray();
+
+//         // Pagination: Get total count for the query
+//         const totalCount = await collection.countDocuments(matchStage);
+
+
+
+//         // Get the paginated search results
+//         const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
+
+//         // Assuming the first element contains the desired structure
+//         // const data = result[0];
+
+//         // Extract and transform facets, excluding facets that would result in an empty array
+//         // const facets = Object.keys(data)
+//         // .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+//         // .reduce((acc, key) => {
+//         //     // Check if data[key] exists, is an array, and has length before mapping
+//         //     if (Array.isArray(data[key]) && data[key].length > 0) {
+//         //         acc[key] = data[key].map(facet => ({
+//         //             _id: facet._id, // Assuming each object has an _id field
+//         //             count: facet.count // Assuming each object has a count field
+//         //         }));
+//         //     }
+//         //     // If data[key] doesn't exist, isn't an array, or is empty, it's not included
+//         //     return acc;
+//         // }, {});
+
+//         res.json({
+//             results: searchResults,
+//             facets: facetResult[0],
+//             pagination: {
+//                 totalCount: totalCount,
+//                 page,
+//                 pageSize,
+//                 pageCount: Math.ceil(totalCount / pageSize),
+//             }
+//         });
+//     } catch (error) {
+//         console.error('Search failed:', error);
+//         res.status(500).send('An error occurred while searching.');
+//     } finally {
+//         if (client) {
+//             await client.close();
+//         }
+//     }
+// });
+
+
 // API endpoint to get process results based on an array of process_ids
 app.post('/node/getPreProcessResults', async (req, res) => {
     let client;
@@ -3091,8 +3447,8 @@ app.post('/node/getPreProcessResults', async (req, res) => {
 });
 
 
-  // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/node/getBenchmarksResults', async (req, res) => {
+// API endpoint to get Benchmarks results based on benchmarksId
+app.post('/node/getBenchmarksResults', async (req, res) => {
     let client;
     try {
 
@@ -3240,8 +3596,8 @@ app.get('/node/fetchGraphData/:process_id', async (req, res) => {
 });
 
 
-  // API endpoint to get Benchmarks results based on benchmarksId
-  app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res) => {
+// API endpoint to get Benchmarks results based on benchmarksId
+app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res) => {
     let client;
     try {
 
@@ -3255,7 +3611,7 @@ app.get('/node/fetchGraphData/:process_id', async (req, res) => {
 
         await client.connect();
         const db = client.db(dbName);
-        const collection  = db.collection(benchmarksCollection);
+        const collection = db.collection(benchmarksCollection);
 
     // Fetching the benchmark result with the corresponding dataset details
     const benchmarksResults = await collection.aggregate([
@@ -3319,6 +3675,61 @@ app.delete('/node/deleteDataset', async (req, res) => {
         await client.close();
     }
 });
+
+// API endpoint to get complete dataset details along with preprocess results based on datasetId
+app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
+    let client;
+    try {
+        const datasetId = req.body.datasetId;
+
+        if (!datasetId) {
+            return res.status(400).json({ error: 'No datasetId is provided' });
+        }
+
+        client = new MongoClient(mongoUrl);
+
+        await client.connect();
+        const db = client.db(dbName);
+
+        // Select appropriate collection based on datasetId pattern
+        let collection = (datasetId.startsWith("U-") && datasetId.includes("@")) 
+            ? db.collection(userDatasetsCollection) 
+            : db.collection(datasetCollection);
+
+        // Fetch dataset details along with preprocessing results using lookup and match
+        const datasetInfo = await collection.aggregate([
+            {
+                $match: { Id: datasetId }  // Match dataset based on datasetId
+            },
+            {
+                $lookup: {
+                    from: preProcessResultsCollection,  // Collection containing pre-process results
+                    localField: 'process_ids',          // Array field in dataset collection
+                    foreignField: 'process_id',         // Field in preprocessResults matching process_ids
+                    as: 'preProcessResults'             // Output array field for pre-process results
+                }
+            },
+            {
+                $project: {
+                    datasetDetails: { $mergeObjects: "$$ROOT" },  // Get all fields from the original dataset
+                    preProcessResults: 1,                         // Include the preProcessResults array
+                    _id: 0,                                       // Exclude the _id field from the final result
+                }
+            }
+        ]).toArray();
+        
+
+        res.status(200).json(datasetInfo);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+});
+
 
 
 // Start the server

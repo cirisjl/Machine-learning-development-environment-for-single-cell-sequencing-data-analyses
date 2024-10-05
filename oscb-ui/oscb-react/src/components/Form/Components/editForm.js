@@ -187,7 +187,7 @@ class EditForm extends Component {
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
-      if(flow === 'upload') {
+      if(flow === "Benchmark") {
         // formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
         if (typeof taskData.quality_control !== 'undefined') {
           if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
@@ -278,7 +278,7 @@ class EditForm extends Component {
             taskOptions: this.state.options["Task"],
             options: this.state.options,
             newOptions: this.state.newOptions,
-            status: flow === "upload" ? "completed" : ''
+            status: flow === "Benchmark" ? "completed" : ''
           },
         }));
   

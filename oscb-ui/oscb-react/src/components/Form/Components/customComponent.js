@@ -1,11 +1,10 @@
 import React, { Component , useEffect} from 'react';
-import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { NODE_API_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
 import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
-import AccessDenied from '../../AccessDeniedPage';
+import TableComponent from '../../publishDatasets/components/labelTableComponent.js';
 
 class MyForm extends Component {
   constructor(props) {
@@ -116,19 +115,24 @@ class MyForm extends Component {
   
 
   handleCreateOption = (fieldName, inputValue) => {
-
       // Check if the option has already been created to prevent duplicate calls
       if (!this.optionAlreadyCreated(fieldName, inputValue)) {
         this.addNewOptionToMongoDB(fieldName, inputValue);
       }
+  
       this.setState((prevState) => {
         const newOption = { value: inputValue, label: inputValue };
         const updatedOptions = { ...prevState.options };
         updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+  
+      // Determine if the field should be treated as an array or a single value field
+      const isArrayField = Array.isArray(prevState.formData[fieldName]);
     
         const updatedFormData = {
           ...prevState.formData,
-          [fieldName]: newOption,
+        [fieldName]: isArrayField
+          ? [...(prevState.formData[fieldName] || []), newOption] // Append to array field
+          : newOption, // Set as single value for non-array field
         };
 
         const updatedNewOptions = [
@@ -143,6 +147,7 @@ class MyForm extends Component {
         };
       });
   };
+  
 
   optionAlreadyCreated = (fieldName, inputValue) => {
     return this.state.newOptions.some(
@@ -193,7 +198,7 @@ class MyForm extends Component {
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 
-      if(flow === 'upload') {  // Benchmark Dataset
+      if(flow === "Benchmark") {  // Benchmark Dataset
         // formData['Cell Count Estimate'] = taskData.quality_control.qc_results[0]?.metadata?.nCells || 0;
         if (typeof taskData.quality_control !== 'undefined') {
           if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
@@ -247,9 +252,12 @@ class MyForm extends Component {
       formData.Category = "Public";
       // formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
       formData.info = taskData.quality_control.qc_results[0]?.info;
+      formData.layers = taskData.quality_control.qc_results[0]?.layers;
       // formData.format = taskData.quality_control.qc_results[0]?.format;
       formData.default_assay = taskData.quality_control.seurat_meta?.default_assay;
       formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;
+      formData.adata_size = taskData.quality_control.qc_results[0]?.adata_size;
+      formData.embeddings = taskData.quality_control.qc_results[0]?.embeddings;
       // formData.output = taskData.quality_control.seurat_meta?.output;
 
       } else { // User Dataset
@@ -265,6 +273,15 @@ class MyForm extends Component {
         // formData.inputFiles = [taskData.upload.final_files.adata_path];
         formData.files = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
+        // formData.cell_metadata = taskData.upload.final_files.cell_metadata;
+        formData.cell_metadata_head = taskData.upload.final_files.cell_metadata_head;
+        // formData.obs_names = taskData.upload.final_files.obs_names;
+        // formData.nCells = taskData.upload.final_files.nCells;
+        formData.nGenes = taskData.upload.final_files.nGenes;
+        formData.layers = taskData.upload.final_files.layers;
+        formData.info = taskData.upload.final_files.info;
+        formData.adata_size = taskData.upload.final_files.adata_size;
+        formData.embeddings = taskData.upload.final_files.embeddings;
       }
 
       formData.flow = flow;
@@ -286,7 +303,7 @@ class MyForm extends Component {
             taskOptions: this.state.options["Task"],
             options: this.state.options,
             newOptions: this.state.newOptions,
-            status: flow === "upload" ? "completed" : ''
+            status: flow === "Benchmark" ? "completed" : ''
           },
         }));
   
@@ -361,11 +378,18 @@ class MyForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length === 0) {
-      errors['Selected Cell Types'] = 'Selected Cell Types is required';
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+      formData['Selected Cell Types)'] = {
+        'value': 'Unspecified',
+        'label': ['Unspecified']
+      }
     }
-    if (!formData['Disease Status (Specimen)'] || formData['Disease Status (Specimen)'].length === 0) {
-      errors['Disease Status (Specimen)'] = 'Disease Status (Specimen) is required';
+
+    if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
+      formData['Disease Status (Donor)'] = [ {
+        'value': 'Unspecified',
+        'label': 'Unspecified'
+      } ]
     }
     // if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
     //   errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
@@ -389,6 +413,10 @@ class MyForm extends Component {
     if (typeof taskData.quality_control !== 'undefined') {
       if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
         formData['Cell Count Estimate'] = taskData.quality_control.nCells || 0;
+      }
+    } else if (taskData.upload !== 'undefined'){
+      if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) {
+        formData['Cell Count Estimate'] = taskData.upload.final_files.nCells || 0;
       }
     }
 
@@ -616,22 +644,31 @@ class MyForm extends Component {
 
           {/* "Selected Cell Types" (CreatableSelect) */}
           <div className="form-field"><div>
-              <label className="form-label">Selected Cell Types:</label>
-              <span className="ui-form-title-message warning"> * required </span></div>
-            <CreatableSelect
+              <label className="form-label">Cell Type Annotation:</label></div>
+            <Select
               name="Selected Cell Types"
-              isMulti
               value={formData['Selected Cell Types']}
               isClearable
               isSearchable
-              required
               isLoading={isLoading}
-              onChange={(selectedOptions) => this.handleMultiSelectChange('Selected Cell Types', selectedOptions)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Selected Cell Types', inputValue)}
-              options={options['Selected Cell Types']} // Set options to the fetched options
-              className={`form-input ${errors['Selected Cell Types'] ? 'error' : ''}`}
+              onChange={(selectedOption) => this.handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange  
+              options={ taskData.quality_control ? 
+                Object.entries(taskData.quality_control.qc_results[0].cell_metadata).map((entry) => ({
+                label: entry[0],
+                value: Object.values(entry[1])[0],
+              })) 
+              : 
+                Object.entries(taskData.upload.final_files.cell_metadata).map((entry) => ({
+                  label: entry[0],
+                  value: Object.values(entry[1])[0],
+                })) 
+              } // Set options to the fetched options
+              className={`form-input`}
             />
-            {errors['Selected Cell Types'] && <div className="error-tooltip">{errors['Selected Cell Types']}</div>}
+          </div>
+
+          <div className="label-table-container">
+                    <TableComponent cellMetadataObs={taskData.quality_control ? taskData.quality_control.qc_results[0].cell_metadata_head : taskData.upload.final_files.cell_metadata_head} />
           </div>
 
           {/* "Library Construction Method" (CreatableSelect) */}
@@ -674,7 +711,7 @@ class MyForm extends Component {
                   type="radio"
                   name="Paired End"
                   value= "true"
-                  checked={formData["Paired End"] === "true"}
+                  checked={!formData["Paired End"]  || formData["Paired End"] === "true" ? true : false}
                   onChange={this.handleChange}
                   className="form-input"
                 />
@@ -685,7 +722,7 @@ class MyForm extends Component {
                   type="radio"
                   name="Paired End"
                   value="false"
-                  checked={formData["Paired End"] === "false"}
+                  checked={formData["Paired End"] === "false" ? true : false}
                   onChange={this.handleChange}
                   className="form-input"
                 />
@@ -705,29 +742,9 @@ class MyForm extends Component {
             />
           </div>
 
-          {/* "Disease Status (Specimen)" (CreatableSelect) */}
-          <div className="form-field"><div>
-            <label className="form-label">Disease Status (Specimen):</label>
-              <span className="ui-form-title-message warning"> * required </span></div>
-            <CreatableSelect
-              name="Disease Status (Specimen)"
-              value={formData['Disease Status (Specimen)']}
-              isMulti
-              isClearable
-              isSearchable
-              isLoading={isLoading}
-              onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Specimen)', selectedOptions)} // Use handleSelectChange              
-              onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
-              options={options['Disease Status (Specimen)']} // Set options to the fetched options
-              className={`form-input ${errors['Disease Status (Specimen)'] ? 'error' : ''}`}
-            />
-            {errors['Disease Status (Specimen)'] && <div className="error-tooltip">{errors['Disease Status (Specimen)']}</div>}
-          </div>
-
-
           {/* "Disease Status (Donor)" (CreatableSelect) */}
           <div className="form-field"><div>
-              <label className="form-label">Disease Status (Donor):</label>
+            <label className="form-label">Disease Status (Donor):</label>
             </div>
             <CreatableSelect
               name="Disease Status (Donor)"
@@ -743,6 +760,25 @@ class MyForm extends Component {
             />
           </div>
 
+
+          {/* "Disease Status (Specimen)" (CreatableSelect) */}
+          <div className="form-field"><div>
+              <label className="form-label">Disease Status (Specimen):</label>
+            </div>
+            <CreatableSelect
+              name="Disease Status (Specimen)"
+              value={formData['Disease Status (Specimen)']}
+              isMulti
+              isClearable
+              isSearchable
+              isLoading={isLoading}
+              onChange={(selectedOptions) => this.handleMultiSelectChange('Disease Status (Specimen)', selectedOptions)} // Use handleSelectChange              
+              onCreateOption={(inputValue) => this.handleCreateOption('Disease Status (Specimen)', inputValue)}
+              options={options['Disease Status (Specimen)']} // Set options to the fetched options
+              className="form-input"
+            />
+          </div>
+
           {/* "Development Stage" (CreatableSelect) */}
           <div className="form-field">
             <label className="form-label">Development Stage:</label>
@@ -751,7 +787,6 @@ class MyForm extends Component {
               value={formData['Development Stage']}
               isMulti
               isClearable
-              isSearchable
               isLoading={isLoading}
               onChange={(selectedOptions) => this.handleMultiSelectChange('Development Stage', selectedOptions)} // Use handleSelectChange              
               onCreateOption={(inputValue) => this.handleCreateOption('Development Stage', inputValue)}

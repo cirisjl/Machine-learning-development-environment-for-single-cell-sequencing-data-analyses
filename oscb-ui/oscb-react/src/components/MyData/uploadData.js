@@ -54,7 +54,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
     const [isAdminuser, setIsAdminUser] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [jobId, setjobId] = useState('');
 
     let [selectedAliases, setSelectedAliases] = useState([]);
     const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'features.tsv.gz'];
@@ -321,7 +321,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         }));
     };
 
-    const handleAssaySelectionSubmit = () => {
+    const handleAssaySelectionSubmit = async () => {
 
         if(taskData.upload.selectedAssayName === '') {
             setErrorMessage('Please select the default assay to continue');
@@ -367,13 +367,18 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         if (taskData.upload.selectedAssayName) {
             payload.assay_name = taskData.upload.selectedAssayName;
         }
+
+        const response = await axios.post(`${CELERY_BACKEND_API}/tools/qc`, inputRequest);
+        const taskInfo = response.data;
+        const jobId = taskInfo.job_id;
+        setjobId(jobId);
     
         // Make the API call
-        axios.post(`${CELERY_BACKEND_API}/convert/to_adata_or_srat`, payload)
+        axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
         .then(response => {
             // Handle your response here
             console.log(response.data);
-            let data = response.data[0];
+            let data = response.data;
             setTaskData(prevTaskData => ({
                 ...prevTaskData,
                 upload: {
@@ -384,6 +389,15 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         adata_path: data.adata_path,
                         format: data.format,
                         default_assay: data.default_assay,
+                        cell_metadata: data.cell_metadata,
+                        cell_metadata_head: data.cell_metadata_head,
+                        obs_names: data.obs_names,
+                        nCells: data.nCells,
+                        nGenes: data.nGenes,
+                        layers: data.layers,
+                        info: data.info,
+                        adata_size: data.adata_size,
+                        embeddings: data.embeddings,
                         status: 'completed',
                     },
                 },
@@ -555,10 +569,10 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 userID : authData.username
                             };
                             
-                            axios.post(`${CELERY_BACKEND_API}/benchmarks/to_adata_or_srat`, data)
+                            axios.post(`${CELERY_BACKEND_API}/tools/metadata`, data)
                             .then(function (response) {
                                 console.log(response.data);
-                                let data = response.data[0];
+                                let data = response.data;
                                 if(data.format === 'h5seurat') {
                                     if(data.assay_names && data.assay_names.length > 1) {
                                         setTaskData(prevTaskData => ({
@@ -568,6 +582,15 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                                 displayAssayNames: true,
                                                 assayNames: data.assay_names,
                                                 default_assay: data.default_assay,
+                                                // cell_metadata: data.cell_metadata,
+                                                // cell_metadata_head: data.cell_metadata_head,
+                                                // obs_names: data.obs_names,
+                                                // nCells: data.nCells,
+                                                // nGenes: data.nGenes,
+                                                // layers: data.layers,
+                                                // info: data.info,
+                                                // adata_size: data.adata_size,
+                                                // embeddings: data.embeddings,
                                             },
                                         }));
                                         return;
@@ -582,6 +605,15 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                                     adata_path: data.adata_path,
                                                     format: data.format,
                                                     default_assay: data.default_assay,
+                                                    cell_metadata: data.cell_metadata,
+                                                    cell_metadata_head: data.cell_metadata_head,
+                                                    obs_names: data.obs_names,
+                                                    nCells: data.nCells,
+                                                    nGenes: data.nGenes,
+                                                    layers: data.layers,
+                                                    info: data.info,
+                                                    adata_size: data.adata_size,
+                                                    embeddings: data.embeddings,
                                                     status: 'completed'
                                                 },
                                             },
@@ -598,12 +630,19 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                                 inputFiles: data.inputfile,
                                                 adata_path: data.adata_path,
                                                 format: data.format,
+                                                cell_metadata: data.cell_metadata,
+                                                cell_metadata_head: data.cell_metadata_head,
+                                                obs_names: data.obs_names,
+                                                nCells: data.nCells,
+                                                nGenes: data.nGenes,
+                                                layers: data.layers,
+                                                info: data.info,
+                                                adata_size: data.adata_size,
+                                                embeddings: data.embeddings,
                                                 status: 'completed'
                                             },
                                         },
-                                    }));
-                                    
-                                   
+                                    }));                    
                                 }
                                 
                 setTaskStatus((prevTaskStatus) => ({

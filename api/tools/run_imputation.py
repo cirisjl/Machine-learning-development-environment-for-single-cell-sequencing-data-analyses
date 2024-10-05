@@ -283,6 +283,8 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
     upsert_jobs(
         {
             "job_id": job_id, 
+            "datasetId": datasetId,
+            "process_ids": process_ids,
             "output": imputation_output,
             "results": results,
             "completed_on": datetime.now(),
