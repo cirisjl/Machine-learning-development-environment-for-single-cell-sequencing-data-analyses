@@ -2972,6 +2972,40 @@ app.post('/node/getPreProcessResults', async (req, res) => {
     }
 });
 
+// API endpoint to get pre-process result based on a single process_id
+app.post('/node/getPreProcessResult', async (req, res) => {
+    let client;
+    
+    try {
+        const { processId } = req.body;
+
+        client = new MongoClient(mongoUrl);
+        await client.connect();
+        const db = client.db(dbName);
+        const collection = db.collection(preProcessResultsCollection);
+
+        if (!processId) {
+            return res.status(400).json({ error: 'No process ID is provided.' });
+        }
+        // Fetching the document where process_id matches the provided processId
+        const processResult = await collection.findOne(
+            { process_id: processId },
+        );
+
+        if (!processResult) {
+            return res.status(404).json({ error: 'No result found for the provided process ID.' });
+        }
+
+        res.status(200).json(processResult);
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        client.close();
+    }
+});
+
+
 // API endpoint to get Benchmarks results based on benchmarksId
 app.post('/node/getBenchmarksResults', async (req, res) => {
     let client;
@@ -3237,8 +3271,11 @@ app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
             {
                 $project: {
                     datasetDetails: { $mergeObjects: "$$ROOT" },  // Get all fields from the original dataset
-                    preProcessResults: 1,                         // Include the preProcessResults array
-                    _id: 0,                                       // Exclude the _id field from the final result
+                    preProcessResults: {
+                        process_id: 1,   
+                        description: 1  
+                    },                       
+                    _id: 0,                                 
                 }
             }
         ]).toArray();
