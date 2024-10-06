@@ -83,6 +83,9 @@
     display: block;
   }
   
+.label-table-container{
+  overflow: auto;
+}
 .label-table-container .table-container {
   overflow-x: auto; /* Enable horizontal scrolling */
   margin: 1rem; /* Add some spacing around the table */

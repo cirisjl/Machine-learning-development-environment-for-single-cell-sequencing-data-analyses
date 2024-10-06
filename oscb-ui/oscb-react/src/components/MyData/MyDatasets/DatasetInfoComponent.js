@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
+import { Descriptions } from 'antd';
 
 import { styled } from '@mui/material/styles';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
