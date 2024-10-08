@@ -72,21 +72,21 @@ def create_evaluation_task(self, dataset, input, userID, output, methods, layer=
 
 
 # Benchmarks
-@shared_task(bind=True, name='benchmarks:create_benchmarks_task') 
+@shared_task(bind=True, name='tools:create_benchmarks_task') 
 def create_benchmarks_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_benchmarks(job_id, task_dict)
     return results
 
 
-@shared_task(bind=True, name='benchmarks:create_data_split_task') 
+@shared_task(bind=True, name='tools:create_data_split_task') 
 def create_data_split_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_data_split(job_id, task_dict)
     return results
 
 
-@shared_task(bind=True, name='benchmarks:create_subset_data_task') 
+@shared_task(bind=True, name='tools:create_subset_data_task') 
 def create_subset_data_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_subset_data(job_id, task_dict)
@@ -94,7 +94,7 @@ def create_subset_data_task(self, task_dict:dict):
 
 
 # Workflows
-@shared_task(bind=True, name='workflows:create_clustering_task') 
+@shared_task(bind=True, name='tools:create_clustering_task') 
 def create_clustering_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_clustering(job_id, ds_dict)

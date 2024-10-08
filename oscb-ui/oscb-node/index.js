@@ -2165,7 +2165,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                         }
                     },
                     {
-                        'Disease Status (Specimen)': {
+                        'Disease Status (Donor)': {
                             $elemMatch: {
                                 label: { $regex: globalSearchQuery, $options: 'i' }
                             }
@@ -2212,7 +2212,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       // Define the pipeline for facets
       const facetsPipeline = [
         { $match: matchStage },
-        { $unwind: '$Selected Cell Types' },
+        { $unwind: '$Selected Cell Types.value' },
         { $unwind: '$Disease Status (Donor)' },
         { $facet: {
           'Species': [
@@ -2356,7 +2356,7 @@ app.post('/node/tasks/search', async (req, res) => {
                         }
                     },
                     {
-                        'datasetDetails.Disease Status (Specimen)': {
+                        'datasetDetails.Disease Status (Donor)': {
                             $elemMatch: {
                                 label: { $regex: globalSearchQuery, $options: 'i' }
                             }
@@ -2427,7 +2427,7 @@ app.post('/node/tasks/search', async (req, res) => {
 
 
         const facetAndDocumentsPipeline = [
-            { $unwind: '$datasetDetails.Selected Cell Types' },
+            { $unwind: '$datasetDetails.Selected Cell Types.value' },
             { $unwind: '$datasetDetails.Disease Status (Donor)' },
             {
                 $facet: {
@@ -2545,7 +2545,6 @@ app.post('/node/tasks/search', async (req, res) => {
                 }
             }
         ];
-
 
         const finalPipeline = basePipeline.concat(facetAndDocumentsPipeline);
 
@@ -2866,12 +2865,12 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     {
                         'Selected Cell Types': {
                             $elemMatch: {
-                                label: { $regex: globalSearchQuery, $options: 'i' }
+                                value: { $regex: globalSearchQuery, $options: 'i' }
                             }
                         }
                     },
                     {
-                        'Disease Status (Specimen)': {
+                        'Disease Status (Donor)': {
                             $elemMatch: {
                                 label: { $regex: globalSearchQuery, $options: 'i' }
                             }
@@ -2944,7 +2943,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
         // Initial aggregation pipeline
         let pipeline = [
             { $match: matchStage },
-            { $unwind: '$Selected Cell Types' },
+            { $unwind: '$Selected Cell Types.value' },
             { $unwind: '$Disease Status (Donor)' },
             {
                 $facet: {

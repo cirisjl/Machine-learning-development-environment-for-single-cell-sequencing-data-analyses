@@ -191,7 +191,7 @@ class MyForm extends Component {
       // const tissue = (formData['Sample Type'] + '_' + formData['Organ Part']).label.replace(' ', '_').replace('-', '_');
       let tissue = formData['Organ Part'].label.replace(' ', '_').replace('-', '_');
       if (formData['Sample Type'] && formData['Sample Type'].value != ''){
-        tissue = (formData['Sample Type'] + '_' + formData['Organ Part']).label.replace(' ', '_').replace('-', '_');
+        tissue = (formData['Sample Type'] + '_' + tissue).replace(' ', '_').replace('-', '_');
       }
 
       const author = formData['Author'];
@@ -669,7 +669,7 @@ class MyForm extends Component {
           </div>
 
           <div className="label-table-container">
-                    <TableComponent cellMetadataObs={taskData.quality_control ? taskData.quality_control.qc_results[0].cell_metadata_head : taskData.upload.final_files.cell_metadata_head} />
+            <TableComponent cellMetadataObs={ taskData.quality_control ? taskData.quality_control.qc_results[0].cell_metadata_head : taskData.upload.final_files.cell_metadata_head} />
           </div>
 
           {/* "Library Construction Method" (CreatableSelect) */}
