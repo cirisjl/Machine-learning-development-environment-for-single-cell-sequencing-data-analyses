@@ -11,9 +11,9 @@ import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import React from "react";
 import ToggleSwitch from "../ToggleSwitch";
 import axios from 'axios';
-import {CELERY_BACKEND_API} from '../../constants/declarations'
+import { CELERY_BACKEND_API } from '../../constants/declarations'
 import ReactSelect from 'react-select';
-import {ScaleLoader } from 'react-spinners';
+import { ScaleLoader } from 'react-spinners';
 import { Select, MenuItem } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -29,8 +29,9 @@ import { useLocation } from 'react-router-dom';
 import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
 import FileManagerModal from "./fileManagerModal";
+import useWebSocketToCheckStatus from "../common_components/webSocketForStatus";
 
-export default function UploadData({taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow}) {
+export default function UploadData({ taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow }) {
     const [isFileManagerOpen, setIsFileManagerOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState(taskData?.upload?.files);
     const [pwd, setPwd] = useState('/');
@@ -54,7 +55,9 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
     const [isAdminuser, setIsAdminUser] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
     const [jobId, setjobId] = useState('');
+    const [metadataResult, setMetadataResult] = useState({});
 
     let [selectedAliases, setSelectedAliases] = useState([]);
     const acceptedMultiFileNames = ['molecules.txt', 'annotation.txt', 'barcodes.tsv', 'genes.tsv', 'matrix.mtx', 'barcodes.tsv.gz', 'genes.tsv.gz', 'matrix.mtx.gz', 'features.tsv', 'features.tsv.gz'];
@@ -65,6 +68,24 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         ['barcodes.tsv', 'features.tsv', 'matrix.mtx'],
         ['barcodes.tsv.gz', 'features.tsv.gz', 'matrix.mtx.gz']
     ];
+
+
+    const handleStatusMessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.task_status) {
+            setCurrentStatus(data.task_status);
+            if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
+              setMetadataResult(data);
+            }
+          }
+        } catch (error) {
+          setIsLoading(false);
+          console.error("Error parsing status message:", error);
+        }
+      };
+
+      const { closeWebSockets } = useWebSocketToCheckStatus(jobId, handleStatusMessage, setIsLoading);
 
     // Custom styled components
     const ScrollableListContainer = styled('div')(({ theme }) => ({
@@ -78,19 +99,19 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const removeFile = async (item, indexToRemove) => {
         try {
 
-          // If successful, update the state to remove the file from the list
-          setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
-          setSelectedAliases(selectedAliases.filter((_, index) => index !== indexToRemove));
-    
+            // If successful, update the state to remove the file from the list
+            setSelectedFiles(selectedFiles.filter((_, index) => index !== indexToRemove));
+            setSelectedAliases(selectedAliases.filter((_, index) => index !== indexToRemove));
+
         } catch (error) {
-          console.error("Error deleting file:", error);
-          // Handle error (e.g., show error message to the user)
+            console.error("Error deleting file:", error);
+            // Handle error (e.g., show error message to the user)
         }
     };
-    
+
     const CustomListItem = styled(ListItem)(({ theme }) => ({
         '&:hover': {
-        backgroundColor: theme.palette.action.hover,
+            backgroundColor: theme.palette.action.hover,
         },
         cursor: 'pointer', // Change cursor on hover to indicate an item is clickable
     }));
@@ -98,11 +119,11 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
     const [publicDatasetFlag, setPublicDatasetFlag] = useState(false);
 
     useEffect(() => {
-      // Check if pwd starts with "publicDatasets" or contains "publicDatasets"
-      const containsPublicDatasets = pwd.startsWith('publicDatasets') || pwd.startsWith('/publicDatasets');
-      
-      // Update the state of publicDatasets accordingly
-      setPublicDatasetFlag(containsPublicDatasets);
+        // Check if pwd starts with "publicDatasets" or contains "publicDatasets"
+        const containsPublicDatasets = pwd.startsWith('publicDatasets') || pwd.startsWith('/publicDatasets');
+
+        // Update the state of publicDatasets accordingly
+        setPublicDatasetFlag(containsPublicDatasets);
     }, [pwd]); // Run this effect whenever pwd changes
 
     const handleMouseOver = () => {
@@ -117,26 +138,26 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         setErrorMessage('');
     }
     useEffect(() => {
-        isUserAuth(jwtToken)  
-        .then((authData) => {
-            console.log(authData)
-            if (authData.isAuth) {
-              setIsAdminUser(authData.isAdmin);
-              console.log("is Admin User::::: " + isAdminuser);
-              console.log("is Admin User::::: " + authData.isAdmin);
-            } else {
-              console.warn("Unauthorized - pLease login first to continue");
-              navigate("/routing");
-            }
-          })
-          .catch((error) => console.error(error));
+        isUserAuth(jwtToken)
+            .then((authData) => {
+                console.log(authData)
+                if (authData.isAuth) {
+                    setIsAdminUser(authData.isAdmin);
+                    console.log("is Admin User::::: " + isAdminuser);
+                    console.log("is Admin User::::: " + authData.isAdmin);
+                } else {
+                    console.warn("Unauthorized - pLease login first to continue");
+                    navigate("/routing");
+                }
+            })
+            .catch((error) => console.error(error));
     }, []);
-    
+
     useEffect(() => {
         const hookForUpdate = async () => {
             if (mode === 'update') {
                 console.log('Mode: ' + mode);
-                formInfo.makeItpublic = (formInfo.makeItpublic !==null) ? formInfo.makeItpublic : publicdataset;
+                formInfo.makeItpublic = (formInfo.makeItpublic !== null) ? formInfo.makeItpublic : publicdataset;
                 formInfo.reference = (formInfo.reference !== null) ? formInfo.reference : '';
                 formInfo.summary = (formInfo.summary !== null) ? formInfo.summary : '';
                 setSelectedFiles(currentFileList);
@@ -196,7 +217,7 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
             makeItpublic: false,
             authToken: '',
         };
-              
+
         // Reset taskData.upload to default values
         setTaskData(prevTaskData => ({
             ...prevTaskData,
@@ -235,8 +256,8 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         const txt = { "molecules": "molecules.txt", "annotation": "annotation.txt" }
         const tsv = { "cells": "barcodes.tsv", "genes": "genes.tsv", "features": "features.tsv" }
         const tsv_gz = { "cells": "barcodes.tsv.gz", "genes": "genes.tsv.gz", "features": "features.tsv.gz" }
-        const mtx = {"matrix": "matrix.mtx"}
-        const mtx_gz = {"matrix": "matrix.mtx.gz"}
+        const mtx = { "matrix": "matrix.mtx" }
+        const mtx_gz = { "matrix": "matrix.mtx.gz" }
 
         if (fileName.endsWith('.txt')) {
             return txt[fileType];
@@ -269,10 +290,10 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
         let newDir = ''
         jwtToken = getCookie('jwtToken');
 
-        if(subdir === "publicDatasets") {
+        if (subdir === "publicDatasets") {
             newDir = subdir;
             setPwd(newDir)
-        } else if(pwd === "publicDatasets" && subdir === ".." ) {
+        } else if (pwd === "publicDatasets" && subdir === "..") {
             newDir = ""
             setPwd(newDir)
         }
@@ -323,23 +344,23 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
 
     const handleAssaySelectionSubmit = async () => {
 
-        if(taskData.upload.selectedAssayName === '') {
+        if (taskData.upload.selectedAssayName === '') {
             setErrorMessage('Please select the default assay to continue');
             return;
         }
         setIsLoading(true); // Start loading
 
-        if(taskData.upload.selectedAssayName === taskData.upload.default_assay) {
+        if (taskData.upload.selectedAssayName === taskData.upload.default_assay) {
             setTaskStatus((prevTaskStatus) => ({
                 ...prevTaskStatus,
                 1: true, // Mark Task 1 as completed
             }));
-    
+
             setTaskData((prevTaskData) => ({
                 ...prevTaskData,
                 upload: {
-                ...prevTaskData.upload,
-                status: 'completed',
+                    ...prevTaskData.upload,
+                    status: 'completed',
                 },
             }));
 
@@ -353,382 +374,435 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                     },
                 },
             }));
-    
+
             //The current task is finished, so make the next task active
-            setActiveTask(2);  
+            setActiveTask(2);
         } else {
 
-        // Construct your API payload
-        const payload = {
-        fileDetails: taskData.upload.final_files.inputFiles,
-        };
-        
-        // Include assay_name in the payload only if it is not null
-        if (taskData.upload.selectedAssayName) {
-            payload.assay_name = taskData.upload.selectedAssayName;
-        }
+            // Construct your API payload
+            const payload = {
+                fileDetails: taskData.upload.final_files.inputFiles,
+            };
 
-        // const response = await axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload));
-        // const taskInfo = response.data;
-        // const jobId = taskInfo.job_id;
-        // setjobId(jobId);
-    
-        // Make the API call
-        axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
-        .then(response => {
-            // Handle your response here
-            console.log(response.data);
-            let data = response.data;
-            setTaskData(prevTaskData => ({
-                ...prevTaskData,
-                upload: {
-                    ...prevTaskData.upload,
-                    final_files: {
-                        ...prevTaskData.upload.final_files,
-                        inputFiles: data.inputfile,
-                        adata_path: data.adata_path,
-                        format: data.format,
-                        default_assay: data.default_assay,
-                        cell_metadata: data.cell_metadata,
-                        cell_metadata_head: data.cell_metadata_head,
-                        obs_names: data.obs_names,
-                        nCells: data.nCells,
-                        nGenes: data.nGenes,
-                        layers: data.layers,
-                        info: data.info,
-                        adata_size: data.adata_size,
-                        embeddings: data.embeddings,
-                        status: 'completed',
-                    },
-                },
-            }));
+            // Include assay_name in the payload only if it is not null
+            if (taskData.upload.selectedAssayName) {
+                payload.assay_name = taskData.upload.selectedAssayName;
+            }
 
-            setTaskStatus((prevTaskStatus) => ({
-                ...prevTaskStatus,
-                1: true, // Mark Task 1 as completed
-            }));
-    
-            //The current task is finished, so make the next task active
-            setActiveTask(2);   
-            setIsLoading(false);
-        })
-        .catch(error => {
-            console.error('There was an error with the conversion:', error);
-        });
-    }
-    };
+            // const response = await axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload));
+            // const taskInfo = response.data;
+            // const jobId = taskInfo.job_id;
+            // setjobId(jobId);
 
-    const handleSubmit = (event) => {
-
-        if(taskData.upload.final_files.status !== 'completed') {
-            isUserAuth(jwtToken) 
-            .then((authData) => {
-                if (authData.isAuth) {
-                    if (selectedFiles === undefined || selectedFiles.length === 0) {
-                        setErrorMessage('Select at least one file.');
-                        return;
-                    }
-                    else if (jwtToken === undefined || jwtToken.length === 0) {
-                        setErrorMessage('Please log in first.');
-                        return;
-                    }
-
-                    if (selectedFiles.length > 1) {
-                        let isFileSelectionValid = false;
-                        acceptedMultiFileSets.forEach(function (multiFileSet) {
-                            for (let i = 0; i < multiFileSet.length; i++) {
-                                if (!selectedAliases.includes(multiFileSet[i])) {
-                                    break;
-                                }
-                                else if (i == multiFileSet.length - 1)
-                                    isFileSelectionValid = true;
-                            }
-                        });
-                        console.log('Selected Aliases: ' + selectedAliases);
-                        if (!isFileSelectionValid) {
-                            setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
-                            return;
-                        }
-                        for (let i = 0; i < selectedFiles.length; i++) {
-                            const file = selectedFiles[i];
-                            const lastSlashIndex = file.lastIndexOf('/');
-                            const fileName = file.substring(lastSlashIndex + 1, file.length);
-                            if (!acceptedMultiFileNames.includes(fileName)) {
-                                if (lastSlashIndex !== -1) {
-                                    const prefix = file.substring(0, lastSlashIndex + 1);
-                                    selectedFiles[i] = prefix + selectedAliases[i];
-                                } else {
-                                    selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
-                                }
-                                fetch(`${NODE_API_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                })
-                            }
-                        }
-                    }
-                    else {
-                        const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
-                        if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
-                            setErrorMessage("The selected file is not of an accepted standard format.");
-                            return;
-                        }
-                    }
-
-                    // Update the state of the task in the taskData state
-                    setTaskData((prevTaskData) => ({
+            // Make the API call
+            axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
+                .then(response => {
+                    // Handle your response here
+                    console.log(response.data);
+                    let data = response.data;
+                    setTaskData(prevTaskData => ({
                         ...prevTaskData,
                         upload: {
-                        ...prevTaskData.upload,
-                        files: selectedFiles,
-                        makeItpublic: publicdataset,
-                        authToken: authData.username,
+                            ...prevTaskData.upload,
+                            final_files: {
+                                ...prevTaskData.upload.final_files,
+                                inputFiles: data.inputfile,
+                                adata_path: data.adata_path,
+                                format: data.format,
+                                default_assay: data.default_assay,
+                                cell_metadata: data.cell_metadata,
+                                cell_metadata_head: data.cell_metadata_head,
+                                obs_names: data.obs_names,
+                                nCells: data.nCells,
+                                nGenes: data.nGenes,
+                                layers: data.layers,
+                                info: data.info,
+                                adata_size: data.adata_size,
+                                embeddings: data.embeddings,
+                                status: 'completed',
+                            },
                         },
                     }));
 
-                    if(selectedFiles && selectedFiles.length > 0) {
+                    setTaskStatus((prevTaskStatus) => ({
+                        ...prevTaskStatus,
+                        1: true, // Mark Task 1 as completed
+                    }));
 
-                        let filesFromPublic = false;
+                    //The current task is finished, so make the next task active
+                    setActiveTask(2);
+                    setIsLoading(false);
+                })
+                .catch(error => {
+                    console.error('There was an error with the conversion:', error);
+                });
+        }
+    };
+
+    useEffect(() => {
+        if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
+          if(currentStatus === "SUCCESS") {
+            if(metadataResult.task_result.format === "h5seurat") {
+
+            } else {
+                setTaskData(prevTaskData => ({
+                    ...prevTaskData,
+                    upload: {
+                        ...prevTaskData.upload,
+                        final_files: {
+                            ...prevTaskData.upload.final_files,
+                            inputFiles: metadataResult.task_result.inputfile,
+                            adata_path: metadataResult.task_result.adata_path,
+                            format: metadataResult.task_result.format,
+                            cell_metadata: metadataResult.task_result.cell_metadata,
+                            cell_metadata_head: metadataResult.task_result.cell_metadata_head,
+                            obs_names: metadataResult.task_result.obs_names,
+                            nCells: metadataResult.task_result.nCells,
+                            nGenes: metadataResult.task_result.nGenes,
+                            layers: metadataResult.task_result.layers,
+                            info: metadataResult.task_result.info,
+                            adata_size: metadataResult.task_result.adata_size,
+                            embeddings: metadataResult.task_result.embeddings,
+                            status: 'completed'
+                        },
+                    },
+                }));    
+            }
+            
+             setTaskStatus((prevTaskStatus) => ({
+                ...prevTaskStatus,
+                1: true, // Mark Task 1 as completed
+            }));
+
+            //The current task is finished, so make the next task active
+            setActiveTask(2);
+            setIsButtonDisabled(true);
+            setTimeout(() => {
+                setIsButtonDisabled(false);
+            }, 5000);
+          }
+          else if(currentStatus === "FAILURE") {
+            console.error("Metadata API Call is failed.")
+          } 
+          setIsLoading(false);
+          closeWebSockets();
+        }
+      }, [currentStatus]); 
+
+    const handleSubmit = (event) => {
+
+        if (taskData.upload.final_files.status !== 'completed') {
+            isUserAuth(jwtToken)
+                .then((authData) => {
+                    if (authData.isAuth) {
+                        if (selectedFiles === undefined || selectedFiles.length === 0) {
+                            setErrorMessage('Select at least one file.');
+                            return;
+                        }
+                        else if (jwtToken === undefined || jwtToken.length === 0) {
+                            setErrorMessage('Please log in first.');
+                            return;
+                        }
+
+                        if (selectedFiles.length > 1) {
+                            let isFileSelectionValid = false;
+                            acceptedMultiFileSets.forEach(function (multiFileSet) {
+                                for (let i = 0; i < multiFileSet.length; i++) {
+                                    if (!selectedAliases.includes(multiFileSet[i])) {
+                                        break;
+                                    }
+                                    else if (i == multiFileSet.length - 1)
+                                        isFileSelectionValid = true;
+                                }
+                            });
+                            console.log('Selected Aliases: ' + selectedAliases);
+                            if (!isFileSelectionValid) {
+                                setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
+                                return;
+                            }
+                            for (let i = 0; i < selectedFiles.length; i++) {
+                                const file = selectedFiles[i];
+                                const lastSlashIndex = file.lastIndexOf('/');
+                                const fileName = file.substring(lastSlashIndex + 1, file.length);
+                                if (!acceptedMultiFileNames.includes(fileName)) {
+                                    if (lastSlashIndex !== -1) {
+                                        const prefix = file.substring(0, lastSlashIndex + 1);
+                                        selectedFiles[i] = prefix + selectedAliases[i];
+                                    } else {
+                                        selectedFiles[i] = selectedAliases[i]; // No slash found, push the original string
+                                    }
+                                    fetch(`${NODE_API_URL}/renameFile?oldName=${file}&newName=${selectedFiles[i]}&authToken=${jwtToken}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                    })
+                                }
+                            }
+                        }
+                        else {
+                            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+                            if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
+                                setErrorMessage("The selected file is not of an accepted standard format.");
+                                return;
+                            }
+                        }
+
+                        // Update the state of the task in the taskData state
+                        setTaskData((prevTaskData) => ({
+                            ...prevTaskData,
+                            upload: {
+                                ...prevTaskData.upload,
+                                files: selectedFiles,
+                                makeItpublic: publicdataset,
+                                authToken: authData.username,
+                            },
+                        }));
+
+                        if (selectedFiles && selectedFiles.length > 0) {
+
+                            let filesFromPublic = false;
 
                             // Logic to Copy files from public storage to user private storage if it is a public Dataset.
-                        for (const file of selectedFiles) {
-                        
-                            if(file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
-                                filesFromPublic = true;
-                                break;
-                            }
-                        }
+                            for (const file of selectedFiles) {
 
-                        if(filesFromPublic) {
-                            copyFilesToPrivateStorage(selectedFiles, authData.username)
-                            .then(response => {
-                            if (response.success) {
-                                console.log(response.message);
-                            } else {
-                                console.error(response.message);
-                            }
-                            })
-                            .catch(error => {
-                            console.error("Error:", error.message);
-                            });
-                        }
-
-                        if(filesFromPublic) {
-                            for (let i = 0; i < selectedFiles.length; i++) {
-                                selectedFiles[i] = selectedFiles[i].replace(/^\/?publicDatasets\//, '/');
-                              }
-                        }
-
-                        let updatedFiles = selectedFiles.map(file => "/usr/src/app/storage/" + authData.username + file);
-
-                        let needAPICall = false;
-                        
-                        if(updatedFiles.length === 1) {
-                            // If the length is one, that means it is not a dataset with combinations.
-                            let file = updatedFiles[0];
-
-                            if(file.toLowerCase().endsWith('h5ad')) {
-                                //Add the result to taskData
-                            // Properly update taskData using setTaskData
-                                setTaskData(prevTaskData => ({
-                                    ...prevTaskData,
-                                    upload: {
-                                        ...prevTaskData.upload,
-                                        final_files: {
-                                            ...prevTaskData.upload.final_files,
-                                            inputFiles: updatedFiles,
-                                            adata_path: updatedFiles[0],
-                                            format: 'h5ad',
-                                            status: 'completed'
-                                        },
-                                    },
-                                }));
-
-                                setTaskStatus((prevTaskStatus) => ({
-                                    ...prevTaskStatus,
-                                    1: true, // Mark Task 1 as completed
-                                }));
-                        
-                                //The current task is finished, so make the next task active
-                                setActiveTask(2);   
-                                
-                            } else {
-                                needAPICall = true;
-                            }
-                        } else {
-                            needAPICall = true;
-                        }
-
-                        if(needAPICall) {
-                            setIsLoading(true); // Start loading
-
-                            const data = {
-                                fileDetails: updatedFiles,
-                                userID : authData.username
-                            };
-                            
-                            axios.post(`${CELERY_BACKEND_API}/tools/metadata`, data)
-                            .then(function (response) {
-                                console.log(response.data);
-                                let data = response.data;
-                                if(data.format === 'h5seurat') {
-                                    if(data.assay_names && data.assay_names.length > 1) {
-                                        setTaskData(prevTaskData => ({
-                                            ...prevTaskData,
-                                            upload: {
-                                                ...prevTaskData.upload,
-                                                displayAssayNames: true,
-                                                assayNames: data.assay_names,
-                                                default_assay: data.default_assay,
-                                                // cell_metadata: data.cell_metadata,
-                                                // cell_metadata_head: data.cell_metadata_head,
-                                                // obs_names: data.obs_names,
-                                                // nCells: data.nCells,
-                                                // nGenes: data.nGenes,
-                                                // layers: data.layers,
-                                                // info: data.info,
-                                                // adata_size: data.adata_size,
-                                                // embeddings: data.embeddings,
-                                            },
-                                        }));
-                                        return;
-                                    } else {
-                                        setTaskData(prevTaskData => ({
-                                            ...prevTaskData,
-                                            upload: {
-                                                ...prevTaskData.upload,
-                                                final_files: {
-                                                    ...prevTaskData.upload.final_files,
-                                                    inputFiles: data.inputfile,
-                                                    adata_path: data.adata_path,
-                                                    format: data.format,
-                                                    default_assay: data.default_assay,
-                                                    cell_metadata: data.cell_metadata,
-                                                    cell_metadata_head: data.cell_metadata_head,
-                                                    obs_names: data.obs_names,
-                                                    nCells: data.nCells,
-                                                    nGenes: data.nGenes,
-                                                    layers: data.layers,
-                                                    info: data.info,
-                                                    adata_size: data.adata_size,
-                                                    embeddings: data.embeddings,
-                                                    status: 'completed'
-                                                },
-                                            },
-                                        }));
-                                    }
-                                } else {
-                                    //set the task Data and make the task active
-                                    setTaskData(prevTaskData => ({
-                                        ...prevTaskData,
-                                        upload: {
-                                            ...prevTaskData.upload,
-                                            final_files: {
-                                                ...prevTaskData.upload.final_files,
-                                                inputFiles: data.inputfile,
-                                                adata_path: data.adata_path,
-                                                format: data.format,
-                                                cell_metadata: data.cell_metadata,
-                                                cell_metadata_head: data.cell_metadata_head,
-                                                obs_names: data.obs_names,
-                                                nCells: data.nCells,
-                                                nGenes: data.nGenes,
-                                                layers: data.layers,
-                                                info: data.info,
-                                                adata_size: data.adata_size,
-                                                embeddings: data.embeddings,
-                                                status: 'completed'
-                                            },
-                                        },
-                                    }));                    
+                                if (file.startsWith("publicDataset") || file.startsWith("/publicDatasets")) {
+                                    filesFromPublic = true;
+                                    break;
                                 }
-                                
-                setTaskStatus((prevTaskStatus) => ({
-                    ...prevTaskStatus,
-                    1: true, // Mark Task 1 as completed
-                }));
-        
-                //The current task is finished, so make the next task active
-                setActiveTask(2);   
-                
-                setIsButtonDisabled(true);
-                setTimeout(() => {
-                    setIsButtonDisabled(false);
-                }, 5000);
+                            }
 
-                setIsLoading(false);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-                }
-            }
-            // formData['makeItpublic'] = publicdataset
-            // formData['authToken'] = jwtToken;
-            // formData['files'] = selectedFiles;
+                            if (filesFromPublic) {
+                                copyFilesToPrivateStorage(selectedFiles, authData.username)
+                                    .then(response => {
+                                        if (response.success) {
+                                            console.log(response.message);
+                                        } else {
+                                            console.error(response.message);
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error("Error:", error.message);
+                                    });
+                            }
 
-            // if (mode === 'update') {
-            //     formData.currentFileList = currentFileList;
-            //     fetch(`${NODE_API_URL}/updateDataset`, {
-            //         method: 'PUT',
-            //         headers: {
-            //             'Content-Type': 'application/json'
-            //         },
-            //         body: JSON.stringify(formData),
-            //     })
-            //         .then(response => {
-            //             if (response.status === 200) {
-            //                 navigate('/dashboard', { state: { message: 'Dataset updated successfully.', title: formData['title'] } });
-            //             }
-            //             else {
-            //                 console.log('Error updating dataset:', response);
-            //             }
-            //         })
-            //         .catch(error => {
-            //             setErrorMessage('Error updating dataset.');
-            //             console.error('Error updating dataset:', error);
-            //         });
-            //     return;
-            // }
-            // fetch(`${NODE_API_URL}/createDataset`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify(formData),
-            // })
-            //     .then(response => {
-            //         if (response.status === 201) {
-            //             navigate('/dashboard', { state: { message: 'Dataset created successfully.', title: formData['title']  } });
-            //         }
-            //         else if (response.status === 400) {
-            //             setErrorMessage(`Dataset '${formData.title}' already exists. Choose a different name.`);
-            //         }
-            //         else {
-            //             console.log('Error creating dataset:', response);
-            //         }
-            //     })
-            //     .catch(error => {
-            //         setErrorMessage('Error creating dataset.');
-            //         console.error('Error creating dataset:', error);
-            //     });
-                    
-                } else {
-                console.warn("Unauthorized - pLease login first to continue");
-                navigate("/routing");
-                }
-            })
-            .catch((error) => console.error(error));
+                            if (filesFromPublic) {
+                                for (let i = 0; i < selectedFiles.length; i++) {
+                                    selectedFiles[i] = selectedFiles[i].replace(/^\/?publicDatasets\//, '/');
+                                }
+                            }
+
+                            let updatedFiles = selectedFiles.map(file => "/usr/src/app/storage/" + authData.username + file);
+
+                            let needAPICall = true;
+
+                            // if(updatedFiles.length === 1) {
+                            //     // If the length is one, that means it is not a dataset with combinations.
+                            //     let file = updatedFiles[0];
+
+                            //     if(file.toLowerCase().endsWith('h5ad')) {
+                            //         //Add the result to taskData
+                            //     // Properly update taskData using setTaskData
+                            //         setTaskData(prevTaskData => ({
+                            //             ...prevTaskData,
+                            //             upload: {
+                            //                 ...prevTaskData.upload,
+                            //                 final_files: {
+                            //                     ...prevTaskData.upload.final_files,
+                            //                     inputFiles: updatedFiles,
+                            //                     adata_path: updatedFiles[0],
+                            //                     format: 'h5ad',
+                            //                     status: 'completed'
+                            //                 },
+                            //             },
+                            //         }));
+
+                            //         setTaskStatus((prevTaskStatus) => ({
+                            //             ...prevTaskStatus,
+                            //             1: true, // Mark Task 1 as completed
+                            //         }));
+
+                            //         //The current task is finished, so make the next task active
+                            //         setActiveTask(2);   
+
+                            //     } else {
+                            //         needAPICall = true;
+                            //     }
+                            // } else {
+                            //     needAPICall = true;
+                            // }
+
+                            if (needAPICall) {
+                                setIsLoading(true); // Start loading
+
+                                const data = {
+                                    fileDetails: updatedFiles,
+                                    userID: authData.username
+                                };
+
+                                axios.post(`${CELERY_BACKEND_API}/tools/metadata`, data)
+                                    .then(function (response) {
+                                        console.log(response.data);
+                                        let data = response.data;
+                                        const jobId = data.job_id;
+                                        setjobId(jobId);
+                                        // if (data.format === 'h5seurat') {
+                                        //     if (data.assay_names && data.assay_names.length > 1) {
+                                        //         setTaskData(prevTaskData => ({
+                                        //             ...prevTaskData,
+                                        //             upload: {
+                                        //                 ...prevTaskData.upload,
+                                        //                 displayAssayNames: true,
+                                        //                 assayNames: data.assay_names,
+                                        //                 default_assay: data.default_assay,
+                                        //                 // cell_metadata: data.cell_metadata,
+                                        //                 // cell_metadata_head: data.cell_metadata_head,
+                                        //                 // obs_names: data.obs_names,
+                                        //                 // nCells: data.nCells,
+                                        //                 // nGenes: data.nGenes,
+                                        //                 // layers: data.layers,
+                                        //                 // info: data.info,
+                                        //                 // adata_size: data.adata_size,
+                                        //                 // embeddings: data.embeddings,
+                                        //             },
+                                        //         }));
+                                        //         return;
+                                        //     } else {
+                                        //         setTaskData(prevTaskData => ({
+                                        //             ...prevTaskData,
+                                        //             upload: {
+                                        //                 ...prevTaskData.upload,
+                                        //                 final_files: {
+                                        //                     ...prevTaskData.upload.final_files,
+                                        //                     inputFiles: data.inputfile,
+                                        //                     adata_path: data.adata_path,
+                                        //                     format: data.format,
+                                        //                     default_assay: data.default_assay,
+                                        //                     cell_metadata: data.cell_metadata,
+                                        //                     cell_metadata_head: data.cell_metadata_head,
+                                        //                     obs_names: data.obs_names,
+                                        //                     nCells: data.nCells,
+                                        //                     nGenes: data.nGenes,
+                                        //                     layers: data.layers,
+                                        //                     info: data.info,
+                                        //                     adata_size: data.adata_size,
+                                        //                     embeddings: data.embeddings,
+                                        //                     status: 'completed'
+                                        //                 },
+                                        //             },
+                                        //         }));
+                                        //     }
+                                        // } else {
+                                        //     //set the task Data and make the task active
+                                        //     setTaskData(prevTaskData => ({
+                                        //         ...prevTaskData,
+                                        //         upload: {
+                                        //             ...prevTaskData.upload,
+                                        //             final_files: {
+                                        //                 ...prevTaskData.upload.final_files,
+                                        //                 inputFiles: data.inputfile,
+                                        //                 adata_path: data.adata_path,
+                                        //                 format: data.format,
+                                        //                 cell_metadata: data.cell_metadata,
+                                        //                 cell_metadata_head: data.cell_metadata_head,
+                                        //                 obs_names: data.obs_names,
+                                        //                 nCells: data.nCells,
+                                        //                 nGenes: data.nGenes,
+                                        //                 layers: data.layers,
+                                        //                 info: data.info,
+                                        //                 adata_size: data.adata_size,
+                                        //                 embeddings: data.embeddings,
+                                        //                 status: 'completed'
+                                        //             },
+                                        //         },
+                                        //     }));
+                                        // }
+
+                                        // setTaskStatus((prevTaskStatus) => ({
+                                        //     ...prevTaskStatus,
+                                        //     1: true, // Mark Task 1 as completed
+                                        // }));
+
+                                        // //The current task is finished, so make the next task active
+                                        // setActiveTask(2);
+
+                                        // setIsButtonDisabled(true);
+                                        // setTimeout(() => {
+                                        //     setIsButtonDisabled(false);
+                                        // }, 5000);
+
+                                        // setIsLoading(false);
+                                    })
+                                    .catch(function (error) {
+                                        console.log(error);
+                                        setIsLoading(false);
+                                    });
+                            }
+                        }
+                        // formData['makeItpublic'] = publicdataset
+                        // formData['authToken'] = jwtToken;
+                        // formData['files'] = selectedFiles;
+
+                        // if (mode === 'update') {
+                        //     formData.currentFileList = currentFileList;
+                        //     fetch(`${NODE_API_URL}/updateDataset`, {
+                        //         method: 'PUT',
+                        //         headers: {
+                        //             'Content-Type': 'application/json'
+                        //         },
+                        //         body: JSON.stringify(formData),
+                        //     })
+                        //         .then(response => {
+                        //             if (response.status === 200) {
+                        //                 navigate('/dashboard', { state: { message: 'Dataset updated successfully.', title: formData['title'] } });
+                        //             }
+                        //             else {
+                        //                 console.log('Error updating dataset:', response);
+                        //             }
+                        //         })
+                        //         .catch(error => {
+                        //             setErrorMessage('Error updating dataset.');
+                        //             console.error('Error updating dataset:', error);
+                        //         });
+                        //     return;
+                        // }
+                        // fetch(`${NODE_API_URL}/createDataset`, {
+                        //     method: 'POST',
+                        //     headers: {
+                        //         'Content-Type': 'application/json'
+                        //     },
+                        //     body: JSON.stringify(formData),
+                        // })
+                        //     .then(response => {
+                        //         if (response.status === 201) {
+                        //             navigate('/dashboard', { state: { message: 'Dataset created successfully.', title: formData['title']  } });
+                        //         }
+                        //         else if (response.status === 400) {
+                        //             setErrorMessage(`Dataset '${formData.title}' already exists. Choose a different name.`);
+                        //         }
+                        //         else {
+                        //             console.log('Error creating dataset:', response);
+                        //         }
+                        //     })
+                        //     .catch(error => {
+                        //         setErrorMessage('Error creating dataset.');
+                        //         console.error('Error creating dataset:', error);
+                        //     });
+
+                    } else {
+                        console.warn("Unauthorized - pLease login first to continue");
+                        navigate("/routing");
+                    }
+                })
+                .catch((error) => console.error(error));
         } else {
             setTaskStatus((prevTaskStatus) => ({
                 ...prevTaskStatus,
                 1: true, // Mark Task 1 as completed
             }));
-    
+
             //The current task is finished, so make the next task active
-            setActiveTask(2);   
+            setActiveTask(2);
         }
     };
 
@@ -773,71 +847,71 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                         </div>
                     </div>}
                     {previewBoxOpen && <FilePreviewModal selectedFile={fileToPreview} setPreviewBoxOpen={setPreviewBoxOpen} jwtToken={jwtToken} forResultFile={false} />}
-                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser} publicDatasetFlag={publicDatasetFlag} taskData={taskData}/>}
+                    {isFileManagerOpen && <FileManagerModal setFileToPreview={setFileToPreview} tempFileList={tempFileList} setEnabledCheckboxes={setEnabledCheckboxes} fileNames={fileNames} dirNames={dirNames} jwtToken={jwtToken} fetchDirContents={fetchDirContents} pwd={pwd} setPwd={setPwd} setPreviewBoxOpen={setPreviewBoxOpen} selectedFiles={selectedFiles} setSelectedFiles={setSelectedFiles} setErrorMessage={setErrorMessage} setTempFileList={setTempFileList} enabledCheckboxes={enabledCheckboxes} toggleModal={toggleModal} isAdminuser={isAdminuser} publicDatasetFlag={publicDatasetFlag} taskData={taskData} />}
                     <div>        <div>
                         <div id="upload-data-div">
                             <div className="info-icon" onClick={() => { setIsInfoModalOpen(true); }}>
                                 <FontAwesomeIcon icon={faInfoCircle} size="1.2x" />
                             </div>
                             <b>Choose your files *</b> <br />
-                            {selectedFiles && selectedFiles.length > 0 && 
+                            {selectedFiles && selectedFiles.length > 0 &&
                                 <div id="files-selected">
                                     <ScrollableListContainer>
-                                    <List dense>
-                                        {selectedFiles.length > 1 ? (
-                                            <>
-                                            {selectedFiles.map((item, index) => {
-                                                const itemName = item.substring(item.lastIndexOf('/') + 1);
-                                                const showDropdown = !acceptedMultiFileNames.includes(itemName);
-                                                return (
-                                                <div key={index} className="file-selections">
-                                                    <CustomListItem key={index}>
-                                                    <IconButton edge="start" aria-label="delete" onClick={() => removeFile(item, index)}>
+                                        <List dense>
+                                            {selectedFiles.length > 1 ? (
+                                                <>
+                                                    {selectedFiles.map((item, index) => {
+                                                        const itemName = item.substring(item.lastIndexOf('/') + 1);
+                                                        const showDropdown = !acceptedMultiFileNames.includes(itemName);
+                                                        return (
+                                                            <div key={index} className="file-selections">
+                                                                <CustomListItem key={index}>
+                                                                    <IconButton edge="start" aria-label="delete" onClick={() => removeFile(item, index)}>
+                                                                        <DeleteIcon />
+                                                                    </IconButton>
+                                                                    {showDropdown && (
+                                                                        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                                                            <Select
+                                                                                displayEmpty
+                                                                                value={selectedAliases[index]}
+                                                                                onChange={(e) => {
+                                                                                    const updatedAliases = [...selectedAliases];
+                                                                                    updatedAliases[index] = getStandardFileName(item, e.target.value);
+                                                                                    setSelectedAliases(updatedAliases);
+                                                                                }}
+                                                                                renderValue={(selected) => {
+                                                                                    if (selected && selected.length === 0) {
+                                                                                        return <em>Set a standard file type</em>;
+                                                                                    }
+                                                                                    return selected;
+                                                                                }}
+                                                                            >
+                                                                                {getAliasOptions(item).map((alias, aliasIndex) => (
+                                                                                    <MenuItem key={aliasIndex} value={alias}>{alias}</MenuItem>
+                                                                                ))}
+                                                                            </Select>
+                                                                        </FormControl>
+                                                                    )}
+                                                                    <ListItemText primary={item} />
+                                                                </CustomListItem>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </>
+                                            ) : (
+                                                <CustomListItem>
+                                                    <IconButton edge="start" aria-label="delete" onClick={() => removeFile(selectedFiles[0], 0)}>
                                                         <DeleteIcon />
                                                     </IconButton>
-                                                        {showDropdown && (
-                                                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                                                <Select
-                                                                displayEmpty
-                                                                value={selectedAliases[index]}
-                                                                onChange={(e) => {
-                                                                    const updatedAliases = [...selectedAliases];
-                                                                    updatedAliases[index] = getStandardFileName(item, e.target.value);
-                                                                    setSelectedAliases(updatedAliases);
-                                                                }}
-                                                                renderValue={(selected) => {
-                                                                    if (selected && selected.length === 0) {
-                                                                    return <em>Set a standard file type</em>;
-                                                                    }
-                                                                    return selected;
-                                                                }}
-                                                                >
-                                                                {getAliasOptions(item).map((alias, aliasIndex) => (
-                                                                    <MenuItem key={aliasIndex} value={alias}>{alias}</MenuItem>
-                                                                ))}
-                                                                </Select>
-                                                            </FormControl>
-                                                        )}
-                                                    <ListItemText primary={item} />
-                                                    </CustomListItem>
-                                                </div>
-                                                );
-                                            })}
-                                            </>
-                                        ) : (
-                                            <CustomListItem>
-                                            <IconButton edge="start" aria-label="delete" onClick={() => removeFile(selectedFiles[0], 0)}>
-                                                <DeleteIcon />
-                                            </IconButton>                    
-                                            <ListItemText primary={selectedFiles[0]} />
-                                            </CustomListItem>
-                                        )}
-                                    </List>
+                                                    <ListItemText primary={selectedFiles[0]} />
+                                                </CustomListItem>
+                                            )}
+                                        </List>
                                     </ScrollableListContainer>
-                                    {selectedFiles && selectedFiles.length > 1 && 
-                                    <div style={{ color: 'red' }}>
-                                        Notice: Files will be renamed to standard names of their corresponding type.
-                                    </div>
+                                    {selectedFiles && selectedFiles.length > 1 &&
+                                        <div style={{ color: 'red' }}>
+                                            Notice: Files will be renamed to standard names of their corresponding type.
+                                        </div>
                                     }
                                 </div>
                             }
@@ -847,10 +921,10 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                                 </button>
                             </div>
                         </div>
-                        {isAdminuser && 
+                        {isAdminuser &&
                             <div className="publish-dataset-div">
                                 <React.Fragment>
-                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic}/>
+                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic} />
                                 </React.Fragment>
                             </div>
                         }
@@ -866,38 +940,38 @@ export default function UploadData({taskStatus, setTaskStatus, taskData, setTask
                             SubmitButton={SubmitButton}
                         /> */}
 
-                        
-                    {
-                    isLoading ? (
 
-                        <div className="spinner-container">
-                            <ScaleLoader color="#36d7b7" loading={isLoading} />
-                        </div>
-                    ) : (
-                        taskData.upload.displayAssayNames && (
-                        <div>
-                            <h3>Default Assay: {taskData.upload.default_assay}</h3>
-                            <p>Do you want to change the default assay?</p>
-                            <ReactSelect
-                            id="assaySelection"
-                            placeholder="Select an Assay"
-                            options={taskData.upload.assayNames.map(name => ({ value: name, label: name }))}
-                            onChange={handleAssaySelection}
-                            />
-                            <div className='next-upon-success'>
-                            <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>Next</button>
-                            </div>
-                        </div>
-                        )
-                    )
-                    }
+                        {
+                            isLoading ? (
+
+                                <div className="spinner-container">
+                                    <ScaleLoader color="#36d7b7" loading={isLoading} />
+                                </div>
+                            ) : (
+                                taskData.upload.displayAssayNames && (
+                                    <div>
+                                        <h3>Default Assay: {taskData.upload.default_assay}</h3>
+                                        <p>Do you want to change the default assay?</p>
+                                        <ReactSelect
+                                            id="assaySelection"
+                                            placeholder="Select an Assay"
+                                            options={taskData.upload.assayNames.map(name => ({ value: name, label: name }))}
+                                            onChange={handleAssaySelection}
+                                        />
+                                        <div className='next-upon-success'>
+                                            <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>Next</button>
+                                        </div>
+                                    </div>
+                                )
+                            )
+                        }
                         {!taskData.upload.displayAssayNames && (
-                        <div className='next-upon-success'>
-                            <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
-                        </div>
+                            <div className='next-upon-success'>
+                                <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
+                            </div>
                         )}
 
-                        
+
                         <div className="modal-content">
                             <div>
                                 <p>

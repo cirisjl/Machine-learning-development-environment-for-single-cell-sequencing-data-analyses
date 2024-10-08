@@ -16,11 +16,13 @@ def load_metadata(job_id, file_dict):
     # Check if only one file is provided
     if len(fileDetails) == 1:
         file = unzip_file_if_compressed(job_id, fileDetails[0])
+        format = None
         try:
             results['inputfile'] = fileDetails
             adata = load_anndata(file)
             if file.endswith('.h5ad'):
                 adata_path = file
+                format = "h5ad"
             else:
                 adata_path = change_file_extension(fileDetails[0], 'h5ad')
                 adata.write_h5ad(adata_path)
@@ -28,6 +30,7 @@ def load_metadata(job_id, file_dict):
     
             if file.endswith(('.h5Seurat', 'h5seurat')):
                 seurat_path = file
+                format = "h5seurat"
                 results['seurat_path'] = seurat_path
 
         except Exception as e:
