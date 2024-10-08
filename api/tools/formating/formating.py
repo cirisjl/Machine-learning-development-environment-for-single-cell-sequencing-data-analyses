@@ -107,6 +107,9 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
             adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(path, assay=assay)
             if os.path.exists(adata_path):
                 adata = sc.read_h5ad(adata_path)
+        
+    if adata is not None: 
+        adata.obs = rename_col(adata.obs, 'n_counts')
 
     return adata
 
@@ -1005,6 +1008,15 @@ def drop_num_col(df):
     if len(col_to_drop) > 0:
         df = df.drop(columns=col_to_drop)
     
+    return df
+
+
+def rename_col(df, pattern):
+    import re
+    for name in df.columns.values:
+        if re.match(pattern, name):
+            df.rename(columns={name: pattern}, inplace=True)
+            break
     return df
 
 
