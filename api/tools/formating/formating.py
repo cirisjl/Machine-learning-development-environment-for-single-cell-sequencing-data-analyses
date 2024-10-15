@@ -1050,3 +1050,14 @@ def is_number(s):
         pass
  
     return False
+
+
+def save_anndata(adata, output):
+    if not isinstance(adata.X, csr_matrix):
+        adata.X = csr_matrix(adata.X)
+    if adata.raw is not None:
+        if not isinstance(adata.raw.X, csr_matrix):
+            adata.raw.X = csr_matrix(adata.raw.X)
+    adata.write_h5ad(output, compression='gzip')
+    
+    return output

@@ -18,7 +18,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     userID = ds['userID']
     output = ds['output']
     method = "UMAP"
-    datasetId = ds['dataset_id']
+    datasetId = ds['datasetId']
     parameters = ds['reduction_params']
     layer = None
     layers = None

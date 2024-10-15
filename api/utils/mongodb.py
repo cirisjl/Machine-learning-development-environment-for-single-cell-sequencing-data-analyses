@@ -29,6 +29,7 @@ benchmarks_collection.create_index({'benchmarksId': 1}, unique=True, background=
 jobs_collection.create_index({'job_id': 1}, unique=True, background=True)
 
 def generate_process_id(file_md5, process, method, parameters):
+    if isinstance(method, list) and len(method) == 1: method = method[0] # If there is only 1 item in a list, then it should be taken as a string.
     process_id = hashlib.md5(f"{file_md5}_{process}_{method}_{parameters}".encode("utf-8")).hexdigest()
     return process_id
 
@@ -51,7 +52,7 @@ def create_pp_results(process_id, pp_results):
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
     except DuplicateKeyError:
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results})
-    if "_id" in pp_results: 
+    if "_id" in pp_results.keys(): 
         pp_results.pop("_id")
     return
 
@@ -100,17 +101,17 @@ def get_pp_results(process_ids, umap=False, record_type=None):
 
 
 # Append new process_ids to dataset after each process
-def append_pp_ids_to_ds(process_ids, dataset_id):
+def append_pp_ids_to_ds(process_ids, datasetId):
     collection = datasets_collection
-    if dataset_id.split("-")[0] == "U":
+    if datasetId.split("-")[0] == "U":
         print("Appending new process_ids to user dataset")
         collection = user_datasets_collection
-    result = collection.find_one({'Id': dataset_id})
-    if  "process_ids" not in result:
-        collection.update_one({'Id': dataset_id}, {'$set': {'process_ids': process_ids}})
+    result = collection.find_one({'Id': datasetId})
+    if  "process_ids" not in result.keys():
+        collection.update_one({'Id': datasetId}, {'$set': {'process_ids': process_ids}})
     else:
         pp_ids = list(set(process_ids)|set(result['process_ids']))
-        collection.update_one({'Id': dataset_id}, {'$set': {'process_ids': pp_ids}})
+        collection.update_one({'Id': datasetId}, {'$set': {'process_ids': pp_ids}})
     return
 
 
@@ -120,10 +121,14 @@ def upsert_jobs(data):
     # data.pop("job_id")
     jobs_collection.update_one({'job_id': job_id}, {'$set': data}, upsert=True)
 
-    if "process_ids" in data and "datasetId" in data: # Append new process_ids to dataset
-        append_pp_ids_to_ds(data['process_ids'], data['datasetId'])
+    if "process_ids" in data.keys():
+        if "datasetId" in data.keys(): # Append new process_ids to dataset
+            append_pp_ids_to_ds(data['process_ids'], data['datasetId'])
+        if "datasetIds" in data.keys(): # Append new process_ids to dataset
+            for datasetId in data['datasetIds']:
+                append_pp_ids_to_ds(data['process_ids'], datasetId)
 
-    if "_id" in data: 
+    if "_id" in data.keys(): 
         data.pop("_id")
     return
 
@@ -134,7 +139,7 @@ def upsert_benchmarks(benchmarksId, results):
         benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results}, upsert=True)
     except DuplicateKeyError:
         benchmarks_collection.update_one({'benchmarksId': benchmarksId}, {'$set': results})
-    if "_id" in results: 
+    if "_id" in results.keys(): 
         results.pop("_id")
     return
 
@@ -145,7 +150,7 @@ def create_bm_results(process_id, bm_results):
         bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
     except DuplicateKeyError:
         bm_results_collection.update_one({'process_id': process_id}, {'$set': bm_results}, upsert=True)
-    if "_id" in bm_results: 
+    if "_id" in bm_results.keys(): 
         bm_results.pop("_id")
     return
 
@@ -161,7 +166,7 @@ def upsert_workflows(workflows_id, results):
         workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results}, upsert=True)
     except DuplicateKeyError:
         workflows_collection.update_one({'workflows_id': workflows_id}, {'$set': results})
-    if "_id" in results: 
+    if "_id" in results.keys(): 
         results.pop("_id")
     return
 

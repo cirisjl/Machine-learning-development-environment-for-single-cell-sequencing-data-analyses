@@ -44,7 +44,7 @@ def create_job(job_id, ds_dict: dict):
         {
             "job_id": job_id, 
             "description": ds_dict['description'],
-            "datasetId": ds_dict['dataset_id'],
+            "datasetId": ds_dict['datasetId'],
             "method": ds_dict['method'],
             "datasetURL": ds_dict['input'],
             "process": ds_dict['process'],

@@ -177,7 +177,7 @@ const onSelectSubItem = (mainItem, subItem) => {
             const titlesArray = datasetsArray.map(dataset => dataset.Title);
             const idsArray = datasetsArray.map(dataset => dataset.Id);
             formData.dataset = titlesArray;
-            formData.id = idsArray;
+            formData.datasetIds = idsArray;
 
              let inputArray = datasetsArray.map(dataset => {
 
@@ -196,6 +196,7 @@ const onSelectSubItem = (mainItem, subItem) => {
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
+              formData.datasetId = dataset.Id;
             
               // Check if selectedSubItem is present and has a non-null adata_path
               let adata_path;
@@ -238,7 +239,6 @@ const onSelectSubItem = (mainItem, subItem) => {
           }
 
           formData.description = job_description;
-          formData.dataset_id = formData.id;
           formData.method = method;
           formData.process = filterStaticCategoryMap[filterCategory];
       

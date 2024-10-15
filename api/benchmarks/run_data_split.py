@@ -39,9 +39,9 @@ def run_data_split(job_id, data_dict:dict):
     data_directory = Path(adata_path).parent
     data_filename = Path(adata_path).stem
     adata_dir = Path(f"{data_directory}/{split_id}/")
-    train_path = adata_dir / f"{data_filename}_train.h5ad"
-    val_path = adata_dir / f"{data_filename}_validation.h5ad"
-    test_path = adata_dir / f"{data_filename}_test.h5ad"
+    train_path = str(adata_dir / f"{data_filename}_train.h5ad")
+    val_path = str(adata_dir / f"{data_filename}_validation.h5ad")
+    test_path = str(adata_dir / f"{data_filename}_test.h5ad")
 
     # Ensure the directory exists - added exist_ok=True to prevent any error if directory exists
     os.makedirs(adata_dir, exist_ok=True)
@@ -58,9 +58,18 @@ def run_data_split(job_id, data_dict:dict):
         # temp_dir = tempfile.TemporaryDirectory(dir=data_directory)
 
         # Write AnnData objects to files with unique filenames in the temporary directory
-        train.write(str(train_path), compression='gzip')
-        validation.write(str(val_path), compression='gzip')
-        test.write(str(test_path), compression='gzip')
+        if train is not None: 
+            train.write(train_path, compression='gzip')
+        else:
+            train_path = None
+        if validation is not None: 
+            validation.write(val_path, compression='gzip')
+        else:
+            val_path = None
+        if test is not None: 
+            test.write(test_path, compression='gzip')
+        else:
+            test_path = None
 
         # Compress files into a single archive in the same directory
         shutil.make_archive(str(data_directory / f"{data_filename}_data_split"), 'zip', str(adata_dir))
@@ -72,42 +81,42 @@ def run_data_split(job_id, data_dict:dict):
         upsert_benchmarks(benchmarksId, {
             "datasetId": datasetId,
             "archive_path": archive_path,
-            "train_path": str(train_path), 
-            "validation_path": str(val_path),
-            "test_path": str(test_path)
+            "train_path": train_path, 
+            "validation_path": val_path,
+            "test_path": test_path
         })        
         results = {
             "datasetId": datasetId,
             "benchmarksId": benchmarksId,
             "archive_path": archive_path,
-            "train_path": str(train_path), 
-            "validation_path": str(val_path),
-            "test_path": str(test_path)
+            "train_path": train_path,
+            "validation_path": val_path,
+            "test_path": test_path
         }
         
         upsert_jobs(
             {
-                "job_id": job_id, 
+                "job_id": job_id,
                 "datasetId": datasetId,
                 "benchmarksId": benchmarksId,
                 "output": archive_path,
-                "archive_path": str(archive_path),
-                "train_path": str(train_path), 
-                "validation_path": str(val_path),
-                "test_path": str(test_path),
+                "archive_path": archive_path,
+                "train_path": train_path,
+                "validation_path": val_path,
+                "test_path": test_path,
                 "completed_on": datetime.now(),
                 "results": results,
                 "status": "Success"
             }
-        )
-        
+        ) 
         return results
+    
     except Exception as e:
         # Handle any errors
         detail=f"Data split is failed: {str(e)}"
         upsert_jobs(
             {
-                "job_id": job_id, 
+                "job_id": job_id,
                 "results": detail,
                 "completed_on": datetime.now(),
                 "status": "Failure"

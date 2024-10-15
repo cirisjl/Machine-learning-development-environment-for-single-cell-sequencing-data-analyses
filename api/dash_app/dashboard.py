@@ -647,7 +647,7 @@ def update_and_download_dataset(n_clicks, selected_rows, selected_columns, datas
         print("Matrix type:", matrix_type)
         
 
-        adata.write_h5ad(filtered_file_name)
+        adata.write_h5ad(filtered_file_name, compression='gzip')
         print("after update and download4")
 
         # Generate the download link for the filtered dataset file

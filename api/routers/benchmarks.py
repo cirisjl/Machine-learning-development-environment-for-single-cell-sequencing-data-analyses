@@ -385,7 +385,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": "Run Benchmarks",
+            "description": f"Run Benchmarks for {task_dict['datasetId']}",
             "datasetId": task_dict['datasetId'],
             "method": task_dict['task_type'],
             "datasetURL": task_dict['adata_path'],
@@ -394,8 +394,8 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
             "status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Benchmarks task submitted successfully"})
-    
+    return JSONResponse({"job_id": task.id, "status": "Benchmarks task submitted successfully."})
+
 
 @router.post("/data-split")
 async def create_data_split_task_async(data_split_task: DataSplitRequest):
@@ -407,7 +407,7 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": "Run Data Split",
+            "description": f"Run Data Split for {data_dict['datasetId']}",
             "datasetId": data_dict['datasetId'],
             "method": "Data Split",
             "datasetURL": data_dict['adata_path'],
@@ -416,7 +416,7 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
             "status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Data split task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Data split task submitted successfully."})
 
 
 @router.post("/subset")
@@ -429,16 +429,16 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": "Run Subset Data",
+            "description": f"Run Subset Data for {data_dict['datasetId']}",
             "datasetId": data_dict['datasetId'],
             "method": f"{data_dict['obskey']}: {data_dict['values']}",
             "datasetURL": data_dict['adata_path'],
             "process": "Subset Data",
-            "created_on": datetime.now(), 
+            "created_on": datetime.now(),
             "status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Data subset task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Data subset task submitted successfully."})
 
 
 # @router.post("/api/getTablePlot")
