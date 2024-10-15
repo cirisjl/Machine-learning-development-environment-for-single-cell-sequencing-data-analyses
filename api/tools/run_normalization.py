@@ -34,7 +34,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
-    datasetId = ds['dataset_id']
+    datasetId = ds['datasetId']
     status = 'Successful'
     failed_methods = []
 
@@ -50,7 +50,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
         redislogger.error(job_id, "No normalization method is selected.")
         detail = 'No normalization method is selected.'
         raise CeleryTaskException(detail)
-    print(f"Slected methods: {methods}")
+    redislogger.info(job_id, f"Selected methods: {methods}")
     # Get the absolute path for the given input
     # input = get_input_path(input, userID)
     input = unzip_file_if_compressed(job_id, ds['input'])
@@ -64,6 +64,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
         process_id = generate_process_id(md5, process, method, parameters)
         normalization_results = pp_result_exists(process_id)
         print(f"{method}: {process_id}")
+        print(normalization_results)
 
         if normalization_results is not None:
             redislogger.info(job_id, f"Found existing pre-process results in database, skip {method} normalization.")
@@ -72,10 +73,9 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
             methods_to_remove.append(method)
 
     print(f"Methods to remove: {methods_to_remove}.")
-    if len(methods_to_remove) > 1:
-        for method in methods_to_remove:
-            methods.remove(method) # Remove method from methods list
-    print(f"Remaining methods: {methods}.")
+    if len(methods_to_remove) > 0:
+        methods = list(set(methods).difference(set(methods_to_remove))) # Remove method from methods list
+    redislogger.info(job_id, f"Remaining methods: {methods}.")
 
     if len(methods) > 0:
         try:

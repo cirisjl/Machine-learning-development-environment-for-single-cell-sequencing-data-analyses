@@ -80,7 +80,7 @@ class Dataset(BaseModel):
     output: Optional[str] = None
     userID: Optional[str] = None
     description: Optional[str] = None,
-    dataset_id: Optional[str] = None
+    datasetId: Optional[str] = None
     method: Optional[str] = None,
     process: Optional[str] = None,
     output_format: Optional[str] = 'AnnData'
@@ -98,7 +98,7 @@ class Dataset(BaseModel):
 
 class integrationParameters(BaseModel):
     # description: Optional[str] = None
-    # dataset_id: Optional[str] = None
+    # datasetId: Optional[str] = None
     # method: Optional[str] = None
     dims: Optional[int] = 30
     npcs: Optional[int] = 30

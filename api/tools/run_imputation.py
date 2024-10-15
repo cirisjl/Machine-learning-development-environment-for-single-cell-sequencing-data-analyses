@@ -23,7 +23,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    datasetId = ds['dataset_id']
+    datasetId = ds['datasetId']
     parameters = ds['imputation_params']
     layer = None
     if parameters['layer'] is not None and parameters['layer'].strip != "":

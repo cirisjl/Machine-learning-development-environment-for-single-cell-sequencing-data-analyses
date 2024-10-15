@@ -1,11 +1,13 @@
 import warnings
 import scanpy as sc
+import math
 from typing import Union, Optional, Tuple, Collection, Sequence, Iterable, Literal
 import numpy as np
 from numpy import random
 import scipy as sp
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 from anndata import AnnData
+
 
 AnyRandom = Union[None, int, random.RandomState]  # random.Generator
 
@@ -29,18 +31,23 @@ def sc_train_test_split(
         train_n_obs = int(train_fraction * total_obs)
     else:
         raise ValueError("Either pass `n_obs` or `train_fraction`.")
-
-    train_indices = random.choice(total_obs, size=train_n_obs, replace=False)
-    test_indices = np.setdiff1d(obs_indices, train_indices)
-
-    if isinstance(data, AnnData):
-        if data.isbacked:
-            return data[train_indices].to_memory(), data[test_indices].to_memory()
-        else:
-            return data[train_indices].copy(), data[test_indices].copy()
+    
+    if math.isclose(train_fraction, 1):
+        return data, None
+    elif math.isclose(train_fraction, 0):
+        return None, data
     else:
-        X = data
-        return X[train_indices], X[test_indices]
+        train_indices = random.choice(total_obs, size=train_n_obs, replace=False)
+        test_indices = np.setdiff1d(obs_indices, train_indices)
+
+        if isinstance(data, AnnData):
+            if data.isbacked:
+                return data[train_indices].to_memory(), data[test_indices].to_memory()
+            else:
+                return data[train_indices].copy(), data[test_indices].copy()
+        else:
+            X = data
+            return X[train_indices], X[test_indices]
 
 
 def sc_train_val_test_split(

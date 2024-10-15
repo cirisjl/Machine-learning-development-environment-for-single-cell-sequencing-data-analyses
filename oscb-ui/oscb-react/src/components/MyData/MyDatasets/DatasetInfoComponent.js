@@ -144,14 +144,14 @@ const DatasetInfoComponent = () => {
       axios.post(`${NODE_API_URL}/item/getDatasetInfoWithPreProcessResults`, { datasetId: id })
         .then(response => {
           setDatasetDetails(response.data);
-          setMessage(`Successfully fetched details for the dataset ID - ${id}.`);
+          setMessage(`Successfully fetched details for the dataset ID: ${id}.`);
           setHasMessage(true);
           setIsError(false);
           setLoading(false);
         })
         .catch(error => {
-          console.error(`Error fetching dataset details for dataset ID - ${id}:`, error);
-          setMessage(`Error fetching dataset details for dataset ID - ${id}.`);
+          console.error(`Error fetching dataset details for dataset ID ${id}:`, error);
+          setMessage(`Error fetching dataset details for dataset ID ${id}.`);
           setHasMessage(true);
           setIsError(true);
           setLoading(false);
@@ -175,7 +175,7 @@ const DatasetInfoComponent = () => {
         {hasMessage && (
           <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />
         )}
-        <h1>Details for dataset Id - {datasetId}</h1>
+        <h1>Details for dataset Id: {datasetId}</h1>
         {datasetDetails.length > 0 ? (
           datasetDetails.map((detail, index) => (
             <div key={index}>

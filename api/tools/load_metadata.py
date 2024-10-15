@@ -25,7 +25,7 @@ def load_metadata(job_id, file_dict):
                 format = "h5ad"
             else:
                 adata_path = change_file_extension(fileDetails[0], 'h5ad')
-                adata.write_h5ad(adata_path)
+                adata.write_h5ad(adata_path, compression='gzip')
             results["adata_path"] = adata_path
     
             if file.endswith(('.h5Seurat', 'h5seurat')):
@@ -50,7 +50,7 @@ def load_metadata(job_id, file_dict):
             # Now, use the parent directory to load the dataset
             adata = load_anndata(parent_directory)
             adata_path = os.path.join(parent_directory, ".h5ad")
-            adata.write_h5ad(adata_path)
+            adata.write_h5ad(adata_path, compression='gzip')
             results["inputfile"] = fileDetails
             results["adata_path"] = adata_path
 

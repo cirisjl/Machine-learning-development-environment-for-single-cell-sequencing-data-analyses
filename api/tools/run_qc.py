@@ -23,13 +23,20 @@ def run_qc(job_id, ds:dict, random_state=0):
     qc_output = []
     userID = ds['userID']
     input_path = unzip_file_if_compressed(job_id, ds['input'])
-    datasetId = ds['dataset_id']
+    datasetId = ds['datasetId']
+    dataset = ds['dataset']
     output = ds['output']
     adata_path = change_file_extension(input_path, 'h5ad')
     adata_path = adata_path.replace(" ", "_")
     assay_names = []
     md5 = get_md5(input_path)
     benchmarks_data = False
+    description = "QC for Benchmarks"
+
+    if datasetId is not None:
+        description = f"QC for Benchmarks for {datasetId}"
+    elif dataset is not None:
+        description = f"QC for Benchmarks for {dataset}"
 
     if input_path is None:
         return None
@@ -59,10 +66,11 @@ def run_qc(job_id, ds:dict, random_state=0):
             methods = ["Seurat"]
         else:
             methods = ["scanpy"]
+        
         upsert_jobs(
             {
                 "job_id": job_id, 
-                "description": "QC for Benchmarks",
+                "description": description,
                 "method": methods[0],
                 "process": "Quality Control",
                 "created_by": userID,
