@@ -123,7 +123,7 @@ def change_file_extension(file_path, new_extension):
         # If it's a file, proceed with changing the file's extension
         directory, base_filename = os.path.split(file_path)
         name, _ = os.path.splitext(base_filename)
-        new_file_path = os.path.join(directory, f"{name}.{new_extension}")
+        new_file_path = os.path.join(directory, f"{name}.{new_extension}").replace(" ", "_")
 
     return new_file_path
 
@@ -629,17 +629,10 @@ def get_report_path(dataset, output, method):
     method = '_' + method if method else ''
     report_path = None
 
-    if not os.path.exists(output):
-        os.makedirs(output)
+    if not os.path.exists(os.path.dirname(output)):
+        os.makedirs(os.path.dirname(output))
 
-    if os.path.isdir(output):
-        report_path = os.path.join(output, dataset + method + "_report.html")
-        print("The output path is a directory, adding report file " + dataset + method + "_report.html to report path.")
-    else:
-        report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
-
-    if not os.path.exists(os.path.dirname(report_path)):
-        os.makedirs(os.path.dirname(report_path))
+    report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
     
     return report_path
 

@@ -143,8 +143,7 @@ if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by
 ```
 
 ### tSNE
-perplexity    numeric; Perplexity parameter (should not be bigger
-            than 3 * perplexity < nrow(X) - 1
+perplexity    numeric; Perplexity parameter should not be bigger than 3 * perplexity < nrow(X) - 1
 ```{r Data visualization before QC - tSNE, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
 set.seed(123456)
 # sce <- runTSNE(sce, exprs_values = "logcounts_raw", perplexity = 130)
@@ -223,14 +222,14 @@ if(!is.null(params$shape_by_1) && !is.null(params$colour_by) && (params$shape_by
 
 ## Save SingleCellExperiment object
 ```{r Save SingleCellExperiment object, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
-sce <- NULL
 # Drop the Alternative Experiment methods
 sce.qc <- removeAltExps(sce.qc)
 # Name the Main Experiment "RNA"
 mainExpName(sce.qc) <- "RNA"
 saveRDS(sce.qc, file = params$output)
-# Convert and save to AnnData object
-adata <- Convert(from=sce.qc, to="anndata", filename = params$adata_path)
+# Convert and save SCE to AnnData object
+ConvertSeuratSCEtoAnndata(params$output)
 print("SingleCellExperiment object is saved successfully.")
+sce <- NULL
 sce.qc <- NULL
 ```
