@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {NODE_API_URL} from '../../../constants/declarations'
 import RightRail from '../../RightNavigation/rightRail';
-import { getCookie } from '../../../utils/utilFunctions';
+import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
 import TableComponent from '../../publishDatasets/components/labelTableComponent';
 
@@ -37,11 +37,11 @@ const EditCustomForm = () => {
       'Source': '',
       'Source Key': '',
       'Submission Date': '', // Set your initial date placeholder here   
-      'cell_metadata_head':'' 
+      'cell_metadata_head':"{}"
      },
   );
 
-  const [options, setoptions] = useState(
+  const [options, setOptions] = useState(
     {
       Task: [], 
       Author: '',
@@ -60,14 +60,77 @@ const EditCustomForm = () => {
       'Source': []
     },
   )
-  const [datasetId, setDatasetId] = useState(null);
 
+  const [newOptions, setNewOptions] = useState([]);
+
+  const [datasetId, setDatasetId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errors, setErrors] = useState({});
 
   const location = useLocation();
+
+  useEffect(() => {
+    // Function to check authentication and set user details
+    const checkAuthentication = async () => {
+      if (getCookie('jwtToken') === undefined || getCookie('jwtToken') === '') {
+        // Navigate to the login page
+        window.location.href = '/routing';
+      } else {
+        try {
+          const authData = await isUserAuth(getCookie('jwtToken'));
+          if (authData.isAuth) {
+            fetchDefaultOptions();
+          } else {
+            console.warn("Token expired! Please login again");
+            window.location.href = '/routing';
+          }
+        } catch (error) {
+          console.error('Error during authentication:', error);
+        }
+      }
+    };
+
+    // Function to fetch default options
+    const fetchDefaultOptions = async () => {
+      try {
+        const response = await fetch(`${NODE_API_URL}/options`);
+        if (!response.ok) {
+          console.error('Error fetching default options');
+          return;
+        }
+        const data = await response.json();
+
+        const optionsData = {};
+        const fieldNames = [
+          'Task', 'Species', 'Cell Count Estimate', 'Sample Type', 'Anatomical Entity',
+          'Organ Part', 'Model Organ', 'Selected Cell Types', 'Library Construction Method',
+          'Nucleic Acid Source', 'Disease Status (Specimen)', 'Disease Status (Donor)',
+          'Development Stage', 'Source',
+        ];
+
+        fieldNames.forEach(fieldName => {
+          if (data[fieldName]) {
+            optionsData[fieldName] = data[fieldName].map(option => ({
+              value: option.abbreviation,
+              label: option.name
+            }));
+          }
+        });
+
+        setOptions(optionsData);
+      } catch (error) {
+        console.error('Error fetching default options:', error);
+      }
+    };
+
+    // Call the authentication check function
+    checkAuthentication();
+  }, []);
+
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -107,7 +170,7 @@ const EditCustomForm = () => {
             'Source': data.Source || '',
             'Source Key': data['Source Key'] || '',
             'Submission Date': data['Submission Date'] || '', 
-            'cell_metadata_head': data['cell_metadata_head'] || ''
+            'cell_metadata_head': data['cell_metadata_head'] || "{}"
           });
   
           setMessage(`Successfully fetched details for the dataset ID - ${id}.`);
@@ -139,33 +202,121 @@ const EditCustomForm = () => {
     setFormData({ ...formData, [name]: selectedOptions || [] });
   };
 
-  const handleCreateOption = (name, inputValue) => {
-    setFormData({ ...formData, [name]: inputValue });
-  };
+  const optionAlreadyCreated = useCallback((fieldName, inputValue) => {
+    return newOptions.some(
+      (option) => option.field === fieldName && option.name === inputValue
+    );
+  }, [newOptions]);
+
+  const addNewOptionToMongoDB = useCallback((fieldName, optionName) => {
+    axios
+      .post(`${NODE_API_URL}/addNewOption`, {
+        field: fieldName,
+        name: optionName,
+        username: username
+      })
+      .then((response) => {
+        console.log(`New option "${optionName}" added to MongoDB for field "${fieldName}"`);
+      })
+      .catch((error) => {
+        console.error('Error adding new option to MongoDB:', error);
+      });
+  }, [username]);
+
+  const handleCreateOption = useCallback((fieldName, inputValue) => {
+    // Check if the option has already been created to prevent duplicate calls
+    if (!optionAlreadyCreated(fieldName, inputValue)) {
+      addNewOptionToMongoDB(fieldName, inputValue);
+    }
+
+    const newOption = { value: inputValue, label: inputValue };
+
+    // Update options state
+    setOptions((prevOptions) => {
+      const updatedOptions = { ...prevOptions };
+      updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+      return updatedOptions;
+    });
+
+    // Determine if the field should be treated as an array or a single value field
+    setFormData((prevFormData) => {
+      const isArrayField = Array.isArray(prevFormData[fieldName]);
+      const updatedFormData = {
+        ...prevFormData,
+        [fieldName]: isArrayField
+          ? [...(prevFormData[fieldName] || []), newOption] // Append to array field
+          : newOption, // Set as single value for non-array field
+      };
+      return updatedFormData;
+    });
+
+    // Update newOptions state
+    setNewOptions((prevNewOptions) => [
+      ...prevNewOptions,
+      { field: fieldName, name: inputValue }
+    ]);
+  }, [optionAlreadyCreated, addNewOptionToMongoDB]);
+
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Perform validation here
     let formErrors = {};
     if (!formData.Title) formErrors.Title = 'Title is required';
     if (!formData.Author) formErrors.Author = 'Author is required';
-    if (!formData.Species) formErrors.Species = 'Species is required';
-    if (!formData['Cell Count Estimate']) formErrors['Cell Count Estimate'] = 'Cell Count Estimate is required';
-    if (!formData['Organ Part']) formErrors['Organ Part'] = 'Organ Part is required';
-    if (!formData['Selected Cell Types'].length) formErrors['Selected Cell Types'] = 'At least one cell type is required';
-    if (!formData['Disease Status (Specimen)'].length) formErrors['Disease Status (Specimen)'] = 'At least one disease status is required';
-    if (!formData['Submission Date']) formErrors['Submission Date'] = 'Submission date is required';
+    if (!formData.Species || (formData.Species && formData.Species.value === '')) formErrors.Species = 'Species is required';
+    if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) formErrors['Cell Count Estimate'] = 'Cell Count Estimate is required';
+    if (!formData['Organ Part'] || (formData['Organ Part'] && formData['Organ Part'].value === '')) formErrors['Organ Part'] = 'Organ Part is required';
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+      formData['Selected Cell Types)'] = {
+        'value': 'Unspecified',
+        'label': ['Unspecified']
+      }
+    }
+
+    if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
+      formData['Disease Status (Donor)'] = [ {
+        'value': 'Unspecified',
+        'label': 'Unspecified'
+      } ]
+    }
+    if (!formData['Submission Date'] && formData['Submission Date'] === '') formErrors['Submission Date'] = 'Submission date is required';
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setHasMessage(true);
+      setMessage('Please fill all the required fields to submit');
+      setIsError(true);
     } else {
       // Form is valid, submit the data
       setErrors({});
-      setHasMessage(true);
-      setMessage('Form submitted successfully!');
-      // Reset the form if needed
+      let data = formData;
+
+      data.Id = datasetId;
+
+      console.log(data);
+
+      try {
+        const response = await axios.post(`${NODE_API_URL}/updateDatasetDetails`, formData);
+
+        // Assuming the response is in the form { message: "success message" }
+        if (response.status === 200) {
+            console.log('Metadata submitted successfully');
+            setMessage("Dataset Updated Successfully!");
+            setHasMessage(true);
+            setIsError(false);
+            window.location.href = '/mydata'; // Redirect in the same tab after successful update
+        }
+    } catch (error) {
+        console.error('Error updating the dataset:', error);
+        // Check if error response exists and get the error message
+        const errorMessage = error.response?.data?.error || 'Error Updating the Dataset!';
+        setMessage(errorMessage);
+        setHasMessage(true);
+        setIsError(true);
     }
+     }
   };
 
   return (
@@ -368,7 +519,7 @@ const EditCustomForm = () => {
               </div>
 
               {/* "Selected Cell Types" (CreatableSelect) */}
-              {/* <div className="form-field"><div>
+              <div className="form-field"><div>
                   <label className="form-label">Cell Type Annotation:</label></div>
                 <CreatableSelect
                   name="Selected Cell Types"
@@ -376,23 +527,19 @@ const EditCustomForm = () => {
                   isClearable
                   isSearchable
                   onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange  
-                  options={ taskData.quality_control ? 
-                    Object.entries(taskData.quality_control.qc_results[0].cell_metadata).map((entry) => ({
+                  options={ 
+                    Object.entries(JSON.parse(formData.cell_metadata_head)).map((entry) => ({
                     label: entry[0],
                     value: Object.values(entry[1])[0],
                   })) 
-                  : 
-                    Object.entries(taskData.upload.final_files.cell_metadata).map((entry) => ({
-                      label: entry[0],
-                      value: Object.values(entry[1])[0],
-                    })) 
+
                   } // Set options to the fetched options
                   className={`form-input`}
                 />
-              </div> */}
+              </div>
 
               <div className="label-table-container">
-                <TableComponent cellMetadataObs={formData.cell_metadata_head} />
+                <TableComponent cellMetadataObs={JSON.parse(formData.cell_metadata_head)} />
               </div>
 
               {/* "Library Construction Method" (CreatableSelect) */}
