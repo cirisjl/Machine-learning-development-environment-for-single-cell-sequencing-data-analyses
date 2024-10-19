@@ -1828,6 +1828,40 @@ app.post('/node/submitTaskMetadata', async (req, res) => {
     }
   });
   
+app.post('/node/updateDatasetDetails', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const { Id, ...updateFields } = req.body;
+
+        let collection = (Id.startsWith("U-") && Id.includes("@")) 
+                                                    ? db.collection(userDatasetsCollection) 
+                                                    : db.collection(datasetCollection);
+
+
+        if (!Id) {
+            return res.status(400).json({ error: 'Document Id is required' });
+        }
+
+        const result = await collection.updateOne(
+            { Id: Id },  // Query to find the document by the custom Id field
+            { $set: updateFields } // Update only the specified fields
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'Document not found' });
+        }
+
+        res.status(200).json({ message: 'Document updated successfully' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
 
 // API endpoint to get datasets
 app.get('/node/getDatasets', async (req, res) => {
