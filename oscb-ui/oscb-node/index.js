@@ -2221,8 +2221,14 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                    else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[filterCategory] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
@@ -2412,8 +2418,14 @@ app.post('/node/tasks/search', async (req, res) => {
                 const filterValue = filters[filterCategory];
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                   else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[`datasetDetails.${filterCategory}`] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
@@ -2927,8 +2939,14 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                    else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[filterCategory] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
