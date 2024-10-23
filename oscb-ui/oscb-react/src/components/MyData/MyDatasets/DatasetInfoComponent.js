@@ -20,10 +20,8 @@ import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import FormControl from '@mui/material/FormControl';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { FormControl, RadioGroup, FormControlLabel, Radio, Select, MenuItem, InputLabel } from '@mui/material';
+
 
 const DatasetInfoComponent = () => {
   const location = useLocation();
@@ -34,10 +32,49 @@ const DatasetInfoComponent = () => {
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
+  const [clusteringPlotType, setClusteringPlotType] = useState('');
+  const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+  const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [expanded, setExpanded] = useState(false);
   const [details, setDetails] = useState({}); // Store fetched details
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
 
+
+   // Function to make an API call based on the dropdown option and dimension
+  const fetchPlotData = async (plotType, process_id) => {
+    setLoadingPlot(true); // Set loading to true before making the API call
+
+    // Access the first element of the datasetDetails array
+    const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
+    if (!selectedCellType || !selectedCellType.label) {
+      throw new Error("Selected Cell Type or label is missing");
+    }
+
+    try {
+      const response = await axios.post(`${CELERY_BACKEND_API}/plotumap/`, {
+        process_ids: [process_id],
+        clustering_plot_type: plotType,
+        annotation: selectedCellType.label,
+      });
+
+      console.log("API Call Success");
+
+      console.log(response);
+      const data = response.data[0];
+
+      console.log("plot data");
+      console.log(data);
+      console.log(response.data);
+
+      if(data.umap_plot && data.umap_plot_3d) {
+        setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+      }
+    } catch (error) {
+      console.error('Error fetching plot data:', error);
+    } finally {
+      setLoadingPlot(false); 
+    }
+  };
 
   const Accordion = styled((props) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -107,10 +144,15 @@ const DatasetInfoComponent = () => {
         // Parse the response data
         const data = await response.json();
 
+        const preProcessResult = data[0];
+        if(preProcessResult.umap_plot && preProcessResult.umap_plot_3d) {
+          setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
+        }
+
         // Store the fetched data for the current process_id
         setDetails((prevDetails) => ({
           ...prevDetails,
-          [processId]: data[0], // Store fetched data for the corresponding process_id
+          [processId]: preProcessResult, // Store fetched data for the corresponding process_id
         }));
       } catch (error) {
         console.error('Error fetching details:', error);
@@ -336,29 +378,58 @@ const DatasetInfoComponent = () => {
                                             {details[preProcessResult.process_id].umap_plot && (
                                               <>
                                                 <h2>UMAP Plot</h2>
-                                                <FormControl>
-                                                  <RadioGroup
-                                                    row
-                                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                                    name="row-radio-buttons-group"
-                                                    value={plotDimension}
-                                                    onChange={(event) => setPlotDimension(event.target.value)}
-                                                  >
-                                                    <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                                                    <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                                                  </RadioGroup>
-                                                </FormControl>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                  <FormControl>
+                                                    <RadioGroup
+                                                      row
+                                                      aria-labelledby="demo-row-radio-buttons-group-label"
+                                                      name="row-radio-buttons-group"
+                                                      value={plotDimension}
+                                                      onChange={(event) => setPlotDimension(event.target.value)}
+                                                    >
+                                                      <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+                                                      <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+                                                    </RadioGroup>
+                                                  </FormControl>
 
-                                                {plotDimension === '2D' && details[preProcessResult.process_id].umap_plot && (
-                                                  <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                    <ReactPlotly plot_data={details[preProcessResult.process_id].umap_plot} />
-                                                  </div>
+                                                  <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                                    <InputLabel id="plot-options-label">Plot Type</InputLabel>
+                                                    <Select
+                                                      labelId="plot-options-label"
+                                                      id="plot-options"
+                                                      value={clusteringPlotType}
+                                                      onChange={(event) => {
+                                                        const selectedPlotType = event.target.value;
+                                                        setClusteringPlotType(selectedPlotType);
+                                                        fetchPlotData(selectedPlotType, preProcessResult.process_id); // Call the API as soon as the selection changes
+                                                      }}
+                                                    >
+                                                      {Object.keys(JSON.parse(detail.datasetDetails.cell_metadata_head)).map((key) => (
+                                                        <MenuItem key={key} value={key}>{key}</MenuItem>
+                                                      ))}
+                                                    </Select>
+                                                  </FormControl>
+
+                                                </div>
+                                                {loadingPlot ? (
+                                                  <div>Loading plot data...</div>
+                                                ) : plotData ? (
+                                                  <>
+                                                    {plotDimension === '2D' && plotData.umap_plot && (
+                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <ReactPlotly plot_data={plotData.umap_plot} />
+                                                      </div>
+                                                    )}
+                                                    {plotDimension === '3D' && plotData.umap_plot_3d && (
+                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <ReactPlotly plot_data={plotData.umap_plot_3d} />
+                                                      </div>
+                                                    )}
+                                                  </>
+                                                ) : (
+                                                  <div>No plot data available</div>
                                                 )}
-                                                {plotDimension === '3D' && details[preProcessResult.process_id].umap_plot_3d && (
-                                                  <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                    <ReactPlotly plot_data={details[preProcessResult.process_id].umap_plot_3d} />
-                                                  </div>
-                                                )}
+
                                               </>
                                             )}
                                             {details[preProcessResult.process_id].violin_plot && (

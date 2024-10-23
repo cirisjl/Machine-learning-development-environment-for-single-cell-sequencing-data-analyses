@@ -402,6 +402,11 @@
   flex: 0 0 37%;
 }
 
+.task-builder-task .dialog-container .facet .filters-options{
+  overflow: auto;
+  max-height: 200px;
+}
+
 .task-builder-task .dialog-container .facet .filters-options ul {
   list-style-type: none;
   padding-left: 0px;
