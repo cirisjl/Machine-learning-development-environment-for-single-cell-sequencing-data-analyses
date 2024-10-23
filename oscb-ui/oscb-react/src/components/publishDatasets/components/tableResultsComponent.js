@@ -90,13 +90,13 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         window.open(`/mydata/view-dataset-info?datasetId=${datasetId}`, '_blank');
     };
 
-    const handleEdit = (dataset) => {
-        console.log("Edit dataset: ", dataset);
-        // Implement your visualization logic here
+    const handleEdit = (datasetId) => {
+        console.log("Edit dataset Id: ", datasetId);
+        window.open(`/mydata/edit-dataset-info?datasetId=${datasetId}`, '_blank');
     };
 
-    const handleDelete = (dataset) => {
-        console.log("Delete dataset: ", dataset);
+    const handleDelete = (datasetId) => {
+        console.log("Delete dataset Id: ", datasetId);
         // Implement your visualization logic here
     };
 
@@ -144,17 +144,17 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         checked={!!selectedDatasets[item["Id"]]}
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
                     />
-                    { showEdit && (<button
+                    <button
                         onClick={() => handleEdit(item["Id"])}
                         className="action-button">
                         <FontAwesomeIcon icon={faEdit} />
-                    </button>) }
+                    </button>
 
-                    { showDelete && (<button
+                    <button
                         onClick={() => handleDelete(item["Id"], item)}
                         className="action-button">
                         <FontAwesomeIcon icon={faTrash} />
-                    </button>)}
+                    </button>
 
                     <button
                         onClick={() => handleVisualize(item["Id"])}

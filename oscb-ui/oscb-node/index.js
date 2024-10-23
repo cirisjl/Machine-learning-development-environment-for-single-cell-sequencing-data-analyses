@@ -1828,6 +1828,40 @@ app.post('/node/submitTaskMetadata', async (req, res) => {
     }
   });
   
+app.post('/node/updateDatasetDetails', async (req, res) => {
+    const client = new MongoClient(mongoUrl);
+
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const { Id, ...updateFields } = req.body;
+
+        let collection = (Id.startsWith("U-") && Id.includes("@")) 
+                                                    ? db.collection(userDatasetsCollection) 
+                                                    : db.collection(datasetCollection);
+
+
+        if (!Id) {
+            return res.status(400).json({ error: 'Document Id is required' });
+        }
+
+        const result = await collection.updateOne(
+            { Id: Id },  // Query to find the document by the custom Id field
+            { $set: updateFields } // Update only the specified fields
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'Document not found' });
+        }
+
+        res.status(200).json({ message: 'Document updated successfully' });
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
 
 // API endpoint to get datasets
 app.get('/node/getDatasets', async (req, res) => {
@@ -2187,8 +2221,14 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                    else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[filterCategory] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
@@ -2378,8 +2418,14 @@ app.post('/node/tasks/search', async (req, res) => {
                 const filterValue = filters[filterCategory];
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                   else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[`datasetDetails.${filterCategory}`] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
@@ -2893,8 +2939,14 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                 if (Array.isArray(filterValue) && filterValue.length > 0) {
                     let condition = {};
 
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    } 
                     // Check if the filter category should use the 'label' property for array of objects
-                    if (fieldsWithLabel.includes(filterCategory)) {
+                    else if (fieldsWithLabel.includes(filterCategory)) {
                         condition[filterCategory] = {
                             $elemMatch: { label: { $in: filterValue } }
                         };
@@ -3485,22 +3537,22 @@ app.post('/node/editDatasetMetadata', async (req, res) => {
         // Connect to the MongoDB server
         await client.connect();
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollection);
+        const datasetId = req.body.datasetId; 
 
-        const formData = req.body; // This assumes you have middleware to parse JSON in the request body
+        // Select appropriate collection based on datasetId pattern
+        let collection = (datasetId.startsWith("U-") && datasetId.includes("@")) 
+                                            ? db.collection(userDatasetsCollection) 
+                                            : db.collection(datasetCollection);
 
         // Check if a document with the provided Id exists
-        const existingDocument = await collection.findOne({ Id: formData.Id });
+        const existingDocument = await collection.findOne({ Id: datasetId });
 
         if (!existingDocument) {
-            console.log('Document with Id does not exist:', formData.Id);
+            console.log('Document with Id does not exist:', datasetId);
             res.status(404).json({ error: 'Document with the provided Id does not exist' });
-        } else {
-            // Document with the provided Id exists, proceed with updating
-            await collection.updateOne({ Id: formData.Id }, { $set: formData });
-            console.log('Form data updated successfully');
-            res.status(200).json({ message: 'Form data updated successfully' });
-        }
+        } 
+
+        res.status(200).json(existingDocument);
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ error: 'Internal Server Error' });
