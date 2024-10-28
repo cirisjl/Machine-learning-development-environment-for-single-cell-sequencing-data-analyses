@@ -9,7 +9,7 @@ import AlertMessageComponent from '../../publishDatasets/components/alertMessage
 import TableComponent from '../../publishDatasets/components/labelTableComponent';
 
 
-const EditCustomForm = () => {
+const EditCustomForm = async () => {
   const [formData, setFormData] = useState(
     {
       Dataset: '',
@@ -528,7 +528,7 @@ const EditCustomForm = () => {
                   isSearchable
                   onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange  
                   options={ 
-                    Object.entries(JSON.parse(formData.cell_metadata_head)).map((entry) => ({
+                    Object.entries(JSON.parse(await inflate(formData.cell_metadata))).map((entry) => ({
                     label: entry[0],
                     value: Object.values(entry[1])[0],
                   })) 
@@ -539,7 +539,7 @@ const EditCustomForm = () => {
               </div>
 
               <div className="label-table-container">
-                <TableComponent cellMetadataObs={JSON.parse(formData.cell_metadata_head)} />
+                <TableComponent cellMetadataObs={JSON.parse(await inflate(formData.cell_metadata_head))} />
               </div>
 
               {/* "Library Construction Method" (CreatableSelect) */}

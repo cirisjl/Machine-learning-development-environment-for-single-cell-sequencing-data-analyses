@@ -6,6 +6,7 @@ WORKDIR /opt/src/app
 # Install app dependencies
 COPY package*.json ./
 
+RUN npm install react-native-gzip
 RUN npm install
 # RUN npm install @octokit/rest
 # RUN npm install @rjsf/core @rjsf/utils @rjsf/validator-ajv8 --save
