@@ -75,7 +75,7 @@
     "moment": "*",
      "antd": "5.19.1",
      "@ant-design/icons": "5.3.7",
-     "react-native-gzip": "1.1.0"
+     "lz-string":"1.5.0"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",
