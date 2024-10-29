@@ -7,7 +7,7 @@ import AlertMessageComponent from '../../publishDatasets/components/alertMessage
 import { Card, CardContent, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';
+import { downloadFile, getFileNameFromURL, getCookie, decompressData } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
@@ -404,7 +404,7 @@ const DatasetInfoComponent = () => {
                                                         fetchPlotData(selectedPlotType, preProcessResult.process_id); // Call the API as soon as the selection changes
                                                       }}
                                                     >
-                                                      {Object.keys(JSON.parse(detail.datasetDetails.cell_metadata_head)).map((key) => (
+                                                      {Object.keys(decompressData(detail.datasetDetails.cell_metadata)).map((key) => (
                                                         <MenuItem key={key} value={key}>{key}</MenuItem>
                                                       ))}
                                                     </Select>

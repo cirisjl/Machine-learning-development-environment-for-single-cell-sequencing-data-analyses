@@ -4,12 +4,12 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {NODE_API_URL} from '../../../constants/declarations'
 import RightRail from '../../RightNavigation/rightRail';
-import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
+import { decompressData, getCookie, isUserAuth } from '../../../utils/utilFunctions';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
 import TableComponent from '../../publishDatasets/components/labelTableComponent';
 
 
-const EditCustomForm = async () => {
+const EditCustomForm = () => {
   const [formData, setFormData] = useState(
     {
       Dataset: '',
@@ -37,7 +37,8 @@ const EditCustomForm = async () => {
       'Source': '',
       'Source Key': '',
       'Submission Date': '', // Set your initial date placeholder here   
-      'cell_metadata_head':"{}"
+      // 'cell_metadata_head':{},
+      // 'cell_metadata':{}
      },
   );
 
@@ -170,7 +171,8 @@ const EditCustomForm = async () => {
             'Source': data.Source || '',
             'Source Key': data['Source Key'] || '',
             'Submission Date': data['Submission Date'] || '', 
-            'cell_metadata_head': data['cell_metadata_head'] || "{}"
+            'cell_metadata_head': data['cell_metadata_head'],
+            'cell_metadata': data['cell_metadata']
           });
   
           setMessage(`Successfully fetched details for the dataset ID - ${id}.`);
@@ -518,29 +520,40 @@ const EditCustomForm = async () => {
                 {errors['Model Organ'] && <p className="error">{errors['Model Organ']}</p>}
               </div>
 
-              {/* "Selected Cell Types" (CreatableSelect) */}
-              <div className="form-field"><div>
-                  <label className="form-label">Cell Type Annotation:</label></div>
-                <CreatableSelect
-                  name="Selected Cell Types"
-                  value={formData['Selected Cell Types']}
-                  isClearable
-                  isSearchable
-                  onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)} // Use handleSelectChange  
-                  options={ 
-                    Object.entries(JSON.parse(await inflate(formData.cell_metadata))).map((entry) => ({
-                    label: entry[0],
-                    value: Object.values(entry[1])[0],
-                  })) 
-
-                  } // Set options to the fetched options
-                  className={`form-input`}
-                />
+              { /* "Selected Cell Types" (CreatableSelect) */ }
+              <div className="form-field">
+                <div>
+                  <label className="form-label">Cell Type Annotation:</label>
+                </div>
+                {formData.cell_metadata ? (
+                  <CreatableSelect
+                    name="Selected Cell Types"
+                    value={formData['Selected Cell Types']}
+                    isClearable
+                    isSearchable
+                    onChange={(selectedOption) => handleSelectChange('Selected Cell Types', selectedOption)}
+                    options={
+                      Object.entries(decompressData(formData.cell_metadata)).map((entry) => ({
+                        label: entry[0],
+                        value: Object.values(entry[1])[0],
+                      }))
+                    }
+                    className="form-input"
+                  />
+                ) : (
+                  <p>No cell metadata available.</p>
+                )}
               </div>
 
+              { /* Label Table Container */ }
               <div className="label-table-container">
-                <TableComponent cellMetadataObs={JSON.parse(await inflate(formData.cell_metadata_head))} />
+                {formData.cell_metadata_head ? (
+                  <TableComponent cellMetadataObs={JSON.parse(formData.cell_metadata_head)} />
+                ) : (
+                  <p>No cell metadata head available.</p>
+                )}
               </div>
+
 
               {/* "Library Construction Method" (CreatableSelect) */}
               <div className="form-field">
