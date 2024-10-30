@@ -69,6 +69,11 @@ export default function ToolsDetailsComponent(props) {
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
+
+    const [dynamicOptions, setDynamicOptions] = useState({
+      outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
+      speciesOptions: ["human", "mouse"]
+    });
     
     const onSelectDataset = (dataset) => {
       let datasetId = dataset.Id; 
@@ -356,16 +361,20 @@ const onSelectSubItem = (mainItem, subItem) => {
 
     import(`./../../../schema/UI-schema/Tools/${filterCategory}/${filterName}.js`)
     .then((module) => {
-      setUIFilterSchema(JSON.parse(JSON.stringify(module.uiSchema)));
-      // setUIFilterSchema({...module.uiSchema});
-      console.log("react json UI schema")
-      console.log(UIfilterSchema);
+      if (typeof module.uiSchema === 'function') {
+        // Pass dynamicOptions if uiSchema is a function
+        setUIFilterSchema(module.uiSchema(dynamicOptions));
+      } else {
+        // If not a function, set the UI schema directly
+        setUIFilterSchema(module.uiSchema);
+      }
+      console.log("React JSON UI schema with dynamic options", UIfilterSchema);
     })
     .catch((error) => {
       console.error('Error loading UI filter schema:', error);
       setUIFilterSchema(null);
     });
-  },[filterName, filterCategory]);
+  },[filterName, filterCategory, dynamicOptions]);
 
   const handleChange = ({ formData }) => {
 

@@ -1,4 +1,4 @@
-export const uiSchema = {
+export const uiSchema = (dynamicOptions) => ({
   "parameters": {
     "classNames": "category",
       "output_format": {
@@ -9,7 +9,7 @@ export const uiSchema = {
           placeholder: "Select the Output Format",
           creatable: false,
           searchable: true,
-          opts:["AnnData", "SingleCellExperiment", "Seurat", "CSV"] 
+          opts: dynamicOptions.outputFormatOptions 
         }
       },
       "species": {
@@ -20,7 +20,7 @@ export const uiSchema = {
           placeholder: "Select the Species type",
           creatable: false,
           searchable: true,
-          opts:["human", "mouse"]
+          opts: dynamicOptions.speciesOptions
         }
       },
       "idtype": {
@@ -253,4 +253,4 @@ export const uiSchema = {
         }
       }
   }
-};
+});
