@@ -1,6 +1,23 @@
 import { NODE_API_URL } from '../constants/declarations'
 import axios from 'axios';
+import LZString from 'lz-string';
 
+// Function to compress data
+export function compressData(data) {
+    // Convert data to JSON string
+    const jsonString = JSON.stringify(data);
+    // Compress and encode in Base64 format
+    const compressedString = LZString.compressToBase64(jsonString);
+    return compressedString;
+}
+
+// Function to decompress data
+export function decompressData(compressedString) {
+    // Decode and decompress the Base64 string
+    const jsonString = LZString.decompressFromBase64(compressedString);
+    // Parse JSON string to get original data
+    return JSON.parse(jsonString);
+}
 
 // Get the value of a cookie with a given name
 export function getCookie(name) {
