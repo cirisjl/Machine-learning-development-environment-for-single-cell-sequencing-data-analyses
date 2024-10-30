@@ -2229,9 +2229,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
                     } 
                     // Check if the filter category should use the 'label' property for array of objects
                     else if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[filterCategory] = {
-                            $elemMatch: { label: { $in: filterValue } }
-                        };
+                        condition[`${filterCategory}.label`] = { $in: filterValue };
+
                     } else {
                         // Directly use the filter category for other fields
                         condition[filterCategory] = { $in: filterValue };
@@ -2426,9 +2425,8 @@ app.post('/node/tasks/search', async (req, res) => {
                     } 
                     // Check if the filter category should use the 'label' property for array of objects
                    else if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[`datasetDetails.${filterCategory}`] = {
-                            $elemMatch: { label: { $in: filterValue } }
-                        };
+                    condition[`${filterCategory}.label`] = { $in: filterValue };
+
                     } else {
                         // Directly use the filter category for other fields
                         condition[`datasetDetails.${filterCategory}`] = { $in: filterValue };
@@ -2947,9 +2945,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                     } 
                     // Check if the filter category should use the 'label' property for array of objects
                     else if (fieldsWithLabel.includes(filterCategory)) {
-                        condition[filterCategory] = {
-                            $elemMatch: { label: { $in: filterValue } }
-                        };
+                        condition[`${filterCategory}.label`] = { $in: filterValue };
+
                     } else {
                         // Directly use the filter category for other fields
                         condition[filterCategory] = { $in: filterValue };
@@ -3141,7 +3138,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
 
         // Assuming the first element contains the desired structure
         const data = result[0];
-        const totalCount = data.documents[0].totalCount ? data.documents[0].totalCount.total : 0;
+        // const totalCount = data.documents[0].totalCount ? data.documents[0].totalCount.total : 0;
 
         // Extract and transform facets, excluding facets that would result in an empty array
         const facets = Object.keys(data)
@@ -3163,10 +3160,10 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             results: data.documents,
             facets: facets,
             pagination: {
-                totalCount: totalCount,
+                // totalCount: totalCount,
                 page,
                 pageSize,
-                pageCount: Math.ceil(totalCount / pageSize),
+                // pageCount: Math.ceil(totalCount / pageSize),
             }
         });
     } catch (error) {

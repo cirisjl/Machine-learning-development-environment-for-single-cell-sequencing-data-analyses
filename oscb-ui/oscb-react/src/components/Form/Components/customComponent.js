@@ -4,7 +4,7 @@ import CreatableSelect from 'react-select/creatable';
 import { NODE_API_URL } from '../../../constants/declarations';
 import './MyForm.css';
 import axios from 'axios';
-import { getCookie, isUserAuth } from '../../../utils/utilFunctions';
+import { getCookie, isUserAuth, compressData, decompressData } from '../../../utils/utilFunctions';
 import TableComponent from '../../publishDatasets/components/labelTableComponent.js';
 
 class MyForm extends Component {
@@ -223,6 +223,7 @@ class MyForm extends Component {
       // formData.Genes = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.genes);
       // formData.nCells = (taskData.quality_control.qc_results[0]?.metadata?.nCells);
       // formData.nGenes = (taskData.quality_control.qc_results[0]?.metadata?.nGenes);
+      formData.cell_metadata = compressData(taskData.quality_control.qc_results[0]?.cell_metadata);
       formData.cell_metadata_head = JSON.stringify(taskData.quality_control.qc_results[0]?.cell_metadata_head);
       // formData.gene_metadata = JSON.stringify(taskData.quality_control.qc_results[0]?.metadata?.gene_metadata);
       // formData.layers = taskData.quality_control.qc_results[0]?.metadata?.layers;
@@ -275,7 +276,9 @@ class MyForm extends Component {
         formData.files = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
         // formData.cell_metadata = taskData.upload.final_files.cell_metadata;
-        formData.cell_metadata_head = taskData.upload.final_files.cell_metadata_head;
+        formData.cell_metadata = compressData(taskData.upload.final_files.cell_metadata);;
+  
+        formData.cell_metadata_head = JSON.stringify(taskData.upload.final_files.cell_metadata_head);
         // formData.obs_names = taskData.upload.final_files.obs_names;
         // formData.nCells = taskData.upload.final_files.nCells;
         formData.nGenes = taskData.upload.final_files.nGenes;
