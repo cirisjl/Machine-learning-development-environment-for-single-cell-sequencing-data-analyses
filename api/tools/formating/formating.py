@@ -26,7 +26,7 @@ from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from tools.evaluation.clustering import clustering_scores
 from tools.utils.gzip_str import *
-
+from rpy2.robjects import r, StrVector, NULL
 from typing import Any, List, Optional
 from attrdict import AttrDict
 import json_numpy
@@ -454,6 +454,10 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
 
     if assay is None:
         assay = 'RNA'
+    
+    # Convert Python string `assay` to an R-compatible string vector
+    r_assay = StrVector([assay])
+
 
     # Access the loaded R functions
     ConvertSeuratSCEtoAnndata_r = ro.globalenv['ConvertSeuratSCEtoAnndata']
@@ -466,26 +470,24 @@ def convert_seurat_sce_to_anndata(path, assay='RNA'):
         try:
             print("convert_seurat_sce_to_anndata")
             print(assay)
-            results = list(ConvertSeuratSCEtoAnndata_r(path, assay=assay))
+            results = list(ConvertSeuratSCEtoAnndata_r(path, assay=r_assay))
+            print("run successful")
+            print(results)
             if results[0] is not None and results[0] != ro.rinterface.NULL:
                 default_assay = list(results[0])[0]
             else:
                 default_assay = None  # or a sensible default like 'RNA'
 
-            if results[1] is not None and results[1] != ro.rinterface.NULL:
-                assay_names = list(results[1])
-            else:
-                assay_names = []
-
-            if results[2] is not None and results[2] != ro.rinterface.NULL:
-                adata_path = list(results[2])[0]
-            else:
-                adata_path = None     
+            assay_names = list(results[1])
+            adata_path = list(results[2])[0]  
 
         except Exception as e:
             print("Seurat/SCE to Anndata is failed")
             print(e)
-
+    print("in formatting")
+    print(adata_path)
+    print(assay_names)
+    print(default_assay)
     return adata_path, assay_names, default_assay
 
 
