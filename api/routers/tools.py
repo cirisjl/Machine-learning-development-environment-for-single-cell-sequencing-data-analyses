@@ -155,4 +155,4 @@ async def load_metadata_async(request_body: UploadRequest):
     file_dict = request_body.dict()
     task = load_metadata_task.apply_async(args=[file_dict])
 
-    return JSONResponse({"job_id": task.id})
+    return JSONResponse({"job_id": task.id}) 

@@ -72,20 +72,20 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
     const handleStatusMessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          if (data.task_status) {
-            setCurrentStatus(data.task_status);
-            if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
-              setMetadataResult(data);
+            const data = JSON.parse(event.data);
+            if (data.task_status) {
+                setCurrentStatus(data.task_status);
+                if (data.task_status === "SUCCESS" || data.task_status === "FAILURE") {
+                    setMetadataResult(data);
+                }
             }
-          }
         } catch (error) {
-          setIsLoading(false);
-          console.error("Error parsing status message:", error);
+            setIsLoading(false);
+            console.error("Error parsing status message:", error);
         }
-      };
+    };
 
-      const { closeWebSockets } = useWebSocketToCheckStatus(jobId, handleStatusMessage, setIsLoading);
+    const { closeWebSockets } = useWebSocketToCheckStatus(jobId, handleStatusMessage, setIsLoading);
 
     // Custom styled components
     const ScrollableListContainer = styled('div')(({ theme }) => ({
@@ -344,44 +344,46 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
     const handleAssaySelectionSubmit = async () => {
 
+
         if (taskData.upload.selectedAssayName === '') {
             setErrorMessage('Please select the default assay to continue');
             return;
         }
         setIsLoading(true); // Start loading
 
-        if (taskData.upload.selectedAssayName === taskData.upload.default_assay) {
-            setTaskStatus((prevTaskStatus) => ({
-                ...prevTaskStatus,
-                1: true, // Mark Task 1 as completed
-            }));
+        // if (taskData.upload.selectedAssayName === taskData.upload.default_assay) {
+        //     setTaskStatus((prevTaskStatus) => ({
+        //         ...prevTaskStatus,
+        //         1: true, // Mark Task 1 as completed
+        //     }));
 
-            setTaskData((prevTaskData) => ({
-                ...prevTaskData,
-                upload: {
-                    ...prevTaskData.upload,
-                    status: 'completed',
-                },
-            }));
+        //     setTaskData((prevTaskData) => ({
+        //         ...prevTaskData,
+        //         upload: {
+        //             ...prevTaskData.upload,
+        //             status: 'completed',
+        //         },
+        //     }));
 
-            setTaskData(prevTaskData => ({
-                ...prevTaskData,
-                upload: {
-                    ...prevTaskData.upload,
-                    final_files: {
-                        ...prevTaskData.upload.final_files,
-                        status: 'completed',
-                    },
-                },
-            }));
+        //     setTaskData(prevTaskData => ({
+        //         ...prevTaskData,
+        //         upload: {
+        //             ...prevTaskData.upload,
+        //             final_files: {
+        //                 ...prevTaskData.upload.final_files,
+        //                 status: 'completed',
+        //             },
+        //         },
+        //     }));
 
-            //The current task is finished, so make the next task active
-            setActiveTask(2);
-        } else {
+        //     //The current task is finished, so make the next task active
+        //     setActiveTask(2);
+        // } else {
 
             // Construct your API payload
-            const payload = {
-                fileDetails: taskData.upload.final_files.inputFiles,
+            let payload = {
+                fileDetails: taskData.upload.inputUpdatedFiles,
+                userID : taskData.upload.authToken
             };
 
             // Include assay_name in the payload only if it is not null
@@ -397,33 +399,92 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             // Make the API call
             axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
                 .then(response => {
-                    // Handle your response here
                     console.log(response.data);
                     let data = response.data;
+                    const jobId = data.job_id;
+                    setjobId(jobId);
+                    // Handle your response here
+                    // console.log(response.data);
+                    // let data = response.data;
+                    // setTaskData(prevTaskData => ({
+                    //     ...prevTaskData,
+                    //     upload: {
+                    //         ...prevTaskData.upload,
+                    //         final_files: {
+                    //             ...prevTaskData.upload.final_files,
+                    //             inputFiles: data.inputfile,
+                    //             adata_path: data.adata_path,
+                    //             format: data.format,
+                    //             default_assay: data.default_assay,
+                    //             cell_metadata: data.cell_metadata,
+                    //             cell_metadata_head: data.cell_metadata_head,
+                    //             obs_names: data.obs_names,
+                    //             nCells: data.nCells,
+                    //             nGenes: data.nGenes,
+                    //             layers: data.layers,
+                    //             info: data.info,
+                    //             adata_size: data.adata_size,
+                    //             embeddings: data.embeddings,
+                    //             status: 'completed',
+                    //         },
+                    //     },
+                    // }));
+
+                    // setTaskStatus((prevTaskStatus) => ({
+                    //     ...prevTaskStatus,
+                    //     1: true, // Mark Task 1 as completed
+                    // }));
+
+                    // //The current task is finished, so make the next task active
+                    // setActiveTask(2);
+                    // setIsLoading(false);
+                })
+                .catch(error => {
+                    console.error('There was an error with the conversion:', error);
+                    setIsLoading(false);
+                });
+        // }
+    };
+
+    useEffect(() => {
+        if (currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
+            if (currentStatus === "SUCCESS") {
+                if (metadataResult.task_result.assay_names && metadataResult.task_result.assay_names.length > 1) {
+                        setTaskData(prevTaskData => ({
+                            ...prevTaskData,
+                            upload: {
+                                ...prevTaskData.upload,
+                                displayAssayNames: true,
+                                assayNames: metadataResult.task_result.assay_names,
+                                default_assay: metadataResult.task_result.default_assay,
+                                inputUpdatedFiles: metadataResult.task_result.inputfile
+                            },
+                        }));
+                }
+                 else {
                     setTaskData(prevTaskData => ({
                         ...prevTaskData,
                         upload: {
                             ...prevTaskData.upload,
                             final_files: {
                                 ...prevTaskData.upload.final_files,
-                                inputFiles: data.inputfile,
-                                adata_path: data.adata_path,
-                                format: data.format,
-                                default_assay: data.default_assay,
-                                cell_metadata: data.cell_metadata,
-                                cell_metadata_head: data.cell_metadata_head,
-                                obs_names: data.obs_names,
-                                nCells: data.nCells,
-                                nGenes: data.nGenes,
-                                layers: data.layers,
-                                info: data.info,
-                                adata_size: data.adata_size,
-                                embeddings: data.embeddings,
-                                status: 'completed',
+                                inputFiles: metadataResult.task_result.inputfile,
+                                adata_path: metadataResult.task_result.adata_path,
+                                format: metadataResult.task_result.format,
+                                default_assay: metadataResult.task_result.default_assay ? metadataResult.task_result.default_assay : undefined,
+                                cell_metadata: metadataResult.task_result.cell_metadata,
+                                cell_metadata_head: metadataResult.task_result.cell_metadata_head,
+                                obs_names: metadataResult.task_result.obs_names,
+                                nCells: metadataResult.task_result.nCells,
+                                nGenes: metadataResult.task_result.nGenes,
+                                layers: metadataResult.task_result.layers,
+                                info: metadataResult.task_result.info,
+                                adata_size: metadataResult.task_result.adata_size,
+                                embeddings: metadataResult.task_result.embeddings,
+                                status: 'completed'
                             },
                         },
                     }));
-
                     setTaskStatus((prevTaskStatus) => ({
                         ...prevTaskStatus,
                         1: true, // Mark Task 1 as completed
@@ -431,63 +492,19 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
                     //The current task is finished, so make the next task active
                     setActiveTask(2);
-                    setIsLoading(false);
-                })
-                .catch(error => {
-                    console.error('There was an error with the conversion:', error);
-                });
-        }
-    };
-
-    useEffect(() => {
-        if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
-          if(currentStatus === "SUCCESS") {
-            if(metadataResult.task_result.format === "h5seurat") {
-
-            } else {
-                setTaskData(prevTaskData => ({
-                    ...prevTaskData,
-                    upload: {
-                        ...prevTaskData.upload,
-                        final_files: {
-                            ...prevTaskData.upload.final_files,
-                            inputFiles: metadataResult.task_result.inputfile,
-                            adata_path: metadataResult.task_result.adata_path,
-                            format: metadataResult.task_result.format,
-                            cell_metadata: metadataResult.task_result.cell_metadata,
-                            cell_metadata_head: metadataResult.task_result.cell_metadata_head,
-                            obs_names: metadataResult.task_result.obs_names,
-                            nCells: metadataResult.task_result.nCells,
-                            nGenes: metadataResult.task_result.nGenes,
-                            layers: metadataResult.task_result.layers,
-                            info: metadataResult.task_result.info,
-                            adata_size: metadataResult.task_result.adata_size,
-                            embeddings: metadataResult.task_result.embeddings,
-                            status: 'completed'
-                        },
-                    },
-                }));    
+                    setIsButtonDisabled(true);
+                    setTimeout(() => {
+                        setIsButtonDisabled(false);
+                    }, 5000);
+                }
             }
-            
-             setTaskStatus((prevTaskStatus) => ({
-                ...prevTaskStatus,
-                1: true, // Mark Task 1 as completed
-            }));
-
-            //The current task is finished, so make the next task active
-            setActiveTask(2);
-            setIsButtonDisabled(true);
-            setTimeout(() => {
-                setIsButtonDisabled(false);
-            }, 5000);
-          }
-          else if(currentStatus === "FAILURE") {
-            console.error("Metadata API Call is failed.")
-          } 
-          setIsLoading(false);
-          closeWebSockets();
+            else if (currentStatus === "FAILURE") {
+                console.error("Metadata API Call is failed.")
+            }
+            setIsLoading(false);
+            closeWebSockets();
         }
-      }, [currentStatus]); 
+    }, [currentStatus]);
 
     const handleSubmit = (event) => {
 

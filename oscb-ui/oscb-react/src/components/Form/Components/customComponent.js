@@ -275,6 +275,7 @@ class MyForm extends Component {
         // formData.inputFiles = [taskData.upload.final_files.adata_path];
         formData.files = taskData.upload.final_files.adata_path;
         formData.adata_path = taskData.upload.final_files.adata_path;
+        formData.seurat_path = taskData.upload.final_files?.seurat_path;
         // formData.cell_metadata = taskData.upload.final_files.cell_metadata;
         formData.cell_metadata = compressData(taskData.upload.final_files.cell_metadata);;
   
@@ -383,17 +384,12 @@ class MyForm extends Component {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
     if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
-      formData['Selected Cell Types)'] = {
-        'value': 'Unspecified',
-        'label': ['Unspecified']
-      }
+      errors['Selected Cell Types'] = 'Selected Cell Types is required';
     }
 
     if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
-      formData['Disease Status (Donor)'] = [ {
-        'value': 'Unspecified',
-        'label': 'Unspecified'
-      } ]
+      errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';
+
     }
     // if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
     //   errors['Disease Status (Donor)'] = 'Disease Status (Donor) is required';

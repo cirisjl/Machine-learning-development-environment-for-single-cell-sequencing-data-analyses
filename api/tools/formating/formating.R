@@ -285,7 +285,7 @@ ConvertSeuratSCEtoAnndata <- function(path, assay = 'RNA') {
         SeuratToAnndata(srat, adata_path, assay=assay)
     }
     else{
-        SeuratToAnndata(srat, adata_path)
+        SeuratToAnndata(srat, adata_path, assay=default_assay)
     }
 
     # if(suffix == "h5Seurat" || suffix == "h5seurat"){
