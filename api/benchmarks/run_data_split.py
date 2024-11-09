@@ -65,7 +65,7 @@ def run_data_split(job_id, data_dict:dict):
                 "datasetId": datasetId,
                 "benchmarksId": benchmarksId,
                 "output": adata_path,
-                "adata_path": adata_path
+                "adata_path": adata_path,
                 "completed_on": datetime.now(),
                 "results": results,
                 "status": "Success"
