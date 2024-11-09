@@ -34,6 +34,7 @@ class QCParameters(BaseModel):
     doublet_rate: Optional[float] = 0
     regress_cell_cycle: Optional[bool] = False
     use_default: Optional[bool] = True 
+    skip_qc: [bool] = False
     # Bioconductor
     colour_by: Optional[str] = 'NULL' # Color by for plots
     shape_by_1: Optional[str] = 'NULL'  # Shape by 1 for plots
