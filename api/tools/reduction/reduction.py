@@ -85,7 +85,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         return adata
 
     if skip_if_exist:
-        if layer is not None and layer + '_louvain' in adata.obs.keys() amd  layer + '_leiden' in adata.obs.keys():
+        if layer is not None and layer + '_louvain' in adata.obs.keys() and  layer + '_leiden' in adata.obs.keys():
             return adata
         elif layer is None and use_rep is not None and use_rep + '_louvain' not in adata.obs.keys() and use_rep + '_leiden' not in adata.obs.keys():
             return adata
