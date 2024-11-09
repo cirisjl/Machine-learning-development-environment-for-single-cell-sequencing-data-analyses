@@ -63,10 +63,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                     ...prevTaskData.task_builder.selectedDatasets[data.datasetId],
                     dataSplit: {
                         ...prevTaskData.task_builder.selectedDatasets[data.datasetId].dataSplit,
-                        archivePath: data.archive_path,
-                        trainPath: data.train_path,
-                        testPath: data.test_path,
-                        validationPath: data.validation_path,
+                        adataPath: data.adata_path,
                         dataSplitPerformed: true,
                     }
                 }
@@ -186,10 +183,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                 dataSplit: {
                   ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
                   dataSplitPerformed: true,
-                  archive_path: result.archive_path,
-                  train_path: result.train_path,
-                  validation_path: result.validation_path,
-                  test_path: result.test_path,
+                  adata_path: result.adata_path,
                 }
               }
             }
