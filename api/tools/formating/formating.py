@@ -263,7 +263,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     nCells = 0
     nGenes = 0
     genes = None
-    # gene_metadata = None
+    gene_metadata = None
     embeddings = []
     umap = None
     tsne = None
@@ -332,13 +332,21 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         if "highly_variable" in adata.var.keys():
             genes = gzip_list(adata.var[adata.var['highly_variable']==True].index.tolist())
             # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
+            var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
         elif "vst.variable" in adata.var.keys():
             genes = gzip_list(adata.var[adata.var['vst.variable']==True].index.tolist())
             # gene_metadata = adata.var[adata.var['vst.variable']==True] # pandas dataframe
+            var_dict = adata.var[adata.var['vst.variable']==True].to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var[adata.var['vst.variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
         else:
             genes = gzip_list(adata.var_names.to_list()) # Gene IDs
             # gene_metadata = adata.var # pandas dataframe
-        # gene_metadata = adata.var # pandas dataframe
+            var_dict = adata.var.to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var.index.tolist()
+            gene_metadata = gzip_dict(var_dict)
 
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
@@ -427,7 +435,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "layers": layers,
             "obs_names": obs_names,
             "cell_metadata": cell_metadata,
-            # "gene_metadata": gene_metadata.to_dict('list'),
+            "gene_metadata": gene_metadata,
             "nCells": nCells,
             "nGenes": nGenes,
             "genes": genes,
