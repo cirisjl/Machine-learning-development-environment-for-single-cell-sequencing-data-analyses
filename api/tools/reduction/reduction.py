@@ -5,7 +5,7 @@ from sklearn.manifold import TSNE
 from umap import UMAP
 
 
-def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0):
+def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0, skip_if_exist=False):
     msg = None
     if layer == "Pearson_residuals":
         msg = "Normalize Pearson_residuals may create NaN values, which are not accepted by PCA."
@@ -71,10 +71,18 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
     return adata, msg
 
 
-def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0):
+def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0, skip_if_exist=False):
     if layer == "Pearson_residuals":
         print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
         return adata
+
+    if skip_if_exist:
+        if layer is not None and layer + '_louvain' in adata.obs.keys() amd  layer + '_leiden' in adata.obs.keys():
+            return adata
+        elif layer is None and use_rep is not None and use_rep + '_louvain' not in adata.obs.keys() and use_rep + '_leiden' not in adata.obs.keys():
+            return adata
+        elif layer is None and 'louvain' not in adata.obs.keys() and 'leiden' not in adata.obs.keys():
+            return adata
     
     if layer is not None: # and layer + '_louvain' not in adata.obs.keys():
         adata_temp = adata.copy()
