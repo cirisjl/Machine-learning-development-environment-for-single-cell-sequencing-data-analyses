@@ -67,15 +67,15 @@ def run_qc(job_id, ds:dict, random_state=0):
         adata = load_anndata(input_path)
         output = benchmarks_output_path(input_path)
         output_path = get_output_path(output, '', ds['dataset'])
-        # parameters.pop('min_genes')
-        # parameters.pop('max_genes')
-        # parameters.pop('min_cells')
-        # parameters.pop('target_sum')
-        # parameters.pop('doublet_rate')
-        # parameters.pop('regress_cell_cycle')
-        # parameters.pop('colour_by')
-        # parameters.pop('shape_by_1')
-        # parameters.pop('shape_by_2')
+        parameters.pop('min_genes')
+        parameters.pop('max_genes')
+        parameters.pop('min_cells')
+        parameters.pop('target_sum')
+        parameters.pop('doublet_rate')
+        parameters.pop('regress_cell_cycle')
+        parameters.pop('colour_by')
+        parameters.pop('shape_by_1')
+        parameters.pop('shape_by_2')
 
         process_id = generate_process_id(md5, process, method, parameters)
         qc_results = pp_result_exists(process_id)
@@ -87,7 +87,7 @@ def run_qc(job_id, ds:dict, random_state=0):
             adata_path = qc_results["adata_path"]
         else:
             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=True)
             if msg is not None: redislogger.warning(job_id, msg)
 
             redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -167,7 +167,7 @@ def run_qc(job_id, ds:dict, random_state=0):
                         scanpy_results = run_clustering(scanpy_results, resolution=parameters['resolution'], random_state=random_state)
                         
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, n_top_genes=parameters['n_top_genes'])
                         nCells = qc_results["nCells"]
                         redislogger.info(job_id, "Saving AnnData object.")
                         
