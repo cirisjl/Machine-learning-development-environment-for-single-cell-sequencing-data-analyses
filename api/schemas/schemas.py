@@ -250,3 +250,10 @@ class ProcessResultsRequest(BaseModel):
     annotation: Optional[str] = None
     record_type: Optional[str] = None
     selected_cell_intersection: Optional[List[str]]= None
+
+
+class DownloadDataset(BaseModel):
+    dataset_id: str
+    user_id: Optional[str] = None
+    process_type: Optional[str] = None
+    method:  Optional[str] = None
