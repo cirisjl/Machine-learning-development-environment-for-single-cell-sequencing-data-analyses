@@ -17,9 +17,40 @@ def load_metadata(job_id, file_dict):
     if len(fileDetails) == 1:
         file = unzip_file_if_compressed(job_id, fileDetails[0])
         format = None
+        print("aasay name")
+        print(assay_name)
         try:
+            # Check if the file is of a specific type
+            if file.endswith(('.h5Seurat', 'h5seurat', 'rds', '.Robj')) and assay_name is None:
+                if file.endswith(('.h5Seurat', 'h5seurat')):
+                    seurat_path = file
+                print(assay_name)
+                print("srat rendering")
+                adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(file, assay=assay_name)
+
+                print(adata_path)
+                print(assay_names)
+                print(default_assay)
+
+                if len(assay_names) == 1:
+                    assay_name = assay_names[0]
+                    results["default_assay"] = assay_name
+                    print("Assay Name  :: ")
+                    print(assay_name)
+                else:
+                    return {
+                        'adata_path': adata_path,
+                        'seurat_path': seurat_path,
+                        'assay_names': assay_names,
+                        'default_assay': default_assay,
+                        "inputfile": fileDetails,
+                        "format": "h5seurat",
+                    }
             results['inputfile'] = fileDetails
-            adata = load_anndata(file)
+            if assay_name:
+                adata = load_anndata(file, assay=assay_name)
+            else:
+                adata = load_anndata(file)
             if file.endswith('.h5ad'):
                 adata_path = file
                 format = "h5ad"
@@ -37,6 +68,7 @@ def load_metadata(job_id, file_dict):
             # Handle the exception and return an error response
             detail = f"Error during loading dataset: {str(e)}"
             raise CeleryTaskException(detail)
+        results["format"] = format
 
     elif len(fileDetails) > 1:
         parent_directory = os.path.dirname(unzip_file_if_compressed(job_id, fileDetails[0]))
@@ -53,6 +85,7 @@ def load_metadata(job_id, file_dict):
             adata.write_h5ad(adata_path, compression='gzip')
             results["inputfile"] = fileDetails
             results["adata_path"] = adata_path
+            results["format"] = "h5ad"
 
         except Exception as e:
             detail=str(e)
