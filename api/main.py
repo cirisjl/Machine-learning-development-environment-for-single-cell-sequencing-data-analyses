@@ -5,9 +5,10 @@ from celery.result import AsyncResult
 from celery.app.control import Control
 import asyncio
 from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, workflows
+from routers import tools, benchmarks, workflows, cli
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -30,6 +31,8 @@ def create_app() -> FastAPI:
     current_app.include_router(tools.router)
     current_app.include_router(benchmarks.router)
     current_app.include_router(workflows.router)
+    current_app.include_router(cli.router)
+
     return current_app
 
 
@@ -119,6 +122,48 @@ async def get_task_status(job_id: str) -> dict:
     Return the status of the submitted Task
     """
     return get_task_info(job_id)
+
+
+@app.get("/api/job/downloadDataset/{job_id}")
+async def get_cli_task_status(job_id: str) -> dict:
+    """
+    Return the status of the submitted Task
+    """
+    task_info = get_task_info(job_id)
+    task_status = task_info.get("task_status")
+    task_result = task_info.get("task_result")
+
+    if task_status == "SUCCESS":
+        # Task completed successfully
+
+        if task_result:
+            adata_path = task_result.get("adata_path")
+
+            if adata_path:
+                # Return the file as a response
+                return FileResponse(
+                    adata_path,
+                    media_type="application/octet-stream",
+                    filename=os.path.basename(adata_path),
+                )
+            else:
+                # Task completed but no file found
+                return {"status": "Task result does not contain a file path", "job_status": task_status}
+        
+        else:
+            return {"status": "Invalid Response for the Task Submitted", "job_status": task_status}
+    elif task_status == "FAILURE":
+        # Task failed, return error details
+        return {
+            "status": "Task failed",
+            "job_status": task_status,
+            "error_message": str(task_result),
+        }
+
+    # Task is still processing
+    return {"job_id": job_id, "job_status": task_status}
+
+
 
 
 @app.post("/api/task/revoke/{job_id}")

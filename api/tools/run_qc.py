@@ -99,6 +99,7 @@ def run_qc(job_id, ds:dict, random_state=0):
             process_id = generate_process_id(md5, process, method, parameters)
             qc_results = pp_result_exists(process_id)
 
+            print("Inside scanpy QC process")
             if qc_results is not None:
                 redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
                 nCells = qc_results["nCells"]
@@ -109,7 +110,9 @@ def run_qc(job_id, ds:dict, random_state=0):
                 if benchmarks_data:
                     output_path = get_output_path(output, '', ds['dataset'], method='scanpy')
                 else:
+                    print("output path before")
                     output_path = get_output_path(output, process_id, ds['dataset'], method='scanpy')
+                    print("output path before")
                 if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
                     redislogger.info(job_id, "Output already exists, start from the result of the last run.")
                     scanpy_results = load_anndata(output_path)
