@@ -2,15 +2,22 @@ import os
 import time
 import requests
 from tqdm import tqdm
+import platform
+import hashlib
+from pathlib import Path
 
-def downloadDataset(dataset_id, destination_path, process_type="Normalization", method=""):
+def downloadDataset(dataset_id, destination_path, process_type, method):
     # Define the base URL for the API
-    base_url = "http://130.127.133.108:5005/api"
+    base_url = "http://172.18.0.1:5005/api"
 
+    user_id = get_persistent_machine_id()
     # Step 1: Submit the task
     submit_url = f"{base_url}/oscb-cli/downloadDataset"
     payload = {
-        "dataset_id": dataset_id
+        "dataset_id": dataset_id,
+        "user_id": user_id,
+        "process_type":process_type,
+        "method":method
     }
 
     response = requests.post(submit_url, json=payload)
@@ -32,27 +39,45 @@ def downloadDataset(dataset_id, destination_path, process_type="Normalization", 
     filename = None  # Initialize task_result
 
     while True:
-        status_response = requests.get(task_status_url)
- 
-        # Check if the file is ready for download
-        if status_response.headers.get("content-disposition"):
-            content_disposition = status_response.headers.get('content-disposition')
-            filename = content_disposition.split('filename=')[1].strip('"')
-            print("Task completed. File ready for download.")
-            break # Move to download step
+        try:
+            # Make a GET request to check task status
+            response = requests.get(task_status_url)
 
-        # Parse the JSON response if it's not empty
-        if status_response.text.strip():
-            task_result = status_response.json()
-            print("Task results")
-            print(task_result)
-            print(task_result["job_status"])
-            if "status" in task_result and task_result["status"] == "Task result does not contain a file path" and task_result["job_status"] == "PROCESSING":
-                print("Task completed, but no file to download.")
+            # Check if the file is ready for download
+            if response.headers.get("content-disposition"):
+                content_disposition = response.headers.get("content-disposition")
+                filename = content_disposition.split("filename=")[1].strip('"')
+                print("Task completed. File ready for download.")
+                break  # Move to download step
+            
+            # Parse the JSON response
+            task_result = response.json() if response.text.strip() else None
+
+            if not task_result:
+                print("No valid task response from the server. Exiting!")
                 return
 
-        print("Task is still processing. Waiting...")
-        time.sleep(2)  # Wait before polling again
+            # Handle task statuses
+            job_status = task_result.get("job_status")
+            status = task_result.get("status")
+
+            if job_status == "SUCCESS":
+                if status == "Task result does not contain a file path":
+                    print("Task completed, but no file to download.")
+                if status == "Invalid Response for the Task Submitted":
+                    print("Invalid Response for the Task Submitted")
+                return
+            elif job_status == "FAILURE":
+                error_message = task_result.get("error_message", "Unknown error occurred.")
+                print(f"Task failed: {error_message}")
+                return
+            else:
+                print("Task is still processing. Waiting...")
+                time.sleep(5)  # Wait before polling again
+
+        except requests.RequestException as e:
+            print(f"Error occurred while checking task status: {e}")
+            return
 
     # Step 3: Download the file
     download_dir = os.path.abspath(destination_path)
@@ -78,7 +103,21 @@ def downloadDataset(dataset_id, destination_path, process_type="Normalization", 
     else:
         print(f"Error downloading the file: {file_response.status_code}, {file_response.text}")
 
+def get_persistent_machine_id():
+    # Generate a new unique ID based on system properties
+    system_properties = f"{platform.node()}-{platform.system()}-{platform.processor()}-{platform.machine()}"
+    print(system_properties)
+    hashed_id = hashlib.sha256(system_properties.encode()).hexdigest()
+    return hashed_id
+
 if __name__ == "__main__":
-    dataset_id = "U-h-Heart-Wang-2024@kbcfh"
+    dataset_id = "U-m-Heart-Wang-2024@kbcfh"
     destination_path = "datasets"
-    downloadDataset(dataset_id, destination_path)
+    process_type="quality_control"
+    method = "scanpy"
+
+    downloadDataset(dataset_id, destination_path, process_type, method)
+
+    # # Example usage
+    # machine_id = get_persistent_machine_id()
+    # print(f"Machine ID: {machine_id}")
