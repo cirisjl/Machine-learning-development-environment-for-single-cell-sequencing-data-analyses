@@ -256,14 +256,14 @@ def get_cell_metadata(adata, adata_path=None):
     return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden'): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden', n_top_genes=2000): 
     layers = None
     cell_metadata = None
     obs_names = None
     nCells = 0
     nGenes = 0
     genes = None
-    # gene_metadata = None
+    gene_metadata = None
     embeddings = []
     umap = None
     tsne = None
@@ -332,13 +332,38 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         if "highly_variable" in adata.var.keys():
             genes = gzip_list(adata.var[adata.var['highly_variable']==True].index.tolist())
             # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
+            var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
         elif "vst.variable" in adata.var.keys():
             genes = gzip_list(adata.var[adata.var['vst.variable']==True].index.tolist())
             # gene_metadata = adata.var[adata.var['vst.variable']==True] # pandas dataframe
+            var_dict = adata.var[adata.var['vst.variable']==True].to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var[adata.var['vst.variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
         else:
-            genes = gzip_list(adata.var_names.to_list()) # Gene IDs
-            # gene_metadata = adata.var # pandas dataframe
-        # gene_metadata = adata.var # pandas dataframe
+            # If highly variable does not exist, then create it.
+            if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
+                sc.pp.log1p(adata)
+                sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
+            else:
+                adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
+                sc.pp.normalize_total(adata, target_sum=target_sum)
+                sc.pp.log1p(adata)
+                sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
+                adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
+
+            genes = gzip_list(adata.var[adata.var['highly_variable']==True].index.tolist())
+            # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
+            var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
+
+            # genes = gzip_list(adata.var_names.to_list()) # Gene IDs
+            # # gene_metadata = adata.var # pandas dataframe
+            # var_dict = adata.var.to_dict('list') # Pandas dataframe
+            # var_dict['index'] = adata.var.index.tolist()
+            # gene_metadata = gzip_dict(var_dict)
 
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
         for name in embedding_names:
@@ -427,7 +452,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "layers": layers,
             "obs_names": obs_names,
             "cell_metadata": cell_metadata,
-            # "gene_metadata": gene_metadata.to_dict('list'),
+            "gene_metadata": gene_metadata,
             "nCells": nCells,
             "nGenes": nGenes,
             "genes": genes,
