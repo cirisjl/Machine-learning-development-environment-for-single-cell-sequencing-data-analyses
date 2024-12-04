@@ -3,7 +3,9 @@ import os
 import traceback 
 
 from tools.run_qc import run_qc
-from schemas.schemas import Dataset, QCParameters
+from tools.run_normalization import run_normalization
+from tools.run_imputation import run_imputation
+from schemas.schemas import Dataset, QCParameters, normalizationParameters, imputationParameters
 
 
 def run_download_dataset(job_id, ds: dict, random_state=0):
@@ -30,20 +32,21 @@ def run_download_dataset(job_id, ds: dict, random_state=0):
         adata_path = query_mongo_by_dataset_id(dataset_id)
 
         if process_type and method:
+            # Get the directory of the input path
+            directory = os.path.dirname(adata_path)
+            # Append 'output/' to the directory
+            output_directory = os.path.join(directory, "output/")
+
+            # Check if the output directory exists, if not, create it
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
+                print(f"Output directory created: {output_directory}")
+            else:
+                print(f"Output directory already exists: {output_directory}")
+            
             if process_type == "quality_control":
                 print("Inside the quality control method")
-                # Get the directory of the input path
-                directory = os.path.dirname(adata_path)
-                # Append 'output/' to the directory
-                output_directory = os.path.join(directory, "output/")
 
-                # Check if the output directory exists, if not, create it
-                if not os.path.exists(output_directory):
-                    os.makedirs(output_directory)
-                    print(f"Output directory created: {output_directory}")
-                else:
-                    print(f"Output directory already exists: {output_directory}")
-                
                 dataset_obj = Dataset(
                     input=adata_path,
                     userID = user_id,
@@ -56,6 +59,48 @@ def run_download_dataset(job_id, ds: dict, random_state=0):
                 print(dataset_obj)
 
                 qc_results = run_qc(job_id, dataset_obj.dict())
+
+                print(qc_results)
+
+                if qc_results and qc_results["adata_path"]:
+                    adata_path = qc_results["adata_path"]
+
+            elif process_type == "normalization":
+                print("Inside the Normalization Process")
+     
+                dataset_obj = Dataset(
+                    input=adata_path,
+                    userID = user_id,
+                    method = method,
+                    datasetId = dataset_id,
+                    dataset = dataset_id,
+                    output = output_directory,
+                    normalization_params = normalizationParameters(methods = [method])
+                )
+                print(dataset_obj)
+
+                qc_results = run_normalization(job_id, dataset_obj.dict())
+
+                print(qc_results)
+
+                if qc_results and qc_results["adata_path"]:
+                    adata_path = qc_results["adata_path"]
+
+            elif process_type == "imputation":
+                print("Inside the Imputation Process")
+     
+                dataset_obj = Dataset(
+                    input=adata_path,
+                    userID = user_id,
+                    method = method,
+                    datasetId = dataset_id,
+                    dataset = dataset_id,
+                    output = output_directory,
+                    imputation_params = imputationParameters(methods = [method])
+                )
+                print(dataset_obj)
+
+                qc_results = run_imputation(job_id, dataset_obj.dict())
 
                 print(qc_results)
 
