@@ -5,10 +5,16 @@ from tqdm import tqdm
 import platform
 import hashlib
 from pathlib import Path
+import websockets
+import asyncio
+
 
 def downloadDataset(dataset_id, destination_path, process_type, method):
     # Define the base URL for the API
-    base_url = "http://172.18.0.1:5005/api"
+    base_url = "http://130.127.133.91:5005/api"
+
+    ws_base_url = "ws://130.127.133.91:5005/wsapi"  # WebSocket base URL
+
 
     user_id = get_persistent_machine_id()
     # Step 1: Submit the task
@@ -33,6 +39,10 @@ def downloadDataset(dataset_id, destination_path, process_type, method):
         return
 
     print(f"Task submitted successfully. Job ID: {job_id}")
+
+    # Start a coroutine to fetch logs in real time
+    asyncio.run(fetch_logs_from_websocket(ws_base_url, job_id))
+
 
     # Step 2: Poll for task status
     task_status_url = f"{base_url}/job/downloadDataset/{job_id}"
@@ -110,11 +120,25 @@ def get_persistent_machine_id():
     hashed_id = hashlib.sha256(system_properties.encode()).hexdigest()
     return hashed_id
 
+async def fetch_logs_from_websocket(base_url, job_id):
+    """
+    Connect to WebSocket and display logs for the given job ID in real-time.
+    """
+    ws_url = f"{base_url}/log/{job_id}"
+    try:
+        async with websockets.connect(ws_url) as websocket:
+            print(f"Connected to WebSocket for job ID: {job_id}. Receiving logs...\n")
+            async for message in websocket:
+                print(message)  # Display logs as they come in
+
+    except Exception as e:
+        print(f"Error occurred while fetching logs from WebSocket: {e}")
+
 if __name__ == "__main__":
-    dataset_id = "U-m-Heart-Wang-2024@kbcfh"
+    dataset_id = "U-h-Heart-Wang-2024@kbcfh"
     destination_path = "datasets"
-    process_type="quality_control"
-    method = "scanpy"
+    process_type="normalization"
+    method = "LogCPM"
 
     downloadDataset(dataset_id, destination_path, process_type, method)
 
