@@ -53,6 +53,8 @@ app.add_middleware(
 
 celery_control = Control(app=celery)
 
+# Use a dictionary to store the last_read_index for each job_id
+last_read_indices = {}
 
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
@@ -72,12 +74,21 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
                 result = get_task_info(job_id)
                 await websocket.send_json(result)
             elif request_type == 'log':
-                logs = await log_reader(job_id, 0, 30)
+                # Retrieve the last_read_index for the job_id, default to 0 if not found
+                last_read_index = last_read_indices.get(job_id, 0)
+                logs, last_read_index = await log_reader(job_id, last_read_index)
+                print("last read index #######################################")
+                print(last_read_index)
+                # Update the last_read_index in memory
+                last_read_indices[job_id] = last_read_index
                 await websocket.send_text(logs)
             await asyncio.sleep(3)
     except Exception as e:
         print(e)
     finally:
+        # Remove the entry from the dictionary when the connection is closed
+        if job_id in last_read_indices:
+            del last_read_indices[job_id]
         await websocket.close()
 
         
