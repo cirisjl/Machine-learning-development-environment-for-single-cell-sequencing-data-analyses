@@ -14,21 +14,23 @@ class RedisLogger:
         
 
     def write_log(self, unique_id, msg):
-        self.r.lpush(unique_id, msg)
+        self.r.rpush(unique_id, msg)
 
+    def read_log(self, unique_id):
+        """
+        Fetch all logs for the given unique_id from Redis.
+        """
+        try:
+            # Fetch all logs for the given key
+            logs = self.r.lrange(unique_id, 0, -1)  # Retrieve the entire list
+            log_lines = [log.decode('utf-8') for log in logs]  # Decode bytes to strings
 
-    def read_log(self, unique_id, start, end):
-        log_lines = []
-        logs = self.r.lrange(unique_id, start, end)
-        # self.r.ltrim(unique_id, start, end) # Delete records from the list
+            self.r.expire(unique_id, 60 * 30)  # Reset key expiration to 30 minutes
+            return log_lines
+        except Exception as e:
+            print(f"Error reading logs: {e}")
+            return []
 
-        for log in logs:
-            log_lines.append(log.decode('utf-8'))
-
-        self.r.expire(unique_id, 60*30) # key expires in 30 minutes
-
-        return log_lines[::-1]
-    
 
     def clear_log(self, unique_id):
         self.r.ltrim(unique_id, 1, 0)
@@ -77,15 +79,47 @@ class RedisLogger:
 
 redislogger = RedisLogger()
 
-async def log_reader(unique_id, start=0, end=30) -> list:
-    log_lines = []
-    for line in redislogger.read_log(unique_id, start, end):
-        if line.__contains__("ERROR"):
-            log_lines.append(f'<span class="text-red-500">{line}</span><br/>')
-        elif line.__contains__("WARNING"):
-            log_lines.append(f'<span class="text-yellow-400">{line}</span><br/>')
-        elif line.__contains__("SUCCESS"):
-            log_lines.append(f'<span class="text-green-500">{line}</span><br/>')
-        else:
-            log_lines.append(f"{line}<br/>")
-    return log_lines
+# async def log_reader(unique_id, start=0, end=30) -> list:
+#     log_lines = []
+#     for line in redislogger.read_log(unique_id, start, end):
+#         if line.__contains__("ERROR"):
+#             log_lines.append(f'<span class="text-red-500">{line}</span><br/>')
+#         elif line.__contains__("WARNING"):
+#             log_lines.append(f'<span class="text-yellow-400">{line}</span><br/>')
+#         elif line.__contains__("SUCCESS"):
+#             log_lines.append(f'<span class="text-green-500">{line}</span><br/>')
+#         else:
+#             log_lines.append(f"{line}<br/>")
+#     return log_lines
+
+async def log_reader(unique_id, last_read_index):
+    """
+    Fetch only new logs from Redis, starting from the last_read_index.
+    """
+    try:
+        # Fetch all logs for the unique_id
+        all_logs = redislogger.read_log(unique_id)  # Get all logs as a list of strings
+        log_lines = []
+
+        # Process only the new logs (from last_read_index onwards)
+        new_logs = all_logs[last_read_index:]
+
+        for log in new_logs:
+            if "ERROR" in log:
+                log_lines.append(f'<span class="text-red-500">{log}</span><br/>')
+            elif "WARNING" in log:
+                log_lines.append(f'<span class="text-yellow-400">{log}</span><br/>')
+            elif "SUCCESS" in log:
+                log_lines.append(f'<span class="text-green-500">{log}</span><br/>')
+            else:
+                log_lines.append(f"{log}<br/>")
+
+        # Update the last_read_index to the current total length of logs
+        if new_logs:  # Only update if new logs are processed
+            last_read_index += len(all_logs)
+        logger.info("Karthik", f"Total logs: {len(all_logs)}, Last read index: {last_read_index}, New logs: {len(new_logs)}")
+        print(f"Total logs: {len(all_logs)}, Last read index: {last_read_index}, New logs: {len(new_logs)}")
+        return log_lines, last_read_index  # Return new logs and the updated index
+    except Exception as e:
+        print(f"Error in log_reader: {e}")
+        return [], last_read_index  # Return an empty list if an error occurs

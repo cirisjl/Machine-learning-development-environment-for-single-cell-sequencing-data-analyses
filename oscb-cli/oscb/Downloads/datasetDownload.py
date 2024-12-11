@@ -7,13 +7,15 @@ import hashlib
 from pathlib import Path
 import websockets
 import asyncio
+import re
+
 
 
 def downloadDataset(dataset_id, destination_path, process_type, method):
     # Define the base URL for the API
-    base_url = "http://130.127.133.91:5005/api"
+    base_url = "http://130.127.133.171:5005/api"
 
-    ws_base_url = "ws://130.127.133.91:5005/wsapi"  # WebSocket base URL
+    ws_base_url = "ws://130.127.133.171:5005/wsapi"  # WebSocket base URL
 
 
     user_id = get_persistent_machine_id()
@@ -116,7 +118,6 @@ def downloadDataset(dataset_id, destination_path, process_type, method):
 def get_persistent_machine_id():
     # Generate a new unique ID based on system properties
     system_properties = f"{platform.node()}-{platform.system()}-{platform.processor()}-{platform.machine()}"
-    print(system_properties)
     hashed_id = hashlib.sha256(system_properties.encode()).hexdigest()
     return hashed_id
 
@@ -129,16 +130,28 @@ async def fetch_logs_from_websocket(base_url, job_id):
         async with websockets.connect(ws_url) as websocket:
             print(f"Connected to WebSocket for job ID: {job_id}. Receiving logs...\n")
             async for message in websocket:
-                print(message)  # Display logs as they come in
-
+                # Remove HTML tags from the message
+                clean_message = re.sub(r'<.*?>', '', message)
+                
+                # Apply color and print each message on a new line
+                if "ERROR" in clean_message:
+                    print(f'\033[91m{clean_message}\033[0m')  # Red for ERROR
+                elif "WARNING" in clean_message:
+                    print(f'\033[93m{clean_message}\033[0m')  # Yellow for WARNING
+                elif "SUCCESS" in clean_message:
+                    print(f'\033[92m{clean_message}\033[0m')  # Green for SUCCESS
+                else:
+                    print(f'{clean_message}\n')  # Ensure each message is printed on a new line
+    except websockets.exceptions.ConnectionClosed as e:
+        print(f"WebSocket connection closed unexpectedly: {e}")
     except Exception as e:
         print(f"Error occurred while fetching logs from WebSocket: {e}")
 
 if __name__ == "__main__":
     dataset_id = "U-h-Heart-Wang-2024@kbcfh"
     destination_path = "datasets"
-    process_type="normalization"
-    method = "LogCPM"
+    process_type="quality_control"
+    method = "scanpy"
 
     downloadDataset(dataset_id, destination_path, process_type, method)
 
