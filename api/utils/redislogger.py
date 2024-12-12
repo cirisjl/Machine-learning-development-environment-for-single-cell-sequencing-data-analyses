@@ -117,8 +117,6 @@ async def log_reader(unique_id, last_read_index):
         # Update the last_read_index to the current total length of logs
         if new_logs:  # Only update if new logs are processed
             last_read_index += len(all_logs)
-        logger.info("Karthik", f"Total logs: {len(all_logs)}, Last read index: {last_read_index}, New logs: {len(new_logs)}")
-        print(f"Total logs: {len(all_logs)}, Last read index: {last_read_index}, New logs: {len(new_logs)}")
         return log_lines, last_read_index  # Return new logs and the updated index
     except Exception as e:
         print(f"Error in log_reader: {e}")
