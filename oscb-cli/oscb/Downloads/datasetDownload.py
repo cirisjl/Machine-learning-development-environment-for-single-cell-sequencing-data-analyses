@@ -7,8 +7,8 @@ import hashlib
 from pathlib import Path
 import websockets
 import asyncio
+from termcolor import colored
 import re
-
 
 
 def downloadDataset(dataset_id, destination_path, process_type, method):
@@ -130,25 +130,36 @@ async def fetch_logs_from_websocket(base_url, job_id):
         async with websockets.connect(ws_url) as websocket:
             print(f"Connected to WebSocket for job ID: {job_id}. Receiving logs...\n")
             async for message in websocket:
-                # Remove HTML tags from the message
-                clean_message = re.sub(r'<.*?>', '', message)
-                
-                # Apply color and print each message on a new line
-                if "ERROR" in clean_message:
-                    print(f'\033[91m{clean_message}\033[0m')  # Red for ERROR
-                elif "WARNING" in clean_message:
-                    print(f'\033[93m{clean_message}\033[0m')  # Yellow for WARNING
-                elif "SUCCESS" in clean_message:
-                    print(f'\033[92m{clean_message}\033[0m')  # Green for SUCCESS
-                else:
-                    print(f'{clean_message}\n')  # Ensure each message is printed on a new line
+                # Split logs by <br/> and process each line
+                logs = message.split("<br/>")
+                for log in logs:
+                    log = log.strip()  # Remove any leading/trailing whitespace
+                    if not log:
+                        continue  # Skip empty lines
+                    
+                    # Color-code based on log level
+                    if "ERROR" in log:
+                        print(colored(log, "red"))
+                    elif "WARNING" in log:
+                        print(colored(log, "yellow"))
+                    elif "SUCCESS" in log:
+                        print(colored(log, "green"))
+                    elif "CRITICAL" in log:
+                        print(colored(log, "magenta"))
+                    elif "DEBUG" in log:
+                        print(colored(log, "white"))
+                    elif "TRACE" in log:
+                        print(colored(log, "blue"))
+                    else:  # Default for INFO or unclassified logs
+                        print(colored(log, "cyan"))
     except websockets.exceptions.ConnectionClosed as e:
         print(f"WebSocket connection closed unexpectedly: {e}")
     except Exception as e:
         print(f"Error occurred while fetching logs from WebSocket: {e}")
 
 if __name__ == "__main__":
-    dataset_id = "U-h-Heart-Wang-2024@kbcfh"
+    # dataset_id = "U-h-Heart-Wang-2024@kbcfh"
+    dataset_id = "U-h-Bladder-Fang-2024@kbcfh"
     destination_path = "datasets"
     process_type="quality_control"
     method = "scanpy"

@@ -64,7 +64,6 @@ async def add_process_time_header(request, call_next):
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
 
-
 @app.websocket("/wsapi/{request_type}/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str):
     await websocket.accept()
@@ -77,8 +76,6 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
                 # Retrieve the last_read_index for the job_id, default to 0 if not found
                 last_read_index = last_read_indices.get(job_id, 0)
                 logs, last_read_index = await log_reader(job_id, last_read_index)
-                print("last read index #######################################")
-                print(last_read_index)
                 # Update the last_read_index in memory
                 last_read_indices[job_id] = last_read_index
                 await websocket.send_text(logs)
