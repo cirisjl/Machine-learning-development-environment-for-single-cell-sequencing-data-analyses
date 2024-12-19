@@ -1,6 +1,7 @@
 import { NODE_API_URL } from '../constants/declarations'
 import axios from 'axios';
 import LZString from 'lz-string';
+import pako from 'pako'; // Import pako, a zlib-compatible library for browsers
 
 // Function to compress data
 export function compressData(data) {
@@ -212,3 +213,169 @@ export function getFileNameFromURL(fileUrl){
     return '';
   }
 };
+
+
+
+export function plotUmapObs(cellMetadata, umap, clusteringPlotType, selectedCellIntersection = [], annotation = null, nDim = 2) {
+  // Validate if the clustering ID exists
+  cellMetadata = gunzipDict(cellMetadata);
+  umap = gunzipDict(umap);
+  console.log("Cell Metadata : " + cellMetadata);
+  console.log(umap);
+  if (!cellMetadata[clusteringPlotType]) {
+    const validClusterIds = ['cluster.ids', 'leiden', 'louvain', 'seurat_clusters'];
+    clusteringPlotType = validClusterIds.find((id) => cellMetadata[id]) || null;
+
+    if (!clusteringPlotType) {
+      throw new Error(`Clustering type ${clusteringPlotType} does not exist in cell metadata.`);
+    }
+  }
+
+  const coords = umap.map((row) => ({ x: row[0], y: row[1], z: row[2] || null })); // Convert UMAP array to an array of coordinates
+  const clusters = [...new Set(cellMetadata[clusteringPlotType])]; // Extract unique clusters
+
+  const traces = clusters.map((cluster, index) => {
+    // Filter metadata and coordinates for the current cluster
+    const clusterIndices = cellMetadata[clusteringPlotType]
+      .map((val, idx) => (val === cluster ? idx : null))
+      .filter((idx) => idx !== null);
+
+    const filteredCoords = clusterIndices.map((idx) => coords[idx]);
+    const selectedPoints = selectedCellIntersection.length
+      ? selectedCellIntersection
+          .map((cell) => cellMetadata.indexOf(cell))
+          .filter((idx) => clusterIndices.includes(idx))
+      : clusterIndices;
+
+    const textAnnotations = annotation
+      ? clusterIndices.map((idx) => String(cellMetadata[annotation][idx]))
+      : clusterIndices.map((idx) => `Cell ID: ${cellMetadata.index[idx]}`);
+
+    // Generate trace for 2D or 3D plot
+    if (nDim === 2) {
+      return {
+        type: 'scattergl',
+        x: filteredCoords.map((point) => point.x),
+        y: filteredCoords.map((point) => point.y),
+        text: textAnnotations,
+        selectedpoints: selectedPoints,
+        mode: 'markers',
+        marker: {
+          size: 5, // Customize size
+          line: { width: 1, color: 'grey' },
+          color: discrete_colors_3[index % discrete_colors_3.length],
+        },
+        unselected: { marker: { opacity: 0.3 } },
+        selected: { marker: { opacity: 1 } },
+        name: `Cluster ${cluster}`,
+      };
+    } else if (nDim === 3) {
+      return {
+        type: 'scatter3d',
+        x: filteredCoords.map((point) => point.x),
+        y: filteredCoords.map((point) => point.y),
+        z: filteredCoords.map((point) => point.z),
+        text: textAnnotations,
+        selectedpoints: selectedPoints,
+        mode: 'markers',
+        marker: {
+          size: 3, // Customize size
+          line: { width: 1, color: 'grey' },
+          color: discrete_colors_3[index % discrete_colors_3.length],
+        },
+        name: `Cluster ${cluster}`,
+      };
+    }
+
+    throw new Error(`Unsupported dimension: ${nDim}`);
+  });
+
+  // Return data and layout for the plot
+  return {
+    data: traces,
+    layout: {
+      xaxis: { title: 'UMAP 1' },
+      yaxis: { title: 'UMAP 2' },
+      ...(nDim === 3 && { zaxis: { title: 'UMAP 3' } }),
+      margin: { l: 40, r: 40, t: 40, b: 40 },
+      hovermode: 'closest',
+      autosize: true,
+      width: 800,
+      height: 600,
+    },
+  };
+};
+
+const gunzipDict = (toUngzip) => {
+  try {
+    // Decode base64 string to a Uint8Array (binary data)
+    const compressedBuffer = Uint8Array.from(atob(toUngzip), c => c.charCodeAt(0));
+
+    // Decompress the data using pako.ungzip (equivalent to zlib.gunzip in Node.js)
+    const decompressedBuffer = pako.ungzip(compressedBuffer, { to: 'string' });
+
+    // Parse the decompressed JSON string into a JavaScript object
+    return JSON.parse(decompressedBuffer);
+  } catch (error) {
+    console.error('Error during decompression:', error);
+    throw error;
+  }
+};
+
+// Scale of plot sizes
+// All plot geometry is expressed as multiples
+// of these parameters
+const scale = 250;
+const scaleratio = 1.0;
+const pt_expression_scaleratio = 0.5;
+const violin_expression_scaleratio = 1.5;
+
+// Margins on plots
+const margin = { r: 50, l: 50, t: 50, b: 50 };
+
+// Point sizes
+const point_line_width_2d = 0.5;
+const point_line_width_3d = 0.5;
+const point_size_2d = 7;
+const point_size_3d = 2.5;
+const point_size_pt_trend = 2;
+
+// Min and max opacity of points in scatter plots
+const min_opacity = 0.15;
+const max_opacity = 1;
+
+// Discrete colors
+const discrete_colors_0 = [
+  "#e28e31", "#8a9bde", "#9f5036", "#8a5ad2", "#a2b937", "#59c8b5",
+  "#e07d93", "#406caa", "#4ab4dd", "#9d4564", "#38977f", "#65c14c",
+  "#d288c3", "#d175df", "#c1303c", "#bdb466", "#7a81e0", "#dd3d72",
+  "#93a95f", "#6b8627", "#e26d69", "#3f9335", "#8e6e2e", "#caa637",
+  "#72b879", "#377945", "#636c29", "#a439a6", "#db976c", "#82559d",
+  "#4a61d1", "#d0499c", "#c6662e", "#39c685", "#dd4f2e"
+];
+
+const discrete_colors_1 = [
+  "#d1ff89", "#808fbb", "#ce729b", "#00d9cf", "#9cd2ff", "#b077db",
+  "#ffbb5c", "#02dd95", "#ffb6d3", "#709c4e", "#bcffeb", "#ff97a1",
+  "#65acff", "#ff8a77", "#b5b600", "#b77bb5", "#6bffd8", "#a5ff9d",
+  "#00af4e", "#ff8c5d", "#ffdcaa", "#03cbe3", "#af8a3b", "#bd8900",
+  "#cdffc6", "#d0bbff", "#00be93", "#d364d0", "#f893ff", "#99ff64",
+  "#6e9e1b", "#85bca7", "#31b600", "#ff94e1", "#1a99d3"
+];
+
+// Colors from Plotly's qualitative color scales
+const discrete_colors_2 = [
+  "#F0F0F0", "#D4D4D4", "#B8B8B8", "#9C9C9C", "#808080", "#646464", 
+  "#484848", "#2C2C2C", "#101010", "#F9F9F9", "#B1B1B1", "#9E9E9E",
+  "#D9D9D9", "#A5A5A5", "#8C8C8C", "#707070", "#565656", "#3A3A3A", 
+  "#1E1E1E", "#8F8F8F", "#D1D1D1", "#B2B2B2", "#9C9C9C", "#919191"
+];
+
+// Colors from multiple Plotly qualitative color scales combined (D3, Set3, T10, Plotly, Alphabet)
+const discrete_colors_3 = [
+  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", 
+  "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#8dd3c7", "#ffffb3", 
+  "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", 
+  "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f", "#ffff99", "#c4e1ff", 
+  "#eb8d2b", "#d7d7d7", "#ff94b5", "#a6a6a6", "#c5b0b0", "#8d9b9e"
+];

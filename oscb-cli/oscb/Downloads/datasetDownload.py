@@ -41,17 +41,20 @@ def downloadDataset(dataset_id, destination_path, process_type = "quality_contro
 
     print(f"Task submitted successfully. Job ID: {job_id}")
 
-    # Create an event to track task completion status
-    task_completed_event = asyncio.Event()
-
     # Start a coroutine to fetch logs in real time
-    asyncio.run(run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path, task_completed_event))
+    asyncio.run(run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path))
 
 
-async def run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path, task_completed_event):
+async def run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path):
     """
     Run the WebSocket log fetching and task status polling concurrently.
     """
+
+     # Create an event to track task completion status
+    task_completed_event = asyncio.Event()
+
+    print("task completed event")
+    print(task_completed_event)
 
     # Start the websocket log fetching task
     log_task = asyncio.create_task(fetch_logs_from_websocket(ws_base_url, job_id, task_completed_event))  # Run the websocket log fetch within the event loop
@@ -68,33 +71,41 @@ async def fetch_logs_from_websocket(base_url, job_id, task_completed_event):
     Connect to WebSocket and display logs for the given job ID in real-time.
     Close the WebSocket connection when the task is completed.
     """
+    
+    print("logs - task completed event")
+    print(task_completed_event)
     ws_url = f"{base_url}/log/{job_id}"
     try:
         async with websockets.connect(ws_url) as websocket:
             print(f"Connected to WebSocket for job ID: {job_id}. Receiving logs...\n")
             while not task_completed_event.is_set():  # Keep receiving logs until task is completed
-                message = await websocket.recv()  # Wait for a new log message
-                logs = message.split("<br/>")
-                for log in logs:
-                    log = log.strip()  # Remove any leading/trailing whitespace
-                    if not log:
-                        continue  # Skip empty lines
-                    
-                    # Color-code based on log level
-                    if "ERROR" in log:
-                        print(colored(log, "red"))
-                    elif "WARNING" in log:
-                        print(colored(log, "yellow"))
-                    elif "SUCCESS" in log:
-                        print(colored(log, "green"))
-                    elif "CRITICAL" in log:
-                        print(colored(log, "magenta"))
-                    elif "DEBUG" in log:
-                        print(colored(log, "white"))
-                    elif "TRACE" in log:
-                        print(colored(log, "blue"))
-                    else:  # Default for INFO or unclassified logs
-                        print(colored(log, "cyan"))
+                try:
+                    message = await asyncio.wait_for(websocket.recv(), timeout=5)  # Timeout to recheck the event
+                    logs = message.split("<br/>")
+                    for log in logs:
+                        log = log.strip()  # Remove any leading/trailing whitespace
+                        if not log:
+                            continue  # Skip empty lines
+                        
+                        # Color-code based on log level
+                        if "ERROR" in log:
+                            print(colored(log, "red"))
+                        elif "WARNING" in log:
+                            print(colored(log, "yellow"))
+                        elif "SUCCESS" in log:
+                            print(colored(log, "green"))
+                        elif "CRITICAL" in log:
+                            print(colored(log, "magenta"))
+                        elif "DEBUG" in log:
+                            print(colored(log, "white"))
+                        elif "TRACE" in log:
+                            print(colored(log, "blue"))
+                        else:  # Default for INFO or unclassified logs
+                            print(colored(log, "cyan"))
+                except asyncio.TimeoutError:
+                    # Periodically check if the event is set
+                    if task_completed_event.is_set():
+                        break
              # After task is complete, explicitly close the connection
             print("Task completed, closing WebSocket connection.")
             await websocket.close()  # Explicitly close the WebSocket connection
@@ -179,6 +190,9 @@ async def poll_task_status_and_download(dataset_id, destination_path, job_id, ta
             print(f"Error occurred while checking task status: {e}")
             return
 
+
+    print("status task completed event")
+    print(task_completed_event)
     # Step 3: Download the file
     if filename is None:
         print("No valid filename found. Exiting!")
