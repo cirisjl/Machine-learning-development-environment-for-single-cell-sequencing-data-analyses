@@ -7,7 +7,7 @@ import AlertMessageComponent from '../../publishDatasets/components/alertMessage
 import { Card, CardContent, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { downloadFile, getFileNameFromURL, getCookie, decompressData } from '../../../utils/utilFunctions';
+import { downloadFile, getFileNameFromURL, getCookie, decompressData, plotUmapObs } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
@@ -39,42 +39,76 @@ const DatasetInfoComponent = () => {
   const [details, setDetails] = useState({}); // Store fetched details
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
 
-
-   // Function to make an API call based on the dropdown option and dimension
-  const fetchPlotData = async (plotType, process_id) => {
-    setLoadingPlot(true); // Set loading to true before making the API call
-
-    // Access the first element of the datasetDetails array
-    const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
-    if (!selectedCellType || !selectedCellType.label) {
-      throw new Error("Selected Cell Type or label is missing");
-    }
-
-    try {
-      const response = await axios.post(`${CELERY_BACKEND_API}/plotumap/`, {
-        process_ids: [process_id],
-        clustering_plot_type: plotType,
-        annotation: selectedCellType.label,
-      });
-
-      console.log("API Call Success");
-
-      console.log(response);
-      const data = response.data[0];
-
-      console.log("plot data");
-      console.log(data);
-      console.log(response.data);
-
-      if(data.umap_plot && data.umap_plot_3d) {
-        setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+  const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+      setLoadingPlot(true); // Set loading to true before making the API call
+  
+      // Access the first element of the datasetDetails array
+      const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
+      if (!selectedCellType || !selectedCellType.label) {
+        throw new Error("Selected Cell Type or label is missing");
       }
-    } catch (error) {
-      console.error('Error fetching plot data:', error);
-    } finally {
-      setLoadingPlot(false); 
-    }
-  };
+  
+      try {
+        // const response = await axios.post(`${CELERY_BACKEND_API}/plotumap/`, {
+        //   process_ids: [process_id],
+        //   clustering_plot_type: plotType,
+        //   annotation: selectedCellType.label,
+        // });
+        let data = getUmapPlotData(cell_metadata, umap, umap_3d, plotType, selectedCellType.label)
+  
+        if(data.umap_plot && data.umap_plot_3d) {
+          setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+        }
+      } catch (error) {
+        console.error('Error fetching plot data:', error);
+      } finally {
+        setLoadingPlot(false); 
+      }
+    };
+
+    const getUmapPlotData = (cell_metadata, umap, umap_3d, clustering_plot_type, annotation) => {
+      const umap_plot = plotUmapObs(cell_metadata, umap, clustering_plot_type, [], annotation, 2);
+      const umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, clustering_plot_type, [], annotation, 3);
+    
+      return { umap_plot, umap_plot_3d };
+    };
+    
+
+  //  // Function to make an API call based on the dropdown option and dimension
+  // const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+  //   setLoadingPlot(true); // Set loading to true before making the API call
+
+  //   // Access the first element of the datasetDetails array
+  //   const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
+  //   if (!selectedCellType || !selectedCellType.label) {
+  //     throw new Error("Selected Cell Type or label is missing");
+  //   }
+
+  //   try {
+  //     const response = await axios.post(`${CELERY_BACKEND_API}/plotumap/`, {
+  //       process_ids: [process_id],
+  //       clustering_plot_type: plotType,
+  //       annotation: selectedCellType.label,
+  //     });
+
+  //     console.log("API Call Success");
+
+  //     console.log(response);
+  //     const data = response.data[0];
+
+  //     console.log("plot data");
+  //     console.log(data);
+  //     console.log(response.data);
+
+  //     if(data.umap_plot && data.umap_plot_3d) {
+  //       setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching plot data:', error);
+  //   } finally {
+  //     setLoadingPlot(false); 
+  //   }
+  // };
 
   const Accordion = styled((props) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -401,7 +435,7 @@ const DatasetInfoComponent = () => {
                                                       onChange={(event) => {
                                                         const selectedPlotType = event.target.value;
                                                         setClusteringPlotType(selectedPlotType);
-                                                        fetchPlotData(selectedPlotType, preProcessResult.process_id); // Call the API as soon as the selection changes
+                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].cell_metadata, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
                                                       }}
                                                     >
                                                       {Object.keys(decompressData(detail.datasetDetails.cell_metadata)).map((key) => (
