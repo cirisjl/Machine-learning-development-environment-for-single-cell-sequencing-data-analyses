@@ -61,6 +61,7 @@ const DatasetInfoComponent = () => {
         }
       } catch (error) {
         console.error('Error fetching plot data:', error);
+        alert(`Error fetching plot data: ${error}`);
       } finally {
         setLoadingPlot(false); 
       }
@@ -435,7 +436,7 @@ const DatasetInfoComponent = () => {
                                                       onChange={(event) => {
                                                         const selectedPlotType = event.target.value;
                                                         setClusteringPlotType(selectedPlotType);
-                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].cell_metadata, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
+                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
                                                       }}
                                                     >
                                                       {Object.keys(decompressData(detail.datasetDetails.cell_metadata)).map((key) => (
