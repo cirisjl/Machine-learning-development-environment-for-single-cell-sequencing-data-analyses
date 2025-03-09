@@ -210,16 +210,17 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     for pp_result in pp_results:
         obs = pp_result['cell_metadata']
         pp_result['cell_metadata'] = df_to_dict(obs)
+        pp_result['obs'] = pp_result['obs']
 
         if record_type == None:
             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
             if 'umap' in pp_result.keys():
                 pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
-                pp_result.pop('umap')
+                pp_result['umap'] = pp_result['umap'].tolist()
 
             if 'umap_3d' in pp_result.keys():
                 pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
-                pp_result.pop('umap_3d')
+                pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
             if pp_result['process'] == 'QC':
                 pp_result['violin_plot'] = plot_violin(obs)

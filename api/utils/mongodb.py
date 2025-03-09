@@ -72,6 +72,7 @@ def get_pp_results(process_ids, umap=False, record_type=None):
     if len(pp_results) != 0:
         for pp_result in pp_results:
             if 'cell_metadata' in pp_result.keys():
+                pp_result['obs'] = pp_result['cell_metadata']
                 obs_dict = gunzip_dict(pp_result['cell_metadata'])
                 obs = pd.DataFrame.from_dict(obs_dict)
                 obs = obs.set_index('index')  
