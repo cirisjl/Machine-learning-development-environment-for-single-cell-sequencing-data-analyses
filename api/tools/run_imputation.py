@@ -69,7 +69,6 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
             redislogger.info(job_id, "Found existing pre-process results in database, skip MAGIC imputation.")
             process_ids.append(process_id)
             imputation_output = imputation_results["outputs"]
-
         else:
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(job_id, "Output already exists, start from the result of the last run.")
@@ -276,6 +275,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
 
     results = {
         "output": imputation_output,
+        "adata_path": output,
         "md5": md5,
         "process_ids": process_ids,
     }
@@ -285,6 +285,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
             "job_id": job_id, 
             "datasetId": datasetId,
             "process_ids": process_ids,
+            "adata_path": output,
             "output": imputation_output,
             "results": results,
             "completed_on": datetime.now(),

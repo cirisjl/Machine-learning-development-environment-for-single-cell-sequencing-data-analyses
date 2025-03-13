@@ -4,11 +4,18 @@ import requests
 from tqdm import tqdm
 import platform
 import hashlib
-from pathlib import Path
+import re
+import urllib.parse
+import asyncio
+import websockets
+from termcolor import colored
 
-def downloadDataset(dataset_id, destination_path, process_type, method):
+
+def downloadDataset(dataset_id, destination_path, process_type = "quality_control", method = "scanpy"):
     # Define the base URL for the API
-    base_url = "http://172.18.0.1:5005/api"
+    base_url = "http://130.127.133.171:5005/api"
+
+    ws_base_url = "ws://130.127.133.171:5005/wsapi"  # WebSocket base URL
 
     user_id = get_persistent_machine_id()
     # Step 1: Submit the task
@@ -34,22 +41,124 @@ def downloadDataset(dataset_id, destination_path, process_type, method):
 
     print(f"Task submitted successfully. Job ID: {job_id}")
 
-    # Step 2: Poll for task status
+    # Start a coroutine to fetch logs in real time
+    asyncio.run(run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path))
+
+
+async def run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path):
+    """
+    Run the WebSocket log fetching and task status polling concurrently.
+    """
+
+     # Create an event to track task completion status
+    task_completed_event = asyncio.Event()
+
+    print("task completed event")
+    print(task_completed_event)
+
+    # Start the websocket log fetching task
+    log_task = asyncio.create_task(fetch_logs_from_websocket(ws_base_url, job_id, task_completed_event))  # Run the websocket log fetch within the event loop
+    
+    # Poll the task status and download the dataset
+    await poll_task_status_and_download(dataset_id, destination_path, job_id, task_completed_event)
+    
+    # Wait for the log task to finish
+    await log_task
+
+
+async def fetch_logs_from_websocket(base_url, job_id, task_completed_event):
+    """
+    Connect to WebSocket and display logs for the given job ID in real-time.
+    Close the WebSocket connection when the task is completed.
+    """
+    
+    print("logs - task completed event")
+    print(task_completed_event)
+    ws_url = f"{base_url}/log/{job_id}"
+    try:
+        async with websockets.connect(ws_url) as websocket:
+            print(f"Connected to WebSocket for job ID: {job_id}. Receiving logs...\n")
+            while not task_completed_event.is_set():  # Keep receiving logs until task is completed
+                try:
+                    message = await asyncio.wait_for(websocket.recv(), timeout=5)  # Timeout to recheck the event
+                    logs = message.split("<br/>")
+                    for log in logs:
+                        log = log.strip()  # Remove any leading/trailing whitespace
+                        if not log:
+                            continue  # Skip empty lines
+                        
+                        # Color-code based on log level
+                        if "ERROR" in log:
+                            print(colored(log, "red"))
+                        elif "WARNING" in log:
+                            print(colored(log, "yellow"))
+                        elif "SUCCESS" in log:
+                            print(colored(log, "green"))
+                        elif "CRITICAL" in log:
+                            print(colored(log, "magenta"))
+                        elif "DEBUG" in log:
+                            print(colored(log, "white"))
+                        elif "TRACE" in log:
+                            print(colored(log, "blue"))
+                        else:  # Default for INFO or unclassified logs
+                            print(colored(log, "cyan"))
+                except asyncio.TimeoutError:
+                    # Periodically check if the event is set
+                    if task_completed_event.is_set():
+                        break
+             # After task is complete, explicitly close the connection
+            print("Task completed, closing WebSocket connection.")
+            await websocket.close()  # Explicitly close the WebSocket connection
+    except websockets.exceptions.ConnectionClosed as e:
+        print(f"WebSocket connection closed unexpectedly: {e}")
+    except Exception as e:
+        print(f"Error occurred while fetching logs from WebSocket: {e}")
+    finally:
+        # Ensure WebSocket is closed in case of any error or after the task is completed
+        if websocket.open:
+            await websocket.close()
+            print("WebSocket connection explicitly closed.")
+
+async def poll_task_status_and_download(dataset_id, destination_path, job_id, task_completed_event):
+    # Define the base URL for the API
+    base_url = "http://130.127.133.171:5005/api"
+
     task_status_url = f"{base_url}/job/downloadDataset/{job_id}"
     filename = None  # Initialize task_result
 
-    while True:
+    while not task_completed_event.is_set():
         try:
             # Make a GET request to check task status
             response = requests.get(task_status_url)
-
+ 
             # Check if the file is ready for download
             if response.headers.get("content-disposition"):
                 content_disposition = response.headers.get("content-disposition")
-                filename = content_disposition.split("filename=")[1].strip('"')
-                print("Task completed. File ready for download.")
-                break  # Move to download step
-            
+                print(f"Content-Disposition: {content_disposition}")
+        
+                # First, try to extract the filename* parameter (URL-encoded)
+                filename_match = re.search(r'filename\*=(?P<encoding>[a-zA-Z0-9-]+)\'\'(?P<filename>.+)', content_disposition)
+                
+                if filename_match:
+                    # URL decode the filename if it is URL-encoded
+                    filename = urllib.parse.unquote(filename_match.group("filename"))
+                    print(f"Task completed. File ready for download: {filename}")
+                    task_completed_event.set()  # Mark as completed
+                    break  # Move to download step
+
+                # If filename* is not found, fall back to regular filename field
+                else:
+                    filename_match = re.search(r'filename="([^"]+)"', content_disposition)
+                    if filename_match:
+                        filename = filename_match.group(1)
+                        print(f"Task completed. File ready for download: {filename}")
+                        task_completed_event.set()  # Mark as completed
+                        break  # Move to download step
+                    else:
+                        print("Filename not found in content-disposition header.")
+                        task_completed_event.set()  # Mark as completed if filename is missing
+                        return  # Return early, if no filename is found
+
             # Parse the JSON response
             task_result = response.json() if response.text.strip() else None
 
@@ -66,20 +175,29 @@ def downloadDataset(dataset_id, destination_path, process_type, method):
                     print("Task completed, but no file to download.")
                 if status == "Invalid Response for the Task Submitted":
                     print("Invalid Response for the Task Submitted")
+                task_completed_event.set()  # Task is completed, exit the loop
                 return
             elif job_status == "FAILURE":
                 error_message = task_result.get("error_message", "Unknown error occurred.")
                 print(f"Task failed: {error_message}")
+                task_completed_event.set()  # Mark as completed if there's an error
                 return
             else:
                 print("Task is still processing. Waiting...")
-                time.sleep(5)  # Wait before polling again
+                await asyncio.sleep(5)  # Wait before polling again
 
         except requests.RequestException as e:
             print(f"Error occurred while checking task status: {e}")
             return
 
+
+    print("status task completed event")
+    print(task_completed_event)
     # Step 3: Download the file
+    if filename is None:
+        print("No valid filename found. Exiting!")
+        return
+
     download_dir = os.path.abspath(destination_path)
 
     # Make sure the destination directory exists
@@ -103,21 +221,19 @@ def downloadDataset(dataset_id, destination_path, process_type, method):
     else:
         print(f"Error downloading the file: {file_response.status_code}, {file_response.text}")
 
+
 def get_persistent_machine_id():
     # Generate a new unique ID based on system properties
     system_properties = f"{platform.node()}-{platform.system()}-{platform.processor()}-{platform.machine()}"
-    print(system_properties)
     hashed_id = hashlib.sha256(system_properties.encode()).hexdigest()
     return hashed_id
 
+
 if __name__ == "__main__":
-    dataset_id = "U-m-Heart-Wang-2024@kbcfh"
+    dataset_id = "U-h-Heart-Wang-2024@kbcfh"
     destination_path = "datasets"
-    process_type="quality_control"
+    process_type = "quality_control"
     method = "scanpy"
 
     downloadDataset(dataset_id, destination_path, process_type, method)
-
-    # # Example usage
-    # machine_id = get_persistent_machine_id()
-    # print(f"Machine ID: {machine_id}")
+    # downloadDataset(dataset_id, destination_path)
