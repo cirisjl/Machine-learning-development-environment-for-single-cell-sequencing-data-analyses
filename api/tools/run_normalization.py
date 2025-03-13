@@ -54,6 +54,8 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
     # Get the absolute path for the given input
     # input = get_input_path(input, userID)
     input = unzip_file_if_compressed(job_id, ds['input'])
+    adata_path = change_file_extension(input, 'h5ad')
+
     md5 = get_md5(input)
     # Get the absolute path for the given output
     # output = get_output(output, userID, job_id)
@@ -181,6 +183,8 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
     results = {
             "output": normalization_output,
+            "adata_path": adata_path,
+            "adata_sct_path": adata_sct_path,
             "default_assay": default_assay,
             "md5": md5,
             "process_ids": process_ids,

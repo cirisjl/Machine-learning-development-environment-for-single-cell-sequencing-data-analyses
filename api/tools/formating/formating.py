@@ -288,6 +288,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_louvain = None
     cluster_embedding = None
     description = f'{method} {process}' 
+    min_genes = None
+    target_sum = None
+
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -343,7 +346,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             gene_metadata = gzip_dict(var_dict)
         else:
             # If highly variable does not exist, then create it.
-            if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
+            if is_normalized(adata.X, genes) and not check_nonnegative_integers(adata.X):
                 sc.pp.log1p(adata)
                 sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
             else:

@@ -53,6 +53,8 @@ app.add_middleware(
 
 celery_control = Control(app=celery)
 
+# Use a dictionary to store the last_read_index for each job_id
+last_read_indices = {}
 
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
@@ -61,7 +63,6 @@ async def add_process_time_header(request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
-
 
 @app.websocket("/wsapi/{request_type}/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str):
@@ -72,12 +73,19 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
                 result = get_task_info(job_id)
                 await websocket.send_json(result)
             elif request_type == 'log':
-                logs = await log_reader(job_id, 0, 30)
+                # Retrieve the last_read_index for the job_id, default to 0 if not found
+                last_read_index = last_read_indices.get(job_id, 0)
+                logs, last_read_index = await log_reader(job_id, last_read_index)
+                # Update the last_read_index in memory
+                last_read_indices[job_id] = last_read_index
                 await websocket.send_text(logs)
             await asyncio.sleep(3)
     except Exception as e:
         print(e)
     finally:
+        # Remove the entry from the dictionary when the connection is closed
+        if job_id in last_read_indices:
+            del last_read_indices[job_id]
         await websocket.close()
 
         
@@ -202,16 +210,17 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     for pp_result in pp_results:
         obs = pp_result['cell_metadata']
         pp_result['cell_metadata'] = df_to_dict(obs)
+        pp_result['obs'] = pp_result['obs']
 
         if record_type == None:
             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
             if 'umap' in pp_result.keys():
                 pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
-                pp_result.pop('umap')
+                pp_result['umap'] = pp_result['umap'].tolist()
 
             if 'umap_3d' in pp_result.keys():
                 pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
-                pp_result.pop('umap_3d')
+                pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
             if pp_result['process'] == 'QC':
                 pp_result['violin_plot'] = plot_violin(obs)
