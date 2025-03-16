@@ -89,7 +89,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
   };
 
   const handleLogMessage = (event) => {
-    setWsLogs(event.data);
+    setWsLogs((prevLogs) => prevLogs + event.data);
     // Auto-scroll to the bottom of the logs
     const logsElement = document.getElementById("_live_logs");
     if (logsElement) {
