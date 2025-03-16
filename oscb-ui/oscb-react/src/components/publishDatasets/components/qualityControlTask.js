@@ -4,7 +4,7 @@ import axios from 'axios';
 import { CELERY_BACKEND_API, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
-import {isUserAuth, getCookie} from '../../../utils/utilFunctions';
+import {isUserAuth, getCookie, plotUmapObs} from '../../../utils/utilFunctions';
 import QualityControlParameters from './qualityControlParameters';
 import { Button, makeStyles } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
@@ -16,12 +16,12 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import LogComponent from '../../common_components/liveLogs';
+import {Select, MenuItem, InputLabel } from '@mui/material';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
   const [plotDimension, setPlotDimension] = useState('2D');
-
-
+ 
   const useStyles = makeStyles((theme) => ({
     customButton: {
       backgroundColor: '#007BFF',
@@ -44,7 +44,37 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
   const [jobId, setjobId] = useState('');
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
+  const [clusteringPlotType, setClusteringPlotType] = useState('');
+  const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+  const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
 
+
+  const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+      setLoadingPlot(true); // Set loading to true before making the API call
+  
+      const selectedCellType = null
+  
+      try {
+
+        let data = getUmapPlotData(cell_metadata, umap, umap_3d, plotType, selectedCellType)
+  
+        if(data.umap_plot && data.umap_plot_3d) {
+          setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+        }
+      } catch (error) {
+        console.error('Error fetching plot data:', error);
+        alert(`Error fetching plot data: ${error}`);
+      } finally {
+        setLoadingPlot(false); 
+      }
+    };
+
+  const getUmapPlotData = (cell_metadata, umap, umap_3d, clustering_plot_type, annotation) => {
+    const umap_plot = plotUmapObs(cell_metadata, umap, clustering_plot_type, [], annotation, 2);
+    const umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, clustering_plot_type, [], annotation, 3);
+  
+    return { umap_plot, umap_plot_3d };
+  };
 
   const extractDir =  (inputFile) => {
     const fileLocParts = inputFile.split('/');
@@ -69,7 +99,7 @@ const handleStatusMessage = (event) => {
 };
 
 const handleLogMessage = (event) => {
-  setWsLogs(event.data);
+  setWsLogs((prevLogs) => prevLogs + event.data);
   // Auto-scroll to the bottom of the logs
   const logsElement = document.getElementById("_live_logs");
   if (logsElement) {
@@ -385,14 +415,14 @@ const handleAssaySelectionSubmit = async () => {
       ) : (
 
       <div>
-        <div className="App">
+        <div align="center">
         {taskData.quality_control.qc_results &&
           taskData.quality_control.qc_results.map((result, index) => (
             <React.Fragment key={index}>
                   {result.umap_plot && (
                     <>
                     <h2>UMAP Plot</h2>
-
+                    <div style={{alignItems: 'center' }}>
                       <FormControl>
                         {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
                         <RadioGroup
@@ -407,16 +437,36 @@ const handleAssaySelectionSubmit = async () => {
                         </RadioGroup>
                       </FormControl>
 
-                      {plotDimension === '2D' && result.umap_plot && (
-                          <>
-                            <ReactPlotly plot_data={result.umap_plot} />
-                          </>
-                        )}
-                        {plotDimension === '3D' && result.umap_plot_3d && (
-                          <>
-                            <ReactPlotly plot_data={result.umap_plot_3d}/>
-                          </>
-                        )}
+                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="plot-options-label">Color</InputLabel>
+                        <Select
+                          labelId="plot-options-label"
+                          id="plot-options"
+                          value={clusteringPlotType}
+                          onChange={(event) => {
+                            const selectedPlotType = event.target.value;
+                            setClusteringPlotType(selectedPlotType);
+                            fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
+                          }}
+                        >
+                          {Object.keys(result.cell_metadata).map((key) => (
+                            <MenuItem key={key} value={key}>{key}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                
+                    {plotDimension === '2D' && (plotData?.umap_plot || result.umap_plot) && (
+                      <>
+                        <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
+                      </>
+                    )}
+                    {plotDimension === '3D' && (plotData?.umap_plot_3d || result.umap_plot_3d) && (
+                      <>
+                        <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
+                      </>
+                    )}
+                       
                     </>
                   )}
                   {result.violin_plot && (
