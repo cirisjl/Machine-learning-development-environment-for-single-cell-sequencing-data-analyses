@@ -1,4 +1,5 @@
-export const uiSchema = {
+export const uiSchema = (dynamicOptions) => ({
+
     "parameters": {
       "classNames": "category",
         "output_format": {
@@ -28,7 +29,15 @@ export const uiSchema = {
           ),
         },
         "layer": {
-          "classNames": "sub-category"
+          "classNames": "sub-category",
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+          clearable: true ,
+          placeholder: "Select the Layer",
+          creatable: false,
+          searchable: true,
+          opts: dynamicOptions.layers 
+        }
         },
         "path_of_scrublet_calls": {
           "classNames": "sub-category"
@@ -56,5 +65,5 @@ export const uiSchema = {
           "ui:widget": "toggle"
         }
     }
-  };
+});
   

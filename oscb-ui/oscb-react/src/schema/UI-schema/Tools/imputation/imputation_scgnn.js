@@ -1,4 +1,5 @@
-export const uiSchema = {
+export const uiSchema = (dynamicOptions) => ({
+
   "parameters": {
     "classNames": "category",
       "output_format": {
@@ -58,7 +59,14 @@ export const uiSchema = {
         },
         "layer": {
           "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+          clearable: true ,
+          placeholder: "Select the Layer",
+          creatable: false,
+          searchable: true,
+          opts: dynamicOptions.layers 
+        }
         },
         "min_genes": {
           "classNames": "sub-category",
@@ -117,4 +125,4 @@ export const uiSchema = {
         } 
       }
   }
-};
+});
