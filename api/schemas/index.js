@@ -2968,7 +2968,8 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                     'Submission Date': "$Submission Date",
                                     'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
                                     'adata_path': "$adata_path",
-                                    'process_ids': "$process_ids"
+                                    'process_ids': "$process_ids",
+                                    "layers": "$layers"
                                 }, 
                                 uniqueValues: { $addToSet: '$Id' }
                             }
@@ -2993,6 +2994,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 'inputFiles': "$_id.inputFiles",// We want inputFiles to read data from tools page
                                 'adata_path': "$_id.adata_path",
                                 'process_ids': "$_id.process_ids",
+                                'layers': "$_id.layers",
                                 totalCount: { $size: "$uniqueValues" }
                             }
                         }

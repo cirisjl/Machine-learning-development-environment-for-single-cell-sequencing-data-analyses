@@ -110,10 +110,14 @@ export default function ToolsDetailsComponent(props) {
 
         let layers = getLayersArray(selectedDatasets) || [];
 
-        console.log("Layers: ", layers);
         setDynamicOptions((prevOptions) => ({
           ...prevOptions,
           layers: layers, // Update layers dynamically
+        }));
+      } else {
+        setDynamicOptions((prevOptions) => ({
+          ...prevOptions,
+          layers: [], // Reset layers if no datasets are selected
         }));
       }
     }, [selectedDatasets]);
@@ -123,6 +127,7 @@ export default function ToolsDetailsComponent(props) {
       let layersArray = [];
   
       Object.values(dataMap).forEach((dataset) => {
+        console.log("dataset", dataset);
           if (dataset.selectedSubItem?.layers) {
               layersArray.push(...dataset.selectedSubItem.layers);
           } else if (dataset?.layers) {
@@ -168,6 +173,10 @@ const onSelectSubItem = (mainItem, subItem) => {
         delete currentSelectedDatasets[id];
     }
     setSelectedDatasets(currentSelectedDatasets);
+    setDynamicOptions((prevOptions) => ({
+      ...prevOptions,
+      layers: [], 
+    }));
   };
 
     const extractDir =  (inputFile) => {
