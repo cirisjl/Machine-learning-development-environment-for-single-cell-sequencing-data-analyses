@@ -68,11 +68,15 @@ export default function ToolsDetailsComponent(props) {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
+    //For dynamic Loading of the schema
+    const [layerOptions, setLayerOptions] = useState([]);
+
     const navigate = useNavigate();
 
     const [dynamicOptions, setDynamicOptions] = useState({
       outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
-      speciesOptions: ["human", "mouse"]
+      speciesOptions: ["human", "mouse"],
+      layers: [] // Add layers as a dynamic option
     });
     
     const onSelectDataset = (dataset) => {
@@ -100,6 +104,39 @@ export default function ToolsDetailsComponent(props) {
     setSelectedDatasets(currentSelectedDatasets)
   };
 
+    // Fetch layer options when dataset_id changes
+    useEffect(() => {
+      if (Object.keys(selectedDatasets).length > 0) {
+
+        let layers = getLayersArray(selectedDatasets) || [];
+
+        setDynamicOptions((prevOptions) => ({
+          ...prevOptions,
+          layers: layers, // Update layers dynamically
+        }));
+      } else {
+        setDynamicOptions((prevOptions) => ({
+          ...prevOptions,
+          layers: [], // Reset layers if no datasets are selected
+        }));
+      }
+    }, [selectedDatasets]);
+  
+
+    const getLayersArray = (dataMap) => {
+      let layersArray = [];
+  
+      Object.values(dataMap).forEach((dataset) => {
+        console.log("dataset", dataset);
+          if (dataset.selectedSubItem?.layers) {
+              layersArray.push(...dataset.selectedSubItem.layers);
+          } else if (dataset?.layers) {
+              layersArray.push(...dataset.layers);
+          }
+      });
+  
+      return [...new Set(layersArray)]; // Remove duplicates
+  };
   // Function to handle selection of sub-items
 const onSelectSubItem = (mainItem, subItem) => {
   const mainItemId = mainItem.Id;
@@ -136,6 +173,10 @@ const onSelectSubItem = (mainItem, subItem) => {
         delete currentSelectedDatasets[id];
     }
     setSelectedDatasets(currentSelectedDatasets);
+    setDynamicOptions((prevOptions) => ({
+      ...prevOptions,
+      layers: [], 
+    }));
   };
 
     const extractDir =  (inputFile) => {
@@ -206,7 +247,6 @@ const onSelectSubItem = (mainItem, subItem) => {
               // Check if selectedSubItem is present and has a non-null adata_path
               let adata_path;
               if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
-                console.log("Inside sub item");
                 adata_path = dataset.selectedSubItem.adata_path;
               } else {
                 adata_path = dataset.adata_path;

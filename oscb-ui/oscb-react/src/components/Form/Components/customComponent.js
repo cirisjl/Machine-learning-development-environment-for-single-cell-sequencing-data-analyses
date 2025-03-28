@@ -252,6 +252,7 @@ class MyForm extends Component {
       formData['PP Method'] = taskData.quality_control.qc_results[0]?.method;
       formData.Owner = taskData.quality_control.token;
       formData.Category = "Public";
+
       // formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
       formData.info = taskData.quality_control.qc_results[0]?.info;
       formData.layers = taskData.quality_control.qc_results[0]?.layers;
