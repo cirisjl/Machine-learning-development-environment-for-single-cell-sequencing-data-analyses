@@ -58,7 +58,14 @@ export const uiSchema = (dynamicOptions) => ({
         },
         "layer": {
           "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+          clearable: true ,
+          placeholder: "Select the Layer",
+          creatable: false,
+          searchable: true,
+          opts: dynamicOptions.layers 
+        }
         },
         // "geneRange": {
         //   "classNames": "sub-category",

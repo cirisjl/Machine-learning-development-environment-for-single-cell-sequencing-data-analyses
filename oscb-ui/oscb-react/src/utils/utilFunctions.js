@@ -300,7 +300,7 @@ uniqueClusters.forEach((val, i) => {
       unselected: { marker: { opacity: min_opacity } },
       selected: { marker: { opacity: max_opacity } },
       selectedpoints: selectedpoints,
-      name: `Cluster ${val}`
+      name: `${val}`
     };
 
     traces.push(trace);

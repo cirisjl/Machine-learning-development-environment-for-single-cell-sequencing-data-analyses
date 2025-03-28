@@ -1,4 +1,5 @@
-export const uiSchema = {
+export const uiSchema = (dynamicOptions) => ({
+
     "parameters": {
       "classNames": "category",
         "output_format": {
@@ -13,4 +14,4 @@ export const uiSchema = {
           }
         }
     }
-  };
+  });

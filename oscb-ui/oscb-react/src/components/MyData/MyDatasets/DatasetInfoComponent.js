@@ -428,7 +428,7 @@ const DatasetInfoComponent = () => {
                                                   </FormControl>
 
                                                   <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                                    <InputLabel id="plot-options-label">Plot Type</InputLabel>
+                                                    <InputLabel id="plot-options-label">Color</InputLabel>
                                                     <Select
                                                       labelId="plot-options-label"
                                                       id="plot-options"

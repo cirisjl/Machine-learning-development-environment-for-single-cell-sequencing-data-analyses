@@ -1,4 +1,5 @@
-export const uiSchema = {
+export const uiSchema = (dynamicOptions) => ({
+
   "parameters": {
     "classNames": "category",
     "methods": {
@@ -55,4 +56,4 @@ export const uiSchema = {
       },
     }
   }
-};
+});

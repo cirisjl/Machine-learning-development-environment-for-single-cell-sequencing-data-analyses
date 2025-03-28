@@ -484,7 +484,10 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 status: 'completed'
                             },
                         },
+
                     }));
+
+                    console.log("State Contents: " + metadataResult.task_result);
                     setTaskStatus((prevTaskStatus) => ({
                         ...prevTaskStatus,
                         1: true, // Mark Task 1 as completed

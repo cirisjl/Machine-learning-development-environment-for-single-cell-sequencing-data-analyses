@@ -66,7 +66,7 @@ def plot_UMAP_obs(obs, umap, clustering_plot_type="leiden", selected_cell_inters
                 "selected": {
                     "marker": {"opacity": max_opacity}
                 },
-                "name": f"Cluster {val}"
+                "name": f"{val}"
             })
         elif (n_dim == 3):
             traces.append({

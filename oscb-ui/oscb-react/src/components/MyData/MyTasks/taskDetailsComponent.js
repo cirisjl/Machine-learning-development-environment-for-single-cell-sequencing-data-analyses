@@ -17,9 +17,11 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
+import {Select, MenuItem, InputLabel } from '@mui/material';
+
 
 // Initialize Octokit with your GitHub personal access token
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
@@ -113,7 +115,36 @@ function TaskDetailsComponent() {
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
   const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
   let plotLoaded = false;
+  const [clusteringPlotType, setClusteringPlotType] = useState('');
+  const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+  const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
 
+  const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+      setLoadingPlot(true); // Set loading to true before making the API call
+  
+      const selectedCellType = null
+  
+      try {
+
+        let data = getUmapPlotData(cell_metadata, umap, umap_3d, plotType, selectedCellType)
+  
+        if(data.umap_plot && data.umap_plot_3d) {
+          setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+        }
+      } catch (error) {
+        console.error('Error fetching plot data:', error);
+        alert(`Error fetching plot data: ${error}`);
+      } finally {
+        setLoadingPlot(false); 
+      }
+    };
+
+  const getUmapPlotData = (cell_metadata, umap, umap_3d, clustering_plot_type, annotation) => {
+    const umap_plot = plotUmapObs(cell_metadata, umap, clustering_plot_type, [], annotation, 2);
+    const umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, clustering_plot_type, [], annotation, 3);
+  
+    return { umap_plot, umap_plot_3d };
+  };
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
       return { __html: logs };
@@ -235,7 +266,7 @@ function TaskDetailsComponent() {
 
 
   const handleLogMessage = (event) => {
-    setLiveLogs(event.data);
+    setLiveLogs((prevLogs) => prevLogs + event.data);
     // Auto-scroll to the bottom of the logs
     const logsElement = document.getElementById("_live_logs");
     if (logsElement) {
@@ -461,30 +492,50 @@ function TaskDetailsComponent() {
                     {result.umap_plot && (
                       <>
                         <h2>UMAP</h2>
-                        <FormControl>
-                          {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
-                          <RadioGroup
-                            row
-                            aria-labelledby="demo-row-radio-buttons-group-label"
-                            name="row-radio-buttons-group"
-                            value={plotDimension}
-                            onChange={(event) => setPlotDimension(event.target.value)}
-                          >
-                            <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                            <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                          </RadioGroup>
-                        </FormControl>
+                        <div style={{alignItems: 'center' }}>
+                          <FormControl>
+                            {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
+                            <RadioGroup
+                              row
+                              aria-labelledby="demo-row-radio-buttons-group-label"
+                              name="row-radio-buttons-group"
+                              value={plotDimension}
+                              onChange={(event) => setPlotDimension(event.target.value)}
+                            >
+                              <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+                              <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+                            </RadioGroup>
+                          </FormControl>
+
+                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                              <InputLabel id="plot-options-label">Color</InputLabel>
+                              <Select
+                                labelId="plot-options-label"
+                                id="plot-options"
+                                value={clusteringPlotType}
+                                onChange={(event) => {
+                                  const selectedPlotType = event.target.value;
+                                  setClusteringPlotType(selectedPlotType);
+                                  fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
+                                }}
+                              >
+                                {Object.keys(result.cell_metadata).map((key) => (
+                                  <MenuItem key={key} value={key}>{key}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                        </div>
                       
-                        {plotDimension === '2D' && result.umap_plot && (
-                            <>
-                              <ReactPlotly plot_data={result.umap_plot} />
-                            </>
-                          )}
-                          {plotDimension === '3D' && result.umap_plot_3d && (
-                            <>
-                              <ReactPlotly plot_data={result.umap_plot_3d}/>
-                            </>
-                          )}
+                        {plotDimension === '2D' && (plotData?.umap_plot || result.umap_plot) && (
+                      <>
+                        <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
+                      </>
+                    )}
+                    {plotDimension === '3D' && (plotData?.umap_plot_3d || result.umap_plot_3d) && (
+                      <>
+                        <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
+                      </>
+                    )}
                       </>
                     )}
                     {result.violin_plot && (
