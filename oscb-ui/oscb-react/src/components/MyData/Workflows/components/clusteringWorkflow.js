@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputDataComponent from '../../Tools/inputDataCollection';
 import Schema from '../../../../schema/react-json-schema/Workflows/clusteringWorkflow.json'
 import { uiSchema } from '../../../../schema/UI-schema/Workflows/clusteringWorkflow';
-import Form from '@rjsf/core';
+import Form from 'react-jsonschema-form';
 import validator from '@rjsf/validator-ajv8';
 import SelectComponent from '../../Tools/components/selectComponent';
 import GeneRangeSlider from '../../Tools/components/geneRangeSlider';
@@ -265,7 +265,7 @@ export function ClusteringWorkFlowComponent(props) {
     };
 
   return (
-    <div className='workflow-container common-class-tools-and-workflows'>
+    <div className='tools-container workflow-container common-class-tools-and-workflows'>
 
       {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
@@ -282,7 +282,7 @@ export function ClusteringWorkFlowComponent(props) {
             onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem}/>
       </div>
 
-      <div>
+      <div className="form-component">
         <Form
             schema = {Schema}
             uiSchema={uiSchema}
