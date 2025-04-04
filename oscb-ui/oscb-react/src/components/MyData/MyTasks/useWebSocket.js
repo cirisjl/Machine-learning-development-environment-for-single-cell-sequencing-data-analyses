@@ -28,7 +28,9 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
     console.log("Connecting to log WebSocket:", logUrl);
     webSocketLog.current = new WebSocket(logUrl);
     webSocketLog.current.onopen = () => console.log('WebSocket Log Connected:', jobId);
-    webSocketLog.current.onmessage = onLogMessage;
+    webSocketLog.current.onmessage = (event) => {
+      onLogMessage(event);
+    };
     webSocketLog.current.onerror = error => {
       setLoading(false);
       console.error('WebSocket Log Error:', error);

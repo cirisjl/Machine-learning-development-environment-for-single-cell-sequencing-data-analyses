@@ -82,9 +82,9 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
             await asyncio.sleep(3)
     except Exception as e:
         print(e)
-    finally:
+    finally: 
         # Remove the entry from the dictionary when the connection is closed
-        if job_id in last_read_indices:
+        if request_type == 'log' and job_id in last_read_indices:
             del last_read_indices[job_id]
         await websocket.close()
 
