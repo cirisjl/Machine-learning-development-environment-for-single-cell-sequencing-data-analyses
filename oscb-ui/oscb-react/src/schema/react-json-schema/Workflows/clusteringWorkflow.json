@@ -28,12 +28,14 @@
           "type": "boolean",
           "title": "Do you want to analyse umap after processing ?",
           "default": true,
+          "format": "switch",
           "description": "Toggle this switch to decide whether to perform UMAP (Uniform Manifold Approximation and Projection) analysis after processing your data."
         },
         "show_error": {
           "type": "boolean",
           "title": "Do you want to see the errors of the task execution ?",
           "default": true,
+          "format": "switch",
           "description": "Errors during task execution are shown by default, aiding in troubleshooting and refining your analysis. Disable if preferred."
         },
         "qc_params": {
@@ -117,7 +119,8 @@
             "regress_cell_cycle": {
               "type": "boolean",
               "title": "Regress Cell Cycle",
-              "default": false
+              "default": false,
+              "format": "switch"
             },
             "colour_by": {
               "type": "string",
@@ -140,7 +143,8 @@
             "use_default": {
               "type": "boolean",
               "title": "Use Default",
-              "default": true
+              "default": true,
+              "format": "switch"
             }
           }
         },
@@ -224,7 +228,8 @@
                   "use_default": {
                     "type": "boolean",
                     "title": "Use Default",
-                    "default": true
+                    "default": true,
+                    "format": "switch"
                   }
                 }
               }
