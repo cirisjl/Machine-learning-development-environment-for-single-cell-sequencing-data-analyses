@@ -13,9 +13,9 @@ from termcolor import colored
 
 def downloadDataset(dataset_id, destination_path, process_type = "quality_control", method = "scanpy"):
     # Define the base URL for the API
-    base_url = "http://130.127.133.171:5005/api"
+    base_url = "http://130.127.133.115:5005/api"
 
-    ws_base_url = "ws://130.127.133.171:5005/wsapi"  # WebSocket base URL
+    ws_base_url = "ws://130.127.133.115:5005/wsapi"  # WebSocket base URL
 
     user_id = get_persistent_machine_id()
     # Step 1: Submit the task
@@ -121,7 +121,7 @@ async def fetch_logs_from_websocket(base_url, job_id, task_completed_event):
 
 async def poll_task_status_and_download(dataset_id, destination_path, job_id, task_completed_event):
     # Define the base URL for the API
-    base_url = "http://130.127.133.171:5005/api"
+    base_url = "http://130.127.133.115:5005/api"
 
     task_status_url = f"{base_url}/job/downloadDataset/{job_id}"
     filename = None  # Initialize task_result
@@ -230,7 +230,7 @@ def get_persistent_machine_id():
 
 
 if __name__ == "__main__":
-    dataset_id = "U-h-Heart-Wang-2024@kbcfh"
+    dataset_id = "U-h-Bladder-wanger-2025@kbcfh"
     destination_path = "datasets"
     process_type = "quality_control"
     method = "scanpy"
