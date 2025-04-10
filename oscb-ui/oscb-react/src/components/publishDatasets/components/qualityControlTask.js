@@ -422,39 +422,67 @@ const handleAssaySelectionSubmit = async () => {
                   {result.umap_plot && (
                     <>
                     <h2>UMAP Plot</h2>
-                    <div style={{alignItems: 'center' }}>
-                      <FormControl>
-                        {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
-                        <RadioGroup
-                          row
-                          aria-labelledby="demo-row-radio-buttons-group-label"
-                          name="row-radio-buttons-group"
-                          value={plotDimension}
-                          onChange={(event) => setPlotDimension(event.target.value)}
-                        >
-                          <FormControlLabel value="2D" control={<Radio color="secondary"/>} label="2D" />
-                          <FormControlLabel value="3D" control={<Radio color="secondary"/>} label="3D" />
-                        </RadioGroup>
-                      </FormControl>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                      {/* Radio buttons */}
+                      <div>
+                        <label>
+                          <input
+                            type="radio"
+                            value="2D"
+                            checked={plotDimension === "2D"}
+                            onChange={(e) => setPlotDimension(e.target.value)}
+                          />
+                          2D
+                        </label>
+                        <label style={{ marginLeft: '8px' }}>
+                          <input
+                            type="radio"
+                            value="3D"
+                            checked={plotDimension === "3D"}
+                            onChange={(e) => setPlotDimension(e.target.value)}
+                          />
+                          3D
+                        </label>
+                      </div>
 
-                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                        <InputLabel id="plot-options-label">Color</InputLabel>
-                        <Select
-                          labelId="plot-options-label"
-                          id="plot-options"
-                          value={clusteringPlotType}
-                          onChange={(event) => {
-                            const selectedPlotType = event.target.value;
-                            setClusteringPlotType(selectedPlotType);
-                            fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
-                          }}
-                        >
-                          {Object.keys(result.cell_metadata).map((key) => (
-                            <MenuItem key={key} value={key}>{key}</MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <select
+                        value={clusteringPlotType}
+                        onChange={(e) => {
+                          const selectedPlotType = e.target.value;
+                          setClusteringPlotType(selectedPlotType);
+                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid #ccc',
+                          backgroundColor: '#fff',
+                          fontSize: '14px',
+                          fontFamily: 'Arial, sans-serif',
+                          outline: 'none',
+                          transition: 'border-color 0.2s, box-shadow 0.2s',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          cursor: 'pointer',
+                          minWidth: '150px',
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#1976d2';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#ccc';
+                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                        {Object.keys(result.cell_metadata).map((key) => (
+                          <option key={key} value={key}>
+                            {key}
+                          </option>
+                        ))}
+                      </select>
+
                     </div>
+
                 
                     {plotDimension === '2D' && (plotData?.umap_plot || result.umap_plot) && (
                       <>
