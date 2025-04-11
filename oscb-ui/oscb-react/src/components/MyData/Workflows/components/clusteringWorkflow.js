@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputDataComponent from '../../Tools/inputDataCollection';
 import Schema from '../../../../schema/react-json-schema/Workflows/clusteringWorkflow.json'
 import { uiSchema } from '../../../../schema/UI-schema/Workflows/clusteringWorkflow';
-import Form from 'react-jsonschema-form';
+import Form from '@rjsf/core';
 import validator from '@rjsf/validator-ajv8';
 import SelectComponent from '../../Tools/components/selectComponent';
 import GeneRangeSlider from '../../Tools/components/geneRangeSlider';

@@ -1,9 +1,9 @@
-export const uiSchema = (dynamicOptions) => ({
+export const uiSchema = {
 
   "parameters": {
     "ui:classNames": "category",
       "output_format": {
-        "ui:classNames": "sub-category",
+        "classNames": "sub-category",
         "ui:widget": "SelectComponent",
         'ui:options': {
           clearable: true ,
@@ -65,7 +65,7 @@ export const uiSchema = (dynamicOptions) => ({
           placeholder: "Select the Layer",
           creatable: false,
           searchable: true,
-          opts: dynamicOptions.layers 
+          opts: []
         }
         },
         // "geneRange": {
@@ -419,4 +419,4 @@ export const uiSchema = (dynamicOptions) => ({
         } 
       }
   }
-});
+}
