@@ -74,7 +74,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
             process_ids.append(process_id)
             methods_to_remove.append(method)
 
-    print(f"Methods to remove: {methods_to_remove}.")
+    print(f"Methods to skip: {methods_to_remove}.")
     if len(methods_to_remove) > 0:
         methods = list(set(methods).difference(set(methods_to_remove))) # Remove method from methods list
     redislogger.info(job_id, f"Remaining methods: {methods}.")
@@ -109,7 +109,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
 
             if os.path.exists(adata_path):
                 adata = load_anndata(adata_path)
-                for layer in adata.layers.keys():
+                for layer in list(adata.layers.keys()):
                     if layer in methods_to_remove: # Skip existing layers
                         continue
 
