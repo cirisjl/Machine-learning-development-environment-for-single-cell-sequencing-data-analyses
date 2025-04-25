@@ -290,6 +290,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     description = f'{method} {process}' 
     min_genes = None
     target_sum = None
+    obs = None
 
 
     if adata_path is not None and os.path.exists(adata_path):
@@ -467,7 +468,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # "violin_plot": violin_plot,
             # "scatter_plot": scatter_plot,
             # "highest_expr_genes_plot": highest_expr_genes_plot,
-            "evaluation_results": evaluation_results
+            "evaluation_results": evaluation_results,
+            "obs":cell_metadata
             }
         
     return pp_results
