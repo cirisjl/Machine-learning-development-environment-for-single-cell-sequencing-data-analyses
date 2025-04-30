@@ -104,6 +104,7 @@ def run_qc(job_id, ds:dict, random_state=0):
             qc_results['datasetId'] = datasetId
             qc_output.append({method: adata_path})
             create_pp_results(process_id, qc_results)  # Insert pre-process results to database
+        process_ids.append(process_id)
 
     elif methods is None:
         benchmarks_data = True
@@ -135,9 +136,10 @@ def run_qc(job_id, ds:dict, random_state=0):
     # Get the absolute path for the given input
     # input = get_input_path(input, ds['userID'])
     # Get the absolute path for the given output
-    methods = [x.upper() for x in methods if isinstance(x,str)]
+
 
     if skip_qc == False:
+        methods = [x.upper() for x in methods if isinstance(x,str)]
         if ("SCANPY" in methods or "DROPKICK" in methods):
             # Scanpy QC
             if "SCANPY" in methods:

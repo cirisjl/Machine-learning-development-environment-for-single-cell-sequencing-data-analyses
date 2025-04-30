@@ -137,7 +137,7 @@ const handleLogMessage = (event) => {
     }
   };
 
-  const runQualityControl = async() => {
+  const runQualityControl = async(skipQualityControl) => {
     setLoading(true);
 
     try {
@@ -168,7 +168,8 @@ const handleLogMessage = (event) => {
           resolution : values.resolution,
           regress_cell_cycle : values.regress_cell_cycle,
           use_default : values.use_default,
-          doublet_rate: values.doublet_rate
+          doublet_rate: values.doublet_rate,
+          skip_qc: skipQualityControl
         } 
       }
 
@@ -366,10 +367,13 @@ const handleAssaySelectionSubmit = async () => {
 
       <div>
         <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={taskData.quality_control.shouldHideForSeurat}/>
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginLeft: '10px' }}>
-        <Button onClick={runQualityControl} variant="contained" className={classes.customButton}>
-          Run Quality Control
-        </Button>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginLeft: '10px', gap: '3rem' }}>
+          <Button onClick={() => runQualityControl(false)} variant="contained" className={classes.customButton}>
+            Run Quality Control
+          </Button>
+          <Button onClick={() => runQualityControl(true)} variant="contained" className={classes.customButton}>
+            Load Metadata
+          </Button>
         </div>
       </div>
 
