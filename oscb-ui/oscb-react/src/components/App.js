@@ -42,6 +42,7 @@ import ForgotPasswordPage from '../pages/login/ForgotPasswordPage'
 import ResetPasswordPage from '../pages/login/ResetPasswordPage';
 import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
+import WorkflowTaskDetailsComponent from './MyData/MyTasks/workflowTaskDetailsComponent';
 import HandleVisualize from './publishDatasets/components/handleVisualize';
 import TreeTableComponent from './common_components/treeTableComponent';
 import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
@@ -81,6 +82,7 @@ function App() {
           <Route path="mydata/update-dataset"       element={<UploadData/>}></Route>
           <Route path="mydata/preview-datasets" element={<PreviewDatasets/>}></Route>
           <Route path="mydata/taskDetails"       element={<TaskDetailsComponent/>}></Route>
+          <Route path="mydata/workflowTaskDetails"       element={<WorkflowTaskDetailsComponent/>}></Route>
           <Route path="mydata/workflows" element={<WorkflowsPageComponent/>}></Route>
           <Route path="mydata/tools" element={<ToolsComponentPage/>}></Route>
           <Route path="team"         element={<Team/>}/>
