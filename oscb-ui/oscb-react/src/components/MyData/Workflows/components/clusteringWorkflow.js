@@ -30,6 +30,13 @@ export function ClusteringWorkFlowComponent(props) {
     const [ isError, setIsError ] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const parametersKey = {
+      quality_control: 'qc_params',
+      normalization: 'normalization_params',
+      imputation: 'imputation_params',
+      visualization: 'reduction_params'
+    };
+
     const navigate = useNavigate();
 
     const extractDir =  (inputFile) => {
@@ -143,6 +150,60 @@ export function ClusteringWorkFlowComponent(props) {
                 formData.output = directory + "/Results";
               }
             }
+
+            let methodMap = {};
+
+            if (formData["qc_params"] && formData["qc_params"].methods) {
+              let method = "";
+              // iterate methods array inside qc_params and add it to methods string with comma delimiter 
+              formData["qc_params"].methods.forEach((item, index) => {
+                if (index === 0) {
+                  method = item;
+                } else {
+                  method = method + ", " + item;
+                }
+              });
+              methodMap["Quality Control"] = method;
+            } 
+            if (formData["normalization_params"] && formData["normalization_params"].methods) {
+              let method = "";
+              // iterate methods array inside normalization_params and add it to methods string with comma delimiter
+              formData["normalization_params"].methods.forEach((item, index) => {
+                if (index === 0) {
+                  method = item;
+                } else {
+                  method = method + ", " + item;
+                }
+              });
+              methodMap["Normalization"] = method;
+            } 
+            if (formData["imputation_params"] && formData["imputation_params"].methods) {
+              let method = "";      
+              // iterate methods array inside imputation_params and add it to methods string with comma delimiter
+              formData["imputation_params"].methods.forEach((item, index) => {
+                if (index === 0) {
+                  method = item;
+                } else {
+                  method = method + ", " + item;
+                }
+              });
+              methodMap["Imputation"] = method; 
+            } 
+
+            console.log("Method map: ", methodMap);
+            let job_description = "";
+            if (typeof formData.dataset === 'string') {
+              job_description = props.selectedWorkflow + ' workflow for ' + formData.dataset;
+            } else if (Array.isArray(formData.dataset)) {
+              if (formData.dataset.length > 1) {
+                let datasets = formData.dataset.join(', ');
+                job_description = props.selectedWorkflow + ' workflow for ' + datasets;
+              } else if (formData.dataset.length === 1) {
+                job_description = props.selectedWorkflow + ' workflow for ' + formData.dataset[0];
+              }
+            }
+
+            console.log("Job description: ", job_description);
             console.log(props.selectedWorkflow);
             const RELATIVE_PATH = filterCategoryMap[props.selectedWorkflow];
             console.log(CELERY_BACKEND_API + RELATIVE_PATH);
@@ -169,7 +230,7 @@ export function ClusteringWorkFlowComponent(props) {
               setHasMessage(true);
               setMessage(response.status ? response.status : "Job Successfully Submitted.");
               setIsError(false);
-              navigate("/mydata/taskDetails", { state: { job_id: jobId, method: "", datasetURL: formData.input, description: "Clustering workflow", process: "Clustering" } });
+              navigate("/mydata/workflowTaskDetails", { state: { job_id: jobId, methodMap: methodMap, datasetURL: formData.input, description: job_description, process: props.selectedWorkflow } });
               // let datasetName = "";
               // if (typeof formData.dataset === 'string') {
               //   datasetName = formData.dataset

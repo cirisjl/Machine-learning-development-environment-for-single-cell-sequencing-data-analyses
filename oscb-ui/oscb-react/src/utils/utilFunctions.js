@@ -321,7 +321,7 @@ uniqueClusters.forEach((val, i) => {
   return JSON.stringify({ data: traces, layout });
 }
 // Keep this function to unzip the compressed data (from python)
-const gunzipDict = (gzippedBase64) => {
+export const gunzipDict = (gzippedBase64) => {
   try {
     // Decode Base64 string to binary string
     const binaryString = atob(gzippedBase64);
