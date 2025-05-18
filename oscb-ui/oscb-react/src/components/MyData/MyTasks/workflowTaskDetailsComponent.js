@@ -500,9 +500,13 @@ function WorkflowTaskDetailsComponent() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle1" gutterBottom><strong>Method:</strong></Typography>
-                      {Object.entries(methodMap).map(([key, value]) => (
-                        <Typography variant="body1" key={key}>{key}: {value}</Typography>
-                      ))}
+                      {methodMap && Object.keys(methodMap).length > 0 ? (
+                        Object.entries(methodMap).map(([key, value]) => (
+                          <Typography variant="body1" key={key}>{key}: {value}</Typography>
+                        ))
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">Not available</Typography>
+                      )}
                     </Grid>
                     <Grid item xs={12}> 
                       <Typography variant="subtitle1" gutterBottom><strong>Status:</strong></Typography>
