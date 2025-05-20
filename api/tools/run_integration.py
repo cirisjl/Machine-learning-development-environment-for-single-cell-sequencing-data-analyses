@@ -10,7 +10,7 @@ from utils.mongodb import generate_process_id, pp_result_exists, create_pp_resul
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
 
-def run_integration(job_id, ids:dict):
+def run_integration(job_id, ids:dict, fig_path=None):
     pp_stage = "Corrected"
     md5 = []
     process_ids = []
