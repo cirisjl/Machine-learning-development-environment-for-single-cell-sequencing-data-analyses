@@ -13,7 +13,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
 
 
-def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
+def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error=True):
 
     # pp_results = []
     process_ids = []
@@ -121,7 +121,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                         if msg is not None: redislogger.warning(job_id, msg)
 
                         redislogger.info(job_id, f"Clustering the neighborhood graph for layer {layer}.")
-                        adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state)
+                        adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state, fig_path=fig_path)
                         adata.write_h5ad(adata_path, compression='gzip')
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
@@ -149,7 +149,7 @@ def run_normalization(job_id, ds:dict, random_state=0, show_error=True):
                     if msg is not None: redislogger.warning(job_id, msg)
 
                     redislogger.info(job_id, f"Clustering the neighborhood graph for {method} normalization.")
-                    adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state)
+                    adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
                     normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)

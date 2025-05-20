@@ -101,9 +101,9 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           taskType: null,
           taskLabel: '',
           dataSplit: {
-            trainFraction: 0.8,
-            validationFraction: 0.1,
-            testFraction: 0.1,
+            trainFraction: 1,
+            validationFraction: 0,
+            testFraction: 0,
             dataSplitPerformed: false,
             archivePath: ''
           }
