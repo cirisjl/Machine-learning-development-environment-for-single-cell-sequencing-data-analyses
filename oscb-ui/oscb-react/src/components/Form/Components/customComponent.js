@@ -384,7 +384,7 @@ class MyForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length == 0 || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
       errors['Selected Cell Types'] = 'Selected Cell Types is required';
     }
 
@@ -644,8 +644,12 @@ class MyForm extends Component {
           </div>
 
           {/* "Selected Cell Types" (CreatableSelect) */}
-          <div className="form-field"><div>
-              <label className="form-label">Cell Type Annotation:</label></div>
+          <div className="form-field">
+            <div>
+              <label className="form-label">Cell Type Annotation:</label>
+                <span className="ui-form-title-message warning"> * required </span>
+            </div>
+        
             <Select
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
@@ -744,8 +748,10 @@ class MyForm extends Component {
           </div>
 
           {/* "Disease Status (Donor)" (CreatableSelect) */}
-          <div className="form-field"><div>
-            <label className="form-label">Disease Status (Donor):</label>
+          <div className="form-field">
+            <div>
+              <label className="form-label">Disease Status (Donor):</label>
+              <span className="ui-form-title-message warning"> * required </span>
             </div>
             <CreatableSelect
               name="Disease Status (Donor)"
