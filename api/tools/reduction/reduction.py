@@ -1,8 +1,11 @@
 import warnings
+import os
 import scanpy as sc
 from anndata import AnnData
 from sklearn.manifold import TSNE
 from umap import UMAP
+import matplotlib.pyplot as plt
+import matplotlib
 
 
 def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0, skip_if_exist=False):
@@ -79,10 +82,16 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
     return adata, msg
 
 
-def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0, skip_if_exist=False):
+def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0, skip_if_exist=False, fig_path=None):
     if layer == "Pearson_residuals":
         print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
         return adata
+    
+    if fig_path is not None:
+        if layer is None:
+            fig_path = os.path.join(fig_path, 'leiden_clustering.png')
+        else:
+            fig_path = os.path.join(fig_path, layer+'_leiden_clustering.png')
 
     if skip_if_exist:
         if layer is not None and layer + '_louvain' in adata.obs.keys() and  layer + '_leiden' in adata.obs.keys():
@@ -99,8 +108,14 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         # Clustering the neighborhood graph
         sc.tl.leiden(adata_temp, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
+        # Save the Clustering plot
+        if fig_path is not None:
+            sc.pl.umap(adata_temp, color='leiden', show=False)
+            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
+
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
         adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
+
         sc.tl.louvain(adata_temp)
         adata.uns[layer + '_louvain'] = adata_temp.uns["louvain"].copy()
         adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
@@ -110,6 +125,12 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         louvain_key = "louvain_" + use_rep
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
+        
+        # Save the Clustering plot
+        if fig_path is not None:
+            sc.pl.umap(adata, color=leiden_key, show=False)
+            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
+
         sc.tl.louvain(adata, key_added = louvain_key)
     elif layer is None: # and 'louvain' not in adata.obs.keys():
         # Clustering the neighborhood graph
@@ -117,6 +138,11 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         louvain_key = "louvain"
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
+        # Save the Clustering plot
+        if fig_path is not None:
+            sc.pl.umap(adata, color=leiden_key, show=False)
+            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
+
         sc.tl.louvain(adata, key_added = louvain_key)
     # else:
     #     if layer is None: layer = 'X'

@@ -1,3 +1,4 @@
+import os
 from tools.formating.formating import *
 from tools.run_qc import run_qc
 from tools.run_normalization import run_normalization
@@ -37,10 +38,15 @@ def run_clustering(job_id, ds:dict, random_state=0):
     description = "Clustering Workflow" 
     input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
-    # workflow_id = generate_workflow_id(md5, "clustering", ds)
+
+    # Create folders for output figures
+    workflow_id = generate_workflow_id(md5, "clustering", ds)
+    fig_path = os.path.join(os.path.dirname(ds['input']), 'workflow', workflow_id)
+    if not os.path.exists(fig_path):
+        os.mkdir(fig_path)
+    wf_results['figures'] = fig_path
 
     # for method i want methodMap key value pairs.
-
 
     if datasetId is not None:
         description = f"Clustering Workflow for {datasetId}"
@@ -62,7 +68,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
         }
     )
 
-    qc_results = run_qc(job_id, ds)
+    qc_results = run_qc(job_id, ds, fig_path=fig_path)
     if qc_results is not None:
         ds['input'] = qc_results['adata_path']
         print(qc_results['adata_path'])        
@@ -70,13 +76,13 @@ def run_clustering(job_id, ds:dict, random_state=0):
         wf_results['QC'] = qc_results["process_ids"]
         wf_results['QC_output'] = qc_results['output']
         if ds["normalization_params"]["methods"] is not None:
-            normalization_results = run_normalization(job_id, ds)
+            normalization_results = run_normalization(job_id, ds, fig_path=fig_path)
             wf_results['normalization'] = normalization_results["process_ids"]
             process_ids.extend(normalization_results["process_ids"])
             wf_results['normalization_output'] = normalization_results['output']
             output = normalization_results['output']
         elif ds["imputationParameters"]["methods"] is not None:
-            imputation_results = run_imputation(job_id, ds)
+            imputation_results = run_imputation(job_id, ds, fig_path=fig_path)
             wf_results['imputation'] = imputation_results["process_ids"]
             process_ids.extend(imputation_results["process_ids"])
             wf_results['imputation_output'] = imputation_results['output']

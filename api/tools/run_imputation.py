@@ -13,7 +13,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
     
 
-def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
+def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state=0):
     pp_results = []
     process_ids = []
     imputation_output = []
@@ -78,7 +78,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 if msg is not None: redislogger.warning(job_id, msg)
 
                 redislogger.info(job_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
+                adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
@@ -116,7 +116,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                         if msg is not None: redislogger.warning(job_id, msg)
 
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
+                        adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
@@ -182,7 +182,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                 if msg is not None: redislogger.warning(job_id, msg)
 
                 redislogger.info(job_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
+                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
@@ -228,7 +228,7 @@ def run_imputation(job_id, ds:dict, show_error=True, random_state=0):
                             if msg is not None: redislogger.warning(job_id, msg)
 
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
+                            adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                             imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
