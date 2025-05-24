@@ -232,8 +232,40 @@ const TaskTable = () => {
                                             <a onClick={() => handleDelete(task.job_id)}
                                                 style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faTrash} /></a>
                                             &nbsp;&nbsp;&nbsp;&nbsp;
-                                            <a onClick={() => { navigate("/mydata/taskDetails", { state: { job_id: task.job_id, method: task.method, datasetURL: task.datasetURL, description: task.description, process: task.process, output: task.output, results: task.results, status: task.status } }); }}
-                                                style={{ textDecoration: 'none', color: 'inherit' }}> <FontAwesomeIcon icon={faEye} /></a>
+                                            <a
+                                                onClick={() => {
+                                                if (task.process && task.process.toLowerCase() === 'clustering') {
+                                                    navigate("/mydata/workflowTaskDetails", {
+                                                        state: {
+                                                        job_id: task.job_id,
+                                                        methodMap: task.methodMap,
+                                                        datasetURL: task.datasetURL,
+                                                        description: task.description,
+                                                        process: task.process,
+                                                        output: task.output,
+                                                        results: task.results,
+                                                        status: task.status
+                                                        }
+                                                    });
+                                                    } else {
+                                                    navigate("/mydata/taskDetails", {
+                                                        state: {
+                                                        job_id: task.job_id,
+                                                        method: task.method,
+                                                        datasetURL: task.datasetURL,
+                                                        description: task.description,
+                                                        process: task.process,
+                                                        output: task.output,
+                                                        results: task.results,
+                                                        status: task.status
+                                                        }
+                                                    });
+                                                    }
+                                                }}
+                                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                                >
+                                                <FontAwesomeIcon icon={faEye} />
+                                                </a>
                                         </TableCell>
                                     ) : (
                                         <TableCell></TableCell>

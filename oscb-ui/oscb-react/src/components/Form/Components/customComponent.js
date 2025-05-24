@@ -384,8 +384,11 @@ class MyForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
-      errors['Selected Cell Types'] = 'Selected Cell Types is required';
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length == 0 || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+      formData['Selected Cell Types'] = {
+        'label': 'Unspecified',
+        'value': ['Unspecified']
+      }
     }
 
     if (!formData['Disease Status (Donor)'] || formData['Disease Status (Donor)'].length === 0) {
@@ -644,8 +647,11 @@ class MyForm extends Component {
           </div>
 
           {/* "Selected Cell Types" (CreatableSelect) */}
-          <div className="form-field"><div>
-              <label className="form-label">Cell Type Annotation:</label></div>
+          <div className="form-field">
+            <div>
+              <label className="form-label">Cell Type Annotation:</label>
+            </div>
+        
             <Select
               name="Selected Cell Types"
               value={formData['Selected Cell Types']}
@@ -666,6 +672,8 @@ class MyForm extends Component {
               } // Set options to the fetched options
               className={`form-input`}
             />
+            {errors['Selected Cell Types'] && <div className="error-tooltip">{errors['Selected Cell Types']}</div>}
+
           </div>
 
           <div className="label-table-container">
@@ -744,8 +752,10 @@ class MyForm extends Component {
           </div>
 
           {/* "Disease Status (Donor)" (CreatableSelect) */}
-          <div className="form-field"><div>
-            <label className="form-label">Disease Status (Donor):</label>
+          <div className="form-field">
+            <div>
+              <label className="form-label">Disease Status (Donor):</label>
+              <span className="ui-form-title-message warning"> * required </span>
             </div>
             <CreatableSelect
               name="Disease Status (Donor)"
@@ -759,6 +769,9 @@ class MyForm extends Component {
               options={options['Disease Status (Donor)']} // Set options to the fetched options
               className="form-input"
             />
+
+            {errors['Disease Status (Donor)'] && <div className="error-tooltip">{errors['Disease Status (Donor)']}</div>}
+
           </div>
 
 
