@@ -17,7 +17,7 @@ from utils.mongodb import generate_process_id, pp_result_exists, create_pp_resul
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
 
-def run_qc(job_id, ds:dict, random_state=0):
+def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     pp_results = []
     process_ids = []
     qc_output = []
