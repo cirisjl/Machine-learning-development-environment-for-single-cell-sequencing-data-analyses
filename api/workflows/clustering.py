@@ -43,7 +43,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
     workflow_id = generate_workflow_id(md5, "clustering", ds)
     fig_path = os.path.join(os.path.dirname(ds['input']), 'workflow', workflow_id)
     if not os.path.exists(fig_path):
-        os.mkdir(fig_path)
+        os.makedirs(fig_path, exist_ok=True)
     wf_results['figures'] = fig_path
 
     # for method i want methodMap key value pairs.
