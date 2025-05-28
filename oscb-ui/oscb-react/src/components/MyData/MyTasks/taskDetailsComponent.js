@@ -490,7 +490,7 @@ function TaskDetailsComponent() {
           {
             toolResultsFromMongo.map((result, index) => (
               <React.Fragment key={index}>
-                    {result.umap_plot && (
+                    {(result.umap_plot || result.umap_plot_3d) && (
                       <>
                         <h2>UMAP</h2>
                         <div style={{alignItems: 'center' }}>

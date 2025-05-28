@@ -423,7 +423,7 @@ const handleAssaySelectionSubmit = async () => {
         {taskData.quality_control.qc_results &&
           taskData.quality_control.qc_results.map((result, index) => (
             <React.Fragment key={index}>
-                  {result.umap_plot && (
+                  {(result.umap_plot || result.umap_plot_3d) && (
                     <>
                     <h2>UMAP Plot</h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>

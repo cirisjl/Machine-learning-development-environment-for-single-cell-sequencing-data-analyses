@@ -697,7 +697,7 @@ function WorkflowTaskDetailsComponent() {
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                         <p>Plots:</p>
                                         <React.Fragment key="plots">
-                                          {details[preProcessResult.process_id].umap_plot && (
+                                          {(details[preProcessResult.process_id].umap_plot || details[preProcessResult.process_id].umap_plot_3d) && (
                                             <>
                                               <h2>UMAP Plot</h2>
                                               <div style={{ display: 'flex', alignItems: 'center' }}>
