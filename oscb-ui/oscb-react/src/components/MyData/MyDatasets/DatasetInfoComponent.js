@@ -48,30 +48,30 @@ const DatasetInfoComponent = () => {
         throw new Error("Selected Cell Type or label is missing");
       }
   
-      try {
-        // const response = await axios.post(`${CELERY_BACKEND_API}/plotumap/`, {
-        //   process_ids: [process_id],
-        //   clustering_plot_type: plotType,
-        //   annotation: selectedCellType.label,
-        // });
-        let data = getUmapPlotData(cell_metadata, umap, umap_3d, plotType, selectedCellType.label)
-  
-        if(data.umap_plot && data.umap_plot_3d) {
-          setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
-        }
-      } catch (error) {
-        console.error('Error fetching plot data:', error);
-        alert(`Error fetching plot data: ${error}`);
-      } finally {
-        setLoadingPlot(false); 
-      }
-    };
+        try {
+          // Only get plots if umap or umap_3d exist
+          let umap_plot = null;
+          let umap_plot_3d = null;
 
-    const getUmapPlotData = (cell_metadata, umap, umap_3d, clustering_plot_type, annotation) => {
-      const umap_plot = plotUmapObs(cell_metadata, umap, clustering_plot_type, [], annotation, 2);
-      const umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, clustering_plot_type, [], annotation, 3);
-    
-      return { umap_plot, umap_plot_3d };
+          if (umap) {
+            umap_plot = plotUmapObs(cell_metadata, umap, plotType, [], selectedCellType.label, 2);
+          }
+          if (umap_3d) {
+            umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, plotType, [], selectedCellType.label, 3);
+          }
+
+          // Only set plotData if at least one plot exists
+          if (umap_plot || umap_plot_3d) {
+            setPlotData({ umap_plot, umap_plot_3d });
+          } else {
+            setPlotData(null);
+          }
+        } catch (error) {
+          console.error('Error fetching plot data:', error);
+          alert(`Error fetching plot data: ${error}`);
+        } finally {
+          setLoadingPlot(false);
+        }
     };
     
 
@@ -180,9 +180,13 @@ const DatasetInfoComponent = () => {
         const data = await response.json();
 
         const preProcessResult = data[0];
-        if(preProcessResult.umap_plot && preProcessResult.umap_plot_3d) {
-          setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
-        }
+
+          // Only set plotData if at least one plot exists
+          if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+            setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
+          } else {
+            setPlotData(null);
+          }
 
         // Store the fetched data for the current process_id
         setDetails((prevDetails) => ({
@@ -450,16 +454,23 @@ const DatasetInfoComponent = () => {
                                                   <div>Loading plot data...</div>
                                                 ) : plotData ? (
                                                   <>
-                                                    {plotDimension === '2D' && plotData.umap_plot && (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={plotData.umap_plot} />
-                                                      </div>
-                                                    )}
-                                                    {plotDimension === '3D' && plotData.umap_plot_3d && (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={plotData.umap_plot_3d} />
-                                                      </div>
-                                                    )}
+                                                   {plotDimension === '2D' ? (
+                                                      plotData && plotData.umap_plot ? (
+                                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                          <ReactPlotly plot_data={plotData.umap_plot} />
+                                                        </div>
+                                                      ) : (
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                                                      )
+                                                    ) : plotDimension === '3D' ? (
+                                                      plotData && plotData.umap_plot_3d ? (
+                                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                          <ReactPlotly plot_data={plotData.umap_plot_3d} />
+                                                        </div>
+                                                      ) : (
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
+                                                      )
+                                                    ) : null}
                                                   </>
                                                 ) : (
                                                   <div>No plot data available</div>

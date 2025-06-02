@@ -124,27 +124,32 @@ function TaskDetailsComponent() {
   
       const selectedCellType = null
   
-      try {
+        try {
+          // Only get plots if umap or umap_3d exist
+          let umap_plot = null;
+          let umap_plot_3d = null;
 
-        let data = getUmapPlotData(cell_metadata, umap, umap_3d, plotType, selectedCellType)
-  
-        if(data.umap_plot && data.umap_plot_3d) {
-          setPlotData({umap_plot: data.umap_plot, umap_plot_3d: data.umap_plot_3d});
+          if (umap) {
+            umap_plot = plotUmapObs(cell_metadata, umap, plotType, [], selectedCellType, 2);
+          }
+          if (umap_3d) {
+            umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, plotType, [], selectedCellType, 3);
+          }
+
+          // Only set plotData if at least one plot exists
+          if (umap_plot || umap_plot_3d) {
+            setPlotData({ umap_plot, umap_plot_3d });
+          } else {
+            setPlotData(null);
+          }
+        } catch (error) {
+          console.error('Error fetching plot data:', error);
+          alert(`Error fetching plot data: ${error}`);
+        } finally {
+          setLoadingPlot(false);
         }
-      } catch (error) {
-        console.error('Error fetching plot data:', error);
-        alert(`Error fetching plot data: ${error}`);
-      } finally {
-        setLoadingPlot(false); 
-      }
     };
 
-  const getUmapPlotData = (cell_metadata, umap, umap_3d, clustering_plot_type, annotation) => {
-    const umap_plot = plotUmapObs(cell_metadata, umap, clustering_plot_type, [], annotation, 2);
-    const umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, clustering_plot_type, [], annotation, 3);
-  
-    return { umap_plot, umap_plot_3d };
-  };
     // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
     const createMarkup = (logs) => {
       return { __html: logs };
@@ -527,16 +532,23 @@ function TaskDetailsComponent() {
                             </FormControl>
                         </div>
                       
-                        {plotDimension === '2D' && (plotData?.umap_plot || result.umap_plot) && (
-                      <>
-                        <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
-                      </>
-                    )}
-                    {plotDimension === '3D' && (plotData?.umap_plot_3d || result.umap_plot_3d) && (
-                      <>
-                        <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
-                      </>
-                    )}
+                      {plotDimension === '2D' ? (
+                        plotData?.umap_plot || result.umap_plot ? (
+                          <>
+                            <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
+                          </>
+                        ) : (
+                          <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                        )
+                      ) : plotDimension === '3D' ? (
+                        plotData?.umap_plot_3d || result.umap_plot_3d ? (
+                          <>
+                            <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
+                          </>
+                        ) : (
+                          <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
+                        )
+                      ) : null}
                       </>
                     )}
                     {result.violin_plot && (
