@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import shutil
+from umap import UMAP
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
@@ -83,15 +84,15 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
         if qc_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
             nCells = qc_results["nCells"]
-            qc_output.append({method: qc_results["adata_path"]})
+            qc_output.append({'AnnData': qc_results["adata_path"]})
             adata_path = qc_results["adata_path"]
         else:
             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=True)
+            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=False)
             if msg is not None: redislogger.warning(job_id, msg)
 
             redislogger.info(job_id, "Clustering the neighborhood graph.")
-            adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state, skip_if_exist=True)
+            adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state, skip_if_exist=False)
             
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
@@ -102,7 +103,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
             adata = None
             redislogger.info(job_id, qc_results['info'])
             qc_results['datasetId'] = datasetId
-            qc_output.append({method: adata_path})
+            qc_output.append({'AnnData': adata_path})
             create_pp_results(process_id, qc_results)  # Insert pre-process results to database
         process_ids.append(process_id)
 
@@ -150,7 +151,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 if qc_results is not None:
                     redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
                     nCells = qc_results["nCells"]
-                    qc_output.append({method: qc_results["adata_path"]})
+                    qc_output.append({'AnnData': qc_results["adata_path"]})
                     adata_path = qc_results["adata_path"]
                 else:
                     output_path = None
@@ -172,9 +173,9 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, n_top_genes=parameters['n_top_genes'])
                         nCells = qc_results["nCells"]
                         redislogger.info(job_id, "Saving AnnData object.")
-                        
+                        scanpy_results.X = scanpy_results.layers["raw_counts"].copy()
                         scanpy_results.write_h5ad(output_path, compression='gzip')
-                        qc_output.append({method: output_path})
+                        qc_output.append({'AnnData': output_path})
                         adata_path = output_path
                         scanpy_results = None
                         redislogger.info(job_id, qc_results['info'])
@@ -199,6 +200,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                             nCells = qc_results["nCells"]
                             redislogger.info(job_id, "Saving AnnData object.")
+                            scanpy_results.X = scanpy_results.layers["raw_counts"].copy()
                             scanpy_results.write_h5ad(output_path, compression='gzip')
                             adata_path = output_path
                             scanpy_results = None
@@ -231,7 +233,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 if qc_results is not None:
                     redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
                     nCells = qc_results["nCells"]
-                    qc_output.append({method: qc_results["adata_path"]})
+                    qc_output.append({'AnnData': qc_results["adata_path"]})
                     adata_path = qc_results["adata_path"]
                 else:
                     output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
@@ -239,6 +241,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         redislogger.info(job_id, "Output already exists, start from the result of the last run.")
                         dropkick_results = load_anndata(output_path)
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
                         dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
                         if msg is not None: redislogger.warning(job_id, msg)
 
@@ -249,8 +252,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                         nCells = qc_results["nCells"]
                         redislogger.info(job_id, "Saving AnnData object.")
-                        redislogger.info(job_id, "output path")
-                        redislogger.info(job_id, output_path)
+                        dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                         dropkick_results.write_h5ad(output_path, compression='gzip')
                         adata_path = output_path
                         dropkick_results = None
@@ -265,6 +267,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             dropkick_results.write_h5ad(output_path, compression='gzip')
 
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                            dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
                             dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
                             if msg is not None: redislogger.warning(job_id, msg)
 
@@ -277,9 +280,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             redislogger.info(job_id, "Saving AnnData object.")
                             redislogger.info(job_id, "output path")
                             redislogger.info(job_id, output_path)
+                            dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                             dropkick_results.write_h5ad(output_path, compression='gzip')
                             adata_path = output_path
-                            qc_output.append({method: output_path})
+                            qc_output.append({'AnnData': output_path})
                             dropkick_results = None
                             redislogger.info(job_id, qc_results['info'])
                             qc_results['datasetId'] = datasetId
@@ -312,7 +316,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
             if qc_results is not None:
                 redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
                 nCells = qc_results["nCells"]
-                qc_output.append({method: qc_results["adata_path"]})
+                qc_output.append({'AnnData': qc_results["adata_path"]})
                 adata_path = qc_results["adata_path"]
             else:
                 output_path = None
@@ -321,7 +325,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 else:
                     output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
                 try:     
-                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names= run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names = run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
                     
                     if ddl_assay_names:
                         results = {
@@ -333,16 +337,27 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         }
                         # upsert_jobs(results)
                         return results
-                    
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path)
-                    nCells = qc_results["nCells"]
-                    redislogger.info(job_id, qc_results['info'])
-                    # adata.write_h5ad(adata_path, compression='gzip')
-                    qc_output.append({method: adata_path})
-                    qc_results['datasetId'] = datasetId
-                    create_pp_results(process_id, qc_results)  # Insert pre-process results to database
-                    adata = None         
+
+                    if adata is not None:
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata.X = adata.layers["scale.data"].copy()
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                        if msg is not None: redislogger.warning(job_id, msg)
+
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state)
+                        adata.X = adata.layers["raw_counts"].copy()
+
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path)
+                        nCells = qc_results["nCells"]
+                        redislogger.info(job_id, qc_results['info'])
+                        adata.write_h5ad(adata_path, compression='gzip')
+                        if os.path.exists(adata_path): qc_output.append({'Anndata': adata_path})
+                        if os.path.exists(output_path): qc_output.append({'Seurat': output_path})
+                        qc_results['datasetId'] = datasetId
+                        create_pp_results(process_id, qc_results)  # Insert pre-process results to database
+                        adata = None         
                 except Exception as e:
                     detail = f"Error during Seurat QC: {str(e)}"
                     redislogger.error(job_id, detail)
@@ -372,7 +387,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
             if qc_results is not None:
                 redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
                 nCells = qc_results["nCells"]
-                qc_output.append({method: qc_results["adata_path"]})
+                qc_output.append({"AnnData": qc_results["adata_path"]})
                 adata_path = qc_results["adata_path"]
             else:
                 output_path = get_output_path(output, process_id, ds['dataset'], method='Bioconductor', format='SingleCellExperiment')
@@ -397,20 +412,35 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     if os.path.exists(adata_path):
                         redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")
                         adata = load_anndata(adata_path)
-                        sc.pp.neighbors(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=0)
-                        adata_3D = sc.tl.umap(adata, random_state=0, 
-                                        init_pos="spectral", n_components=3, 
-                                        copy=True, maxiter=None)
-                        adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+                        adata.layers["raw_counts"] = adata.X.copy()
+                        sc.pp.normalize_total(adata, target_sum=parameters['target_sum'])
+                        sc.pp.log1p(adata)
+
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                        if msg is not None: redislogger.warning(job_id, msg)
+
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state)
+                        adata.X = adata.layers["raw_counts"].copy()
+                        # sc.pp.neighbors(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=0)
+                        # umap_3d = UMAP(n_components=3, init='random', random_state=0)
+                        # adata.obsm["X_umap_3D"] = umap_3d.fit_transform(adata.obsm['X_pca'])
+                        # adata_3D = sc.tl.umap(adata, random_state=0, 
+                        #                 init_pos="spectral", n_components=3, 
+                        #                 copy=True, maxiter=None)
+                        # adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
                         adata.write_h5ad(adata_path, compression='gzip')
-                        adata_3D = None
                     else:
                         raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                     
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path)
                     nCells = qc_results["nCells"]
-                    qc_output.append({method: adata_path})
+                    if os.path.exists(adata_path): qc_output.append({'Anndata': adata_path})
+                    if os.path.exists(output_path): qc_output.append({'SingleCellExperiment': output_path})
+                    if os.path.exists(report_path): qc_output.append({'Report': report_path})
+                    
                     adata = None
                     redislogger.info(job_id, qc_results['info'])
                     qc_results['datasetId'] = datasetId

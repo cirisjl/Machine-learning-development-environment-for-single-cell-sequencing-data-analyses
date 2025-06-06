@@ -14,16 +14,17 @@ from scipy.sparse import csr_matrix
 from tools.visualization.plotConstants import *
 
 
-def plot_UMAP_obs(obs, umap, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
     if clustering_plot_type not in obs.keys():
         cluster_id_exists = False
-        for cluster_id in ['cluster.ids', 'leiden', 'louvain', 'seurat_clusters']:
+        for cluster_id in ['cluster.ids', 'leiden', layer+'_leiden', 'louvain', layer+'_louvain', 'seurat_clusters']:
             if cluster_id in obs.keys():
                 clustering_plot_type = cluster_id
                 cluster_id_exists = True
+                break
                 
     if not cluster_id_exists:
         raise ValueError(f"{clustering_plot_type} does not exist in {obs.keys()}.")

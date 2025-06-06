@@ -347,7 +347,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             gene_metadata = gzip_dict(var_dict)
         else:
             # If highly variable does not exist, then create it.
-            if is_normalized(adata.X, genes) and not check_nonnegative_integers(adata.X):
+            if is_normalized(adata.X) and not check_nonnegative_integers(adata.X):
                 sc.pp.log1p(adata)
                 sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
             else:
@@ -745,15 +745,14 @@ def load_invalid_adata(file_path, replace_nan):
     return sc.AnnData(invalid_df)
 
 
-def is_normalized(expression_matrix, min_genes):
-    if (isinstance(expression_matrix, csr_matrix)):
+def is_normalized(expression_matrix, min_genes=200):
+    if (not isinstance(expression_matrix, np.ndarray)):
         expression_matrix = expression_matrix.toarray()
 
-    if (isinstance(expression_matrix, np.ndarray)):
-        if np.min(expression_matrix) < 0 or np.max(expression_matrix) < min_genes:
-            return True
-        else:
-            return False
+    if np.min(expression_matrix) < 0 or np.max(expression_matrix) < min_genes:
+        return True
+    else:
+        return False
         
 
 def check_nonnegative_integers(

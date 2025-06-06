@@ -215,11 +215,11 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
         if record_type == None:
             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
             if 'umap' in pp_result.keys():
-                pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'])
+                pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
                 pp_result['umap'] = pp_result['umap'].tolist()
 
             if 'umap_3d' in pp_result.keys():
-                pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], n_dim=3)
+                pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
                 pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
             if pp_result['process'] == 'QC':

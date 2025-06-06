@@ -143,11 +143,11 @@ export function ClusteringWorkFlowComponent(props) {
               formData.dataset = dataset.Title;
               if (dataset.inputFiles.length > 1) {
                 formData.input = extractDir(dataset.inputFiles[0]);
-                formData.output = formData.input + "/Results";
+                formData.output = formData.input + "/results";
               } else if (dataset.inputFiles.length === 1) {
                 formData.input = dataset.inputFiles[0];
                 const directory = extractDir(formData.input);
-                formData.output = directory + "/Results";
+                formData.output = directory + "/results";
               }
             }
 

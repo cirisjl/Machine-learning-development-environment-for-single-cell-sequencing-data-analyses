@@ -18,6 +18,17 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         # Principal component analysis
         if not (skip_if_exist and layer+'_pca' in adata.obsm.keys()):
             adata.obsm[layer+'_pca'] = sc.pp.pca(adata.layers[layer])
+
+        # Computing the neighborhood graph
+        if not (skip_if_exist and 'neighbors' in adata.uns.keys()):
+            if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
+                msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
+                n_pcs = adata.obsm[use_rep].shape[1]
+
+            if use_rep is None:
+                use_rep = layer+'_pca'
+
+            sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
         
         # tSNE
         if not (skip_if_exist and layer+'_tsne' in adata.obsm.keys()):
@@ -32,18 +43,6 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         if not (skip_if_exist and layer+'_umap_3D' in adata.obsm.keys()):
             umap_3d = UMAP(n_components=3, init='random', random_state=random_state)
             adata.obsm[layer+"_umap_3D"] = umap_3d.fit_transform(adata.obsm[layer+'_pca'])
-        
-        # Computing the neighborhood graph
-        if not (skip_if_exist and 'neighbors' in adata.uns.keys()):
-            if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
-                msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
-                n_pcs = adata.obsm[use_rep].shape[1]
-
-            if use_rep is None:
-                adata.obsm[layer] = adata.layers[layer]
-                use_rep = layer
-
-            sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
     elif layer is None: # and ('X_umap' not in adata.obsm.keys() or 'X_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
@@ -55,6 +54,8 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
                 msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
                 n_pcs = adata.obsm[use_rep].shape[1]
+            elif use_rep is None:
+                use_rep = 'X_pca'
             sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
         # tSNE
@@ -63,17 +64,21 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
 
         # 2D UMAP
         if not (skip_if_exist and 'X_umap' in adata.obsm.keys()):
-            sc.tl.umap(adata, random_state=random_state, 
-                        init_pos="spectral", n_components=2, 
-                        copy=False, maxiter=None)
+            umap_2d = UMAP(n_components=2, init='random', random_state=random_state)
+            adata.obsm['X_umap'] = umap_2d.fit_transform(adata.obsm['X_pca'])
+            # sc.tl.umap(adata, random_state=random_state, 
+            #             init_pos="spectral", n_components=2, 
+            #             copy=False, maxiter=None)
         
         # 3D UMAP
         if not (skip_if_exist and 'X_umap_3D' in adata.obsm.keys()):
-            adata_3D = sc.tl.umap(adata, random_state=random_state, 
-                            init_pos="spectral", n_components=3, 
-                            copy=True, maxiter=None)
-            adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
-            adata_3D = None
+            umap_3d = UMAP(n_components=3, init='random', random_state=random_state)
+            adata.obsm["X_umap_3D"] = umap_3d.fit_transform(adata.obsm['X_pca'])
+            # adata_3D = sc.tl.umap(adata, random_state=random_state, 
+            #                 init_pos="spectral", n_components=3, 
+            #                 copy=True, maxiter=None)
+            # adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+            # adata_3D = None
     else:
         # if layer is None: layer = 'X'
         # msg = f"{layer}_umap already exists, skipped."
@@ -110,7 +115,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
                     random_state=random_state, n_iterations=3)
         # Save the Clustering plot
         if fig_path is not None:
-            sc.pl.umap(adata_temp, color='leiden', show=False)
+            sc.pl.embedding(adata_temp, basis=layer+'_umap', color='leiden', show=False)
             plt.savefig(fig_path, dpi=300, bbox_inches='tight')
 
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()

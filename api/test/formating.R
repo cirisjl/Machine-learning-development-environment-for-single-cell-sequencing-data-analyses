@@ -9,13 +9,7 @@ library(Signac)
 # library(scDblFinder)
 library(BiocParallel)
 # library(loomR)
-library(redux)
 library(Matrix)
-
-
-# Redis connection for logging
-r <- redux::hiredis(redis_config(host='oscb_redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0))
-
 
 # Get suffix of the file
 GetSuffix <- function(path) {
@@ -753,20 +747,4 @@ SaveSeurat <- function(srat, output){
         saveRDS(object=srat, file=output)
     })
     output
-}
-
-
-# Log functions
-RedisInfo <- function(unique_id, msg){
-    r$LPUSH(unique_id, paste0('INFO     | ', msg))
-}
-
-
-RedisWarning <- function(unique_id, msg){
-    r$LPUSH(unique_id, paste0('WARNING  | ', msg))
-}
-
-
-RedisError <- function(unique_id, msg){
-    r$LPUSH(unique_id, paste0('ERROR    | ', msg))
 }

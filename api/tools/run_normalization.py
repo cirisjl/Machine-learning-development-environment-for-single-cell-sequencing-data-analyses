@@ -37,6 +37,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     datasetId = ds['datasetId']
     status = 'Successful'
     failed_methods = []
+    adata_paths = []
 
     upsert_jobs(
         {
@@ -80,52 +81,55 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     redislogger.info(job_id, f"Remaining methods: {methods}.")
 
     if len(methods) > 0:
-        try:
-            process_id = generate_process_id(md5, process, methods, parameters)
-            # methods = [x.upper() for x in methods if isinstance(x,str)]
-            seurat_path = get_output_path(output, process_id, dataset, method='normalization', format='Seurat')
-            adata_path = get_output_path(output, process_id, dataset, method='normalization', format='AnnData')
-            adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
-            report_path = adata_path.replace(".h5ad", "_report.html")
-            
-            # methods = list_py_to_r(methods)
-            if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
-                input = seurat_path
-                redislogger.info(job_id, "Output already exists, start from the last run.")
-            # report_path = get_report_path(dataset, output, "normalization")
-            
-            # Get the absolute path of the current file
-            current_file = os.path.abspath(__file__)
+        for method in methods:
+            if method == "SCT":
+                method = "SCTransform"
+            elif method == "SCT V2":
+                method = "SCTransform_v2"
+            try:
+                process_id = generate_process_id(md5, process, method, parameters)
+                # methods = [x.upper() for x in methods if isinstance(x,str)]
+                seurat_path = get_output_path(output, process_id, dataset, method=method, format='Seurat')
+                adata_path = get_output_path(output, process_id, dataset, method=method, format='AnnData')
+                # adata_sct_path = adata_path.replace(".h5ad", "_SCT.h5ad")
+                report_path = adata_path.replace(".h5ad", "_report.html")
+                
+                # methods = list_py_to_r(methods)
+                if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
+                    input = seurat_path
+                    redislogger.info(job_id, "Output already exists, start from the last run.")
+                # report_path = get_report_path(dataset, output, "normalization")
+                
+                # Get the absolute path of the current file
+                current_file = os.path.abspath(__file__)
 
-            # Construct the relative path to the desired file
-            relative_path = os.path.join(os.path.dirname(current_file), 'normalization', 'normalization.Rmd')
+                # Construct the relative path to the desired file
+                relative_path = os.path.join(os.path.dirname(current_file), 'normalization', 'normalization.Rmd')
 
-            # Get the absolute path of the desired file
-            rmd_path = os.path.abspath(relative_path)
+                # Get the absolute path of the desired file
+                rmd_path = os.path.abspath(relative_path)
 
-            # rmd_path = os.path.abspath("normalization/normalization.Rmd")
-            s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output='{seurat_path}', adata_path='{adata_path}', output_format='{output_format}', methods='{list_to_string(methods)}', default_assay='{default_assay}', species='{species}', idtype='{idtype}'), output_file='{report_path}')\""], shell = True)
-            # redislogger.info(job_id, str(s))
+                # rmd_path = os.path.abspath("normalization/normalization.Rmd")
+                # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output='{seurat_path}', adata_path='{adata_path}', output_format='{output_format}', methods='{list_to_string(methods)}', default_assay='{default_assay}', species='{species}', idtype='{idtype}'), output_file='{report_path}')\""], shell = True)
+                s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output='{seurat_path}', adata_path='{adata_path}', output_format='{output_format}', methods='{method}', default_assay='{default_assay}', species='{species}', idtype='{idtype}'), output_file='{report_path}')\""], shell = True)
+                # redislogger.info(job_id, str(s))
 
-            if os.path.exists(adata_path):
-                adata = load_anndata(adata_path)
-                for layer in list(adata.layers.keys()):
-                    if layer in methods_to_remove: # Skip existing layers
-                        continue
-
-                    method = layer
+                if os.path.exists(adata_path):
+                    adata = load_anndata(adata_path)
+                    # print(adata_path)
+                    # print(adata)
                     # if method != "SCT" and method != "SCT V2":
                     try:
-                        redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {layer}.")
-                        adata, msg = run_dimension_reduction(adata, layer=layer, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                        redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {method}.")
+                        adata, msg = run_dimension_reduction(adata, layer=method, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
                         if msg is not None: redislogger.warning(job_id, msg)
 
-                        redislogger.info(job_id, f"Clustering the neighborhood graph for layer {layer}.")
-                        adata = run_clustering(adata, layer=layer, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                        redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
+                        adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
                         adata.write_h5ad(adata_path, compression='gzip')
 
-                        redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {layer}.")
-                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=layer, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
+                        redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")
+                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
                         if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})
@@ -135,56 +139,57 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         process_ids.append(process_id)
                         normalization_results['datasetId'] = datasetId
                         create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
+                        adata_paths.append(adata_path)
                     except Exception as e:
-                        redislogger.error(job_id, f"UMAP or clustering is failed for {layer}: {e}")
+                        redislogger.error(job_id, f"UMAP or clustering is failed for {method}: {e}")
                         failed_methods.append(f"UMAP or clustering is failed for {method}: {e}")
 
-            if os.path.exists(adata_sct_path):
-                adata_sct = load_anndata(adata_sct_path)
-                method = "SCTransform"
-                process_id = generate_process_id(md5, process, method, parameters)
-                try:
-                    redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for {method} normalization..")
-                    adata_sct, msg = run_dimension_reduction(adata_sct, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                    if msg is not None: redislogger.warning(job_id, msg)
+                # if os.path.exists(adata_sct_path):
+                #     adata_sct = load_anndata(adata_sct_path)
+                #     method = "SCTransform"
+                #     process_id = generate_process_id(md5, process, method, parameters)
+                #     try:
+                #         redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for {method} normalization..")
+                #         adata_sct, msg = run_dimension_reduction(adata_sct, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                #         if msg is not None: redislogger.warning(job_id, msg)
 
-                    redislogger.info(job_id, f"Clustering the neighborhood graph for {method} normalization.")
-                    adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                #         redislogger.info(job_id, f"Clustering the neighborhood graph for {method} normalization.")
+                #         adata_sct = run_clustering(adata_sct, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                    redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
-                    normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
-                    if os.path.exists(adata_sct_path): normalization_output.append({'AnnData_sct': adata_sct_path})
-                    normalization_results['outputs'] = normalization_output
-                    
-                    # pp_results.append(normalization_results)
-                    process_ids.append(process_id)
-                    
-                    adata_sct.write_h5ad(adata_sct_path, compression='gzip')
-                    normalization_results['datasetId'] = datasetId
-                    create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
-                except Exception as e:
-                    redislogger.error(job_id, f"UMAP or clustering is failed for SCTransform: {e}")
-                    failed_methods.append(f"UMAP or clustering is failed for SCTransform: {e}")
-  
-            print(failed_methods)
-            
-        except Exception as e:
-            # redislogger.error(job_id, "Normalization is failed.")
-            detail = f"Normalization is failed: {e}"
-            upsert_jobs(
-                {
-                    "job_id": job_id, 
-                    "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
-                }
-            )
-            raise CeleryTaskException(detail)
+                #         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData normalized by {method}.")
+                #         normalization_results = get_metadata_from_anndata(adata_sct, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_sct_path, seurat_path=output, cluster_label=cluster_label)
+                #         if os.path.exists(adata_sct_path): normalization_output.append({'AnnData_sct': adata_sct_path})
+                #         normalization_results['outputs'] = normalization_output
+                        
+                #         # pp_results.append(normalization_results)
+                #         process_ids.append(process_id)
+                        
+                #         adata_sct.write_h5ad(adata_sct_path, compression='gzip')
+                #         normalization_results['datasetId'] = datasetId
+                #         create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
+                #     except Exception as e:
+                #         redislogger.error(job_id, f"UMAP or clustering is failed for SCTransform: {e}")
+                #         failed_methods.append(f"UMAP or clustering is failed for SCTransform: {e}")
+    
+                print(failed_methods)
+                
+            except Exception as e:
+                # redislogger.error(job_id, "Normalization is failed.")
+                detail = f"Normalization is failed: {e}"
+                upsert_jobs(
+                    {
+                        "job_id": job_id, 
+                        "results": detail,
+                        "completed_on": datetime.now(),
+                        "status": "Failure"
+                    }
+                )
+                raise CeleryTaskException(detail)
 
     results = {
             "output": normalization_output,
-            "adata_path": adata_path,
-            "adata_sct_path": adata_sct_path,
+            "adata_paths": adata_paths,
+            # "adata_sct_path": adata_sct_path,
             "default_assay": default_assay,
             "md5": md5,
             "process_ids": process_ids,

@@ -48,9 +48,9 @@
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["LogCPM"]
+                "enum": ["logCPM"]
               },
-              "default": ["LogCPM"],
+              "default": ["logCPM"],
               "uniqueItems": true,
               "minItems": 1
             },

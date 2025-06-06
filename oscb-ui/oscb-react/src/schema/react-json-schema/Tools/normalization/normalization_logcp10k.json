@@ -48,9 +48,9 @@
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["LogCP10K"]
+                "enum": ["logCP10K"]
               },
-              "default": ["LogCP10K"],
+              "default": ["logCP10K"],
               "uniqueItems": true,
               "minItems": 1
             },

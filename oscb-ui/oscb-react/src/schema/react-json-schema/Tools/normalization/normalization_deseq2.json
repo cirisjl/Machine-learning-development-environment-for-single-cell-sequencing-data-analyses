@@ -48,9 +48,9 @@
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["DeSeq2"]
+                "enum": ["DESeq2"]
               },
-              "default": ["DeSeq2"],
+              "default": ["DESeq2"],
               "uniqueItems": true,
               "minItems": 1
             },

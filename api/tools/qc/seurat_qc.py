@@ -2,6 +2,7 @@ import os
 import scanpy as sc
 import numpy as np
 import pandas as pd
+from umap import UMAP
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
@@ -34,6 +35,7 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
         RunSeuratQC_r = ro.globalenv['RunSeuratQC']
         redislogger.info(unique_id, "Running R script for Seurat QC.")
         results = list(RunSeuratQC_r(input, output, unique_id, adata_path=adata_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count, percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, resolution=resolution, dims=ro.r.seq(1, dims), doublet_rate=doublet_rate, regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
+        
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]
             assay_names = list(results[1])
@@ -47,17 +49,14 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
 
         if not ddl_assay_names:
             if os.path.exists(adata_path):
-                redislogger.info(unique_id, "Adding 3D UMAP to AnnData object.")
                 adata = load_anndata(adata_path)
-                sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=n_pcs, random_state=0)
-                adata_3D = sc.tl.umap(adata, random_state=0, 
-                                init_pos="spectral", n_components=3, 
-                                copy=True, maxiter=None)
-                adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
-                adata.write_h5ad(adata_path, compression='gzip')
-                adata_3D = None
-            else:
-                raise ValueError("AnnData file does not exist.")
+                adata.layers["raw_counts"] = adata.X.copy()
+        #         sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=n_pcs, random_state=0)
+        #         umap_3d = UMAP(n_components=3, init='random', random_state=0)
+        #         adata.obsm["X_umap_3D"] = umap_3d.fit_transform(adata.obsm['X_pca'])
+        #         adata.write_h5ad(adata_path, compression='gzip')
+        #     else:
+        #         raise ValueError("AnnData file does not exist.")
 
     except Exception as e:
         redislogger.error(unique_id, f"An error happened while running Seurat QC: {e}.")

@@ -66,7 +66,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")
 
         redislogger.info(unique_id, f"Total number of cells: {adata.n_obs}")
-        adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
+        # adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
 
         redislogger.info(unique_id, f"Number of cells after filtering of low quality cells: {adata.n_obs}")
 
@@ -106,11 +106,18 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
                 adata = regress_cell_cycle(adata)
             except Exception as e:
                 redislogger.warning(unique_id, f"An error occurred when regressing cell cycle, skipped: {e}")
+        
+        # sc.pp.pca(adata)
+        # sc.pp.neighbors(adata)
+        # sc.tl.umap(adata)
 
+        adata.layers["logCP10K"] = adata.X.copy()
+        # adata.X = adata.layers["raw_counts"].copy()
+
+        # Converrt dense martrix to sparse matrix
         if isinstance(adata.X, np.ndarray):
             adata.X = csr_matrix(adata.X)
 
-        adata.layers["log10k"] = adata.X.copy()
         redislogger.info(unique_id, "Scanpy Quality Control is completed.")
 
         # return adata, output

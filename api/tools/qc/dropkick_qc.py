@@ -14,8 +14,18 @@ def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=0.5, 
     if adata is None:
         raise ValueError("Failed to load AnnData object.")
     
-    if is_normalized(adata.X, 200):
-        raise ValueError("Dropkick QC only take raw counts, not normalized data.")
+    if is_normalized(adata.X, 200) and not check_nonnegative_integers(adata.X):
+        redislogger.info(unique_id, "adata.X is not raw counts.")
+        if adata.raw.X is not None:
+            redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
+            adata.layers["normalized_X"] = adata.X.copy()
+            adata.X = adata.raw.X.copy()
+        elif "raw_counts" in adata.layers.keys():
+            redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy adata.X to layer 'normalized_X'.")
+            adata.layers["normalized_X"] = adata.X.copy()
+            adata.X = adata.layers['raw_counts'].copy()
+        else:
+            raise ValueError("Dropkick QC only take raw counts, not normalized data.")
     
     adata = dk.recipe_dropkick(adata, n_hvgs=None, X_final="raw_counts")
     
@@ -35,6 +45,12 @@ def run_dropkick_qc(adata, unique_id, n_neighbors=30, n_pcs=10, resolution=0.5, 
     # we also set filter=True to remove any genes with zero total counts
     # we perform a variable gene selection for 2000 HVGs before further processing
     adata_filtered= dk.recipe_dropkick(adata_filtered, X_final="arcsinh_norm", filter=True, n_hvgs=2000, verbose=True)
-    redislogger.info(unique_id, "Computing PCA, neighborhood graph, tSNE, UMAP, 3D UMAP and clustering the neighborhood graph.")
+    # adata_filtered.X = adata_filtered.layers["raw_counts"].copy()
+
+    # Converrt dense martrix to sparse matrix
+    if isinstance(adata.X, np.ndarray):
+        adata.X = csr_matrix(adata.X)
+
+    redislogger.info(unique_id, "Dropkick Quality Control is completed.")
 
     return adata_filtered

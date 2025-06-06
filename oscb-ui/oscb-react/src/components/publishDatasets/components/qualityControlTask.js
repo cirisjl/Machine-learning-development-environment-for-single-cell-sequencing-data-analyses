@@ -159,7 +159,7 @@ const handleLogMessage = (event) => {
       let inputRequest = {
         dataset: taskData.upload.title,
         input: pathToUse,
-        output: pathToUse + "/Results",
+        output: pathToUse + "/results",
         userID: taskData.quality_control.token,
         qc_params : {
           min_genes : values.min_genes,
@@ -301,7 +301,7 @@ const handleAssaySelectionSubmit = async () => {
     let inputRequest = {
       dataset: taskData.upload.title,
       input: taskData.quality_control.seurat_meta.file,
-      output: extractDir(taskData.quality_control.seurat_meta.file) + "/Results",
+      output: extractDir(taskData.quality_control.seurat_meta.file) + "/results",
       userID: taskData.quality_control.token,
       qc_params : {
         min_genes : values.min_genes,

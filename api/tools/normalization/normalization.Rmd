@@ -13,7 +13,7 @@ params:
   output_format: AnnData # Seurat or AnnDate
   species: NULL # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
   idtype: ENSEMBL # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
-  show_umap: TRUE
+  show_umap: FALSE
   show_code: FALSE
   show_warning: FALSE
   show_message: TRUE
@@ -62,7 +62,14 @@ if (file.exists("adata_path")){
 } else{
   adata <- SeuratToAnndata(srat, assay=params$default_assay)
 }
+
 expression_matrix <- srat[[params$default_assay]]@counts
+if(IsNormalized(expression_matrix)){
+  RedisError(unique_id, "Normalization only takes raw counts, not normalized data.")
+  stop("Normalization only takes raw counts, not normalized data.")
+}
+
+adata$layers["raw_counts"] <- adata$X
 print(srat)
 # methods <- eval(parse(text = params$methods))
 methods <- strsplit(toupper(params$methods), ",")[[1]]
@@ -96,7 +103,7 @@ if("LOGCP10K" %in% methods){
       RedisInfo(unique_id, "AnnData object for logCP10K is saved successfully.")
     }
   }
-  knitr::kable(head(srat[['logCP10K']]@data), align='cccc', format = "html", caption = 'logCP10K')
+  # knitr::kable(head(srat[['logCP10K']]@data), align='cccc', format = "html", caption = 'logCP10K')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCP10K', title = "logCP10K normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -131,7 +138,7 @@ if("LOGCPM"  %in% methods){
       RedisInfo(unique_id, "AnnData object for logCPM is saved successfully.")
     }
   }
-  knitr::kable(head(srat[['logCPM']]@data), align='cccc', format = "html", caption = 'logCPM')
+  # knitr::kable(head(srat[['logCPM']]@data), align='cccc', format = "html", caption = 'logCPM')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'logCPM', title = "logCPM normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -155,6 +162,12 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
         DefaultAssay(object = srat) <- params$default_assay
         SaveSeurat(srat, params$output)
         RedisInfo(unique_id, "Seurat object for SCTransform is saved successfully.")
+
+        adata_sct <- SeuratToAnndata(srat, assay="SCT")
+        adata_sct$layers["SCTransform"] <- adata_sct$X
+        write_h5ad(adata_sct, adata_path, compression = "gzip")
+        RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
+        adata_sct <- NULL
       }
       else{
         RedisInfo(unique_id, "Running SCTransform VST V2 normalization.")
@@ -162,27 +175,31 @@ if(("SCTRANSFORM" %in% methods) || ("SCTRANSFORM_V2" %in% methods) || ("SCT" %in
         DefaultAssay(object = srat) <- params$default_assay
         SaveSeurat(srat, params$output)
         RedisInfo(unique_id, "Seurat object for SCTransform VST V2 is saved successfully.")
+        adata_sct <- SeuratToAnndata(srat, assay="SCT")
+        adata_sct$layers["SCTransform_v2"] <- adata_sct$X
+        write_h5ad(adata_sct, adata_path, compression = "gzip")
+        RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
+        adata_sct <- NULL
       }
 
-      #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
-      adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-      adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
-      # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
-      RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
-      adata_sct <- NULL
+      # adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
+      # adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
+      # adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
     }, error = function(e) {
       RedisWarning(unique_id, paste0("An error happened during SCTransform normalization, skipped: ", e$message))
     })
   } else {
     RedisInfo(unique_id, "SCTransform assay already exists, skipped.")
-    #adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
-    adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
-    adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
-    # write_h5ad(adata_sct, adata_sct.path, compression = "gzip")
+    # adata_sct <- AnnData(X = t(srat[['SCTransform']]@data), obs = srat@meta.data, var = srat[['SCTransform']]@meta.features)
+    # adata_sct.path <-  gsub(".h5ad", "_SCT.h5ad", adata_path)
+    # adata_sct <- SeuratToAnndata(srat, out_file=adata_sct.path, assay="SCT")
+    adata_sct <- SeuratToAnndata(srat, assay="SCT")
+    adata_sct$layers["SCTransform"] <- adata_sct$X
+    write_h5ad(adata_sct, adata_path, compression = "gzip")
     RedisInfo(unique_id, "AnnData object for SCTransform is saved separately successfully.")
     adata_sct <- NULL
   }
-  knitr::kable(head(srat[['SCT']]@data), align='cccc', format = "html", caption = 'SCTransform')
+  # knitr::kable(head(srat[['SCT']]@data), align='cccc', format = "html", caption = 'SCTransform')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'SCT', title = "SCTransform normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -226,7 +243,7 @@ if("SCRAN" %in% methods){
       RedisInfo(unique_id, "AnnData object for scran is saved successfully.")
     }
   }
-  knitr::kable(head(srat[['scran']]@data), align='cccc', format = "html", caption = 'scran')
+  # knitr::kable(head(srat[['scran']]@data), align='cccc', format = "html", caption = 'scran')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'scran', title = "scran normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -266,7 +283,7 @@ if("DESEQ2" %in% methods){
       RedisInfo(unique_id, "AnnData object for DESeq2 is saved successfully.")
     }
   }
-  knitr::kable(head(srat[['DESeq2']]@data), align='cccc', format = "html", caption = 'DESeq2')
+  # knitr::kable(head(srat[['DESeq2']]@data), align='cccc', format = "html", caption = 'DESeq2')
   if(params$show_umap) seurat_cluster_umap(srat, assay = 'DESeq2', title = "DESeq2 normalization")
 } else {
   print("Not selected by user, skipped.")
@@ -304,7 +321,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for TMM is saved successfully.")
       }
     }
-    knitr::kable(head(srat[['TMM']]@data), align='cccc', format = "html", caption = 'TMM')
+    # knitr::kable(head(srat[['TMM']]@data), align='cccc', format = "html", caption = 'TMM')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'TMM', title = "TMM normalization")
   } else {
     print("Not selected by user, skipped.")
@@ -335,7 +352,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for RLE is saved successfully.")
       }
     }
-    knitr::kable(head(srat[['RLE']]@data), align='cccc', format = "html", caption = 'RLE')
+    # knitr::kable(head(srat[['RLE']]@data), align='cccc', format = "html", caption = 'RLE')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'RLE', title = "RLE normalization")
     } else {
       print("Not selected by user, skipped.")
@@ -366,7 +383,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
         RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
       }
     }
-    knitr::kable(head(srat[['upperquartile']]@data), align='cccc', format = "html", caption = 'upperquartile')
+    # knitr::kable(head(srat[['upperquartile']]@data), align='cccc', format = "html", caption = 'upperquartile')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'upperquartile', title = "Upper quartile normalization")
   } else {
     print("Not selected by user, skipped.")
@@ -487,7 +504,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
     ng = intersect(feature_ids,g$ensembl_gene_id) 
     lengths = g[match(ng,g$ensembl_gene_id),2]
     # names(lengths) <- g[match(ng,g$ensembl_gene_id),1]
-    knitr::kable(head(lengths), align='cccc', format = "html", caption = 'Lengths')
+    # knitr::kable(head(lengths), align='cccc', format = "html", caption = 'Lengths')
     if("TPM" %in% methods){
       if(!"TPM" %in% names(srat@assays)){
         RedisInfo(unique_id, "Running TPM normalization.")
@@ -510,7 +527,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
           RedisInfo(unique_id, "AnnData object for TPM is saved successfully.")
         }
       }
-      knitr::kable(head(srat[['TPM']]@data), align='cccc', format = "html", caption = 'TPM')
+      # knitr::kable(head(srat[['TPM']]@data), align='cccc', format = "html", caption = 'TPM')
       if(params$show_umap) seurat_cluster_umap(srat, assay = 'TPM', title = "TPM normalization")
     } else {
       print("Not selected by user, skipped.")
@@ -537,7 +554,7 @@ if("TPM" %in% methods || "FPKM" %in% methods){
           RedisInfo(unique_id, "AnnData object for FPKM is saved successfully.")
         }
       }
-      knitr::kable(head(srat[['FPKM']]@data), align='cccc', format = "html", caption = 'FPKM')
+      # knitr::kable(head(srat[['FPKM']]@data), align='cccc', format = "html", caption = 'FPKM')
       if(params$show_umap) seurat_cluster_umap(srat, assay = 'FPKM', title = "FPKM normalization")
     } else {
       print("Not selected by user, skipped.")

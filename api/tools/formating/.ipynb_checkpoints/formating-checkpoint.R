@@ -111,7 +111,7 @@ LoadSeurat <- function(path, project = NULL) {
         # srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
         project_name <- sub("\\.h5ad$", "", basename(path))
         adata <- LoadAnndata(path)
-        srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        srat <- AnndataToSeurat(adata, project_name = project_name)
         rm(adata)
     } else if(suffix == "rds"){
         print("insode if else block of rds")
@@ -548,7 +548,7 @@ load_metadata <- function(seurat_obj) {
 # }
 
 
-IsNormalized <- function(Expression_Matrix, min_genes=200){
+IsNormalized <- function(Expression_Matrix, min_genes){
     is_normalized <- FALSE 
     if (max(Expression_Matrix) < min_genes | min(Expression_Matrix) < 0) {
         is_normalized <- TRUE
@@ -659,7 +659,7 @@ IsNormalized <- function(Expression_Matrix, min_genes=200){
 #'
 #' @import reticulate
 #' @import Matrix
-AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay = "RNA", project_name = "Seurat Project", target_uns_keys = list(), complete = TRUE) {
+AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay = "RNA", project_name = "Seurat Project", target_uns_keys = list()) {
   main_layer <- match.arg(main_layer, c("counts", "data", "scale.data"))
   sp <- reticulate::import("scipy.sparse", convert = FALSE)
   
@@ -682,61 +682,59 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
 
   srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
   message("X -> counts")
-
-  if(complete){
-    # Add AnnData layers to assays
-    for (layer in names(adata$layers)){
-        if (layer != 'scale.data'){
-            layer_data <- t(adata$layers[layer])
-            if (class(layer_data) != "dgCMatrix"){
-                layer_data <- as.matrix(layer_data)
-            }
-            srat[[layer]] <- CreateAssayObject(data=layer_data)
-        }
-        message("Adding AnnData layers to Seurat assays")
-    }
-
-    DefaultAssay(srat) <- assay
-
-    # Add dimension reductions
-    embed_names <- unlist(adata$obsm_keys())
-    if (length(embed_names) > 0) {
-        embeddings <- sapply(embed_names, function(x) as.matrix(adata$obsm[[x]]), simplify = FALSE, USE.NAMES = TRUE)
-        names(embeddings) <- embed_names
-        for (name in embed_names) {
-            rownames(embeddings[[name]]) <- colnames(srat[[assay]])
-        }
-
-        dim.reducs <- vector(mode = "list", length = length(embeddings))
-        for (i in seq(length(embeddings))) {
-            name <- embed_names[i]
-            embed <- embeddings[[name]]
-            key <- switch(name,
-            sub("_(.*)", "\\L\\1", sub("^X_", "", toupper(name)), perl = T),
-            "X_pca" = "PC",
-            "X_tsne" = "tSNE",
-            "X_umap" = "UMAP"
-            )
-            colnames(embed) <- paste0(key, "_", seq(ncol(embed)))
-            dim.reducs[[i]] <- Seurat::CreateDimReducObject(
-            embeddings = embed,
-            loadings = new("matrix"),
-            assay = assay,
-            stdev = numeric(0L),
-            key = paste0(key, "_")
-            )
-        }
-        names(dim.reducs) <- sub("X_", "", embed_names)
-
-        for (name in names(dim.reducs)) {
-            srat[[name]] <- dim.reducs[[name]]
-            message("Adding AnnData embeddings to Seurat assays")
-        } 
-    }
-
-    srat@misc <- .uns2misc(adata, target_uns_keys = target_uns_keys)
-  }
   
+  # Add AnnData layers to assays
+  for (layer in names(adata$layers)){
+    if (layer != 'scale.data'){
+        layer_data <- t(adata$layers[layer])
+        if (class(layer_data) != "dgCMatrix"){
+            layer_data <- as.matrix(layer_data)
+        }
+        srat[[layer]] <- CreateAssayObject(data=layer_data)
+    }
+    message("Adding AnnData layers to Seurat assays")
+  }
+
+  DefaultAssay(srat) <- assay
+
+  # Add dimension reductions
+  embed_names <- unlist(adata$obsm_keys())
+  if (length(embed_names) > 0) {
+    embeddings <- sapply(embed_names, function(x) as.matrix(adata$obsm[[x]]), simplify = FALSE, USE.NAMES = TRUE)
+    names(embeddings) <- embed_names
+      for (name in embed_names) {
+        rownames(embeddings[[name]]) <- colnames(srat[[assay]])
+      }
+
+      dim.reducs <- vector(mode = "list", length = length(embeddings))
+      for (i in seq(length(embeddings))) {
+        name <- embed_names[i]
+        embed <- embeddings[[name]]
+        key <- switch(name,
+          sub("_(.*)", "\\L\\1", sub("^X_", "", toupper(name)), perl = T),
+          "X_pca" = "PC",
+          "X_tsne" = "tSNE",
+          "X_umap" = "UMAP"
+        )
+        colnames(embed) <- paste0(key, "_", seq(ncol(embed)))
+        dim.reducs[[i]] <- Seurat::CreateDimReducObject(
+          embeddings = embed,
+          loadings = new("matrix"),
+          assay = assay,
+          stdev = numeric(0L),
+          key = paste0(key, "_")
+        )
+      }
+      names(dim.reducs) <- sub("X_", "", embed_names)
+
+      for (name in names(dim.reducs)) {
+        srat[[name]] <- dim.reducs[[name]]
+        message("Adding AnnData embeddings to Seurat assays")
+      } 
+  }
+
+  srat@misc <- .uns2misc(adata, target_uns_keys = target_uns_keys)
+
   # if (!is.null(outFile)) SaveH5Seurat(srat, filename = outFile, overwrite = TRUE, verbose = FALSE)
   if (!is.null(outFile)) saveRDS(object = srat, file = outFile)
 

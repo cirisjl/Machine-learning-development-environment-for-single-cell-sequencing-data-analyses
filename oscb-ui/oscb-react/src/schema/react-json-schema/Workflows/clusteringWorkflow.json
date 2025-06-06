@@ -58,7 +58,7 @@
                 ]
               },
               "default": [
-                "Bioconductor"
+                "Scanpy"
               ],
               "uniqueItems": true
             },
@@ -181,15 +181,15 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "DeSeq2",
+                        "DESeq2",
                         "FPKM",
-                        "LogCP10K",
-                        "LogCPM",
+                        "logCP10K",
+                        "logCPM",
                         "Pearson_Residuals",
                         "RLE",
                         "scran",
-                        "SCT",
-                        "SCT_V2",
+                        "SCTransform",
+                        "SCTransform_v2",
                         "TMM",
                         "TPM",
                         "UpperQuartile",
@@ -197,7 +197,7 @@
                       ]
                     },
                     "default": [
-                      "DeSeq2"
+                      "logCP10K"
                     ],
                     "uniqueItems": true
                   },

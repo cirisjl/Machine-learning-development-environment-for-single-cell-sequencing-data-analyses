@@ -48,9 +48,9 @@
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["SCT", "SCT_V2"]
+                "enum": ["SCTransform", "SCTransform_v2"]
               },
-              "default": ["SCT"],
+              "default": ["SCTransform"],
               "uniqueItems": true,
               "minItems": 1
             },
