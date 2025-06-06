@@ -331,9 +331,10 @@ export const gunzipDict = (gzippedBase64) => {
 
     // Decompress the gzipped data
     const decompressedData = pako.ungzip(uint8Array, { to: "string" });
+    let cleanedDecompressedData = decompressedData.replace(/NaN/g, 'null');
 
     // Parse JSON string to JavaScript object
-    return JSON.parse(decompressedData);
+    return JSON.parse(cleanedDecompressedData);
   } catch (error) {
     console.error("Error decompressing data:", error);
     return null;

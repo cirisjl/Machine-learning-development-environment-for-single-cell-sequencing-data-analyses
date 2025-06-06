@@ -60,7 +60,8 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
 
         # tSNE
         if not (skip_if_exist and 'X_tsne' in adata.obsm.keys()):
-            sc.tl.tsne(adata)
+            tsne = TSNE(n_components=2, random_state=random_state)
+            adata.obsm['X_tsne'] = tsne.fit_transform(adata.obsm['X_pca'])
 
         # 2D UMAP
         if not (skip_if_exist and 'X_umap' in adata.obsm.keys()):

@@ -2,6 +2,7 @@ import base64
 import gzip
 import json
 import pandas as pd
+import numpy as np
 from io import BytesIO
 
 def gzip_str(to_gzip: str) -> str:
@@ -18,6 +19,7 @@ def gunzip_str(to_ungzip: str) -> str:
     
 
 def gzip_dict(to_gzip: dict) -> str:
+    # to_gzip = replace_nan(to_gzip)
     jsonStr = json.dumps(to_gzip)
     return gzip_str(jsonStr)
 
@@ -30,7 +32,7 @@ def gunzip_dict(to_ungzip: str) -> dict:
 def gzip_df(to_gzip: pd.DataFrame) -> str:
     # dropping null value columns to avoid errors 
     # to_gzip.dropna(inplace = True) 
-    
+    to_gzip = to_gzip.fillna(None)
     # converting to dict 
     dfDict = to_gzip.to_dict('list') 
     return gzip_dict(dfDict)
@@ -49,3 +51,11 @@ def gzip_list(to_gzip: list) -> str:
 def gunzip_list(to_ungzip: str) -> list:
     str_list = gunzip_str(to_ungzip)
     return eval(str_list)
+
+
+def replace_nan(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, dict):
+            replace_nan(value)
+        elif isinstance(value, float) and np.isnan(value):
+            dictionary[key] = None 
