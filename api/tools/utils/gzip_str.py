@@ -32,7 +32,7 @@ def gunzip_dict(to_ungzip: str) -> dict:
 def gzip_df(to_gzip: pd.DataFrame) -> str:
     # dropping null value columns to avoid errors 
     # to_gzip.dropna(inplace = True) 
-    to_gzip = to_gzip.fillna(None)
+    # to_gzip = to_gzip.fillna(None)
     # converting to dict 
     dfDict = to_gzip.to_dict('list') 
     return gzip_dict(dfDict)
