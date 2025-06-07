@@ -95,7 +95,7 @@ def sc_train_test_split(
         raise ValueError("Either pass `n_obs` or `train_fraction`.")
     
     if math.isclose(train_fraction, 1):
-        data.obs['split_idx'] = 'train'
+        data.obs['split_idx'] = 'train/test'
         return data
     elif math.isclose(train_fraction, 0):
         data.obs['split_idx'] = 'test'
@@ -150,7 +150,7 @@ def sc_train_val_test_split(
         val_n_obs = 0
 
     if math.isclose(train_fraction, 1):
-        data.obs['split_idx'] = 'train'
+        data.obs['split_idx'] = 'train/test'
         return data
     elif math.isclose(train_fraction, 0):
         data.obs['split_idx'] = 'test'

@@ -109,11 +109,11 @@ const FlowControl = () => {
       table_data: [],
       task_data_split:[],
       task_states: {
-        trainFraction: 0.8,
-        validationFraction: 0.1,
-        testFraction: 0.1,
+        trainFraction: 0,
+        validationFraction: 0,
+        testFraction: 1,
         dataSplitPerformed: false,
-        archivePath: ''
+        adataPath: ''
       }
     },
     benchmarks: {

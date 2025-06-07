@@ -48,6 +48,7 @@ function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTas
             task_type_abv:datasetDetails.taskType.value,
             task_label: datasetDetails.taskLabel.label,
             task_label_abv: datasetDetails.taskLabel.value,
+            adataPath: datasetDetails.dataSplit.adataPath,
             // datasetId: datasetId,
             // train_fraction: datasetDetails.dataSplit.trainFraction,
             // validation_fraction: datasetDetails.dataSplit.validationFraction,

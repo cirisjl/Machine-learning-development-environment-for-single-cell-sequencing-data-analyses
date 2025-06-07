@@ -101,11 +101,11 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           taskType: null,
           taskLabel: '',
           dataSplit: {
-            trainFraction: 1,
+            trainFraction: 0,
             validationFraction: 0,
-            testFraction: 0,
+            testFraction: 1,
             dataSplitPerformed: false,
-            archivePath: ''
+            adataPath: ''
           }
         };
       }
@@ -183,7 +183,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
                 dataSplit: {
                   ...prevTaskData.task_builder.selectedDatasets[datasetId].dataSplit,
                   dataSplitPerformed: true,
-                  adata_path: result.adata_path,
+                  adataPath: result.adata_path,
                 }
               }
             }
@@ -330,11 +330,11 @@ const onSelectSubItem = (mainItem, subItem) => {
           taskType: null,
           taskLabel: '',
           dataSplit: {
-            trainFraction: 0.8,
-            validationFraction: 0.1,
-            testFraction: 0.1,
+            trainFraction: 0,
+            validationFraction: 0,
+            testFraction: 1,
             dataSplitPerformed: false,
-            archivePath: ''
+            adataPath: ''
           }
         };
     });
@@ -479,7 +479,7 @@ const onSelectSubItem = (mainItem, subItem) => {
 
                 {dataset.dataSplit.dataSplitPerformed && (
                   <Typography variant="body2" component="p">
-                    <b>Archive Path: </b>{dataset.dataSplit.archivePath}
+                    <b>AnnDate Path: </b>{dataset.dataSplit.adataPath}
                   </Typography>
                 )}
               </CardContent>

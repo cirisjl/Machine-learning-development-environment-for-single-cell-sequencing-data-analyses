@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {CELERY_BACKEND_API, NODE_API_URL} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL } from '../../../constants/declarations';
 import {  ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
@@ -117,12 +117,12 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         datasetId: dataset.Id,
         userID: dataset.Owner,
         task_type: dataset.taskType.label,
-        adata_path: dataset.dataSplit.testPath,
+        adata_path: dataset.dataSplit.adataPath,
         label: dataset.taskLabel.label || '',
       }));
       const postBody = body[0];
 
-      fetch(`${CELERY_BACKEND_API}/benchmarks/create`, {
+    fetch(`${CELERY_BACKEND_API}/benchmarks/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

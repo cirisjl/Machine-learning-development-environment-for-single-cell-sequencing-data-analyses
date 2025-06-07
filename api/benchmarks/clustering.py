@@ -17,6 +17,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
+    # adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None
 
