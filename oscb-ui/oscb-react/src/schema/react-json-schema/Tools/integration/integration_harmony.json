@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type":"object",
+      "title": "Parameters for Integration Process",  
+      "required": ["methods"],
+      "properties": {
+         "methods": {
+          "type": "array",
+          "title": "Method",
+          "items": {
+            "type": "string",
+            "enum": ["Harmony",
+              "Seurat",
+              "Liger"]
+          },
+          "default": ["Harmony"],
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "title": "Integration Parameters",
+          "properties": {
+            "default_assay": {
+              "type": "string",
+              "title": "Default Assay (If applicable)",
+              "default": "RNA"
+            },
+            "npcs": {
+              "type": "integer",
+              "default": 30
+            },
+            "dims": {
+              "type": "integer",
+              "default": 30
+            }
+          }
+        }
+      }
+    }
+  }
+}

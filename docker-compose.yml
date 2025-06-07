@@ -1,0 +1,311 @@
+services:
+  mongodb:
+    container_name: oscbdb
+    image: mongo:7.0  # Updated to MongoDB version 7.0
+    restart: always
+    command: mongod --port 65530
+    ports:
+      - 65530:65530
+    volumes:
+      - /ps/code/oscb/db/mongodb:/data/db
+      - ./initMongo.js:/docker-entrypoint-initdb.d/initMongo.js
+    networks:
+      - oscb-network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: oscbdb
+      ME_CONFIG_MONGODB_PORT: "65530"
+      ME_CONFIG_BASICAUTH: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+    ports:
+      - "0.0.0.0:8081:8081"
+    depends_on:
+      mongodb:
+        condition: service_started
+        restart: true
+    networks:
+      - oscb-network
+
+  oscb_redis:
+    image: "redis:6-alpine"
+    container_name: oscb_redis 
+    hostname: oscb_redis
+    restart: always
+    command: redis-server --port 6388 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    ports:
+      # - 6379:6379
+      - 6388:6388
+    networks:
+      - oscb-network
+
+  oscb_rabbitmq:
+    image: "rabbitmq:management"
+    container_name: oscb_rabbitmq 
+    restart: always
+    ports:
+      - 5673:5673
+      - 15673:15672
+    env_file:
+      - ./rabbitmq.env
+    volumes:
+      - /ps/code/oscb/db/rabbitmq/data/:/var/lib/rabbitmq/
+      - /ps/code/oscb/db/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - oscb-network
+
+  # nginx-gateway:
+  #   image: nginx:stable-alpine
+  #   volumes:
+  #     - ./nginx:/etc/nginx/conf.d
+  #     # - /etc/ssl:/etc/ssl
+  #   ports:
+  #     - 80:80
+  #     # - 443:443
+  #   restart: always
+  #   networks:
+  #     - oscb-network
+
+  celery-api:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_celery_api
+    command: python3 main.py
+    restart: always
+    ports:
+      - 5005:5005
+    volumes:
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/logs:/data/logs
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+
+  worker1:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker1
+    restart: always
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/logs:/data/logs
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  worker2:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker2
+    restart: always
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo 
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/logs:/data/logs
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  worker3:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker3
+    restart: always
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo 
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /ps/code/oscb/results:/data/results
+      - /ps/code/oscb/uploads:/data/upload
+      - /ps/code/oscb/logs:/data/logs
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  dashboard:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_dashboard
+    restart: always
+    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_rabbitmq:5673// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    ports:
+      - 5558:5555
+    env_file:
+      - .env
+    depends_on:
+      - celery-api
+      - oscb_rabbitmq
+      - oscb_redis
+    networks:
+      - oscb-network
+  
+  oscb_mysql:
+    container_name: oscb_mysql
+    image: mysql:8.0
+    build:
+      context: ./oscb-ui/oscb-mysql
+    volumes:
+        - /ps/code/oscb/mysql_db:/var/lib/mysql
+        - ./oscb-ui/oscb-mysql/oscb_schema_latest.sql:/docker-entrypoint-initdb.d/oscb_schema_latest.sql
+    restart: unless-stopped
+    command:
+        [
+            "--character-set-server=utf8mb4",
+            "--collation-server=utf8mb4_unicode_ci",
+            "--default-authentication-plugin=mysql_native_password",
+        ]
+    env_file:
+      - ./oscb-ui/.env
+    ports:
+      - 3308:3308  
+    networks:
+      - oscb-network
+
+  oscb_node:
+    container_name: oscb_node
+    image: oscb_node
+    build:
+      context: ./oscb-ui/oscb-node
+    restart: always
+    ports:
+      - "3001:3001"
+      - "3020:3020"
+    environment:
+      - EXTERNAL_PORT=3001
+      - DBUSER=root
+      - DBPASSWORD=Shirley@2410
+      - DATABASE=oscb
+      - HOST=oscb_mysql # NAME OF THE SERVICE
+      - HOST_URL=clgpu009.clemson.cloudlab.us
+      - SSH_CONNECTION=${SSH_CONNECTION}
+    env_file:
+      - ./oscb-ui/oscb-node/.env  
+    depends_on:
+      - oscb_mysql
+    volumes:
+      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+
+  oscb_react:
+    container_name: oscb_react
+    restart: always
+    build: ./oscb-ui/oscb-react
+    ports:
+      - "3000:3000"
+    depends_on:
+      - oscb_node
+    environment:
+      - HOST_URL=clgpu009.clemson.cloudlab.us
+    networks:
+      - oscb-network
+
+  directus:
+    container_name: oscb_directus
+    image: directus/directus:9.24.0
+    restart: unless-stopped
+    ports:
+        - 8055:8055
+    volumes:
+        - /ps/code/oscb/Directus_uploads:/directus/uploads
+    depends_on:
+        - oscb_mysql
+    env_file:
+        - ./oscb-ui/.env
+    networks:
+      - oscb-network
+
+  # oscb_flask:
+  #   build:
+  #     context: ./oscb-ui/oscb-flask
+  #     dockerfile: Dockerfile
+  #   container_name: oscb_flask
+  #   image: oscb_flask
+  #   restart: always
+  #   ports:
+  #     - "5003:5003"
+  #   networks:
+  #     - oscb-network
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - /ps/code/oscb/user_storage:/usr/src/app/storage/
+
+networks:
+  oscb-network:
+    driver: bridge
+
+# volumes:
+#   Predictions: 
+#   Uploads:
+#   Logs:
+#   user_storage: {}
+#   Directus_uploads:
+#   mysql_db:
+
