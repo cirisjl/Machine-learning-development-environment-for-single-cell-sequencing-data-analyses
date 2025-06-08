@@ -10,7 +10,7 @@ source(here::here('tools/formating/formating.R')) # production
 # source("/ps/Machine-learning-development-environment-for-single-cell-sequencing-data-analyses/api/tools/formating/formating.R") # test
 
 
-RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, regress_cell_cycle=FALSE) {
+RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=1:10, doublet_rate=0.075, n_hvg=2000, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
         LoadSeurat(input),
         error = function(e) {
@@ -69,7 +69,7 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
             RedisInfo(unique_id, "Normalizing dataset using logCP10k.")
             srat <- NormalizeData(srat, normalization.method = "LogNormalize", scale.factor = 10000)
             RedisInfo(unique_id, "Finding variable features.")
-            srat <- FindVariableFeatures(srat, selection.method = "vst", nfeatures = 2000)
+            srat <- FindVariableFeatures(srat, selection.method = "vst", nfeatures = n_hvg)
             # srat <- subset(srat, features=VariableFeatures(srat)) # Only keep variable features
             RedisInfo(unique_id, "Scaling dataset.")
             srat <- ScaleData(srat, features = rownames(srat))

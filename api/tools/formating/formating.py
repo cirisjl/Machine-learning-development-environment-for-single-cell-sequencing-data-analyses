@@ -1085,3 +1085,24 @@ def save_anndata(adata, output):
     adata.write_h5ad(output, compression='gzip')
     
     return output
+
+
+def clean_anndata(adata):
+    # Scanpy
+    if 'outlier' in adata.obs.columns and 'mt_outlier' in adata.obs.columns:
+        adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
+    if 'predicted_doublets' in adata.obs.columns:
+        adata = adata[adata.obs.predicted_doublets=="False", :]
+
+    # Bioconductor
+    if 'discard' in adata.obs.columns:
+        adata=adata[adata.obs.discard=="False", :]
+    if 'discard' in adata.var.columns:
+        adata = adata[:, ~adata.var.discard]
+
+    # Seurat
+    if 'doublet_class' in adata.obs.columns:
+        adata = adata[adata.obs.doublet_class=="Singlet", :]
+
+    if 'highly_variable' in adata.var.columns:
+        adata = adata[:, adata.var.highly_variable] 

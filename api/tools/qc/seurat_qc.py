@@ -13,7 +13,7 @@ from utils.redislogger import redislogger
 # Ensure that pandas2ri is activated for automatic conversion
 pandas2ri.activate()
 
-def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, n_pcs=3, doublet_rate=0.075, regress_cell_cycle=False):
+def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, n_pcs=3, doublet_rate=0.075, n_hvg=2000, regress_cell_cycle=False):
     redislogger.info(unique_id, "Start Seurat Quality Control...")
 
     adata = None
@@ -34,7 +34,7 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
         ro.r['source'](os.path.abspath(os.path.join(os.path.dirname(__file__), 'seurat_qc.R')))
         RunSeuratQC_r = ro.globalenv['RunSeuratQC']
         redislogger.info(unique_id, "Running R script for Seurat QC.")
-        results = list(RunSeuratQC_r(input, output, unique_id, adata_path=adata_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count, percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, resolution=resolution, dims=ro.r.seq(1, dims), doublet_rate=doublet_rate, regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
+        results = list(RunSeuratQC_r(input, output, unique_id, adata_path=adata_path, assay=assay, min_genes=min_genes, max_genes=max_genes, min_UMI_count=min_UMI_count, max_UMI_count=max_UMI_count, percent_mt_max=percent_mt_max, percent_rb_min=percent_rb_min, resolution=resolution, dims=ro.r.seq(1, dims), doublet_rate=doublet_rate, n_hvg=n_hvg, regress_cell_cycle=ro.vectors.BoolVector([regress_cell_cycle])))
         
         if results[0] != ro.rinterface.NULL:
             default_assay = list(results[0])[0]

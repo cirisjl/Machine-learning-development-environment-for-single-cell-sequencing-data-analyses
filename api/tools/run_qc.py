@@ -263,7 +263,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         try:
                             redislogger.info(job_id, "Start Dropkick QC...")
                             adata = load_anndata(input_path)
-                            dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], random_state=random_state)
+                            dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], n_hvg=parameters['n_top_genes'], random_state=random_state)
                             dropkick_results.write_h5ad(output_path, compression='gzip')
 
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -278,8 +278,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
                             nCells = qc_results["nCells"]
                             redislogger.info(job_id, "Saving AnnData object.")
-                            redislogger.info(job_id, "output path")
-                            redislogger.info(job_id, output_path)
+                            # redislogger.info(job_id, "output path")
+                            # redislogger.info(job_id, output_path)
                             dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                             dropkick_results.write_h5ad(output_path, compression='gzip')
                             adata_path = output_path
@@ -325,7 +325,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 else:
                     output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
                 try:     
-                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names = run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names = run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], doublet_rate=parameters['doublet_rate'], n_hvg=parameters['n_top_genes'], regress_cell_cycle=parameters['regress_cell_cycle'])
                     
                     if ddl_assay_names:
                         results = {
@@ -406,12 +406,14 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     bioconductor_path = os.path.abspath(relative_path)
                     
                     # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment', n_hvg={parameters['n_top_genes']}), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, s)
 
                     if os.path.exists(adata_path):
                         redislogger.info(job_id, "Adding 3D UMAP to AnnData object.")
                         adata = load_anndata(adata_path)
+                        if 'subset' in adata.var.columns:
+                            adata.var = adata.var.rename(columns={'subset': 'highly_variable'})
                         adata.layers["raw_counts"] = adata.X.copy()
                         sc.pp.normalize_total(adata, target_sum=parameters['target_sum'])
                         sc.pp.log1p(adata)

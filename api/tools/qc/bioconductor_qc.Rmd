@@ -14,6 +14,7 @@ params:
   shape_by_2: NULL # Shape by 2 for plots
   output_format: SingleCellExperiment
   perplexity: 30
+  n_hvg: 2000
   show_code: FALSE
   show_warning: FALSE
   show_message: FALSE
@@ -26,6 +27,7 @@ knitr::opts_chunk$set(echo=params$show_code, include=FALSE, warning=params$show_
 Load or create a SingleCellExperiment object from a expression matrix where each row corresponds to a gene (or transcript) and each column corresponds to a single cell.
 ```{r load data, include=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 library(AnnotationDbi)
+library(scran)
 source("../formating/formating.R")
 if(is.null(params$input_path)) stop("Input_path can not be NULL.")
 if(is.null(params$output)) stop("Output_path can not be NULL.")
@@ -121,6 +123,12 @@ rowData(sce)$discard <- ! keep_feature
 table(rowData(sce)$discard)
 assay(sce, "logcounts_raw") <- log2(counts(sce) + 1) # log counts
 sce.qc <- sce[! rowData(sce)$discard,! colData(sce)$discard]
+
+# Highly variable genes
+dec <- modelGeneVar(sce.qc)
+chosen <- getTopHVGs(dec, n=params$n_hvg)
+rowSubset(sce.qc) <- chosen # stored in the default 'subset'.
+
 ```
 ## Data visualization before QC
 ### PCA

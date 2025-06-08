@@ -1,4 +1,4 @@
-from tools.formating.formating import load_anndata, get_md5
+from tools.formating.formating import load_anndata, get_md5, clean_anndata
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.clustering_methods.scanpy import scanpy_clustering
 from benchmarks.clustering_methods.scvi import scvi_clustering
@@ -17,6 +17,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
+    adata = clean_anndata(adata)
     # adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None
