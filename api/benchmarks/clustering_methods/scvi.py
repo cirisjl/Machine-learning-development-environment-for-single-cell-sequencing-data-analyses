@@ -10,7 +10,7 @@ sys.path.append('..')
 # from tools.formating.formating import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from tools.evaluation.monitor import *
-from tools.evaluation.clustering import clustering_scores
+from tools.evaluation.clustering import clustering_metrics
 
 # scVI imports
 import scvi
@@ -27,8 +27,8 @@ def scvi_clustering(adata, labels):
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
     scvi.model.SCVI.setup_anndata(adata)
-    model = scvi.model.SCVI(adata)
-    model.train()
+    model = scvi.model.SCVI(adata, n_hidden = 192, n_latent = 50, n_layers = 1, gene_likelihood = 'zinb')
+    model.train(max_epochs = 400, early_stopping = True)
 
     latent = model.get_latent_representation()
     adata.obsm["X_scVI"] = latent
@@ -45,9 +45,9 @@ def scvi_clustering(adata, labels):
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
 
-    asw_score, nmi_score, ari_score = clustering_scores(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
+    asw_score, nmi_score, ari_score, fm_score = clustering_metrics(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
 
-    return sys_info, asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
 
 
 

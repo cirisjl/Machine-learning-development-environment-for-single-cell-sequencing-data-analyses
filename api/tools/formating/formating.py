@@ -24,7 +24,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
-from tools.evaluation.clustering import clustering_scores
+from tools.evaluation.clustering import clustering_metrics
 from tools.utils.gzip_str import *
 from rpy2.robjects import r, StrVector, NULL
 from typing import Any, List, Optional
@@ -403,7 +403,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
 
         if cluster_label is not None:
             if labels_pred_leiden is not None:
-                asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_scores(cluster_label, labels_pred_leiden, cluster_embedding)
+                asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_metrics(cluster_label, labels_pred_leiden, cluster_embedding)
                 evaluation_results.append(
                     {
                         "leiden": {
@@ -414,7 +414,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                     }
                 )
             if labels_pred_louvain is not None:
-                asw_score_louvain, nmi_score_louvain, ari_score_louvain = clustering_scores(cluster_label, labels_pred_louvain, cluster_embedding)
+                asw_score_louvain, nmi_score_louvain, ari_score_louvain = clustering_metrics(cluster_label, labels_pred_louvain, cluster_embedding)
                 evaluation_results.append(
                     {
                         "louvain": {

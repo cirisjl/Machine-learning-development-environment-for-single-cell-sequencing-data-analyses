@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 from tools.evaluation.monitor import *
-from tools.evaluation.clustering import clustering_scores
+from tools.evaluation.clustering import clustering_metrics
 import os
 import numpy as np
 import pandas as pd
@@ -30,6 +30,6 @@ def seurat_clustering(path, labels, layer=None):
     time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
 
     if layer is None: layer = "X"
-    asw_score, nmi_score, ari_score = clustering_scores(labels, labels_pred, umap)
+    asw_score, nmi_score, ari_score, fm_score = clustering_metrics(labels, labels_pred, umap)
 
-    return sys_info, asw_score, nmi_score, ari_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
