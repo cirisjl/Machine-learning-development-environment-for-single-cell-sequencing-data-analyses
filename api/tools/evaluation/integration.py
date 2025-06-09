@@ -2,8 +2,9 @@ import sys
 import anndata as ad
 from scib.metrics import metrics_all
 
-
-def integration_metrics(adata, adata_int, ebed="X_pca", batch_key='batch', label_key='label_key', cluster_key = "leiden", organism="mouse"):
+# https://github.com/theislab/scib/blob/main/scib/metrics/metrics.py
+# https://scib.readthedocs.io/en/latest/api/scib.metrics.metrics_all.html
+def integration_metrics(adata, adata_int, ebed="X_pca", batch_key='batch', label_key='cell_type', cluster_key = "leiden", organism="mouse"):
     """All metrics
 
     :Biological conservation:
