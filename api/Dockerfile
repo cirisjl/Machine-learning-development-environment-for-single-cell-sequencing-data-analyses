@@ -29,7 +29,8 @@ FROM stormgod/oscb-seurat:4.4.1
 # RUN pip install --upgrade --no-cache celery_once
 # RUN R --no-echo --no-restore --no-save -e "install.packages('redux')"
 # RUN R --no-echo --no-restore --no-save -e 'remotes::install_version("matrixStats", version="1.1.0")'
-RUN pip install --upgrade --no-cache boltons
+RUN pip install --upgrade --no-cache boltons scib 
+# pegasus pegasusio
 
 RUN R --no-echo --no-restore --no-save -e "install.packages('redux')"
 WORKDIR /app
