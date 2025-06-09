@@ -134,14 +134,11 @@ export default function RootLayout() {
                                             { /* <li><NavLink to="benchmarks">Overview</NavLink></li> */}
                                             <li><NavLink to="benchmarks/clustering">Clustering</NavLink></li>
                                             <li><NavLink to="benchmarks/imputation">Imputation</NavLink></li>
-                                            <li><NavLink to="benchmarks/maker-gene-identification">Marker Gene Identification</NavLink></li>
+                                            <li><NavLink to="benchmarks/batch-integration">Batch Integration</NavLink></li>
+                                            <li><NavLink to="benchmarks/multimodal-data-integration">Multimodal Data Integration</NavLink></li>
                                             <li><NavLink to="benchmarks/trajectory">Trajectory</NavLink></li>
                                             <li><NavLink to="benchmarks/cell-cell-communication">Cell-Cell Communication</NavLink></li>
-                                            <li><NavLink to="benchmarks/multiomics-data-integration">Multiomics Data Integration</NavLink></li>
-                                            <li><NavLink to="benchmarks/gene-regulatory-relations">Gene Regulatory Relations</NavLink></li>
-                                            <li><NavLink to="benchmarks/genes-over-time">Genes Over Time</NavLink></li>
-                                            <li><NavLink to="benchmarks/genes-over-condition">Genes Over Condition</NavLink></li>
-                                            <li><NavLink to="benchmarks/cell-type">Cell Type</NavLink></li>
+                                            <li><NavLink to="benchmarks/cell-type-annotation">Cell Type Annotation</NavLink></li>
                                             <li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>
                                         </ul>
                                     </div>

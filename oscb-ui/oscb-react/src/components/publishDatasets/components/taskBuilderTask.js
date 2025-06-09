@@ -26,13 +26,13 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   const taskOptions = [
     { label: "Clustering", value: "CL" },
     { label: "Imputation", value: "IM" },
-    { label: "Marker gene identification", value: "MGI" },
-    { label: "Trajectory", value: "TR" },
-    { label: "Cell-cell communication", value: "CCC" },
-    { label: "Multi-omic data integration", value: "MDI" },
-    { label: "Gene regulatory relations", value: "GRR" },
-    { label: "Cell type identification", value: "CTI" },
-    { label: "Spatial", value: "SP" }
+    { label: "Batch Integration", value: "BI" },
+    { label: "Trajectory", value: "TJ" },
+    { label: "Cell-Cell Communication", value: "CCC" },
+    { label: "Multimodal Data Integration", value: "MI" },
+    // { label: "Gene regulatory relations", value: "GRR" },
+    { label: "Cell Type Annotation", value: "CT" },
+    // { label: "Spatial", value: "SP" }
   ];
 
   const handleOpenDialog = (mode) => {

@@ -66,14 +66,11 @@ function App() {
           <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>
           <Route path="benchmarks/viewDetails"   element={<BenchmarksViewDetailsComponent/>}/>
           <Route path="benchmarks/imputation" element={<TaskResultsComponent task_type="Imputation" />} />
-          <Route path="benchmarks/maker-gene-identification" element={<TaskResultsComponent task_type="Marker Gene Identification" />} />
+          <Route path="benchmarks/batch-integration" element={<TaskResultsComponent task_type="Batch Integration" />} />
+          <Route path="benchmarks/multimodal-data-integration" element={<TaskResultsComponent task_type="Multimodal Data Integration" />} />         
           <Route path="benchmarks/trajectory" element={<TaskResultsComponent task_type="Trajectory" />} />
           <Route path="benchmarks/cell-cell-communication" element={<TaskResultsComponent task_type="Cell-Cell Communication" />} />
-          <Route path="benchmarks/multiomics-data-integration" element={<TaskResultsComponent task_type="Multiomics Data Integration" />} />
-          <Route path="benchmarks/gene-regulatory-relations" element={<TaskResultsComponent task_type="Gene Regulatory Relations" />} />
-          <Route path="benchmarks/genes-over-time" element={<TaskResultsComponent task_type="Genes Over Time" />} />
-          <Route path="benchmarks/genes-over-condition" element={<TaskResultsComponent task_type="Genes Over Condition" />} />
-          <Route path="benchmarks/cell-type" element={<TaskResultsComponent task_type="Cell Type" />} />
+          <Route path="benchmarks/cell-type-annotation" element={<TaskResultsComponent task_type="Cell Type Annotation" />} />
           <Route path="leaderboards" element={<Leaderboards/>}/>
           <Route path="mydata"       element={<MyData/>}></Route>
           <Route path="mydata/view-dataset-info"  element={<DatasetInfoComponent/>}></Route>
