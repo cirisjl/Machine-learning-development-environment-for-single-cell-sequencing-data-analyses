@@ -38,7 +38,7 @@ def imputation_metrics(adata, train, denoised, test):
 
     possion = poisson_nll_loss(scprep.utils.toarray(test_data), scprep.utils.toarray(denoised_data))
 
-    return mse, possion
+    return float('{:.4f}'.format(mse)), float('{:.4f}'.format(possion))
 
 
 def poisson_nll_loss(y_pred: np.ndarray, y_true: np.ndarray) -> float:

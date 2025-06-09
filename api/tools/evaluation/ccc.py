@@ -46,7 +46,7 @@ def ccc_metrics(adata, top_prop=0.05):
         oddsratio_score = numerator / denominator
         oddsratio_score = _sigmoid_transform(oddsratio_score)
 
-    return auc_score, oddsratio_score
+    return float('{:.4f}'.format(auc_score)), float('{:.4f}'.format(oddsratio_score))
 
 
 # Join predictions to target
