@@ -1,5 +1,3 @@
-import sys
-import anndata as ad
 from scib.metrics import metrics_all
 
 # https://github.com/theislab/scib/blob/main/scib/metrics/metrics.py
