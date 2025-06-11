@@ -458,7 +458,7 @@ const handleAssaySelectionSubmit = async () => {
                         onChange={(e) => {
                           const selectedPlotType = e.target.value;
                           setClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d);
+                          fetchPlotData(selectedPlotType, result.cell_metadata, result.umap, result.umap_3d);
                         }}
                         style={{
                           padding: '8px 12px',

@@ -221,8 +221,6 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
     umap = JSON.parse(umap);
   }
 
-  obs = gunzipDict(obs);
-
   if (!Array.isArray(umap) || !Array.isArray(umap[0])) {
     throw new Error("umap must be a 2D array");
   }

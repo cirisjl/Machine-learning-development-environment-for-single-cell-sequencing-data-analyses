@@ -440,7 +440,7 @@ const DatasetInfoComponent = () => {
                                                       onChange={(event) => {
                                                         const selectedPlotType = event.target.value;
                                                         setClusteringPlotType(selectedPlotType);
-                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
+                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].cell_metadata, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
                                                       }}
                                                     >
                                                       {Array.isArray(details[preProcessResult.process_id].obs_names) && (
