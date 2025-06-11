@@ -482,11 +482,14 @@ const handleAssaySelectionSubmit = async () => {
                           e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
                         }}
                       >
-                        {Object.keys(result.cell_metadata).map((key) => (
-                          <option key={key} value={key}>
-                            {key}
-                          </option>
-                        ))}
+                      
+                         {Array.isArray(result.obs_names) && (
+                            result.obs_names.map((key, idx) => (
+                              <option key={key} value={key}>
+                                {key}
+                              </option>
+                            ))
+                          )}
                       </select>
 
                     </div>

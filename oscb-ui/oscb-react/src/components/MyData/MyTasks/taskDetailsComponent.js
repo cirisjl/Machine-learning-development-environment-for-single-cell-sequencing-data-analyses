@@ -525,9 +525,12 @@ function TaskDetailsComponent() {
                                   fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
                                 }}
                               >
-                                {Object.keys(result.cell_metadata).map((key) => (
-                                  <MenuItem key={key} value={key}>{key}</MenuItem>
-                                ))}
+
+                                {Array.isArray(result.obs_names) && (
+                                  result.obs_names.map((key, idx) => (
+                                    <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                  ))
+                                )}
                               </Select>
                             </FormControl>
                         </div>

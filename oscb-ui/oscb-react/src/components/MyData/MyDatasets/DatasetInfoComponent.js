@@ -443,9 +443,11 @@ const DatasetInfoComponent = () => {
                                                         fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
                                                       }}
                                                     >
-                                                      {Object.keys(decompressData(detail.datasetDetails.cell_metadata)).map((key) => (
-                                                        <MenuItem key={key} value={key}>{key}</MenuItem>
-                                                      ))}
+                                                      {Array.isArray(details[preProcessResult.process_id].obs_names) && (
+                                                        details[preProcessResult.process_id].obs_names.map((key, idx) => (
+                                                          <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                                        ))
+                                                      )}
                                                     </Select>
                                                   </FormControl>
 

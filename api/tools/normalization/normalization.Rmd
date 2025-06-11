@@ -119,6 +119,9 @@ if("LOGCPM"  %in% methods){
       RedisInfo(unique_id, "Running logCPM normalization.")
       srat[['logCPM']] <- CreateAssayObject(counts = expression_matrix)
       srat <- NormalizeData(srat, scale.factor = 1000000, assay = 'logCPM')
+      output_dir <- dirname(params$output)
+      if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+      if (!file.exists(params$output)) file.create(params$output)
       SaveSeurat(srat, params$output)
       RedisInfo(unique_id, "Seurat object for logCPM is saved successfully.")
 

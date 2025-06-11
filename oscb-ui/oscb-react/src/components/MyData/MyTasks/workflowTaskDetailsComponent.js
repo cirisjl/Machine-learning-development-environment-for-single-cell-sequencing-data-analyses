@@ -32,6 +32,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
+import TaskImageGallery from './taskImageGallery';
 
 
 // Initialize Octokit with your GitHub personal access token
@@ -551,6 +552,12 @@ function WorkflowTaskDetailsComponent() {
                         ))
                       )
                     )}
+                    {taskResult && taskResult.wf_results && taskResult.wf_results.figures && (
+                      <div>
+                        <Typography variant="subtitle1"><strong>Figures: </strong></Typography>
+                        <TaskImageGallery taskResult={taskResult} />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -731,9 +738,11 @@ function WorkflowTaskDetailsComponent() {
                                                       fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
                                                     }}
                                                   >
-                                                    {Object.keys(details[preProcessResult.process_id].cell_metadata).map((key) => (
-                                                      <MenuItem key={key} value={key}>{key}</MenuItem>
-                                                    ))}
+                                                    {Array.isArray(details[preProcessResult.process_id].obs_names) && (
+                                                      details[preProcessResult.process_id].obs_names.map((key, idx) => (
+                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                                      ))
+                                                    )}
                                                   </Select>
                                                 </FormControl>
 
