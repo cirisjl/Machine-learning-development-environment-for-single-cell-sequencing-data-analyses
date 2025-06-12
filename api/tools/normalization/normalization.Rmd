@@ -292,7 +292,7 @@ if("DESEQ2" %in% methods){
 
 ## edgeR (TMM, RLE, upperquartile (UQ))
 ```{r edgeR, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTILE" %in% methods){
+if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUARTILE" %in% methods){
   library(edgeR)
   dge <- DGEList(expression_matrix + 1)
   if("TMM" %in% methods){
@@ -357,34 +357,34 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
     } else {
       print("Not selected by user, skipped.")
     }
-  if("UQ" %in% methods || "UPPERQUARTILE" %in% methods){
-    if(!"upperquartile" %in% names(srat@assays)){
+  if("UQ" %in% methods || "UPPER QUARTILE" %in% methods){
+    if(!"UpperQuartile" %in% names(srat@assays)){
       tryCatch({
-        RedisInfo(unique_id, "Running upperquartile normalization.")
-        uq <- calcNormFactors(dge, method="upperquartile")
+        RedisInfo(unique_id, "Running Upper Quartile normalization.")
+        uq <- calcNormFactors(dge, method="Upper Quartile")
         uq_assay <- CreateAssayObject(data = cpm(uq))
-        srat[['upperquartile']] <- uq_assay
+        srat[['UpperQuartile']] <- uq_assay
         SaveSeurat(srat, params$output)
-        RedisInfo(unique_id, "Seurat object for upperquartile is saved successfully.")
+        RedisInfo(unique_id, "Seurat object for UpperQuartile is saved successfully.")
 
-        adata$layers["upperquartile"] <- t(as.data.frame(srat[['upperquartile']]@data))
-        RedisInfo(unique_id, "upperquartile layer has been added to AnnData object.")
+        adata$layers["UpperQuartile"] <- t(as.data.frame(srat[['UpperQuartile']]@data))
+        RedisInfo(unique_id, "UpperQuartile layer has been added to AnnData object.")
         write_h5ad(adata, adata_path, compression = "gzip")
-        RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
+        RedisInfo(unique_id, "AnnData object for UpperQuartile is saved successfully.")
       }, error = function(e) {
-        RedisWarning(unique_id, paste0("An error happened during upperquartile normalization, skipped: ", e$message))
+        RedisWarning(unique_id, paste0("An error happened during UpperQuartile normalization, skipped: ", e$message))
       }) 
     } else {
-      RedisInfo(unique_id, "upperquartile assay already exists, skipped.")
-      if(!"upperquartile" %in% names(adata$layers)){
-        adata$layers["upperquartile"] <- t(as.data.frame(srat[['upperquartile']]@data))
-        RedisInfo(unique_id, "upperquartile layer has been added to AnnData object.")
+      RedisInfo(unique_id, "UpperQuartile assay already exists, skipped.")
+      if(!"UpperQuartile" %in% names(adata$layers)){
+        adata$layers["UpperQuartile"] <- t(as.data.frame(srat[['UpperQuartile']]@data))
+        RedisInfo(unique_id, "UpperQuartile layer has been added to AnnData object.")
         write_h5ad(adata, adata_path, compression = "gzip")
-        RedisInfo(unique_id, "AnnData object for upperquartile is saved successfully.")
+        RedisInfo(unique_id, "AnnData object for UpperQuartile is saved successfully.")
       }
     }
-    # knitr::kable(head(srat[['upperquartile']]@data), align='cccc', format = "html", caption = 'upperquartile')
-    if(params$show_umap) seurat_cluster_umap(srat, assay = 'upperquartile', title = "Upper quartile normalization")
+    # knitr::kable(head(srat[['UpperQuartile']]@data), align='cccc', format = "html", caption = 'UpperQuartile')
+    if(params$show_umap) seurat_cluster_umap(srat, assay = 'UpperQuartile', title = "Upper quartile normalization")
   } else {
     print("Not selected by user, skipped.")
   }

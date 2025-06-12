@@ -192,8 +192,7 @@
                         "SCTransform_v2",
                         "TMM",
                         "TPM",
-                        "UpperQuartile",
-                        "UQ"
+                        "UpperQuartile"
                       ]
                     },
                     "default": [
