@@ -522,7 +522,7 @@ function TaskDetailsComponent() {
                                 onChange={(event) => {
                                   const selectedPlotType = event.target.value;
                                   setClusteringPlotType(selectedPlotType);
-                                  fetchPlotData(selectedPlotType, result.cell_metadata, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
+                                  fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d); // Call the javascript function as soon as the selection changes
                                 }}
                               >
 

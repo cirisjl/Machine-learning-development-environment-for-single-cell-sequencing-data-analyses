@@ -210,6 +210,7 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     for pp_result in pp_results:
         obs = pp_result['cell_metadata']
         pp_result['cell_metadata'] = df_to_dict(obs)
+        pp_result['obs'] = pp_result['obs']
 
         if record_type == None:
             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA

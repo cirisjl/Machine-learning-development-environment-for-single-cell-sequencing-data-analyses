@@ -220,9 +220,8 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
   if (typeof umap === "string") {
     umap = JSON.parse(umap);
   }
+  obs = gunzipDict(obs); 
 
-  console.log("type of obs", typeof obs);
-  console.log("obs", obs);
   // Check if obs is an object and has the required properties
 
   if (!Array.isArray(umap) || !Array.isArray(umap[0])) {
