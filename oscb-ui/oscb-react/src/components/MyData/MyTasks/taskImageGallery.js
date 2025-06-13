@@ -30,10 +30,12 @@ function TaskImageGallery({ taskResult }) {
       {taskResult?.wf_results?.figures && (
         <div className="grid grid-cols-3 gap-4 p-4">
           {images.map(({ fileName, base64 }, idx) => {
-            const nameWithoutExt = fileName.replace(/\.[^/.]+$/, ""); // removes extension
+            const nameWithoutExt = fileName.replace(/_/g, ' ')        // Replace underscores with spaces
+                                          .replace(/\.[^/.]+$/, '')   // Remove file extension
+                                          .replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()); // Capitalize
             return (
                 <div key={idx} className="flex flex-col items-center">
-                <p className="text-sm truncate max-w-full text-center"><strong>{nameWithoutExt}</strong></p>
+                <p className="text-sm truncate max-w-full text-center"><h2>{nameWithoutExt}</h2></p>
                 <img
                     src={base64}
                     alt={nameWithoutExt}

@@ -221,6 +221,10 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
     umap = JSON.parse(umap);
   }
 
+  console.log("type of obs", typeof obs);
+  console.log("obs", obs);
+  // Check if obs is an object and has the required properties
+
   if (!Array.isArray(umap) || !Array.isArray(umap[0])) {
     throw new Error("umap must be a 2D array");
   }
