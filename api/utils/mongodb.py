@@ -47,6 +47,8 @@ def pp_result_exists(process_id):
 def create_pp_results(process_id, pp_results):
     pp_results = clear_dict(pp_results)
     # pp_results = removeNullNoneEmpty(pp_results)
+    if "obs" in pp_results.keys():
+        pp_results.pop("obs")  # Remove obs key if it exists, as it is not needed in the database
 
     try:
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)

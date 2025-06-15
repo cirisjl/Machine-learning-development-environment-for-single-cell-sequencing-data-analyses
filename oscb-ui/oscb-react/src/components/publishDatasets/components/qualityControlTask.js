@@ -47,30 +47,38 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [clusteringPlotType, setClusteringPlotType] = useState('');
   const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
+  const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
+  const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
+  const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
 
 
-  const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
   
       const selectedCellType = null
   
-       try {
-          // Only get plots if umap or umap_3d exist
-          let umap_plot = null;
-          let umap_plot_3d = null;
-  
-          if (umap) {
-            umap_plot = plotUmapObs(cell_metadata, umap, plotType, [], selectedCellType, 2);
+        try {
+          let plot = null;
+          let plot_3d = null;
+
+          if (twoDArray) {
+            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2);
           }
-          if (umap_3d) {
-            umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, plotType, [], selectedCellType, 3);
+          if (threeDArray) {
+            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3);
           }
-  
-          // Only set plotData if at least one plot exists
-          if (umap_plot || umap_plot_3d) {
-            setPlotData({ umap_plot, umap_plot_3d });
-          } else {
-            setPlotData(null);
+
+          // If the plotName is 'tsne', we can handle it here if needed
+          if (plotName === 'tsne') {
+            if (plot || plot_3d) {
+              // If tsne plots are available, we can set them in the plotData state
+              setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+            }
+          } else if (plotName === 'umap') {
+            if (plot || plot_3d) {
+              // If umap plots are available, we can set them in the plotData state
+              setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+            }
           }
         } catch (error) {
           console.error('Error fetching plot data:', error);
@@ -458,7 +466,7 @@ const handleAssaySelectionSubmit = async () => {
                         onChange={(e) => {
                           const selectedPlotType = e.target.value;
                           setClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d);
+                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap");
                         }}
                         style={{
                           padding: '8px 12px',
@@ -510,6 +518,94 @@ const handleAssaySelectionSubmit = async () => {
                         </>
                       ) : (
                         <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
+                      )
+                    ) : null}
+                       
+                    </>
+                  )}
+                   {(result.tsne_plot || result.tsne_plot_3d) && (
+                    <>
+                    <h2>Tsne Plot</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                      {/* Radio buttons */}
+                      <div>
+                        <label>
+                          <input
+                            type="radio"
+                            value="2D"
+                            checked={tsnePlotDimension === "2D"}
+                            onChange={(e) => setTsnePlotDimension(e.target.value)}
+                          />
+                          2D
+                        </label>
+                        <label style={{ marginLeft: '8px' }}>
+                          <input
+                            type="radio"
+                            value="3D"
+                            checked={tsnePlotDimension === "3D"}
+                            onChange={(e) => setTsnePlotDimension(e.target.value)}
+                          />
+                          3D
+                        </label>
+                      </div>
+
+                      <select
+                        value={tsneClusteringPlotType}
+                        onChange={(e) => {
+                          const selectedPlotType = e.target.value;
+                          setTsneClusteringPlotType(selectedPlotType);
+                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap");
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid #ccc',
+                          backgroundColor: '#fff',
+                          fontSize: '14px',
+                          fontFamily: 'Arial, sans-serif',
+                          outline: 'none',
+                          transition: 'border-color 0.2s, box-shadow 0.2s',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          cursor: 'pointer',
+                          minWidth: '150px',
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#1976d2';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#ccc';
+                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                        }}
+                      >
+                      
+                         {Array.isArray(result.obs_names) && (
+                            result.obs_names.map((key, idx) => (
+                              <option key={key} value={key}>
+                                {key}
+                              </option>
+                            ))
+                          )}
+                      </select>
+
+                    </div>
+
+                
+                    {tsnePlotDimension === '2D' ? (
+                      tsnePlotData?.tsne_plot || result.tsne_plot ? (
+                        <>
+                          <ReactPlotly plot_data={tsnePlotData?.tsne_plot || result.tsne_plot} />
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', width: '100%' }}>2D tsne plot does not exist.</div>
+                      )
+                    ) : tsnePlotDimension === '3D' ? (
+                      tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d ? (
+                        <>
+                          <ReactPlotly plot_data={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d} />
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', width: '100%' }}>3D tsne plot does not exist.</div>
                       )
                     ) : null}
                        
