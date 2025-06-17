@@ -554,7 +554,7 @@ const handleAssaySelectionSubmit = async () => {
                         onChange={(e) => {
                           const selectedPlotType = e.target.value;
                           setTsneClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap");
+                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "tsne");
                         }}
                         style={{
                           padding: '8px 12px',
