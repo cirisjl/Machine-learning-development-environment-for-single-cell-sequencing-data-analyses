@@ -290,9 +290,9 @@ if("DESEQ2" %in% methods){
 }
 ```
 
-## edgeR (TMM, RLE, upperquartile (UQ))
+## edgeR (TMM, RLE, UpperQuartile (UQ))
 ```{r edgeR, error=TRUE, tidy=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
-if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUARTILE" %in% methods){
+if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTILE" %in% methods){
   library(edgeR)
   dge <- DGEList(expression_matrix + 1)
   if("TMM" %in% methods){
@@ -300,7 +300,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUART
       tryCatch({
         RedisInfo(unique_id, "Running TMM normalization.")
         tmm <- calcNormFactors(dge, method="TMM")
-        tmm_assay <- CreateAssayObject(data = cpm(tmm))
+        tmm_assay <- CreateAssayObject(data = edgeR::cpm(tmm))
         srat[['TMM']] <- tmm_assay
         SaveSeurat(srat, params$output)
         RedisInfo(unique_id, "Seurat object for TMM is saved successfully.")
@@ -324,14 +324,15 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUART
     # knitr::kable(head(srat[['TMM']]@data), align='cccc', format = "html", caption = 'TMM')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'TMM', title = "TMM normalization")
   } else {
-    print("Not selected by user, skipped.")
+    print("TMM is not selected by user, skipped.")
   }
+
   if("RLE" %in% methods){
     if(!"RLE" %in% names(srat@assays)){
       tryCatch({
         RedisInfo(unique_id, "Running RLE normalization.")
         rle <- calcNormFactors(dge, method="RLE")
-        rle_assay <- CreateAssayObject(data = cpm(rle))
+        rle_assay <- CreateAssayObject(data = edgeR::cpm(rle))
         srat[['RLE']] <- rle_assay
         SaveSeurat(srat, params$output)
         RedisWarning(unique_id, "Seurat object for RLE is saved successfully.")
@@ -355,14 +356,15 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUART
     # knitr::kable(head(srat[['RLE']]@data), align='cccc', format = "html", caption = 'RLE')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'RLE', title = "RLE normalization")
     } else {
-      print("Not selected by user, skipped.")
+      print("RLE is not selected by user, skipped.")
     }
-  if("UQ" %in% methods || "UPPER QUARTILE" %in% methods){
+
+  if("UQ" %in% methods || "UPPERQUARTILE" %in% methods){
+    RedisInfo(unique_id, "Running Upper Quartile normalization.")
     if(!"UpperQuartile" %in% names(srat@assays)){
       tryCatch({
-        RedisInfo(unique_id, "Running Upper Quartile normalization.")
         uq <- calcNormFactors(dge, method="Upper Quartile")
-        uq_assay <- CreateAssayObject(data = cpm(uq))
+        uq_assay <- CreateAssayObject(data = edgeR::cpm(uq))
         srat[['UpperQuartile']] <- uq_assay
         SaveSeurat(srat, params$output)
         RedisInfo(unique_id, "Seurat object for UpperQuartile is saved successfully.")
@@ -386,7 +388,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPER QUART
     # knitr::kable(head(srat[['UpperQuartile']]@data), align='cccc', format = "html", caption = 'UpperQuartile')
     if(params$show_umap) seurat_cluster_umap(srat, assay = 'UpperQuartile', title = "Upper quartile normalization")
   } else {
-    print("Not selected by user, skipped.")
+    print("UpperQuartile is not selected by user, skipped.")
   }
 }else {
   print("Not selected by user, skipped.")

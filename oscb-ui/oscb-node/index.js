@@ -3726,6 +3726,7 @@ app.delete('/node/deleteDataset', async (req, res) => {
     }
 });
 
+
 // API endpoint to get complete dataset details along with preprocess results based on datasetId
 app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
     let client;
@@ -3778,6 +3779,55 @@ app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
             await client.close();
         }
     }
+});
+
+
+// Util: return mime type from file extension
+function getMimeType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg': return 'image/jpeg';
+    case '.png': return 'image/png';
+    case '.gif': return 'image/gif';
+    case '.bmp': return 'image/bmp';
+    case '.webp': return 'image/webp';
+    default: return 'application/octet-stream';
+  }
+}
+
+
+// Route: POST /api/load-images
+app.post('/node/load-images', (req, res) => {
+  const { folderPath } = req.body;
+
+  if (!folderPath) {
+    return res.status(400).json({ error: 'Missing folderPath' });
+  }
+
+  try {
+    if (!fs.existsSync(folderPath) || !fs.lstatSync(folderPath).isDirectory()) {
+      return res.status(400).json({ error: 'Invalid folder path' });
+    }
+
+    const files = fs.readdirSync(folderPath);
+    const imageFiles = files.filter(file => /\.(png|jpe?g|gif|bmp|webp)$/i.test(file));
+
+    const images = imageFiles.map(file => {
+      const filePath = path.join(folderPath, file);
+      const base64 = fs.readFileSync(filePath, { encoding: 'base64' });
+      const mimeType = getMimeType(file);
+      return {
+        fileName: file,
+        base64: `data:${mimeType};base64,${base64}`,
+      };
+    });
+
+    res.json(images);
+  } catch (err) {
+    console.error('Error loading images:', err.message);
+    res.status(500).json({ error: 'Server error reading images' });
+  }
 });
 
 

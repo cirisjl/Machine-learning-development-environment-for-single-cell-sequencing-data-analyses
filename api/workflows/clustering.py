@@ -18,6 +18,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
     qc_params = ds['qc_params']
     normalization_params = ds['normalization_params']
     imputation_params = ds['imputation_params']
+    fig_path = None
 
     # Initialize methodMap
     methodMap = {}
@@ -59,11 +60,11 @@ def run_clustering(job_id, ds:dict, random_state=0):
             "job_id": job_id, 
             "created_by": userID,
             "description": description,
-            "methodMap": methodMap,
+            "method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
             "datasetURL": input,
             "datasetId": datasetId,
             "process": "Clustering",
-            "completed_on": datetime.now(),
+            "created_on": datetime.now(),
             "status": "Processing"
         }
     )
@@ -94,6 +95,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
         # "workflow_id": workflow_id,
         "md5": md5,
         "wf_results": wf_results,
+        # "figures":fig_path, 
         "process_ids": process_ids
     }
     
@@ -104,6 +106,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
             "process_ids": process_ids,
             # "workflow_id": workflow_id,
             "results": results,
+            # "figures": fig_path, 
             "completed_on": datetime.now(),
             "status": "Success"
         }

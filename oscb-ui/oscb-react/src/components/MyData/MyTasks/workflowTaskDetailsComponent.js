@@ -32,6 +32,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
+import TaskImageGallery from './taskImageGallery';
 
 
 // Initialize Octokit with your GitHub personal access token
@@ -152,6 +153,10 @@ function WorkflowTaskDetailsComponent() {
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
+  const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
+  const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
+  const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+  
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
   const [isSent, setIsSent] = useState(false); // State to disable button after success
@@ -177,28 +182,33 @@ function WorkflowTaskDetailsComponent() {
       }));
     };
 
-  const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
+ const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
   
       const selectedCellType = null
   
      try {
-        // Only get plots if umap or umap_3d exist
-        let umap_plot = null;
-        let umap_plot_3d = null;
+          let plot = null;
+          let plot_3d = null;
 
-        if (umap) {
-          umap_plot = plotUmapObs(cell_metadata, umap, plotType, [], selectedCellType, 2);
+          if (twoDArray) {
+            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2);
         }
-        if (umap_3d) {
-          umap_plot_3d = plotUmapObs(cell_metadata, umap_3d, plotType, [], selectedCellType, 3);
+          if (threeDArray) {
+            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3);
         }
 
-        // Only set plotData if at least one plot exists
-        if (umap_plot || umap_plot_3d) {
-          setPlotData({ umap_plot, umap_plot_3d });
-        } else {
-          setPlotData(null);
+          // If the plotName is 'tsne', we can handle it here if needed
+          if (plotName === 'tsne') {
+            if (plot || plot_3d) {
+              // If tsne plots are available, we can set them in the plotData state
+              setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+            }
+          } else if (plotName === 'umap') {
+            if (plot || plot_3d) {
+              // If umap plots are available, we can set them in the plotData state
+              setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+            }
         }
       } catch (error) {
         console.error('Error fetching plot data:', error);
@@ -278,6 +288,10 @@ function WorkflowTaskDetailsComponent() {
               setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
             }
     
+            if(preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+              setTsnePlotData({tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d})
+            }
+    
             // Store the fetched data for the current process_id
             setDetails((prevDetails) => ({
               ...prevDetails,
@@ -322,6 +336,7 @@ function WorkflowTaskDetailsComponent() {
 
             if(data.task_result.output){
               setTaskOutput(data.task_result.output);
+              setTaskResult(data.task_result);
             }
           } else {
             setLoading(false);
@@ -338,6 +353,7 @@ function WorkflowTaskDetailsComponent() {
     async function fetchFiles() {
       if (status?.toLowerCase() === "success" && output) {
         setTaskOutput(output);
+        setTaskResult(results);
       }
       else {
         try {
@@ -551,6 +567,12 @@ function WorkflowTaskDetailsComponent() {
                         ))
                       )
                     )}
+                    {taskResult && taskResult.wf_results && taskResult.wf_results.figures && (
+                      <div>
+                        <Typography variant="subtitle1"><strong>Figures: </strong></Typography>
+                        <TaskImageGallery taskResult={taskResult} />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -728,12 +750,14 @@ function WorkflowTaskDetailsComponent() {
                                                     onChange={(event) => {
                                                       const selectedPlotType = event.target.value;
                                                       setClusteringPlotType(selectedPlotType);
-                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d); // Call the API as soon as the selection changes
+                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d, "umap"); // Call the API as soon as the selection changes
                                                     }}
                                                   >
-                                                    {Object.keys(details[preProcessResult.process_id].cell_metadata).map((key) => (
-                                                      <MenuItem key={key} value={key}>{key}</MenuItem>
-                                                    ))}
+                                                    {Array.isArray(details[preProcessResult.process_id].obs_names) && (
+                                                      details[preProcessResult.process_id].obs_names.map((key, idx) => (
+                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                                      ))
+                                                    )}
                                                   </Select>
                                                 </FormControl>
 
@@ -766,6 +790,73 @@ function WorkflowTaskDetailsComponent() {
 
                                             </>
                                           )}
+
+                                           {(details[preProcessResult.process_id].tsne_plot || details[preProcessResult.process_id].tsne_plot_3d) && (
+                                              <>
+                                                <h2>tsne Plot</h2>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                  <FormControl>
+                                                    <RadioGroup
+                                                      row
+                                                      aria-labelledby="demo-row-radio-buttons-group-label"
+                                                      name="row-radio-buttons-group"
+                                                      value={tsnePlotDimension}
+                                                      onChange={(event) => setTsnePlotDimension(event.target.value)}
+                                                    >
+                                                      <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+                                                      <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+                                                    </RadioGroup>
+                                                  </FormControl>
+
+                                                  <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                                    <InputLabel id="plot-options-label">Color</InputLabel>
+                                                    <Select
+                                                      labelId="plot-options-label"
+                                                      id="plot-options"
+                                                      value={tsneClusteringPlotType}
+                                                      onChange={(event) => {
+                                                        const selectedPlotType = event.target.value;
+                                                        setTsneClusteringPlotType(selectedPlotType);
+                                                        fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].tsne, details[preProcessResult.process_id].tsne_3d, "tsne"); // Call the API as soon as the selection changes
+                                                      }}
+                                                    >
+                                                      {Array.isArray(details[preProcessResult.process_id].obs_names) && (
+                                                        details[preProcessResult.process_id].obs_names.map((key, idx) => (
+                                                          <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                                        ))
+                                                      )}
+                                                    </Select>
+                                                  </FormControl>
+
+                                                </div>
+                                                {loadingPlot ? (
+                                                  <div>Loading plot data...</div>
+                                                ) : tsnePlotData ? (
+                                                  <>
+                                                   {tsnePlotDimension === '2D' ? (
+                                                      tsnePlotData && tsnePlotData.tsne_plot ? (
+                                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                          <ReactPlotly plot_data={tsnePlotData.tsne_plot} />
+                                                        </div>
+                                                      ) : (
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>2D tsne plot does not exist.</div>
+                                                      )
+                                                    ) : tsnePlotDimension === '3D' ? (
+                                                      tsnePlotData && tsnePlotData.tsne_plot_3d ? (
+                                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                          <ReactPlotly plot_data={tsnePlotData.tsne_plot_3d} />
+                                                        </div>
+                                                      ) : (
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>3D tsne plot does not exist.</div>
+                                                      )
+                                                    ) : null}
+                                                  </>
+                                                ) : (
+                                                  <div>No plot data available</div>
+                                                )}
+
+                                              </>
+                                            )}
                                           {details[preProcessResult.process_id].violin_plot && (
                                             <>
                                               <h2>Violin Plot</h2>

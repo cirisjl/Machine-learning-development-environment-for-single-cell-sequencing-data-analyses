@@ -47,6 +47,8 @@ def pp_result_exists(process_id):
 def create_pp_results(process_id, pp_results):
     pp_results = clear_dict(pp_results)
     # pp_results = removeNullNoneEmpty(pp_results)
+    if "obs" in pp_results.keys():
+        pp_results.pop("obs")  # Remove obs key if it exists, as it is not needed in the database
 
     try:
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
@@ -61,7 +63,7 @@ def get_pp_results(process_ids, umap=False, record_type=None):
     pp_results = None
     if not umap:
         if record_type == None:
-            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1})
+            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1, "tsne": 1, "tsne_3d": 1})
         elif record_type == 'table':
             pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1,"layers" : 1, "layer" : 1})
     else:

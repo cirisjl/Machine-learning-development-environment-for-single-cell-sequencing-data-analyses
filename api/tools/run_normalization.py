@@ -143,6 +143,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                     except Exception as e:
                         redislogger.error(job_id, f"UMAP or clustering is failed for {method}: {e}")
                         failed_methods.append(f"UMAP or clustering is failed for {method}: {e}")
+                else:
+                    raise Exception(f'{method} is failed, no output is created.')
 
                 # if os.path.exists(adata_sct_path):
                 #     adata_sct = load_anndata(adata_sct_path)
