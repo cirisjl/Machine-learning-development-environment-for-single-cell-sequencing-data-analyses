@@ -9,7 +9,7 @@ from utils.redislogger import *
 from utils.mongodb import generate_workflow_id, upsert_jobs, upsert_workflows
 from datetime import datetime
 
-def run_clustering(job_id, ds:dict, random_state=0):
+def run_annotation(job_id, ds:dict, random_state=0):
     wf_results = {}
     process_ids = []
     userID = ds['userID']
@@ -112,4 +112,4 @@ def run_clustering(job_id, ds:dict, random_state=0):
         }
     )
 
-    return results 
+    return results

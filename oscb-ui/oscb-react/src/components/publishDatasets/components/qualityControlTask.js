@@ -62,10 +62,10 @@ const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, pl
           let plot_3d = null;
   
           if (twoDArray) {
-            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2);
+            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);
           }
           if (threeDArray) {
-            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3);
+            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3, plotName);
           }
   
           // If the plotName is 'tsne', we can handle it here if needed

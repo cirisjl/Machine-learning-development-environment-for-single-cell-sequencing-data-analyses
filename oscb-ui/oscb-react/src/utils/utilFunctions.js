@@ -215,7 +215,7 @@ export function getFileNameFromURL(fileUrl){
   }
 };
 
-export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected_cell_intersection = [], annotation = null, n_dim = 3) {
+export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected_cell_intersection = [], annotation = null, n_dim = 3, plotName = 'umap') {
   // Parse JSON if umap is passed as a string
   if (typeof umap === "string") {
     umap = JSON.parse(umap);
@@ -307,9 +307,9 @@ uniqueClusters.forEach((val, i) => {
   });
 
   const layout = {
-    xaxis: { title: "UMAP 1" },
-    yaxis: { title: "UMAP 2" },
-    ...(n_dim === 3 ? { zaxis: { title: "UMAP 3" } } : {}),
+    xaxis: plotName === 'umap' ? { title: "UMAP 1" } : { title: "t-SNE 1" },
+    yaxis: plotName === 'umap' ? { title: "UMAP 2" } : { title: "t-SNE 2" },
+    ...(n_dim === 3 ? { zaxis: plotName === 'umap' ? { title: "UMAP 3" } : { title: "t-SNE 3" } } : {}),
     margin,
     hovermode: "closest",
     transition: { duration: 250 },

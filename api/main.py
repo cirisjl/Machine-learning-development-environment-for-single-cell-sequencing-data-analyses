@@ -223,11 +223,11 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
                 pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
             if 'tsne' in pp_result.keys():
-                pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'])
+                pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
                 pp_result['tsne'] = pp_result['tsne'].tolist()
 
             if 'tsne_3d' in pp_result.keys():
-                pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'])
+                pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
                 pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
 
             if pp_result['process'] == 'QC':

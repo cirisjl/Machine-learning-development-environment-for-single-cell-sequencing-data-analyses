@@ -34,6 +34,9 @@ FROM stormgod/oscb-seurat-cuda117:4.4.1
 # pegasus pegasusio
 
 # RUN R --no-echo --no-restore --no-save -e "install.packages('redux')"
+
+RUN pip install --upgrade --no-cache doubletdetection matplotlib-venn harmonypy celltypist
+
 WORKDIR /app
 COPY . .
 

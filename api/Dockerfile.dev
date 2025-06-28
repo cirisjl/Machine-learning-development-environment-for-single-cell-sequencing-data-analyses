@@ -159,6 +159,8 @@ RUN pip install --upgrade --no-cache psutil nvidia-ml-py
 #     make install && \
 #     rm /tmp/hdf5-1.14.0
 
+RUN pip install --upgrade --no-cache doubletdetection matplotlib-venn harmonypy celltypist
+
 RUN mkdir /app
 WORKDIR /app
 COPY . .

@@ -9,7 +9,7 @@ params:
   output_format: AnnData # Seurat or AnnDate
   layer: NULL # Layer of Anndata object for imputation method
   genes: NULL # Genes for SAVER imputation
-  ncores: 12 # Number of workers for SAVER imputation
+  ncores: 5 # Number of workers for SAVER imputation
   show_code: FALSE
   show_warning: TRUE
   show_message: TRUE

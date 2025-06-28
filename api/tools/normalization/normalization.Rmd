@@ -363,7 +363,7 @@ if("TMM" %in% methods || "RLE" %in% methods || "UQ" %in% methods || "UPPERQUARTI
     RedisInfo(unique_id, "Running Upper Quartile normalization.")
     if(!"UpperQuartile" %in% names(srat@assays)){
       tryCatch({
-        uq <- calcNormFactors(dge, method="Upper Quartile")
+        uq <- calcNormFactors(dge, method="upperquartile")
         uq_assay <- CreateAssayObject(data = edgeR::cpm(uq))
         srat[['UpperQuartile']] <- uq_assay
         SaveSeurat(srat, params$output)

@@ -34,6 +34,10 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         if not (skip_if_exist and layer+'_tsne' in adata.obsm.keys()):
             tsne = TSNE(n_components=2, random_state=random_state)
             adata.obsm[layer+'_tsne'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
+
+        if not (skip_if_exist and layer+'_tsne_3D' in adata.obsm.keys()):
+            tsne = TSNE(n_components=3, random_state=random_state)
+            adata.obsm[layer+'_tsne_3D'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
         
         # UMAP
         if not (skip_if_exist and layer+'_umap' in adata.obsm.keys()):

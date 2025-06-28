@@ -47,7 +47,7 @@ class imputationParameters(BaseModel):
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     genes: Optional[List[str]] = None
-    ncores: Optional[int] = 12
+    ncores: Optional[int] = 5
     n_neighbors: int = 15
     n_pcs: int = 1 # Scanpy
     resolution: float = 0.5
@@ -75,6 +75,36 @@ class reductionParameters(BaseModel):
 
 
 
+class annotationParameters(BaseModel):
+    methods: Optional[List[str]]= None
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
+    celltypist_model: Optional[str] = None
+    SingleR_ref: Optional[str] = None
+    ref: Optional[str] = None
+    n_neighbors: int = 15
+    n_pcs: int = 1 # Scanpy
+    resolution: float = 0.5
+    use_default: Optional[bool] = True
+
+
+
+class integrationParameters(BaseModel):
+    # description: Optional[str] = None
+    # datasetId: Optional[str] = None
+    method: Optional[str] = None
+    assay: Optional[str] = 'RNA' # Required for Seurat
+    layer: Optional[str] = None
+    batch_key: Optional[str] = None
+    dims: Optional[int] = 30
+    npcs: Optional[int] = 30
+    default_assay: Optional[str] = 'RNA' # Required for Seurat
+    reference: Optional[str] = None
+    # show_umap: Optional[bool] = True
+    # show_error: Optional[bool] = True
+
+
+
 class Dataset(BaseModel):
     dataset: Optional[str] = None # Title of datasets
     input: str
@@ -90,23 +120,12 @@ class Dataset(BaseModel):
     cluster_label: Optional[str] = None
     qc_params: QCParameters = Field(default_factory=QCParameters)
     imputation_params: imputationParameters = Field(default_factory=imputationParameters)
+    integration_params: integrationParameters = Field(default_factory=integrationParameters)
     normalization_params: normalizationParameters = Field(default_factory=normalizationParameters)
+    annotation_params: annotationParameters = Field(default_factory=annotationParameters)
     reduction_params: reductionParameters = Field(default_factory=reductionParameters)
     show_umap: Optional[bool] = True
     show_error: Optional[bool] = True   
-    
-
-
-class integrationParameters(BaseModel):
-    # description: Optional[str] = None
-    # datasetId: Optional[str] = None
-    # method: Optional[str] = None
-    dims: Optional[int] = 30
-    npcs: Optional[int] = 30
-    default_assay: Optional[str] = 'RNA' # Required for Seurat
-    reference: Optional[str] = None
-    # show_umap: Optional[bool] = True
-    # show_error: Optional[bool] = True
 
 
 

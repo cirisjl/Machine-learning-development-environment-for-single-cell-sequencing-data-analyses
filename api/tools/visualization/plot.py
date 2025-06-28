@@ -14,7 +14,7 @@ from scipy.sparse import csr_matrix
 from tools.visualization.plotConstants import *
 
 
-def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2, plot_name='UMAP'): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
@@ -86,11 +86,18 @@ def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected
                 "name": f"Cluster {val}"
             })
     if (n_dim == 2):
+        if plot_name == 'UMAP':
+            xaxis = {"title": "UMAP 1"}
+            yaxis = {"title": "UMAP 2"}
+        else:
+            xaxis = {"title": "t-SNE 1"}
+            yaxis = {"title": "t-SNE 2"}
+
         return json.dumps({
             'data': traces,
             'layout': dict(
-                xaxis={"title": "UMAP 1"},
-                yaxis={"title": "UMAP 2"},
+                xaxis=xaxis,
+                yaxis=yaxis,
                 margin=margin,
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',
@@ -101,12 +108,20 @@ def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected
             )
         })
     elif (n_dim == 3):
+        if plot_name == 'UMAP':
+            xaxis = {"title": "UMAP 1"}
+            yaxis = {"title": "UMAP 2"}
+            zaxis = {"title": "UMAP 3"}
+        else:
+            xaxis = {"title": "t-SNE 1"}
+            yaxis = {"title": "t-SNE 2"}
+            zaxis = {"title": "t-SNE 3"}
         return json.dumps({
             'data': traces,
             'layout': dict(
-                xaxis={"title": "UMAP 1"},
-                yaxis={"title": "UMAP 2"},
-                zaxis={"title": "UMAP 3"},
+                xaxis=xaxis,
+                yaxis=yaxis,
+                zaxis=zaxis,
                 margin=margin,
                 # legend={'x': 0, 'y': 1},
                 hovermode='closest',

@@ -391,6 +391,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
 
             if layer+'_tsne' in adata.obsm.keys():
                 tsne = json_numpy.dumps(adata.obsm[layer+'_tsne'])
+            
+            if layer+'_tsne_3D' in adata.obsm.keys():
+                tsne_3d = json_numpy.dumps(adata.obsm[layer+'_tsne_3D'])
 
         if process == 'QC':
             # violin_plot = gzip_str(plot_violin(adata))
@@ -464,6 +467,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "umap": umap,
             "umap_3d": umap_3d,
             "tsne": tsne,
+            "tsne_3d": tsne_3d,
             "highest_expr_genes": top_genes,
             # "violin_plot": violin_plot,
             # "scatter_plot": scatter_plot,

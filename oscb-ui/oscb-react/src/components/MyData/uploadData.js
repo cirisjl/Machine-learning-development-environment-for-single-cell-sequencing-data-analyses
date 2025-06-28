@@ -941,13 +941,13 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 </button>
                             </div>
                         </div>
-                        {isAdminuser &&
-                            <div className="publish-dataset-div">
-                                <React.Fragment>
-                                    <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic} />
-                                </React.Fragment>
-                            </div>
-                        }
+                        
+                        <div className="publish-dataset-div">
+                            <React.Fragment>
+                                <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic} />
+                            </React.Fragment>
+                        </div>
+            
                         <br />
                         {/* <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
 
