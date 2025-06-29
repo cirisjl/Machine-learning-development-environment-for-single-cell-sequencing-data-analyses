@@ -2,17 +2,6 @@ export const uiSchema = (dynamicOptions) => ({
 
   "parameters": {
     "classNames": "category",
-      "output_format": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Output Format",
-          creatable: false,
-          searchable: true,
-          opts:["AnnData", "SingleCellExperiment", "Seurat", "CSV"] 
-        }
-      },
       "species": {
         "classNames": "sub-category",
         "ui:widget": "SelectComponent",
@@ -39,14 +28,6 @@ export const uiSchema = (dynamicOptions) => ({
         "classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"
       },
-      "show_umap": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
-      "show_error": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
       "imputation_params": {
         "classNames": "form-subset sub-category",
         "methods": {
@@ -61,12 +42,12 @@ export const uiSchema = (dynamicOptions) => ({
           "classNames": "sub-category",
           "ui:widget": "SelectComponent",
           'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Layer",
-          creatable: false,
-          searchable: true,
-          opts: dynamicOptions.layers 
-        }
+            clearable: true ,
+            placeholder: "Select the Layer",
+            creatable: false,
+            searchable: true,
+            opts: dynamicOptions.layers 
+          }
         },
         "min_genes": {
           "classNames": "sub-category",

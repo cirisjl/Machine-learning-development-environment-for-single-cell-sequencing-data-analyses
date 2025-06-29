@@ -1,17 +1,17 @@
 export const uiSchema = (dynamicOptions) => ({
   "parameters": {
     "classNames": "category",
-      "output_format": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Output Format",
-          creatable: false,
-          searchable: true,
-          opts: dynamicOptions.outputFormatOptions 
-        }
-      },
+      // "output_format": {
+      //   "classNames": "sub-category",
+      //   "ui:widget": "SelectComponent",
+      //   'ui:options': {
+      //     clearable: true ,
+      //     placeholder: "Select the Output Format",
+      //     creatable: false,
+      //     searchable: true,
+      //     opts: dynamicOptions.outputFormatOptions 
+      //   }
+      // },
       "species": {
         "classNames": "sub-category",
         "ui:widget": "SelectComponent",
@@ -38,14 +38,14 @@ export const uiSchema = (dynamicOptions) => ({
         "classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"
       },
-      "show_umap": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
-      "show_error": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
+      // "show_umap": {
+      //   "classNames": "sub-category",
+      //   "ui:widget": "toggle"
+      // },
+      // "show_error": {
+      //   "classNames": "sub-category",
+      //   "ui:widget": "toggle"
+      // },
       "qc_params": {
         "classNames": "form-subset sub-category",
         "methods": {
@@ -56,17 +56,17 @@ export const uiSchema = (dynamicOptions) => ({
           "classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
-        "layer": {
-          "classNames": "sub-category",
-          "ui:widget": "SelectComponent",
-          'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Layer",
-          creatable: false,
-          searchable: true,
-          opts: dynamicOptions.layers 
-        }
-        },
+        // "layer": {
+        //   "classNames": "sub-category",
+        //   "ui:widget": "SelectComponent",
+        //   'ui:options': {
+        //     clearable: true ,
+        //     placeholder: "Select the Layer",
+        //     creatable: false,
+        //     searchable: true,
+        //     opts: dynamicOptions.layers 
+        //   }
+        // },
         // "geneRange": {
         //   "classNames": "sub-category",
         //   "ui:widget": "geneRangeSlider",
@@ -213,8 +213,8 @@ export const uiSchema = (dynamicOptions) => ({
             step: 0.05,
             marks:[
               { value: 0.1, label: '0.1' },
-              { value: 0.5, label: '0.5' },
-              { value: 1, label: '1*' },
+              { value: 0.5, label: '0.5*' },
+              { value: 1, label: '1' },
               { value: 2.5, label: '2.5' },
               { value: 5, label: '5' },
             ]

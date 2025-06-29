@@ -256,6 +256,7 @@ class MyForm extends Component {
       // formData['PP Results'] = taskData.quality_control.qc_results[0]?.pp_results;
       formData.info = taskData.quality_control.qc_results[0]?.info;
       formData.layers = taskData.quality_control.qc_results[0]?.layers;
+      formData.obs_names = taskData.quality_control.qc_results[0]?.obs_names;
       // formData.format = taskData.quality_control.qc_results[0]?.format;
       formData.default_assay = taskData.quality_control.seurat_meta?.default_assay;
       formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;

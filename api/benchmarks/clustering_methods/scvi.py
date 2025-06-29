@@ -61,7 +61,7 @@ def scvi_clustering(adata, labels, model_path):
 
     asw_score, nmi_score, ari_score, fm_score = clustering_metrics(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
 
-    return sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return adata, sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
 
 
 

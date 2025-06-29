@@ -66,6 +66,7 @@ class normalizationParameters(BaseModel):
 
 
 class reductionParameters(BaseModel):
+    methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     n_neighbors: int = 15

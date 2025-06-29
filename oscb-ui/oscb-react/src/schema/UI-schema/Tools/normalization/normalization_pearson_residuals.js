@@ -2,17 +2,6 @@ export const uiSchema = (dynamicOptions) => ({
 
   "parameters": {
     "classNames": "category",
-      "output_format": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Output Format",
-          creatable: false,
-          searchable: true,
-          opts:["AnnData", "SingleCellExperiment", "Seurat", "CSV"] 
-        }
-      },
       "species": {
         "classNames": "sub-category",
         "ui:widget": "SelectComponent",
@@ -38,14 +27,6 @@ export const uiSchema = (dynamicOptions) => ({
       "cluster_label": {
         "classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"
-      },
-      "show_umap": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
-      },
-      "show_error": {
-        "classNames": "sub-category",
-        "ui:widget": "toggle"
       },
       "normalization_params": {
         "classNames": "form-subset sub-category",

@@ -16,7 +16,7 @@
               "Liger",
               "scVI"]
           },
-          "default": ["Harmony"],
+          "default": ["scVI"],
           "uniqueItems": true,
           "minItems": 1
         },

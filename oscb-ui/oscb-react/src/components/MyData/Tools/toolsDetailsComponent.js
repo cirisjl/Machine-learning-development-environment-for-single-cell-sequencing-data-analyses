@@ -76,7 +76,8 @@ export default function ToolsDetailsComponent(props) {
     const [dynamicOptions, setDynamicOptions] = useState({
       outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
       speciesOptions: ["human", "mouse"],
-      layers: [] // Add layers as a dynamic option
+      layers: [], // Add layers as a dynamic option
+      obs_names: [] // Add obs_names as a dynamic option
     });
     
     const onSelectDataset = (dataset) => {
@@ -109,35 +110,54 @@ export default function ToolsDetailsComponent(props) {
       if (Object.keys(selectedDatasets).length > 0) {
 
         let layers = getLayersArray(selectedDatasets) || [];
+        let obs_names = getObsNamesArray(selectedDatasets) || [];
 
         setDynamicOptions((prevOptions) => ({
           ...prevOptions,
           layers: layers, // Update layers dynamically
+          obs_names: obs_names, // Update obs_names dynamically
         }));
       } else {
         setDynamicOptions((prevOptions) => ({
           ...prevOptions,
           layers: [], // Reset layers if no datasets are selected
+          obs_names: [], // Reset obs_names if no datasets are selected
         }));
       }
     }, [selectedDatasets]);
   
 
-    const getLayersArray = (dataMap) => {
-      let layersArray = [];
-  
-      Object.values(dataMap).forEach((dataset) => {
-        console.log("dataset", dataset);
-          if (dataset.selectedSubItem?.layers) {
-              layersArray.push(...dataset.selectedSubItem.layers);
-          } else if (dataset?.layers) {
-              layersArray.push(...dataset.layers);
-          }
-      });
-  
-      return [...new Set(layersArray)]; // Remove duplicates
+  const getObsNamesArray = (dataMap) => {
+    let obsNamesArray = [];
+    Object.values(dataMap).forEach((dataset) => {
+      console.log("dataset", dataset);
+      if (dataset.selectedSubItem?.obs_names) {
+        obsNamesArray.push(...dataset.selectedSubItem.obs_names);
+      } else if (dataset?.obs_names) {
+        obsNamesArray.push(...dataset.obs_names);
+      }
+    });
+    return [...new Set(obsNamesArray)]; // Remove duplicates
   };
-  // Function to handle selection of sub-items
+
+
+  const getLayersArray = (dataMap) => {
+    let layersArray = [];
+
+    Object.values(dataMap).forEach((dataset) => {
+      console.log("dataset", dataset);
+      if (dataset.selectedSubItem?.layers) {
+        layersArray.push(...dataset.selectedSubItem.layers);
+      } else if (dataset?.layers) {
+        layersArray.push(...dataset.layers);
+      }
+    });
+
+    return [...new Set(layersArray)]; // Remove duplicates
+  };
+
+
+// Function to handle selection of sub-items
 const onSelectSubItem = (mainItem, subItem) => {
   const mainItemId = mainItem.Id;
   let currentSelectedDatasets = { ...selectedDatasets };
@@ -176,6 +196,7 @@ const onSelectSubItem = (mainItem, subItem) => {
     setDynamicOptions((prevOptions) => ({
       ...prevOptions,
       layers: [], 
+      obs_names: [], 
     }));
   };
 

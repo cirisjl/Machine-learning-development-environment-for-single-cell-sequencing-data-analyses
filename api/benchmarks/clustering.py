@@ -126,8 +126,8 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
             # Call scvi_clustering method
-            sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
-
+            adata, sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
+            adata.write_h5ad(adata_path, compression='gzip')
             scvi_results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,

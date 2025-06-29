@@ -17,7 +17,6 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    method = "UMAP"
     datasetId = ds['datasetId']
     parameters = ds['reduction_params']
     layer = None
@@ -27,6 +26,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    method = 'UMAP&t-SNE'
 
     upsert_jobs(
         {
@@ -58,15 +58,15 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
 
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
-            output = get_output_path(output, process_id=process_id, dataset=dataset, method='UMAP')
+            output = get_output_path(output, process_id=process_id, dataset=dataset, method='UMAP_t-SNE')
             adata.write_h5ad(output, compression='gzip')
             adata = None
             reduction_results['datasetId'] = datasetId
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database
-            redislogger.info(job_id, "AnnData object for UMAP reduction is saved successfully")
+            redislogger.info(job_id, "AnnData object for UMAP & t-SNE reduction is saved successfully")
         except Exception as e:
             # redislogger.error(job_id, "UMAP reduction is failed.")
-            detail = f"UMAP reduction is failed: {e}"
+            detail = f"UMAP or t-SNE reduction is failed: {e}"
             upsert_jobs(
                 {
                     "job_id": job_id, 

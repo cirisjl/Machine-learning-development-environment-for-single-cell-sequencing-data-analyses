@@ -28,7 +28,7 @@
                   ]
                 },
                 "default": [
-                  "UMAP"
+                  "t-SNE"
                 ],
                 "uniqueItems": true,
                 "minItems": 1
