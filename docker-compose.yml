@@ -109,8 +109,13 @@ services:
       - .env
     deploy:
       resources:
-         limits:
-            cpus: "10"
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
+        limits:
+          cpus: "10"
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
@@ -141,8 +146,13 @@ services:
       - .env
     deploy:
       resources:
-         limits:
-            cpus: "10"
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
+        limits:
+          cpus: "10"
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload
@@ -172,8 +182,13 @@ services:
       - .env
     deploy:
       resources:
-         limits:
-            cpus: "10"
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
+        limits:
+          cpus: "10"
     volumes:
       - /ps/code/oscb/results:/data/results
       - /ps/code/oscb/uploads:/data/upload

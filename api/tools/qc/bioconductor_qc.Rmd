@@ -123,6 +123,7 @@ rowData(sce)$discard <- ! keep_feature
 table(rowData(sce)$discard)
 assay(sce, "logcounts_raw") <- log2(counts(sce) + 1) # log counts
 sce.qc <- sce[! rowData(sce)$discard,! colData(sce)$discard]
+sce.qc <- sce.qc[rowSubset(sce.qc)]
 
 # Highly variable genes
 dec <- modelGeneVar(sce.qc)

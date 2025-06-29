@@ -630,7 +630,7 @@ IsNormalized <- function(Expression_Matrix, min_genes=200){
   colnames(var_df) <- sub("dispersions_norm", "mvp.dispersion.scaled", colnames(var_df))
   colnames(var_df) <- sub("dispersions", "mvp.dispersion", colnames(var_df))
   colnames(var_df) <- sub("means", "mvp.mean", colnames(var_df))
-  colnames(var_df) <- sub("highly_variable", "highly.variable", colnames(var_df))
+  colnames(var_df) <- sub("highly_variable", "vst.variable", colnames(var_df))
   return(var_df)
 }
 
@@ -681,6 +681,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
 #   }
 
   srat <- CreateSeuratObject(counts = X, project = project_name, meta.data = obs_df)
+  srat[[assay]]@meta.features <- var_df
   message("X -> counts")
 
   if(complete){
@@ -753,6 +754,34 @@ SaveSeurat <- function(srat, output){
         saveRDS(object=srat, file=output)
     })
     output
+}
+
+
+CleanSeurat <- function(srat){
+    # Scanpy
+    if('outlier' %in% names(srat@meta.data) && 'mt_outlier' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = outlier == FALSE)
+        srat <- subset(srat, subset = mt_outlier == FALSE)
+    }
+
+    if('predicted_doublets' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = predicted_doublets == FALSE)
+    }
+
+    # Bioconductor
+    if('discard' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = discard == FALSE)
+    }
+
+    # Seurat
+    if('doublet_class' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = doublet_class == 'Singlet')
+    }
+
+    if('vst.variable' %in% names(srat[['RNA']]@meta.features)){
+        srat <- srat[VariableFeatures(object = srat), ]
+    }
+    srat
 }
 
 

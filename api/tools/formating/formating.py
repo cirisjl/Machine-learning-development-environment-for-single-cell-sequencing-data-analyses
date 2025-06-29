@@ -268,6 +268,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     umap = None
     tsne = None
     umap_3d = None
+    tsne_3d = None
     # violin_plot = None
     # scatter_plot = None
     # highest_expr_genes_plot = None
@@ -671,6 +672,10 @@ def get_report_path(dataset, output, method):
     report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
     
     return report_path
+
+
+def get_scvi_path(adata_path):
+    return os.path.join(os.path.dirname(os.path.abspath(adata_path)), 'scvi_model')
 
 
 def list_py_to_r(list):
@@ -1109,4 +1114,6 @@ def clean_anndata(adata):
         adata = adata[adata.obs.doublet_class=="Singlet", :]
 
     if 'highly_variable' in adata.var.columns:
-        adata = adata[:, adata.var.highly_variable] 
+        adata = adata[:, adata.var.highly_variable]
+
+    return adata

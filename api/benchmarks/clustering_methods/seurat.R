@@ -16,7 +16,7 @@ clustering <- function(path, labels, dims=1:10){ # labels: column name of labels
             print(e)
         }
     )
-
+    srat <- CleanSeurat(srat)
     srat <- FindVariableFeatures(srat, selection.method = "vst")
     srat <- ScaleData(srat, features = rownames(srat))
 

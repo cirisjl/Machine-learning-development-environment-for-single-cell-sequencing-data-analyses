@@ -1,4 +1,4 @@
-from tools.formating.formating import load_anndata, get_md5, clean_anndata
+from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.clustering_methods.scanpy import scanpy_clustering
 from benchmarks.clustering_methods.scvi import scvi_clustering
@@ -6,6 +6,7 @@ from benchmarks.clustering_methods.seurat import seurat_clustering
 from utils.mongodb import generate_process_id, create_bm_results, benchmark_result_exists
 from utils.redislogger import *
 from datetime import datetime
+import os
 
 
 def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_type='clustering'):
@@ -17,6 +18,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
+    scvi_path = get_scvi_path(adata_path)
     adata = clean_anndata(adata)
     # adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
@@ -124,7 +126,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
             # Call scvi_clustering method
-            sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label)
+            sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
 
             scvi_results = {
                 "sys_info": sys_info,

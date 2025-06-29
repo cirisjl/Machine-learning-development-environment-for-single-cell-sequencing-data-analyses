@@ -1,5 +1,7 @@
 # Seed for reproducibility
 import torch
+import os
+import shutil
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -22,13 +24,25 @@ np.random.seed(0)
 # sc.settings.verbosity = 0  # verbosity: errors (0), warnings (1), info (2), hints (3)
 
 
-def scvi_clustering(adata, labels):
+def scvi_clustering(adata, labels, model_path):
     # Start monitoring
+    model = None
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
     scvi.model.SCVI.setup_anndata(adata)
-    model = scvi.model.SCVI(adata, n_hidden = 192, n_latent = 50, n_layers = 1, gene_likelihood = 'zinb')
-    model.train(max_epochs = 400, early_stopping = True)
+    if not os.path.exists(model_path):
+        model = scvi.model.SCVI(adata, n_hidden = 192, n_latent = 50, n_layers = 1, gene_likelihood = 'zinb')
+        model.train(max_epochs = 400, early_stopping = True)
+        model.save(model_path)
+    else:
+        try:
+            model = scvi.model.SCVI.load(model_path, adata)
+        except Exception as e:
+            print(e)
+            shutil.rmtree(model_path) # If the model_path exists but could not be loaded, then remove it and train a new one.
+            model = scvi.model.SCVI(adata, n_hidden = 192, n_latent = 50, n_layers = 1, gene_likelihood = 'zinb')
+            model.train(max_epochs = 400, early_stopping = True)
+            model.save(model_path)
 
     latent = model.get_latent_representation()
     adata.obsm["X_scVI"] = latent
