@@ -13,7 +13,6 @@ import pymde
 
 import seaborn as sns
 import matplotlib.pyplot as plt
-%matplotlib inline
 
 torch.manual_seed(0)
 np.random.seed(0)
