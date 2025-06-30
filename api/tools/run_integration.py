@@ -107,7 +107,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             sc.pp.log1p(adata)
                         else:
                             adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
-                            sc.pp.normalize_total(adata, target_sum=target_sum)
+                            sc.pp.normalize_total(adata)
                             sc.pp.log1p(adata)
                         sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
                     else:
