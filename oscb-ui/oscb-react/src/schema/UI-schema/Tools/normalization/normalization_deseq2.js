@@ -101,8 +101,8 @@ export const uiSchema = (dynamicOptions) => ({
             step: 0.05,
             marks:[
               { value: 0.1, label: '0.1' },
-              { value: 0.5, label: '0.5' },
-              { value: 1, label: '1*' },
+              { value: 0.5, label: '0.5*' },
+              { value: 1, label: '1' },
               { value: 2.5, label: '2.5' },
               { value: 5, label: '5' },
             ]

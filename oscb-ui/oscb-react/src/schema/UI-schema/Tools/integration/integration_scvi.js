@@ -24,7 +24,7 @@ export const uiSchema = (dynamicOptions) => ({
       'ui:options': {
         title: 'Pseudo Replicates: ',
         min: 0,
-        max: 100,
+        max: 50,
         step: 1,
         marks: [
           { value: 0, label: '0*' },

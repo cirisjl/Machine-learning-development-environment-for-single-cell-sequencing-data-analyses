@@ -3045,7 +3045,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 'adata_path': "$_id.adata_path",
                                 'process_ids': "$_id.process_ids",
                                 'layers': "$_id.layers",
-                                "obs_names": "$_id.$obs_names",
+                                "obs_names": "$_id.obs_names",
                                 totalCount: { $size: "$uniqueValues" }
                             }
                         }

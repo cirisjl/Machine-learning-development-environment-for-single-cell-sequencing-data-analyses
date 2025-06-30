@@ -46,7 +46,7 @@ def scvi_clustering(adata, labels, model_path):
 
     latent = model.get_latent_representation()
     adata.obsm["X_scVI"] = latent
-    denoised = model.get_normalized_expression(adata, library_size=1e4)
+    # denoised = model.get_normalized_expression(adata, library_size=1e4)
     adata.layers["scvi_normalized"] = model.get_normalized_expression(
         library_size=10e4
     )

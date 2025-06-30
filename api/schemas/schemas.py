@@ -94,9 +94,10 @@ class integrationParameters(BaseModel):
     # description: Optional[str] = None
     # datasetId: Optional[str] = None
     method: Optional[str] = None
+    batch_key: Optional[str] = None
+    pseudo_replicates: Optional[int] = 0
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    batch_key: Optional[str] = None
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
     default_assay: Optional[str] = 'RNA' # Required for Seurat
@@ -141,6 +142,8 @@ class IntegrationDataset(BaseModel):
     # output_format: str
     methods: List[str] = None
     method: Optional[str] = None,
+    batch_key: Optional[str] = None
+    pseudo_replicates: Optional[int] = 0
     params: integrationParameters = Field(default_factory=integrationParameters)
    
 

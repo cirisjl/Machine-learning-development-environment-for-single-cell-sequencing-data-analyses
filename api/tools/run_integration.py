@@ -5,10 +5,17 @@ from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from tools.integration.scvi import scvi_integrate
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
+
+import warnings
+warnings.simplefilter("ignore", FutureWarning)
+warnings.simplefilter("ignore", UserWarning)
+warnings.simplefilter("ignore", RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def run_integration(job_id, ids:dict, fig_path=None):
     pp_stage = "Corrected"
@@ -21,6 +28,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
     userID = ids['userID']
     output = ids['output']
     methods = ids['methods']
+    batch_key = ids['batch_key']
+    pseudo_replicates = ids['pseudo_replicates']
     # output_format = ids['output_format']
     parameters = ids['params']
     default_assay = parameters['default_assay']
@@ -42,7 +51,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
         detail = 'No integration method is selected.'
         raise CeleryTaskException(detail)
     # output = get_output_path(datasets, input, method='integration')
-    # methods = [x.upper() for x in methods if isinstance(x,str)]
+    methods = [x.upper() for x in methods if isinstance(x,str)]
     # adata, counts, csv_path = LoadAnndata_to_csv(input, output, layer, show_error)
 
     # methods = list_py_to_r(methods)
@@ -84,44 +93,119 @@ def run_integration(job_id, ids:dict, fig_path=None):
             process_ids.append(process_id)
         else:
             try:
-                # report_path = get_report_path(dataset, output, "integration")
-                # Get the absolute path of the current file
-                current_file = os.path.abspath(__file__)
-                # Construct the relative path to the desired file
-                relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
-                # Get the absolute path of the desired file
-                rmd_path = os.path.abspath(relative_path)
-                # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
-                s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
-                # redislogger.info(job_id, str(s))
-                # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
+                if ("HARMONY" in methods or "SCVI" in methods) and batch_key is not None :
+                    adata = None
+                    if len(inputs) > 1:
+                        adatas = [load_anndata(input) for input in inputs]
+                        adata = sc.concat(adatas, join='outer')
+                    elif len(inputs) == 1:
+                        adata = load_anndata(inputs[0])
 
-                if os.path.exists(adata_path):
-                    redislogger.info(job_id, "Adding 2D & 3D UMAP to AnnData object.")
-                    adata = load_anndata(adata_path)
-                    sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
-                    adata = sc.tl.umap(adata, random_state=0, 
-                                    init_pos="spectral", n_components=2, 
-                                    copy=True, maxiter=None)
-                    adata_3D = sc.tl.umap(adata, random_state=0, 
-                                    init_pos="spectral", n_components=3, 
-                                    copy=True, maxiter=None)
-                    adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
-                    adata.write_h5ad(adata_path, compression='gzip')
-                    adata_3D = None
+                    # Check if X is normalized
+                    if adata is not None:
+                        if is_normalized(adata.X) and not check_nonnegative_integers(adata.X):
+                            sc.pp.log1p(adata)
+                        else:
+                            adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
+                            sc.pp.normalize_total(adata, target_sum=target_sum)
+                            sc.pp.log1p(adata)
+                        sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
+                    else:
+                        raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+                            
+                        
+                    if "HARMONY" in methods and adata is not None:
+                        import scanpy.external as sce
+                        sc.pp.scale(adata)
+                        sc.pp.pca(adata, use_highly_variable=True) #True since we didnt subset
+                        sce.pp.harmony_integrate(adata, key = batch_key)
+                        sc.pp.neighbors(adata, use_rep = "X_pca_harmony")
+
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=n_pcs, use_rep="X_pca_harmony", random_state=0)
+                        if msg is not None: redislogger.warning(job_id, msg)
+
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, use_rep="X_pca_harmony", random_state=0)
+
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
+                        adata.write_h5ad(output, compression='gzip')
+
+                        integration_output.append({f"{method}_AnnDate": adata_path})
+                        integration_results['outputs'] = integration_output
+                        adata = None
+                        redislogger.info(job_id, integration_results['info'])
+                        integration_results['datasetIds'] = datasetIds
+                        create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
+                        process_ids.append(process_id) 
+
+                    if "SCVI" in methods and adata is not None:
+                        scvi_path = get_scvi_path(adata_path, "batch_integration")
+                        adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
+
+                        adata = scvi_integrate(adata, batch_key=batch_key, model_path=scvi_path)
+
+                        sc.pp.neighbors(adata, use_rep = "X_scVI")
+
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=n_pcs, use_rep="X_scVI", random_state=0)
+                        if msg is not None: redislogger.warning(job_id, msg)
+
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, use_rep="X_scVI", random_state=0)
+
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
+                        adata.write_h5ad(output, compression='gzip')
+
+                        integration_output.append({f"{method}_AnnDate": adata_path})
+                        integration_results['outputs'] = integration_output
+                        adata = None
+                        redislogger.info(job_id, integration_results['info'])
+                        integration_results['datasetIds'] = datasetIds
+                        create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
+                        process_ids.append(process_id)
+
                 else:
-                    upsert_jobs(
-                        {
-                            "job_id": job_id, 
-                            "results": "AnnData file does not exist due to the failure of Integration.",
-                            "completed_on": datetime.now(),
-                            "status": "Failure"
-                        }
-                    )
-                    raise ValueError("AnnData file does not exist due to the failure of Integration.")
+                    # report_path = get_report_path(dataset, output, "integration")
+                    # Get the absolute path of the current file
+                    current_file = os.path.abspath(__file__)
+                    # Construct the relative path to the desired file
+                    relative_path = os.path.join(os.path.dirname(current_file), 'integration', 'integration.Rmd')
+                    # Get the absolute path of the desired file
+                    rmd_path = os.path.abspath(relative_path)
+                    # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
+                    # redislogger.info(job_id, str(s))
+                    # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
+
+                    if os.path.exists(adata_path):
+                        redislogger.info(job_id, "Adding 2D & 3D UMAP to AnnData object.")
+                        adata = load_anndata(adata_path)
+                        sc.pp.neighbors(adata, n_neighbors=dims, n_pcs=npcs, random_state=0)
+                        adata = sc.tl.umap(adata, random_state=0, 
+                                        init_pos="spectral", n_components=2, 
+                                        copy=True, maxiter=None)
+                        adata_3D = sc.tl.umap(adata, random_state=0, 
+                                        init_pos="spectral", n_components=3, 
+                                        copy=True, maxiter=None)
+                        adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+                        adata.write_h5ad(adata_path, compression='gzip')
+                        adata_3D = None
+                    else:
+                        upsert_jobs(
+                            {
+                                "job_id": job_id, 
+                                "results": "AnnData file does not exist due to the failure of Integration.",
+                                "completed_on": datetime.now(),
+                                "status": "Failure"
+                            }
+                        )
+                        raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster='orig.ident')
+                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
                 # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                 integration_output.append({f"{method}_AnnDate": adata_path})
                 integration_output.append({f"{method}_Seurat": output})

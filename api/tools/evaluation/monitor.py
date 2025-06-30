@@ -58,7 +58,7 @@ class Monitor(Thread):
 
         n_cores = psutil.cpu_count(logical=False)
         # n_thread = psutil.cpu_count()
-        freq = psutil.cpu_freq().max / 1000 # GHz
+        freq = psutil.cpu_freq().current / 1000 # GHz
         cpu_model = platform.processor()
         mem_total = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2) # GB
         # mem_free = round(psutil.virtual_memory().available / 1024 / 1024 / 1024, 2) # GB

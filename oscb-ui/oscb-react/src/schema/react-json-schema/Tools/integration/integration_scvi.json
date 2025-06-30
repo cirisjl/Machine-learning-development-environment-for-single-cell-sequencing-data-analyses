@@ -23,7 +23,7 @@
         "batch_key": {
           "type": "string",
           "title": "Batch Key",
-          "description": "Please specify the Batch Key",
+          "description": "Please specify the Batch Key.",
           "default": ""
         },
         "pseudo_replicates": {
