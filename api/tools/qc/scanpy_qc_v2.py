@@ -90,7 +90,6 @@ def run_scanpy_qc_v2(adata, unique_id, min_genes=200, max_genes=None, min_cells=
         
         redislogger.info(unique_id, f"Normalizing dataset usig log{target_sum}.")
         sc.pp.normalize_total(adata, target_sum=target_sum)
-
         sc.pp.log1p(adata)
         redislogger.info(unique_id, "Finding highly variable genes.")
         sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)

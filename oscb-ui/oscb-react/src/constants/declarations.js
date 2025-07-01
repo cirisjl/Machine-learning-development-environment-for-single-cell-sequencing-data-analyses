@@ -44,7 +44,7 @@ export const defaultValues = {
     n_neighbors: 15,
     n_pcs: 1,
     resolution: 0.5,
-    doublet_rate: 0,
+    doublet_rate: 0.08,
     regress_cell_cycle: false
   };
 

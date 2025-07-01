@@ -24,7 +24,7 @@
           "type": "string",
           "title": "Batch Key",
           "description": "Please specify the Batch Key.",
-          "default": ""
+          "uniqueItems": true
         },
         "pseudo_replicates": {
           "type": "integer",
@@ -48,6 +48,11 @@
             "dims": {
               "type": "integer",
               "default": 30
+            },
+            "resolution": {
+              "type": "number",
+              "title": "Resolution:",
+              "default": 0.5
             }
           }
         }

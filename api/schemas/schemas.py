@@ -47,7 +47,7 @@ class imputationParameters(BaseModel):
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     genes: Optional[List[str]] = None
-    ncores: Optional[int] = 5
+    ncores: Optional[int] = 4
     n_neighbors: int = 15
     n_pcs: int = 1 # Scanpy
     resolution: float = 0.5
@@ -100,6 +100,7 @@ class integrationParameters(BaseModel):
     layer: Optional[str] = None
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
+    resolution: float = 0.5
     default_assay: Optional[str] = 'RNA' # Required for Seurat
     reference: Optional[str] = None
     # show_umap: Optional[bool] = True

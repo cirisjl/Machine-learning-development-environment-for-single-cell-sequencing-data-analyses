@@ -46,19 +46,18 @@
               "description": "Specify the layer",
               "default": ""
             },
-            "min_genes": {
+            "n_neighbors": {
               "type": "integer",
-              "title": "Min Genes",
-              "default": 200
+              "default": 15
             },
-            "max_genes": {
+            "n_pcs": {
               "type": "integer",
-              "title": "Max Genes",
-              "default": 20000
+              "default": 1
             },
-            "ncores": {
-              "type": "integer",
-              "default": 12
+            "resolution": {
+              "type": "number",
+              "title": "Resolution:",
+              "default": 0.5
             }
           }
         }

@@ -28,7 +28,8 @@ export const uiSchema = (dynamicOptions) => ({
         step: 1,
         marks: [
           { value: 0, label: '0*' },
-          { value: 5, label: '5' },
+          { value: 5, label: '3' },
+          { value: 5, label: '6' },
           { value: 10, label: '10' },
           { value: 20, label: '20' },
           { value: 30, label: '30' },
@@ -66,9 +67,9 @@ export const uiSchema = (dynamicOptions) => ({
       "dims": {
         "classNames": "sub-category",
         "ui:widget": "RangeSlider",
-        'ui:title': 'dims: ',
+        'ui:title': 'n_neighbors: ',
         'ui:options': {
-          title: 'dims: ', // Title for the slider
+          title: 'n_neighbors: ', // Title for the slider
           min: 0,
           max: 200,
           step: 1,
@@ -84,6 +85,24 @@ export const uiSchema = (dynamicOptions) => ({
           ]
         },
       },
+      "resolution": {
+        "classNames": "sub-category",
+        "ui:widget": "RangeSlider",
+        'ui:title': 'Resolution: ',
+        'ui:options': {
+          title: 'Resolution: ',
+          min: 0,
+          max: 5,
+          step: 0.05,
+          marks: [
+            { value: 0.1, label: '0.1' },
+            { value: 0.5, label: '0.5*' },
+            { value: 1, label: '1' },
+            { value: 2.5, label: '2.5' },
+            { value: 5, label: '5' },
+          ]
+        }
+      }
     }
   }
 });

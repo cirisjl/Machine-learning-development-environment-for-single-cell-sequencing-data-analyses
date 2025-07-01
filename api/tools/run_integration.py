@@ -36,7 +36,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
     # reference = parameters['reference']
     dims = parameters['dims']
     npcs = parameters['npcs']
+    resolution = parameters['resolution']
     integration_output = []
+
+    # print(inputs)
 
     upsert_jobs(
         {
@@ -103,30 +106,32 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                     # Check if X is normalized
                     if adata is not None:
-                        if is_normalized(adata.X) and not check_nonnegative_integers(adata.X):
-                            sc.pp.log1p(adata)
-                        else:
+                        if not is_normalized(adata.X) and check_nonnegative_integers(adata.X):
                             adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
-                            sc.pp.normalize_total(adata)
-                            sc.pp.log1p(adata)
-                        sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
                     else:
                         raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
-                            
-                        
+                    
+                    # Pseudo replicates
+                    if pseudo_replicates > 1:
+                        adata = create_pseudo_replicates(adata, batch_key, pseudo_replicates)
+      
                     if "HARMONY" in methods and adata is not None:
+                        redislogger.info(job_id, "Start Harmony integration...")
                         import scanpy.external as sce
+                        sc.pp.normalize_total(adata)
+                        sc.pp.log1p(adata)
+                        sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
                         sc.pp.scale(adata)
                         sc.pp.pca(adata, use_highly_variable=True) #True since we didnt subset
                         sce.pp.harmony_integrate(adata, key = batch_key)
                         sc.pp.neighbors(adata, use_rep = "X_pca_harmony")
 
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=n_pcs, use_rep="X_pca_harmony", random_state=0)
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_pca_harmony", random_state=0)
                         if msg is not None: redislogger.warning(job_id, msg)
 
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, use_rep="X_pca_harmony", random_state=0)
+                        adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
@@ -141,6 +146,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         process_ids.append(process_id) 
 
                     if "SCVI" in methods and adata is not None:
+                        redislogger.info(job_id, "Start scVI integration...")
                         scvi_path = get_scvi_path(adata_path, "batch_integration")
                         adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
 
@@ -149,11 +155,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         sc.pp.neighbors(adata, use_rep = "X_scVI")
 
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=n_pcs, use_rep="X_scVI", random_state=0)
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_scVI", random_state=0)
                         if msg is not None: redislogger.warning(job_id, msg)
 
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, use_rep="X_scVI", random_state=0)
+                        adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
@@ -168,6 +174,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         process_ids.append(process_id)
 
                 else:
+                    redislogger.info(job_id, f"Start {method} integration...")
                     # report_path = get_report_path(dataset, output, "integration")
                     # Get the absolute path of the current file
                     current_file = os.path.abspath(__file__)
@@ -176,7 +183,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     # Get the absolute path of the desired file
                     rmd_path = os.path.abspath(relative_path)
                     # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, str(s))
                     # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
@@ -191,6 +198,15 @@ def run_integration(job_id, ids:dict, fig_path=None):
                                         init_pos="spectral", n_components=3, 
                                         copy=True, maxiter=None)
                         adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
+
+                        # Pseudo replicates
+                        if pseudo_replicates > 1:
+                            adata = create_pseudo_replicates(adata, batch_key, pseudo_replicates)
+
+                        # Converrt dense martrix to sparse matrix
+                        if isinstance(adata.X, np.ndarray):
+                            adata.X = csr_matrix(adata.X)
+
                         adata.write_h5ad(adata_path, compression='gzip')
                         adata_3D = None
                     else:
@@ -204,18 +220,18 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         )
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
-                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
-                # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
-                integration_output.append({f"{method}_AnnDate": adata_path})
-                integration_output.append({f"{method}_Seurat": output})
-                integration_output.append({f"{method}_Report": report_path})
-                integration_results['outputs'] = integration_output
-                adata = None
-                redislogger.info(job_id, integration_results['info'])
-                integration_results['datasetIds'] = datasetIds
-                create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
-                process_ids.append(process_id) 
+                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
+                    # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
+                    integration_output.append({f"{method}_AnnDate": adata_path})
+                    integration_output.append({f"{method}_Seurat": output})
+                    integration_output.append({f"{method}_Report": report_path})
+                    integration_results['outputs'] = integration_output
+                    adata = None
+                    redislogger.info(job_id, integration_results['info'])
+                    integration_results['datasetIds'] = datasetIds
+                    create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
+                    process_ids.append(process_id) 
 
             except Exception as e:
                 upsert_jobs(

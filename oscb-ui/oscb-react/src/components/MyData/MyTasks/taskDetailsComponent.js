@@ -610,7 +610,7 @@ function TaskDetailsComponent() {
                             <ReactPlotly plot_data={tsnePlotData?.tsne_plot || result.tsne_plot} />
                           </>
                         ) : (
-                          <div style={{ textAlign: 'center', width: '100%' }}>2D tsne plot does not exist.</div>
+                          <div style={{ textAlign: 'center', width: '100%' }}>2D t-SNE plot does not exist.</div>
                         )
                       ) : tsnePlotDimension === '3D' ? (
                         tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d ? (
@@ -618,7 +618,7 @@ function TaskDetailsComponent() {
                             <ReactPlotly plot_data={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d} />
                           </>
                         ) : (
-                          <div style={{ textAlign: 'center', width: '100%' }}>3D tsne plot does not exist.</div>
+                          <div style={{ textAlign: 'center', width: '100%' }}>3D t-SNE plot does not exist.</div>
                         )
                       ) : null}
                       </>

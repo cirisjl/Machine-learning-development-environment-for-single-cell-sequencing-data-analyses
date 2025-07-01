@@ -126,6 +126,10 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
 
                         redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
                         adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                        
+                        # Converrt dense martrix to sparse matrix
+                        if isinstance(adata.X, np.ndarray):
+                            adata.X = csr_matrix(adata.X)
                         adata.write_h5ad(adata_path, compression='gzip')
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")

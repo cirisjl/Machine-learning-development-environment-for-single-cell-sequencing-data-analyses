@@ -13,6 +13,7 @@ params:
   methods: NULL # Integration methods: "Seurat", "Harmony", "LIGER"
   dims: 30
   npcs: 30
+  resolution: 0.8
   reference: NULL # Reference dataset for Seurat integration
   show_code: FALSE
   show_warning: FALSE
@@ -105,7 +106,7 @@ if("SEURAT" %in% methods) {
     DimPlot(srats.integrated, reduction = "umap", split.by = "orig.ident") + NoLegend()
 
     srats.integrated <- FindNeighbors(srats.integrated, dims = 1:dims, k.param = 10, verbose = F)
-    srats.integrated <- FindClusters(srats.integrated, verbose = F)
+    srats.integrated <- FindClusters(srats.integrated, verbose = F, resolution = params$resolution)
     DimPlot(srats.integrated, label = T) + NoLegend()
 
     PlotIntegratedClusters(srats.integrated) 
@@ -150,7 +151,7 @@ if("HARMONY" %in% methods) {
     srat.harmony <- srat.harmony %>% 
     RunUMAP(reduction = "harmony", dims = 1:dims, verbose = F) %>% 
     FindNeighbors(reduction = "harmony", k.param = 10, dims = 1:dims) %>% 
-    FindClusters() %>% 
+    FindClusters(resolution = params$resolution) %>% 
     identity()
 
     srat.harmony <- SetIdent(srat.harmony, value = "orig.ident")
@@ -191,7 +192,7 @@ if("LIGER" %in% methods) {
     srat.liger <- RunOptimizeALS(srat.liger, k = 30, lambda = 5, split.by = "orig.ident") ## this one takes a while
     srat.liger <- RunQuantileNorm(srat.liger, split.by = "orig.ident")
     srat.liger <- FindNeighbors(srat.liger, reduction = "iNMF", k.param = 10, dims = 1:dims)
-    srat.liger <- FindClusters(srat.liger)
+    srat.liger <- FindClusters(srat.liger, resolution = params$resolution)
 
     RedisInfo(unique_id, "LIGER integration is done.")
 

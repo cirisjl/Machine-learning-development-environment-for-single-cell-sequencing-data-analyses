@@ -546,7 +546,7 @@ const DatasetInfoComponent = () => {
                                                           <ReactPlotly plot_data={tsnePlotData.tsne_plot} />
                                                         </div>
                                                       ) : (
-                                                        <div style={{ textAlign: 'center', width: '100%' }}>2D tsne plot does not exist.</div>
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>2D  t-SNE plot does not exist.</div>
                                                       )
                                                     ) : tsnePlotDimension === '3D' ? (
                                                       tsnePlotData && tsnePlotData.tsne_plot_3d ? (
@@ -554,7 +554,7 @@ const DatasetInfoComponent = () => {
                                                           <ReactPlotly plot_data={tsnePlotData.tsne_plot_3d} />
                                                         </div>
                                                       ) : (
-                                                        <div style={{ textAlign: 'center', width: '100%' }}>3D tsne plot does not exist.</div>
+                                                        <div style={{ textAlign: 'center', width: '100%' }}>3D  t-SNE plot does not exist.</div>
                                                       )
                                                     ) : null}
                                                   </>

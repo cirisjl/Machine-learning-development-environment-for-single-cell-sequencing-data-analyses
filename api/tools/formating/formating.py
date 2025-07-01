@@ -346,10 +346,10 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             var_dict = adata.var[adata.var['vst.variable']==True].to_dict('list') # Pandas dataframe
             var_dict['index'] = adata.var[adata.var['vst.variable']==True].index.tolist()
             gene_metadata = gzip_dict(var_dict)
-        else:
+        elif nGenes > n_top_genes:
             # If highly variable does not exist, then create it.
             if is_normalized(adata.X) and not check_nonnegative_integers(adata.X):
-                sc.pp.log1p(adata)
+                # sc.pp.log1p(adata)
                 sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
             else:
                 adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
@@ -362,6 +362,12 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
             var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
             var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
+            gene_metadata = gzip_dict(var_dict)
+        else:
+            genes = gzip_list(adata.var.index.tolist())
+            # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
+            var_dict = adata.var.to_dict('list') # Pandas dataframe
+            var_dict['index'] = adata.var.index.tolist()
             gene_metadata = gzip_dict(var_dict)
 
             # genes = gzip_list(adata.var_names.to_list()) # Gene IDs
@@ -678,7 +684,7 @@ def get_scvi_path(adata_path, task = None):
     if task is None:
         return os.path.join(os.path.dirname(os.path.abspath(adata_path)), 'scvi_model')
     else:
-        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), task, '_scvi_model')
+        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), task + '_scvi_model')
 
 
 def list_py_to_r(list):
@@ -1024,12 +1030,13 @@ def convert_from_r(item: Any, date_cols: Optional[List[str]] = None, name: str =
 #     return adata
 
 # Remove NA and single value columns
-def regularise_df(df):
+def regularise_df(df, drop_single_values=False):
     df = df.dropna(axis=1, how='all')
     res = df
-    for col in df.columns:
-        if len(df[col].unique()) == 1:
-            res = res.drop(col,axis=1)
+    if drop_single_values == True:
+        for col in df.columns:
+            if len(df[col].unique()) == 1:
+                res = res.drop(col,axis=1)
     return res
 
 
@@ -1120,3 +1127,32 @@ def clean_anndata(adata):
         adata = adata[:, adata.var.highly_variable]
 
     return adata
+
+
+# Pseudo replicates
+def create_pseudo_replicates(adata, batch_key, num):
+    import random
+    ads = []
+    for sample in adata.obs[batch_key].unique():
+        samp_cell_subset = adata[adata.obs[batch_key] == sample]
+
+        if is_normalized(adata.X) and not check_nonnegative_integers(adata.X) and 'raw_counts' in adata.layers.keys():
+            samp_cell_subset.X = samp_cell_subset.layers['raw_counts'] # Make sure to use raw data
+        
+        indices = list(samp_cell_subset.obs_names)
+        random.shuffle(indices)
+        indices = np.array_split(np.array(indices), num) # Change number here for number of replicates deisred
+        
+        for i, pseudo_rep in enumerate(indices):
+        
+            # rep_adata = sc.AnnData(X = samp_cell_subset[indices[i]].X.sum(axis = 0),
+            #                        var = samp_cell_subset[indices[i]].var[[]])
+            rep_adata = samp_cell_subset[samp_cell_subset.obs_names.isin(pseudo_rep)]
+            rep_adata.obs['sample'] = sample + '_' + str(i + 1)
+            # rep_adata.obs['condition'] = samp_cell_subset.obs['condition'].iloc[0]
+            rep_adata.obs['replicate'] = i + 1
+
+            ads.append(rep_adata)
+    ad = sc.concat(ads)
+
+    return ad

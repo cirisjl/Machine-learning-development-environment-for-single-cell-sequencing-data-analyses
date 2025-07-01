@@ -20,6 +20,18 @@
           "uniqueItems": true,
           "minItems": 1
         },
+        "batch_key": {
+          "type": "string",
+          "title": "Batch Key",
+          "description": "Please specify the Batch Key.",
+          "default": ""
+        },
+        "pseudo_replicates": {
+          "type": "integer",
+          "title": "Pseudo Replicates",
+          "description": "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
+          "default": 0
+        },
         "params": {
           "type": "object",
           "title": "Integration Parameters",
@@ -36,6 +48,11 @@
             "dims": {
               "type": "integer",
               "default": 30
+            },
+            "resolution": {
+              "type": "number",
+              "title": "Resolution:",
+              "default": 0.5
             }
           }
         }

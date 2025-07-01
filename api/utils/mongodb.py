@@ -94,6 +94,9 @@ def get_pp_results(process_ids, umap=False, record_type=None):
 
             if 'tsne' in pp_result.keys():
                 pp_result['tsne'] = json_numpy.loads(pp_result['tsne'])
+
+            if 'tsne_3d' in pp_result.keys():
+                pp_result['tsne_3d'] = json_numpy.loads(pp_result['tsne_3d'])
             
             if 'highest_expr_genes' in pp_result.keys():
                 pp_result['highest_expr_genes']['counts_top_genes'] = json_numpy.loads(pp_result['highest_expr_genes']['counts_top_genes'])

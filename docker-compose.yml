@@ -257,7 +257,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=clgpu018.clemson.cloudlab.us
+      - HOST_URL=c240g5-110121.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -277,7 +277,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=clgpu018.clemson.cloudlab.us
+      - HOST_URL=c240g5-110121.wisc.cloudlab.us
     networks:
       - oscb-network
 

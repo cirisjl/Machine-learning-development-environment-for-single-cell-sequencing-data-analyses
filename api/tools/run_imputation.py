@@ -82,6 +82,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
+                # Converrt dense martrix to sparse matrix
+                if isinstance(adata.X, np.ndarray):
+                    adata.X = csr_matrix(adata.X)
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"MAGIC": output})
                 imputation_results["outputs"] = imputation_output
@@ -120,6 +123,10 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
+
+                        # Converrt dense martrix to sparse matrix
+                        if isinstance(adata.X, np.ndarray):
+                            adata.X = csr_matrix(adata.X)
                         adata.write_h5ad(output, compression='gzip')
                         imputation_output.append({"MAGIC": output})
                         imputation_results["outputs"] = imputation_output
@@ -186,7 +193,10 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
-
+                
+                # Converrt dense martrix to sparse matrix
+                if isinstance(adata.X, np.ndarray):
+                    adata.X = csr_matrix(adata.X)
                 adata.write_h5ad(output, compression='gzip')
                 imputation_output.append({"SAVER": output})
                 imputation_output.append({"Report": report_path})
@@ -232,7 +242,10 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                             imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
-
+                            
+                            # Converrt dense martrix to sparse matrix
+                            if isinstance(adata.X, np.ndarray):
+                                adata.X = csr_matrix(adata.X)
                             adata.write_h5ad(output, compression='gzip')
                             
                             imputation_output.append({"SAVER": output})
