@@ -5,7 +5,7 @@ import warnings
 warnings.filterwarnings('ignore')
 # sys.path.append('..')
 from scipy.stats import median_abs_deviation
-from tools.formating.formating import is_normalized, check_nonnegative_integers
+from tools.formating.formating import reset_x_to_raw
 from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
@@ -60,7 +60,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         )
         redislogger.info(unique_id, f"Number of outliers: {adata.obs.outlier.value_counts()}")
     
-        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
+        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3, upper_only = True) | (
             adata.obs["pct_counts_mt"] > 8
         )  
         redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")
@@ -84,6 +84,9 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
                 adata.obs['doublet_scores'], adata.obs['predicted_doublets'] = scrub.scrub_doublets(min_counts=2, min_cells=3, 
                                                                         min_gene_variability_pctl=85, n_prin_comps=30)
                 adata.obs['predicted_doublets'].value_counts()
+
+                # Second method: doubletdetection
+                adata = run_doubletdetection(adata)
                 # adata=adata[adata.obs.predicted_doublets=="False", :]
         except Exception as e:
             redislogger.warning(unique_id, f"An error occurred when running Scrublet, skipped: {e}")
@@ -155,5 +158,23 @@ def regress_cell_cycle(adata):
     adata_cc_genes = adata[:, cell_cycle_genes]
     sc.tl.pca(adata_cc_genes)
     # sc.pl.pca_scatter(adata_cc_genes, color='phase')
+
+    return adata
+
+
+def run_doubletdetection(adata):
+    import doubletdetection
+
+    clf = doubletdetection.BoostClassifier(
+    n_iters=10,
+    clustering_algorithm="louvain",
+    standard_scaling=True,
+    pseudocount=0.1,
+    n_jobs=-1)
+    doublets = clf.fit(adata.X).predict(p_thresh=1e-3, voter_thresh=0.5)
+    doublet_score = clf.doublet_score()
+
+    adata.obs["clf_doublet"] = doublets
+    adata.obs["clf_score"] = doublet_score
 
     return adata
