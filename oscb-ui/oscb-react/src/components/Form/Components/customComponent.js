@@ -262,6 +262,8 @@ class MyForm extends Component {
       formData.adata_size = taskData.quality_control.qc_results[0]?.adata_size;
       formData.embeddings = taskData.quality_control.qc_results[0]?.embeddings;
       // formData.output = taskData.quality_control.seurat_meta?.output;
+      formData.projectAccess = taskData.quality_control.project_name;
+
 
       } else { // User Dataset
         const constructedID = `U-${species}-${tissue}-${first_author}-${year}@${this.state.username}`; // U indicates user datasets
@@ -288,6 +290,7 @@ class MyForm extends Component {
         formData.info = taskData.upload.final_files.info;
         formData.adata_size = taskData.upload.final_files.adata_size;
         formData.embeddings = taskData.upload.final_files.embeddings;
+        formData.projectAccess = taskData.upload.project_name;
       }
 
       formData.flow = flow;

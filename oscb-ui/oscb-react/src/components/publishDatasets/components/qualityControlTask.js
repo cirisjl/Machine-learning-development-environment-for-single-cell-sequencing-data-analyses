@@ -4,7 +4,7 @@ import axios from 'axios';
 import { CELERY_BACKEND_API, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
-import {isUserAuth, getCookie, plotUmapObs} from '../../../utils/utilFunctions';
+import {isUserAuth, getCookie, plotUmapObs, fetchUserProjectsList} from '../../../utils/utilFunctions';
 import QualityControlParameters from './qualityControlParameters';
 import { Button, makeStyles } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import LogComponent from '../../common_components/liveLogs';
 import {Select, MenuItem, InputLabel } from '@mui/material';
+import UserProjectsDropdown from '../../common_components/UserProjectsList';
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
@@ -50,8 +51,13 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
   const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+  const [userProjectsList, setUserProjectsList] = useState([]);
+  const [selectedUserProject, setSelectedUserProject] = useState(taskData?.quality_control?.project_name || '');
+    
 
-
+      const handleProjectChange = (project_name) => {
+        setSelectedUserProject(project_name);    
+    };
 const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
   
@@ -214,6 +220,7 @@ const handleLogMessage = (event) => {
               file: celeryTaskResults.task_result.inputfile,
               displayAssayNames: celeryTaskResults.task_result.ddl_assay_names
             },
+            project_name: selectedUserProject
           }
         }));
       }
@@ -228,6 +235,7 @@ const handleLogMessage = (event) => {
               ...prevTaskData.quality_control.seurat_meta,
               displayAssayNames: false
             },
+            project_name: selectedUserProject,
           },
         }));
         setMessage("quality control task is Successful");
@@ -245,7 +253,7 @@ const handleLogMessage = (event) => {
 
   useEffect(() => {
     isUserAuth(getCookie('jwtToken'))
-    .then((authData) => {
+    .then(async (authData) => {
       if (authData.isAdmin) {
         if(taskData.quality_control.status !== 'completed') {
           let files = taskData.upload.files;
@@ -273,6 +281,13 @@ const handleLogMessage = (event) => {
               shouldHideForSeurat: shouldHideForSeurat
             },
           }));   
+
+            try {
+                const userProjects =await fetchUserProjectsList(authData.username);
+                setUserProjectsList(userProjects);
+            } catch (fetchErr) {
+                console.error("Error fetching user projects:", fetchErr);
+            }
         }
       }  else {
         console.warn("Unauthorized - you must be an admin to access this page");
@@ -347,13 +362,16 @@ const handleAssaySelectionSubmit = async () => {
   const handleTaskCompletion = () => {
 
       if(taskData.quality_control.qc_results.length > 0) {
+
+       
         // Update the fileMappings state with the new list
         setTaskData((prevTaskData) => ({
           ...prevTaskData,
           quality_control: {
             ...prevTaskData.quality_control,
             status: 'completed',
-            qc_params: values
+            qc_params: values,
+            project_name: selectedUserProject
           },
         }));
 
@@ -388,6 +406,9 @@ const handleAssaySelectionSubmit = async () => {
           </Button>
         </div>
       </div>
+
+    <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} selectedUserProject={selectedUserProject}/>
+
 
     <LogComponent wsLogs = {wsLogs}/>
 

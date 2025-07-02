@@ -218,6 +218,7 @@ export default function RootLayout() {
                                             ) : (
                                                 <li><NavLink to="login">Log In</NavLink></li>
                                             )}
+                                            <li><NavLink to="projectAdminPanel">Admin</NavLink></li>
 
                                         </ul>
                                     </div>

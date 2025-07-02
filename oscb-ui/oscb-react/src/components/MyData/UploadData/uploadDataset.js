@@ -25,7 +25,8 @@ export default function UploadDataset() {
           displayAssayNames: false,
           assayNames:[],
           default_assay: '',
-          selectedAssayName: ''
+          selectedAssayName: '',
+          project_name: ''
         },
 
         metadata: {
