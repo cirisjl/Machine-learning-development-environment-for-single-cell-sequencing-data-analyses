@@ -202,6 +202,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             redislogger.info(job_id, "Saving AnnData object.")
                             scanpy_results.X = scanpy_results.layers["raw_counts"].copy()
                             scanpy_results.write_h5ad(output_path, compression='gzip')
+                            qc_output.append({'AnnData': output_path})
                             adata_path = output_path
                             scanpy_results = None
                             redislogger.info(job_id, qc_results['info'])
@@ -254,6 +255,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         redislogger.info(job_id, "Saving AnnData object.")
                         dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                         dropkick_results.write_h5ad(output_path, compression='gzip')
+                        qc_output.append({'AnnData': output_path})
                         adata_path = output_path
                         dropkick_results = None
                         redislogger.info(job_id, qc_results['info'])
