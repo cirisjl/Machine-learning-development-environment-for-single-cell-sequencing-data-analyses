@@ -5,6 +5,7 @@ import Form from 'react-jsonschema-form';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
+import InputRefDataComponent from './inputRefDataCollection';
 import { CELERY_BACKEND_API, NODE_API_URL, defaultValues, WEB_SOCKET_URL, defaultQcParams,defaultNormalizationParams ,defaultReductionParams} from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -20,6 +21,7 @@ export default function ToolsDetailsComponent(props) {
     const filterName = props.filter;
     const filterCategory = props.category;
     const [selectedDatasets, setSelectedDatasets] = useState({});
+    const [selectedRefDatasets, setSelectedRefDatasets] = useState({});
     const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
     const [useDefaultValue, setUseDefaultValue] = useState(false);
 
@@ -28,7 +30,7 @@ export default function ToolsDetailsComponent(props) {
       normalization: '/tools/normalize',
       imputation: '/tools/impute',
       integration: '/tools/integrate',
-      evaluation: '/tools/evaluate',
+      annotation: '/tools/annotate',
       formatting: '/tools/convert',
       visualization: '/tools/reduce'
       // Add more filter categories and their corresponding URL paths as needed
@@ -38,6 +40,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'qc_params',
       normalization: 'normalization_params',
       imputation: 'imputation_params',
+      annotation: 'annotation_params',
       visualization: 'reduction_params'
     };
 
@@ -46,7 +49,7 @@ export default function ToolsDetailsComponent(props) {
       normalization: 'Normalization',
       imputation: 'Imputation',
       integration: 'Integration',
-      evaluation: 'Evaluation',
+      annotation: 'Annotation',
       formatting: 'Formatting',
       visualization: 'Visualization'
       // Add more filter categories and their corresponding Names as needed
@@ -61,6 +64,7 @@ export default function ToolsDetailsComponent(props) {
     const [filterSchema, setFilterSchema] = useState(null);
     const [UIfilterSchema, setUIFilterSchema] = useState(null);
     const [selectedDataset, setSelectedDataset] = useState([]);
+    const [selectedRefDataset, setSelectedRefDataset] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [formErrors, setFormErrors] = useState("");
 
@@ -125,7 +129,84 @@ export default function ToolsDetailsComponent(props) {
         }));
       }
     }, [selectedDatasets]);
+
+  // Function to handle selection of sub-items
+  const onSelectSubItem = (mainItem, subItem) => {
+    const mainItemId = mainItem.Id;
+    let currentSelectedDatasets = { ...selectedDatasets };
+
+    // Check if the main item is already selected
+    if (currentSelectedDatasets[mainItemId]) {
+      // If sub-item is already selected, deselect it
+      if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id === subItem.process_id) {
+        delete currentSelectedDatasets[mainItemId];
+      } else {
+        // Update the selected main item with the selected sub-item
+        currentSelectedDatasets[mainItemId] = {
+          ...mainItem,
+          selectedSubItem: subItem
+        };
+      }
+    } else {
+      // Select the main item and the sub-item
+      currentSelectedDatasets = {
+        [mainItemId]: {
+          ...mainItem,
+          selectedSubItem: subItem
+        }
+      };
+    }
+
+    setSelectedDatasets(currentSelectedDatasets);
+  };
   
+
+  const onDeleteDataset = (id) => {
+    const currentSelectedDatasets = { ...selectedDatasets };
+
+    if (currentSelectedDatasets[id]) {
+      delete currentSelectedDatasets[id];
+    }
+    setSelectedDatasets(currentSelectedDatasets);
+    setDynamicOptions((prevOptions) => ({
+      ...prevOptions,
+      layers: [],
+      obs_names: [],
+    }));
+  };
+
+
+  const onSelectRefDataset = (dataset) => {
+    let datasetId = dataset.Id;
+    let currentSelectedRefDatasets = { ...selectedRefDatasets };
+
+    if (currentSelectedRefDatasets[datasetId]) {
+      delete currentSelectedRefDatasets[datasetId];
+    } else {
+      if (filterCategory !== "integration") {
+        currentSelectedRefDatasets = {};
+      }
+      currentSelectedRefDatasets[datasetId] = dataset;
+    }
+    setSelectedRefDatasets(currentSelectedRefDatasets)
+  };
+
+  // Fetch layer options when dataset_id changes
+  useEffect(() => {
+    if (Object.keys(selectedRefDatasets).length > 0) {
+      let obs_names = getObsNamesArray(selectedRefDatasets) || [];
+
+      setDynamicOptions((prevOptions) => ({
+        ...prevOptions,
+        obs_names_ref: obs_names, // Update obs_names dynamically
+      }));
+    } else {
+      setDynamicOptions((prevOptions) => ({
+        ...prevOptions,
+        obs_names_ref: [],
+      }));
+    }
+  }, [selectedRefDatasets]);
 
   const getObsNamesArray = (dataMap) => {
     let obsNamesArray = [];
@@ -158,25 +239,25 @@ export default function ToolsDetailsComponent(props) {
 
 
 // Function to handle selection of sub-items
-const onSelectSubItem = (mainItem, subItem) => {
+const onSelectRefSubItem = (mainItem, subItem) => {
   const mainItemId = mainItem.Id;
-  let currentSelectedDatasets = { ...selectedDatasets };
+  let currentSelectedRefDatasets = { ...selectedRefDatasets };
 
   // Check if the main item is already selected
-  if (currentSelectedDatasets[mainItemId]) {
+  if (currentSelectedRefDatasets[mainItemId]) {
       // If sub-item is already selected, deselect it
-      if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
-          delete currentSelectedDatasets[mainItemId];
+    if (currentSelectedRefDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
+      delete currentSelectedRefDatasets[mainItemId];
       } else {
           // Update the selected main item with the selected sub-item
-          currentSelectedDatasets[mainItemId] = {
+          currentSelectedRefDatasets[mainItemId] = {
               ...mainItem,
               selectedSubItem: subItem
           };
       }
   } else {
       // Select the main item and the sub-item
-      currentSelectedDatasets = {
+      currentSelectedRefDatasets = {
           [mainItemId]: {
               ...mainItem,
               selectedSubItem: subItem
@@ -184,21 +265,22 @@ const onSelectSubItem = (mainItem, subItem) => {
       };
   }
 
-  setSelectedDatasets(currentSelectedDatasets);
+  setSelectedRefDatasets(currentSelectedRefDatasets);
 };
-  const onDeleteDataset = (id) => {
-    const currentSelectedDatasets = { ...selectedDatasets};
-  
-    if (currentSelectedDatasets[id]) {
-        delete currentSelectedDatasets[id];
+
+  const onDeleteRefDataset = (id) => {
+    const currentSelectedRefDatasets = { ...selectedRefDatasets };
+
+    if (currentSelectedRefDatasets[id]) {
+      delete currentSelectedRefDatasets[id];
     }
-    setSelectedDatasets(currentSelectedDatasets);
+    setSelectedRefDatasets(currentSelectedRefDatasets);
     setDynamicOptions((prevOptions) => ({
       ...prevOptions,
-      layers: [], 
-      obs_names: [], 
+      obs_names_ref: [],
     }));
   };
+
 
     const extractDir =  (inputFile) => {
         const fileLocParts = inputFile.split('/');
@@ -229,9 +311,16 @@ const onSelectSubItem = (mainItem, subItem) => {
         // Handle form submission here
         formData = formData.parameters;
 
+        if(filterCategory === "annotation") {
+          if (formData[parametersKey[filterCategory]].methods.includes("scVI") && Object.keys(selectedRefDatasets).length < 1){
+            setFormErrors("Please select at least one datasets for scVI annotation before submitting the form");
+            console.log("Failed to submit the form");
+          }
+        }
+
         // Perform form validation and set formErrors accordingly
         if(filterCategory === "integration" && Object.keys(selectedDatasets).length < 2) {
-          setFormErrors("Please select atleast two datasets for integration before submitting the form");
+          setFormErrors("Please select at least two datasets for integration before submitting the form");
           console.log("Failed to submit the form");
         }
         else if(filterCategory !== "integration" && Object.keys(selectedDatasets).length === 0) {
@@ -278,6 +367,28 @@ const onSelectSubItem = (mainItem, subItem) => {
                 const directory = extractDir(formData.input);
                 formData.output = directory + "/results";
               }
+          }
+
+          if (filterCategory === "annotation") {
+            const refDatasetsArray = Object.values(selectedRefDatasets);
+            const titlesArray = refDatasetsArray.map(dataset => dataset.Title);
+            const idsArray = refDatasetsArray.map(dataset => dataset.Id);
+            formData.refDataset = titlesArray;
+            formData.refDatasetIds = idsArray;
+
+            let refInputArray = refDatasetsArray.map(dataset => {
+
+              // Check if selectedSubItem is present and has a non-null adata_path
+              let adataPath;
+              if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
+                adataPath = dataset.selectedSubItem.adata_path;
+              } else {
+                adataPath = dataset.adata_path;
+              }
+              return adataPath;
+            });
+
+            formData.user_refs = refInputArray;           // if the input file is at location /usr/src/storage/dataset1/filename.h5ad
           }
 
           let method = "";
@@ -403,7 +514,26 @@ const onSelectSubItem = (mainItem, subItem) => {
     
         setSelectedOptions(selectedValues);
         console.log(selectedOptions);
-    };
+      };
+      
+
+      const handleRefDatasetChange = event => {
+        let value = event.target.value;
+        if (value !== "") {
+          setSelectedRefDataset(event.target.value);
+        } else {
+          setSelectedRefDataset([]);
+        }
+      };
+
+      const handleMultipleRefDatasetChange = (event) => {
+        const selectedValues = Array.from(event.target.selectedOptions)
+          .filter(option => option.value !== "") // Filter out options with empty value
+          .map(option => option.value);
+
+        setSelectedOptions(selectedValues);
+        console.log(selectedOptions);
+      };
 
 
   useEffect(() => {
@@ -525,7 +655,7 @@ const onSelectSubItem = (mainItem, subItem) => {
       <div className="separator heading">
         <div className="stripe"></div> 
           <h2 className="h-sm font-weight-bold">
-            Tool Parameters 
+            Datasets 
           </h2> 
         <div className="stripe"></div>
       </div>
@@ -534,6 +664,22 @@ const onSelectSubItem = (mainItem, subItem) => {
         formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedDatasets}
         onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem}/>
       </div>
+      {filterCategory === "annotation" && (
+        <div className="separator heading">
+          <div className="stripe"></div>
+          <h2 className="h-sm font-weight-bold">
+            Reference Datasets
+          </h2>
+          <div className="stripe"></div>
+        </div>
+      )}
+      {filterCategory === "annotation" && (
+        <div>
+          <InputRefDataComponent handleDatasetChange={handleRefDatasetChange} handleMultipleDatasetChange={handleMultipleRefDatasetChange}
+            formErrors={formErrors} filterCategory={filterCategory} filterName={filterName} selectedDatasets={selectedRefDatasets}
+            onSelectDataset={onSelectRefDataset} onDeleteDataset={onDeleteRefDataset} onSelectSubItem={onSelectRefSubItem} />
+        </div>
+      )}
             
         {filterSchema && UIfilterSchema ? (
           <div className="form-component">

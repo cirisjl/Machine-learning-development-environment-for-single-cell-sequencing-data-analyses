@@ -5,7 +5,7 @@ import warnings
 warnings.filterwarnings('ignore')
 # sys.path.append('..')
 from scipy.stats import median_abs_deviation
-from tools.formating.formating import reset_x_to_raw
+from tools.formating.formating import is_normalized, check_nonnegative_integers
 from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
@@ -60,7 +60,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         )
         redislogger.info(unique_id, f"Number of outliers: {adata.obs.outlier.value_counts()}")
     
-        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3, upper_only = True) | (
+        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
             adata.obs["pct_counts_mt"] > 8
         )  
         redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")

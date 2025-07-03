@@ -82,11 +82,11 @@ class annotationParameters(BaseModel):
     layer: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[str] = None
-    ref: Optional[str] = None
-    n_neighbors: int = 15
-    n_pcs: int = 1 # Scanpy
-    resolution: float = 0.5
-    use_default: Optional[bool] = True
+    user_refs: Optional[List[str]] = []
+    user_label: Optional[str] = None
+    n_neighbors: int = 20
+    n_pcs: int = 20
+    resolution: float = 0.3
 
 
 
@@ -118,7 +118,7 @@ class Dataset(BaseModel):
     method: Optional[str] = None,
     process: Optional[str] = None,
     output_format: Optional[str] = 'AnnData'
-    species: Optional[str] = 'human' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
     qc_params: QCParameters = Field(default_factory=QCParameters)

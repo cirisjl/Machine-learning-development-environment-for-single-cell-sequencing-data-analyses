@@ -112,7 +112,6 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         counts = adata.X
                         data_magic = magic_impute(counts, genes)
                         adata.layers['MAGIC'] = data_magic
-                        adata.write_h5ad(output, compression='gzip')
 
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                         adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)

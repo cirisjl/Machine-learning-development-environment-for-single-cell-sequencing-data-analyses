@@ -1158,15 +1158,15 @@ def create_pseudo_replicates(adata, batch_key, num):
     return ad
 
 
-    def reset_x_to_raw(adata, min_genes=200):
-        if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
-            if "raw_counts" in adata.layers.keys():
-                adata.layers["normalized_X"] = adata.X.copy()
-                adata.X = adata.layers['raw_counts'].copy()
-            elif adata.raw.X is not None:
-                adata.layers["normalized_X"] = adata.X.copy()
-                adata.X = adata.raw.X.copy()
-            else:
-                raise ValueError("Raw counts are not available.")
-        
-        return adata
+def reset_x_to_raw(adata, min_genes=200):
+    if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
+        if "raw_counts" in adata.layers.keys():
+            adata.layers["normalized_X"] = adata.X.copy()
+            adata.X = adata.layers['raw_counts'].copy()
+        elif adata.raw.X is not None:
+            adata.layers["normalized_X"] = adata.X.copy()
+            adata.X = adata.raw.X.copy()
+        else:
+            raise ValueError("Raw counts are not available.")
+    
+    return adata

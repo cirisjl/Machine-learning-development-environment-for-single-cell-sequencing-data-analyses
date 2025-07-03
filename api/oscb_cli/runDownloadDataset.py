@@ -5,7 +5,7 @@ import traceback
 from tools.run_qc import run_qc
 from tools.run_normalization import run_normalization
 from tools.run_imputation import run_imputation
-from schemas.schemas import Dataset, QCParameters, normalizationParameters, imputationParameters
+from schemas.schemas import *
 
 
 def run_download_dataset(job_id, ds: dict, random_state=0):

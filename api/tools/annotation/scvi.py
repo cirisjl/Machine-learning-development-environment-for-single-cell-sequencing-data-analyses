@@ -1,6 +1,7 @@
 # scVI imports
 import scvi
 from tools.formating.formating import load_anndata, reset_x_to_raw
+from exceptions.custom_exceptions import CeleryTaskException
 
 def scvi_transfer(adata, refs = [], labels = None):
     if len(refs) > 0 and labels is not None:
@@ -33,6 +34,8 @@ def scvi_transfer(adata, refs = [], labels = None):
         dater = dater[dater.obs.Batch == 'Unknown']
 
         adata.obs = adata.obs.merge(right = dater.obs[['scVI_predicted', 'scVI_transfer_score']], left_index=True, right_index=True)
-        adata.obs = adata.obs.drop('CellType', axis=1) 
+        adata.obs = adata.obs.drop('CellType', axis=1)
+    else:
+        raise CeleryTaskException(f"scVI annotation is failed due to empty user reference ({refs}) or cell labels ({labels}).")
 
     return adata

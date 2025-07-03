@@ -7,13 +7,14 @@ from tools.run_imputation import run_imputation
 from tools.run_integration import run_integration
 from tools.run_evaluation import run_evaluation
 from tools.run_reduction import run_reduction
+from tools.run_annotation import run_annotation
 from tools.run_conversion import run_conversion
 from tools.load_metadata import load_metadata
 from benchmarks.run_benchmarks import run_benchmarks
 from benchmarks.run_data_split import run_data_split
 from benchmarks.run_subset_data import run_subset_data
 from workflows.clustering import run_clustering
-from workflows.annotation import run_annotation
+# from workflows.annotation import run_annotation
 from oscb_cli.runDownloadDataset import run_download_dataset
 
 
@@ -73,6 +74,13 @@ def create_evaluation_task(self, dataset, input, userID, output, methods, layer=
     return results
 
 
+@shared_task(bind=True, name='tools:create_annotation_task') 
+def create_annotation_task(self, ds_dict:dict):
+    job_id = self.request.id
+    results = run_annotation(job_id, ds_dict)
+    return results
+
+
 # Benchmarks
 @shared_task(bind=True, name='tools:create_benchmarks_task') 
 def create_benchmarks_task(self, task_dict:dict):
@@ -100,13 +108,6 @@ def create_subset_data_task(self, task_dict:dict):
 def create_clustering_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_clustering(job_id, ds_dict)
-    return results
-
-
-@shared_task(bind=True, name='tools:create_annotation_task') 
-def create_annotation_task(self, ds_dict:dict):
-    job_id = self.request.id
-    results = run_annotation(job_id, ds_dict)
     return results
 
 

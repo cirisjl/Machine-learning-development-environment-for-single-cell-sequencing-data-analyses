@@ -1,6 +1,7 @@
 import celltypist
 import scanpy as sc
 import os
+import numpy as np
 from celltypist import models
 from tools.formating.formating import load_anndata, reset_x_to_raw
 models.get_all_models()
