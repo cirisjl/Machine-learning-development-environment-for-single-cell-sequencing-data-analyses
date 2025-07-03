@@ -336,7 +336,6 @@ const onSelectRefSubItem = (mainItem, subItem) => {
             formData.datasetIds = idsArray;
 
              let inputArray = datasetsArray.map(dataset => {
-
                 // Check if selectedSubItem is present and has a non-null adata_path
                 let adataPath;
                 if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
@@ -352,8 +351,7 @@ const onSelectRefSubItem = (mainItem, subItem) => {
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
-              formData.datasetId = dataset.Id;
-            
+              formData.datasetId = dataset.Id;            
               // Check if selectedSubItem is present and has a non-null adata_path
               let adata_path;
               if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
@@ -370,14 +368,16 @@ const onSelectRefSubItem = (mainItem, subItem) => {
           }
 
           if (filterCategory === "annotation") {
+            // console.log(selectedRefDatasets);
             const refDatasetsArray = Object.values(selectedRefDatasets);
             const titlesArray = refDatasetsArray.map(dataset => dataset.Title);
             const idsArray = refDatasetsArray.map(dataset => dataset.Id);
             formData.refDataset = titlesArray;
             formData.refDatasetIds = idsArray;
+            // console.log(titlesArray);
+            // console.log(idsArray);
 
             let refInputArray = refDatasetsArray.map(dataset => {
-
               // Check if selectedSubItem is present and has a non-null adata_path
               let adataPath;
               if (dataset.selectedSubItem && dataset.selectedSubItem.adata_path) {
@@ -388,7 +388,8 @@ const onSelectRefSubItem = (mainItem, subItem) => {
               return adataPath;
             });
 
-            formData.user_refs = refInputArray;           // if the input file is at location /usr/src/storage/dataset1/filename.h5ad
+            formData.user_refs = refInputArray;
+            // console.log(refInputArray); 
           }
 
           let method = "";

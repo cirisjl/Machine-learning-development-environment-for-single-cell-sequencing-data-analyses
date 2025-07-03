@@ -2,19 +2,19 @@
   "type": "object",
   "properties": {
     "parameters": {
-      "type":"object",
-      "title": "Parameters for Annotation Process",  
+      "type": "object",
+      "title": "Parameters for Annotation Process",
       "properties": {
-        "species": { 
+        "species": {
           "type": "string",
           "title": "Species Type"
-         },
+        },
         "idtype": {
-           "type": "string",
-           "title": "ID Type",
-           "description": "Choose the ID Type to specify the gene identifier format for your analysis"
-         },
-         "cluster_label": {
+          "type": "string",
+          "title": "ID Type",
+          "description": "Choose the ID Type to specify the gene identifier format for your analysis."
+        },
+        "cluster_label": {
           "type": "string",
           "title": "Cluster Label",
           "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
@@ -22,16 +22,25 @@
         "annotation_params": {
           "type": "object",
           "title": "Annotation Parameters",
-          "required": ["methods", "SingleR_ref"],
+          "required": [
+            "methods",
+            "SingleR_ref"
+          ],
           "properties": {
             "methods": {
               "type": "array",
               "title": "Method",
               "items": {
                 "type": "string",
-                "enum": ["CellTypist", "scVI", "SingleR"]
+                "enum": [
+                  "CellTypist",
+                  "scVI",
+                  "SingleR"
+                ]
               },
-              "default": ["SingleR"],
+              "default": [
+                "SingleR"
+              ],
               "uniqueItems": true,
               "minItems": 1
             },

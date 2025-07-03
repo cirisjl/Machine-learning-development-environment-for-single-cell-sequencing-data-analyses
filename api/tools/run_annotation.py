@@ -23,6 +23,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     dataset = ds['dataset']
     species = ds['species']
     input = ds['input']
+    user_refs = ds['user_refs']
     userID = ds['userID']
     output = ds['output']
     datasetId = ds['datasetId']
@@ -34,7 +35,6 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     methods = parameters['methods']
     celltypist_model = parameters['celltypist_model']
     SingleR_ref = parameters['SingleR_ref']
-    user_refs = parameters['user_refs']
     user_label = parameters['user_label']
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
@@ -152,7 +152,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     pp_results.append(annotation_results)
 
                 except Exception as e:
-                    detail = f"CellTypist annotation is failed: {e}"
+                    detail = f"scVI annotation is failed: {e}"
                     upsert_jobs(
                         {
                             "job_id": job_id, 
@@ -165,6 +165,9 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     raise CeleryTaskException(detail)
 
             if method == "SINGLER":
+                if SingleR_ref is None and (len(refs) == 0 or labels is None):
+                    raise CeleryTaskException(f"SingleR annotation is failed due to empty reference ({SingleR_ref}) and empty user reference ({user_refs}) or cell labels ({user_label}).")
+
                 try:
                     # report_path = get_report_path(dataset, output, "SAVER")
                     report_path = output.replace(".h5ad", "_report.html")
@@ -180,15 +183,16 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     singler_path = os.path.abspath(relative_path)
 
                     redislogger.info(job_id, " Start SingleR annotation ...")
-
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}', user_ref='{list_py_to_r(user_refs)}', user_label={user_label}), output_file='{report_path}')\""], shell = True)
+                    if user_label is not None and len(user_refs) > 0:
+                        s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}', user_ref='{user_refs[0]}', user_label='{user_label}'), output_file='{report_path}')\""], shell = True)
+                    else:
+                        s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}'), output_file='{report_path}')\""], shell = True)
 
                     csv_main = output_folder + "/results_main.csv"
                     csv_fine = output_folder + "/results_fine.csv"
                     csv_user = output_folder + "/results_user.csv"
 
                     if not (os.path.exists(csv_main) or os.path.exists(csv_fine) or os.path.exists(csv_user)):
-                        redislogger.warning(job_id, 'SingleR annotation is failed.')
                         upsert_jobs(
                             {
                                 "job_id": job_id, 
@@ -197,7 +201,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                                 "status": "Failure"
                             }
                         )
-                        continue
+                        # redislogger.warning(job_id, 'SingleR annotation is failed.')
+                        raise CeleryTaskException('SingleR annotation is failed.')
 
                     if os.path.exists(csv_main):
                         df_main = pd.read_csv(csv_main, index_col=0)

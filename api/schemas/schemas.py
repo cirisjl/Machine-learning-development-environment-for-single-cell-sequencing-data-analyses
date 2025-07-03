@@ -82,7 +82,6 @@ class annotationParameters(BaseModel):
     layer: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[str] = None
-    user_refs: Optional[List[str]] = []
     user_label: Optional[str] = None
     n_neighbors: int = 20
     n_pcs: int = 20
@@ -112,6 +111,7 @@ class Dataset(BaseModel):
     dataset: Optional[str] = None # Title of datasets
     input: str
     output: Optional[str] = None
+    user_refs: Optional[List[str]] = []
     userID: Optional[str] = None
     description: Optional[str] = None,
     datasetId: Optional[str] = None

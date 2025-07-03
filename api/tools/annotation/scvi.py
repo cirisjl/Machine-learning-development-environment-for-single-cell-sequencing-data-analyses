@@ -1,5 +1,6 @@
 # scVI imports
 import scvi
+import scanpy as sc
 from tools.formating.formating import load_anndata, reset_x_to_raw
 from exceptions.custom_exceptions import CeleryTaskException
 

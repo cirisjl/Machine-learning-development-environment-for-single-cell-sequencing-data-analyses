@@ -4,6 +4,7 @@ import scanpy as sc
 from anndata import AnnData
 from sklearn.manifold import TSNE
 from umap import UMAP
+from tools.formating.formating import is_normalized, check_nonnegative_integers
 import matplotlib.pyplot as plt
 import matplotlib
 
@@ -51,6 +52,10 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
     elif layer is None: # and ('X_umap' not in adata.obsm.keys() or 'X_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
         if not (skip_if_exist and 'X_pca' in adata.obsm.keys()):
+            if not is_normalized(adata.X, 200):
+                adata.layers['raw_counts'] = adata.X.copy()
+                sc.pp.normalize_total(adata)
+                sc.pp.log1p(adata)
             sc.pp.pca(adata, svd_solver='arpack', random_state=random_state)
 
         # Computing the neighborhood graph
@@ -146,6 +151,12 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         # Clustering the neighborhood graph
         leiden_key = "leiden"
         louvain_key = "louvain"
+
+        if not is_normalized(adata.X, 200):
+            adata.layers['raw_counts'] = adata.X.copy()
+            sc.pp.normalize_total(adata)
+            sc.pp.log1p(adata)
+
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, n_iterations=3)
         # Save the Clustering plot

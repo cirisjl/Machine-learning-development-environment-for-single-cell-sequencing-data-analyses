@@ -3,27 +3,32 @@ import scanpy as sc
 import os
 import numpy as np
 from celltypist import models
+from exceptions.custom_exceptions import CeleryTaskException
 from tools.formating.formating import load_anndata, reset_x_to_raw
 models.get_all_models()
 
 
 def run_celltypist(adata, model_name, refs = [], labels = None, species = 'mouse'):
-    model = celltypist.Model.load(model_name)
-    if species == 'mouse' and "Mouse" not in model_name:
-        model.convert()
-    adata = reset_x_to_raw(adata)
+    if model_name is None and (len(refs) == 0 or labels is None):
+        raise CeleryTaskException(f"CellTypist annotation is failed due to empty model_name ({model_name}) and empty user reference ({refs}) or cell labels ({labels}).")
 
-    sc.pp.filter_genes(adata, min_cells = 10)
-    sc.pp.normalize_total(adata, target_sum=1e4) #not recommended for typical pp
-    sc.pp.log1p(adata)
-    
-    if type(adata.X) != np.ndarray:
-        adata.X = adata.X.toarray()
-    
-    predictions = celltypist.annotate(adata, model=model, majority_voting=True)
-    predictions_adata = predictions.to_adata()
-    adata.obs["celltypist_label"] = predictions_adata.obs.loc[adata.obs.index, "predicted_labels"]
-    adata.obs["celltypist_score"] = predictions_adata.obs.loc[adata.obs.index, "conf_score"]
+    if model_name is not None:
+        model = celltypist.Model.load(model_name)
+        if species == 'mouse' and "Mouse" not in model_name:
+            model.convert()
+        adata = reset_x_to_raw(adata)
+
+        sc.pp.filter_genes(adata, min_cells = 10)
+        sc.pp.normalize_total(adata, target_sum=1e4) #not recommended for typical pp
+        sc.pp.log1p(adata)
+        
+        if type(adata.X) != np.ndarray:
+            adata.X = adata.X.toarray()
+        
+        predictions = celltypist.annotate(adata, model=model, majority_voting=True)
+        predictions_adata = predictions.to_adata()
+        adata.obs["celltypist_label"] = predictions_adata.obs.loc[adata.obs.index, "predicted_labels"]
+        adata.obs["celltypist_score"] = predictions_adata.obs.loc[adata.obs.index, "conf_score"]
 
     if len(refs) > 0 and labels is not None:
         for input in refs:
