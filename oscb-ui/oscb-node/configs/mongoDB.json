@@ -8,5 +8,6 @@
     "jobsCollection": "jobs",
     "preProcessResultsCollection": "pp_results",
     "benchmarksCollection": "benchmarks",
-    "errorlogcollection": "error_log"
+    "errorlogcollection": "error_log",
+    "projectsCollection": "projects"
 }

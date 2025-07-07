@@ -51,7 +51,8 @@ const FlowControl = () => {
         regress_cell_cycle: false,
         use_default: true,
         doublet_rate: 0.08
-      }
+      },
+      project_name: '',
     },
     metadata: {
       formData: {

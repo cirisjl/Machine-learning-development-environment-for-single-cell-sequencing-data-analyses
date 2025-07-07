@@ -18,7 +18,7 @@ const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection } = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection, projectsCollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
@@ -2873,6 +2873,16 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
         await client.connect();
         const db = client.db(dbName);
         let owner = req.user.username;
+
+        const mongoProjectsCollection = db.collection(projectsCollection);
+        const userProjects = await mongoProjectsCollection.find({
+            $or: [
+                { admin: owner },
+                { members: owner }
+            ]
+        }).toArray();
+
+        const accessibleProjectNames = userProjects.map(p => p.project_name);
         const {
             q: globalSearchQuery,
             page: queryPage = 1,
@@ -2970,6 +2980,17 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
             categoryConditions.push({ 'Category': 'Shared' });
         }
 
+        // New project access level
+        // if (accessibleProjectNames.length > 0) {
+        //     categoryConditions.push({ 'projectAccess': { $in: accessibleProjectNames } });
+        // }
+
+        if (accessibleProjectNames.length > 0) {
+            const regexConditions = accessibleProjectNames.map(name => ({
+                projectAccess: { $regex: `^${name}$`, $options: 'i' }
+            }));
+            categoryConditions.push({ $or: regexConditions });
+        }
         // Now, use $or to apply these category conditions if more than one flag is true
         if (categoryConditions.length > 0) {
             matchConditions.push({ $or: categoryConditions });
@@ -3695,6 +3716,124 @@ app.post('/node/single/getBenchmarksResultsWithDatasetDetails', async (req, res)
         if (client) {
             await client.close();
         }
+    }
+});
+
+app.post("/node/projects/list", async (req, res) => {
+  const { username, adminPage } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
+  let client;
+  try {
+    client = new MongoClient(mongoUrl);
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(projectsCollection);
+
+    // Fetch projects where the user is the admin
+    const projects = adminPage ? await collection.find({ admin: username }).toArray() : await collection.find({ members: username }).toArray();
+
+    res.status(200).json(projects);
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+
+// POST create new group
+app.post("/node/projects/createNew", async (req, res) => {
+  let client;
+  try {
+    const { project_name, admin } = req.body;
+    if (!project_name || !admin)
+      return res.status(400).json({ error: "Missing project_name or admin" });
+
+    client = new MongoClient(mongoUrl);
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(projectsCollection);
+
+    // Insert with admin as member by default
+    const result = await collection.insertOne({
+      project_name,
+      admin,
+      members: [admin],
+    });
+
+    const newGroup = await collection.findOne({ _id: result.insertedId });
+
+    res.status(201).json(newGroup);
+  } catch (err) {
+    console.error("Error creating group:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+// POST add member to group
+app.post("/node/projects/:id/addMember", async (req, res) => {
+  let client;
+  try {
+    const { member } = req.body;
+    const id = req.params.id;
+    if (!member || !id)
+      return res.status(400).json({ error: "Missing member or project id" });
+
+    client = new MongoClient(mongoUrl);
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(projectsCollection);
+
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $addToSet: { members: member } }
+    );
+
+    res.status(200).json({ message: "Member added" });
+  } catch (err) {
+    console.error("Error adding member:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+// POST remove member from group
+app.post("/node/projects/:id/removeMember", async (req, res) => {
+  let client;
+  try {
+    const { member } = req.body;
+    const id = req.params.id;
+    if (!member || !id)
+      return res.status(400).json({ error: "Missing member or project id" });
+
+    client = new MongoClient(mongoUrl);
+    await client.connect();
+
+    const db = client.db(dbName);
+    const collection = db.collection(projectsCollection);
+
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $pull: { members: member } }
+    );
+
+    res.status(200).json({ message: "Member removed" });
+  } catch (err) {
+    console.error("Error removing member:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (client) await client.close();
     }
 });
 

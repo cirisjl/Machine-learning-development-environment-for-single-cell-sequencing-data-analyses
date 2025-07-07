@@ -48,6 +48,7 @@ import TreeTableComponent from './common_components/treeTableComponent';
 import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
 import DatasetInfoComponent from './MyData/MyDatasets/DatasetInfoComponent';
 import EditCustomForm from './Form/Components/editCustomFormComponent';
+import ProjectAdminPanel from './Admin/projectInfo';
 
 function App() {
   
@@ -97,6 +98,7 @@ function App() {
           <Route path="testapi"         element={<TreeTableComponent/>}/>
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="reset/:token"         element={<ResetPasswordPage/>}/>
+          <Route path="projectAdminPanel"         element={<ProjectAdminPanel></ProjectAdminPanel>}/>
           {/* <Route path="publishDataset"         element={<PublishDataset/>}/> */}
 
         </Route>

@@ -4,7 +4,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ModalWindow.css';
-import { getCookie, isUserAuth, copyFilesToPrivateStorage } from '../../utils/utilFunctions';
+import { getCookie, isUserAuth, copyFilesToPrivateStorage, fetchUserProjectsList } from '../../utils/utilFunctions';
 import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
@@ -30,10 +30,14 @@ import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
 import FileManagerModal from "./fileManagerModal";
 import useWebSocketToCheckStatus from "../common_components/webSocketForStatus";
+import UserProjectsDropdown from "../common_components/UserProjectsList";
 
 export default function UploadData({ taskStatus, setTaskStatus, taskData, setTaskData, activeTask, setActiveTask, flow }) {
     const [isFileManagerOpen, setIsFileManagerOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState(taskData?.upload?.files);
+    const [userProjectsList, setUserProjectsList] = useState([]);
+    const [selectedUserProject, setSelectedUserProject] = useState(taskData?.upload?.project_name || '');
+
     const [pwd, setPwd] = useState('/');
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
@@ -70,6 +74,9 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     ];
 
 
+      const handleProjectChange = (project_name) => {
+        setSelectedUserProject(project_name);    
+    };
     const handleStatusMessage = (event) => {
         try {
             const data = JSON.parse(event.data);
@@ -139,12 +146,18 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     }
     useEffect(() => {
         isUserAuth(jwtToken)
-            .then((authData) => {
+            .then(async (authData) => {
                 console.log(authData)
                 if (authData.isAuth) {
                     setIsAdminUser(authData.isAdmin);
-                    console.log("is Admin User::::: " + isAdminuser);
-                    console.log("is Admin User::::: " + authData.isAdmin);
+                    
+                    try {
+                        const userProjects =await fetchUserProjectsList(authData.username);
+                        setUserProjectsList(userProjects);
+                    } catch (fetchErr) {
+                        console.error("Error fetching user projects:", fetchErr);
+                    }
+
                 } else {
                     console.warn("Unauthorized - pLease login first to continue");
                     navigate("/routing");
@@ -457,7 +470,8 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 displayAssayNames: true,
                                 assayNames: metadataResult.task_result.assay_names,
                                 default_assay: metadataResult.task_result.default_assay,
-                                inputUpdatedFiles: metadataResult.task_result.inputfile
+                                inputUpdatedFiles: metadataResult.task_result.inputfile,
+                                project_name: selectedUserProject
                             },
                         }));
                 }
@@ -483,6 +497,8 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 embeddings: metadataResult.task_result.embeddings,
                                 status: 'completed'
                             },
+                            project_name: selectedUserProject
+
                         },
 
                     }));
@@ -540,6 +556,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 setErrorMessage("The set of selected files do not comply with the standard multi-file dataset requirements.");
                                 return;
                             }
+
                             for (let i = 0; i < selectedFiles.length; i++) {
                                 const file = selectedFiles[i];
                                 const lastSlashIndex = file.lastIndexOf('/');
@@ -576,6 +593,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 files: selectedFiles,
                                 makeItpublic: publicdataset,
                                 authToken: authData.username,
+                                project_name: selectedUserProject
                             },
                         }));
 
@@ -991,6 +1009,9 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                             </div>
                         )}
 
+                        <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} selectedUserProject={selectedUserProject} />
+
+                        <br />
 
                         <div className="modal-content">
                             <div>

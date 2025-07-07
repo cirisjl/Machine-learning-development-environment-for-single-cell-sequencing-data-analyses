@@ -54,7 +54,7 @@ export function getCookie(name) {
         .then((data) => {
           if(data.authData !== null) {
               if (data.authData.username !== null && data.authData.username !== undefined) {
-                console.log("Heeloo from isUserAuth ::: " + data.authData.isAdmin);
+                // console.log("Heeloo from isUserAuth ::: " + data.authData.isAdmin);
                 resolve({isAuth: true, username: data.authData.username, isAdmin: data.authData.isAdmin});
               } else {
                 resolve({isAuth: false, username: null, isAdmin: false});
@@ -69,6 +69,28 @@ export function getCookie(name) {
       }
     });
   }
+
+
+export async function fetchUserProjectsList(username) {
+   try {
+    const response = await fetch(`${NODE_API_URL}/projects/list`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, adminPage: false }), 
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
+
+    return await response.json(); // Array of projects
+  } catch (error) {
+    console.error("Error fetching admin projects:", error);
+    return [];
+  }
+}
 
 
 // Delete a cookie with a given name
@@ -222,6 +244,8 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
   }
 
   obs = gunzipDict(obs);
+
+  // Check if obs is an object and has the required properties
 
   if (!Array.isArray(umap) || !Array.isArray(umap[0])) {
     throw new Error("umap must be a 2D array");
