@@ -14,11 +14,11 @@ function UserProjectsDropdown({ userProjectsList, onProjectChange, selectedUserP
 
   return (
     <FormControl fullWidth>
-      <InputLabel id="project-label">Select Project</InputLabel>
+      <InputLabel id="project-label">Select Project (Optional)</InputLabel>
       <Select
         labelId="project-label"
         value={selectedProject}
-        label="Select Project"
+        label="Select Project (Optional)"
         onChange={handleChange}
       >
         <MenuItem value="">
@@ -30,6 +30,7 @@ function UserProjectsDropdown({ userProjectsList, onProjectChange, selectedUserP
           </MenuItem>
         ))}
       </Select>
+      <FormHelperText>By creating a project and adding member to your project, you may share your dataset within your project. You can create projects and manage the members through the 'MANAGE PROJECT' button below.</FormHelperText>
       {error && <FormHelperText>Project selection is required</FormHelperText>}
     </FormControl>
   );

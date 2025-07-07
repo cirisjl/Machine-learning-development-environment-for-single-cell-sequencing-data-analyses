@@ -8,6 +8,7 @@ def load_metadata(job_id, file_dict):
     fileDetails = file_dict['fileDetails']
     userID = file_dict['userID']
     assay_name = file_dict['assay_name']
+    sample = file_dict['sample']
     results = {}
     adata = None
     adata_path = None
@@ -82,7 +83,7 @@ def load_metadata(job_id, file_dict):
             # Now, use the parent directory to load the dataset
             adata = load_anndata(parent_directory)
             adata_path = os.path.join(parent_directory, ".h5ad")
-            adata.write_h5ad(adata_path, compression='gzip')
+            
             results["inputfile"] = fileDetails
             results["adata_path"] = adata_path
             results["format"] = "h5ad"
@@ -90,8 +91,17 @@ def load_metadata(job_id, file_dict):
         except Exception as e:
             detail=str(e)
             raise CeleryTaskException(detail)
+
+    # Add sample and batch information
+    if sample is not None and sample.strip() != '':
+        adata.obs['sample'] = sample
+        adata.obs['batch'] = sample
+        adata.obs.insert(loc=0, column='sample', value=adata.obs.pop('sample')) # Move sample and batch columns to front
+        adata.obs.insert(loc=1, column='batch', value=adata.obs.pop('batch'))
+        print(f"Add sample to AnnData.obs and set the value to {sample}.")
     
     cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings = get_cell_metadata(adata, adata_path=adata_path)
+    adata.write_h5ad(adata_path, compression='gzip')
     adata = None
     results['cell_metadata'] = cell_metadata
     results['cell_metadata_head'] = cell_metadata_head

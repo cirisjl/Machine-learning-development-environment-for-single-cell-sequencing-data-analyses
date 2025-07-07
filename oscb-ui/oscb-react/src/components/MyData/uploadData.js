@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import './ModalWindow.css';
 import { getCookie, isUserAuth, copyFilesToPrivateStorage, fetchUserProjectsList } from '../../utils/utilFunctions';
 import Form from "@rjsf/core";
@@ -21,11 +21,13 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
 import { FormControl, InputLabel } from '@mui/material';
 import { NODE_API_URL, FLASK_BACKEND_API } from '../../constants/declarations'
 import schema from "../../schema/react-json-schema/uploadDataSchema.json";
 import RightRail from "../RightNavigation/rightRail";
-import { useLocation } from 'react-router-dom';
 import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
 import FileManagerModal from "./fileManagerModal";
@@ -37,7 +39,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const [selectedFiles, setSelectedFiles] = useState(taskData?.upload?.files);
     const [userProjectsList, setUserProjectsList] = useState([]);
     const [selectedUserProject, setSelectedUserProject] = useState(taskData?.upload?.project_name || '');
-
+    const [sampleValue, setSampleValue] = useState('');
     const [pwd, setPwd] = useState('/');
     let jwtToken = getCookie('jwtToken');
     const [formData, setFormData] = useState({});
@@ -73,10 +75,15 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
         ['barcodes.tsv.gz', 'features.tsv.gz', 'matrix.mtx.gz']
     ];
 
+    // Handle the sample input change
+    const handleSampleChange = (e) => {
+        setSampleValue(e.target.value);
+    };
 
-      const handleProjectChange = (project_name) => {
+    const handleProjectChange = (project_name) => {
         setSelectedUserProject(project_name);    
     };
+
     const handleStatusMessage = (event) => {
         try {
             const data = JSON.parse(event.data);
@@ -675,7 +682,8 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
                                 const data = {
                                     fileDetails: updatedFiles,
-                                    userID: authData.username
+                                    userID: authData.username,
+                                    sample: sampleValue
                                 };
 
                                 axios.post(`${CELERY_BACKEND_API}/tools/metadata`, data)
@@ -978,6 +986,25 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                             SubmitButton={SubmitButton}
                         /> */}
 
+                        <div>
+                            <Box
+                                component="form"
+                                sx={{ '& > :not(style)': { m: 1, width: '100%', maxWidth: '100%' } }}
+                                noValidate
+                                autoComplete="off"
+                            >
+                                <TextField id="root_sample" fullWidth label="Sample (Optional)" variant="outlined" value={sampleValue} onChange={handleSampleChange} helperText="Please add your sample name here if needed. This field will also be used for batch integration." />
+
+                                <br />
+                                <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} selectedUserProject={selectedUserProject} />
+                                <br />
+                                <Link to="/projectAdminPanel" target="_blank">
+                                    <Button variant="outline" size="medium">Manage Projects</Button>
+                                </Link>
+                                <br />
+                            </Box>
+                            
+                        </div>
 
                         {
                             isLoading ? (
@@ -1003,15 +1030,13 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 )
                             )
                         }
+
+
                         {!taskData.upload.displayAssayNames && (
                             <div className='next-upon-success'>
                                 <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
                             </div>
                         )}
-
-                        <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} selectedUserProject={selectedUserProject} />
-
-                        <br />
 
                         <div className="modal-content">
                             <div>

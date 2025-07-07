@@ -248,6 +248,7 @@ class UploadRequest(BaseModel):
     fileDetails: List[str]
     assay_name: Optional[str] = None
     userID: str
+    sample: Optional[str] = None
 
 
 
