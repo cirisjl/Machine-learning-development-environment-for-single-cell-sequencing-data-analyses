@@ -127,8 +127,8 @@ class Dataset(BaseModel):
     normalization_params: normalizationParameters = Field(default_factory=normalizationParameters)
     annotation_params: annotationParameters = Field(default_factory=annotationParameters)
     reduction_params: reductionParameters = Field(default_factory=reductionParameters)
-    show_umap: Optional[bool] = True
-    show_error: Optional[bool] = True   
+    do_umap: Optional[bool] = True
+    do_cluster: Optional[bool] = True   
 
 
 
@@ -145,6 +145,8 @@ class IntegrationDataset(BaseModel):
     method: Optional[str] = None,
     batch_key: Optional[str] = None
     pseudo_replicates: Optional[int] = 0
+    do_umap: Optional[bool] = True
+    do_cluster: Optional[bool] = True  
     params: integrationParameters = Field(default_factory=integrationParameters)
    
 

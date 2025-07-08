@@ -19,6 +19,20 @@
           "title": "Cluster Label",
           "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
         },
+        "do_umap": {
+          "type": "boolean",
+          "title": "Do you want to perform UMAP after processing?",
+          "default": true,
+          "format": "switch",
+          "description": "Toggle this switch to decide whether to perform UMAP (Uniform Manifold Approximation and Projection) analysis after processing your data."
+        },
+        "do_cluster": {
+          "type": "boolean",
+          "title": "Do you want to perform Cluster after processing?",
+          "default": true,
+          "format": "switch",
+          "description": "Toggle this switch to decide whether to perform Cluster analysis after processing your data."
+        },
         "annotation_params": {
           "type": "object",
           "title": "Annotation Parameters",

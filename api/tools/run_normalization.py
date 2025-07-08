@@ -27,6 +27,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     species = ds['species']
     idtype = ds['idtype']
     cluster_label = ds['cluster_label']
+    do_umap = ds['do_umap']
+    do_cluster = ds['do_cluster']
     output_format = ds['output_format']
     parameters = ds['normalization_params']
     methods = parameters['methods']
@@ -120,12 +122,13 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                     # print(adata)
                     # if method != "SCT" and method != "SCT V2":
                     try:
-                        redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {method}.")
-                        adata, msg = run_dimension_reduction(adata, layer=method, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(job_id, msg)
-
-                        redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
-                        adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                        if do_umap:
+                            redislogger.info(job_id, f"Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP for layer {method}.")
+                            adata, msg = run_dimension_reduction(adata, layer=method, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                            if msg is not None: redislogger.warning(job_id, msg)
+                        if do_cluster:
+                            redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
+                            adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
                         
                         # Converrt dense martrix to sparse matrix
                         if isinstance(adata.X, np.ndarray):

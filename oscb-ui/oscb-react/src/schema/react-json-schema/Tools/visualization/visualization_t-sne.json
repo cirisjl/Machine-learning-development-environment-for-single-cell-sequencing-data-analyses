@@ -38,7 +38,13 @@
                 "title": "Default Assay (If applicable)",
                 "default": "RNA"
               },
-                "layer": { 
+              "use_rep": {
+                "type": "string",
+                "title": "Use Representation",
+                "description": "Use the indicated representation",
+                "default": ""
+              },
+              "layer": { 
                 "type": "string" ,
                 "title": "Layer",
                 "description": "Specify the layer",
@@ -50,7 +56,7 @@
               },
               "n_pcs": {
                 "type": "integer",
-                "default": 1
+                "default": 20
               },
               "resolution": {
                 "type": "number",

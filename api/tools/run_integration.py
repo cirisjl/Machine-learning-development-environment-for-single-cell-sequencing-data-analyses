@@ -29,6 +29,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
     output = ids['output']
     methods = ids['methods']
     batch_key = ids['batch_key']
+    do_umap = ids['do_umap']
+    do_cluster = ids['do_cluster']
     pseudo_replicates = ids['pseudo_replicates']
     # output_format = ids['output_format']
     parameters = ids['params']
@@ -125,13 +127,13 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         sc.pp.pca(adata, use_highly_variable=True) #True since we didnt subset
                         sce.pp.harmony_integrate(adata, key = batch_key)
                         sc.pp.neighbors(adata, use_rep = "X_pca_harmony")
-
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_pca_harmony", random_state=0)
-                        if msg is not None: redislogger.warning(job_id, msg)
-
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
+                        if do_umap:
+                            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                            adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_pca_harmony", random_state=0)
+                            if msg is not None: redislogger.warning(job_id, msg)
+                        if do_cluster:
+                            redislogger.info(job_id, "Clustering the neighborhood graph.")
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
@@ -153,13 +155,13 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         adata = scvi_integrate(adata, batch_key=batch_key, model_path=scvi_path)
 
                         sc.pp.neighbors(adata, use_rep = "X_scVI")
-
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_scVI", random_state=0)
-                        if msg is not None: redislogger.warning(job_id, msg)
-
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
+                        if do_umap:
+                            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                            adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_scVI", random_state=0)
+                            if msg is not None: redislogger.warning(job_id, msg)
+                        if do_cluster:
+                            redislogger.info(job_id, "Clustering the neighborhood graph.")
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)

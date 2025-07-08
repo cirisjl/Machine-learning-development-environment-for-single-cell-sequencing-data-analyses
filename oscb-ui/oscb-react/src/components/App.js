@@ -48,7 +48,7 @@ import TreeTableComponent from './common_components/treeTableComponent';
 import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
 import DatasetInfoComponent from './MyData/MyDatasets/DatasetInfoComponent';
 import EditCustomForm from './Form/Components/editCustomFormComponent';
-import ProjectAdminPanel from './Admin/projectInfo';
+import ProjectAdminPanel from './Projects/projectInfo';
 
 function App() {
   

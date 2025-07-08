@@ -1,5 +1,4 @@
 export const uiSchema = (dynamicOptions) => ({
-
   "parameters": {
     "classNames": "category",
     "methods": {
@@ -36,6 +35,14 @@ export const uiSchema = (dynamicOptions) => ({
           { value: 50, label: '50' },
         ]
       }
+    },
+    "do_umap": {
+      "classNames": "sub-category",
+      "ui:widget": "toggle"
+    },
+    "do_cluster": {
+      "classNames": "sub-category",
+      "ui:widget": "toggle"
     },
     "params": {
       "classNames": "form-subset sub-category",

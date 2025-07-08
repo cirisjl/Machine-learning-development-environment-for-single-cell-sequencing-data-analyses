@@ -75,7 +75,7 @@
             },
             "n_pcs": {
               "type": "integer",
-              "default": 1
+              "default": 20
             },
             "resolution": {
               "type": "number",

@@ -28,7 +28,7 @@ export const defaultValues = {
     target_sum: 1e4,
     n_top_genes: 2000,
     n_neighbors: 15,
-    n_pcs: 0, // None
+    n_pcs: 20, // None
     resolution: 0.5,
     regress_cell_cycle: false,
     use_default: true,
@@ -42,7 +42,7 @@ export const defaultValues = {
     target_sum: 10000,
     n_top_genes: 2000,
     n_neighbors: 15,
-    n_pcs: 1,
+    n_pcs: 20,
     resolution: 0.5,
     doublet_rate: 0.08,
     regress_cell_cycle: false
@@ -51,13 +51,13 @@ export const defaultValues = {
   export const defaultNormalizationParams = {
     assay: "RNA",
     n_neighbors: 15,
-    n_pcs: 1,
+    n_pcs: 20,
     resolution: 0.5,
   };
 
   export const defaultReductionParams = {
     assay: "RNA",
     n_neighbors: 15,
-    n_pcs: 1,
+    n_pcs: 20,
     resolution: 0.5,
   };

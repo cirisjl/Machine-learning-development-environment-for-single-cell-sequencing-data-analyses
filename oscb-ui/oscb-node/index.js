@@ -3041,6 +3041,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                     'process_ids': "$process_ids",
                                     "layers": "$layers",
                                     "obs_names": "$obs_names",
+                                    "embeddings": "$embeddings",
                                 }, 
                                 uniqueValues: { $addToSet: '$Id' }
                             }
@@ -3067,6 +3068,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 'process_ids': "$_id.process_ids",
                                 'layers': "$_id.layers",
                                 "obs_names": "$_id.obs_names",
+                                "embeddings": "$_id.embeddings",
                                 totalCount: { $size: "$uniqueValues" }
                             }
                         }

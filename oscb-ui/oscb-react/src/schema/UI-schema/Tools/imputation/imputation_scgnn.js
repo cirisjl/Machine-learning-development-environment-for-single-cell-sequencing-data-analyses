@@ -1,5 +1,4 @@
 export const uiSchema = (dynamicOptions) => ({
-
   "parameters": {
     "classNames": "category",
       "species": {
@@ -27,6 +26,14 @@ export const uiSchema = (dynamicOptions) => ({
       "cluster_label": {
         "classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"
+      },
+      "do_umap": {
+        "classNames": "sub-category",
+        "ui:widget": "toggle"
+      },
+      "do_cluster": {
+        "classNames": "sub-category",
+        "ui:widget": "toggle"
       },
       "imputation_params": {
         "classNames": "form-subset sub-category",
@@ -79,10 +86,10 @@ export const uiSchema = (dynamicOptions) => ({
             max: 200,
             step: 1,
             marks: [
-              { value: 0, label: '0*' },
+              { value: 0, label: '0' },
               { value: 5, label: '5' },
               { value: 10, label: '10' },
-              { value: 20, label: '20' },
+              { value: 20, label: '20*' },
               { value: 40, label: '40' },
               { value: 50, label: '50' },
               { value: 125, label: '125' },

@@ -263,7 +263,7 @@ class MyForm extends Component {
       formData.adata_size = taskData.quality_control.qc_results[0]?.adata_size;
       formData.embeddings = taskData.quality_control.qc_results[0]?.embeddings;
       // formData.output = taskData.quality_control.seurat_meta?.output;
-      formData.projectAccess = taskData.quality_control.project_name;
+      // formData.projectAccess = taskData.quality_control.project_name;
 
 
       } else { // User Dataset
@@ -284,7 +284,7 @@ class MyForm extends Component {
         formData.cell_metadata = compressData(taskData.upload.final_files.cell_metadata);;
   
         formData.cell_metadata_head = JSON.stringify(taskData.upload.final_files.cell_metadata_head);
-        // formData.obs_names = taskData.upload.final_files.obs_names;
+        formData.obs_names = taskData.upload.final_files.obs_names;
         // formData.nCells = taskData.upload.final_files.nCells;
         formData.nGenes = taskData.upload.final_files.nGenes;
         formData.layers = taskData.upload.final_files.layers;

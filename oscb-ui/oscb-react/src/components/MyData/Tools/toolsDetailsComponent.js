@@ -81,7 +81,9 @@ export default function ToolsDetailsComponent(props) {
       outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
       speciesOptions: ["human", "mouse"],
       layers: [], // Add layers as a dynamic option
-      obs_names: [] // Add obs_names as a dynamic option
+      obs_names: [], // Add obs_names as a dynamic option
+      obs_names_ref: [], // Add obs_names as a dynamic option
+      embeddings: [], // Add embeddings as a dynamic option
     });
     
     const onSelectDataset = (dataset) => {
@@ -115,17 +117,20 @@ export default function ToolsDetailsComponent(props) {
 
         let layers = getLayersArray(selectedDatasets) || [];
         let obs_names = getObsNamesArray(selectedDatasets) || [];
+        let embeddings = getEmbeddingsArray(selectedDatasets) || [];
 
         setDynamicOptions((prevOptions) => ({
           ...prevOptions,
           layers: layers, // Update layers dynamically
           obs_names: obs_names, // Update obs_names dynamically
+          embeddings: embeddings, // Update embeddings dynamically
         }));
       } else {
         setDynamicOptions((prevOptions) => ({
           ...prevOptions,
           layers: [], // Reset layers if no datasets are selected
           obs_names: [], // Reset obs_names if no datasets are selected
+          embeddings: [], // Reset embeddings if no datasets are selected
         }));
       }
     }, [selectedDatasets]);
@@ -172,6 +177,7 @@ export default function ToolsDetailsComponent(props) {
       ...prevOptions,
       layers: [],
       obs_names: [],
+      embeddings: [],
     }));
   };
 
@@ -208,10 +214,11 @@ export default function ToolsDetailsComponent(props) {
     }
   }, [selectedRefDatasets]);
 
+
   const getObsNamesArray = (dataMap) => {
-    let obsNamesArray = [];
+    let obsNamesArray = [""];
     Object.values(dataMap).forEach((dataset) => {
-      console.log("dataset", dataset);
+      // console.log("dataset", dataset);
       if (dataset.selectedSubItem?.obs_names) {
         obsNamesArray.push(...dataset.selectedSubItem.obs_names);
       } else if (dataset?.obs_names) {
@@ -222,11 +229,27 @@ export default function ToolsDetailsComponent(props) {
   };
 
 
-  const getLayersArray = (dataMap) => {
-    let layersArray = [];
+  const getEmbeddingsArray = (dataMap) => {
+    let embeddingsArray = [""];
 
     Object.values(dataMap).forEach((dataset) => {
-      console.log("dataset", dataset);
+      // console.log("dataset", dataset);
+      if (dataset.selectedSubItem?.embeddings) {
+        embeddingsArray.push(...dataset.selectedSubItem.embeddings);
+      } else if (dataset?.embeddings) {
+        embeddingsArray.push(...dataset.embeddings);
+      }
+    });
+
+    return [...new Set(embeddingsArray)]; // Remove duplicates
+  };
+
+
+  const getLayersArray = (dataMap) => {
+    let layersArray = [""];
+
+    Object.values(dataMap).forEach((dataset) => {
+      // console.log("dataset", dataset);
       if (dataset.selectedSubItem?.layers) {
         layersArray.push(...dataset.selectedSubItem.layers);
       } else if (dataset?.layers) {
@@ -236,7 +259,6 @@ export default function ToolsDetailsComponent(props) {
 
     return [...new Set(layersArray)]; // Remove duplicates
   };
-
 
 // Function to handle selection of sub-items
 const onSelectRefSubItem = (mainItem, subItem) => {

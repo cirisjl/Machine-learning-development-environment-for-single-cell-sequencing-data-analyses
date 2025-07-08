@@ -27,6 +27,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     userID = ds['userID']
     output = ds['output']
     datasetId = ds['datasetId']
+    do_umap = ds['do_umap']
+    do_cluster = ds['do_cluster']
     parameters = ds['annotation_params']
     layer = None
     if parameters['layer'] is not None and parameters['layer'].strip != "":
@@ -85,13 +87,14 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     redislogger.info(job_id, "Start CellTypist annotation...")
                     adata = run_celltypist(adata, model_name=celltypist_model, refs = user_refs, labels = user_label, species = species)
                     redislogger.info(job_id, "CellTypist annotation has been added to AnnData.obs.")
-
-                    redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                    if msg is not None: redislogger.warning(job_id, msg)
-
-                    redislogger.info(job_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    
+                    if do_umap:
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                        if msg is not None: redislogger.warning(job_id, msg)
+                    if do_cluster:
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)
@@ -128,12 +131,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     adata = scvi_transfer(adata, refs = user_refs, labels = user_label)
                     redislogger.info(job_id, "scVI cell type transfer has been added to AnnData.obs.")
 
-                    redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                    if msg is not None: redislogger.warning(job_id, msg)
-
-                    redislogger.info(job_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    if do_umap:
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                        if msg is not None: redislogger.warning(job_id, msg)
+                    if do_cluster:
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)
@@ -218,13 +222,14 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         df_user = pd.read_csv(csv_user, index_col=0)
                         adata.obs['SingleR_user_ref'] = df_user['labels']
                         adata.obs['SingleR_user_ref.pruned'] = df_user['pruned.labels']
-             
-                    redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                    adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                    if msg is not None: redislogger.warning(job_id, msg)
 
-                    redislogger.info(job_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    if do_umap:
+                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                        if msg is not None: redislogger.warning(job_id, msg)
+                    if do_cluster:
+                        redislogger.info(job_id, "Clustering the neighborhood graph.")
+                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)

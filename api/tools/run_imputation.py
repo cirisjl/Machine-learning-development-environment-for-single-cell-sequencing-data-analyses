@@ -24,6 +24,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     userID = ds['userID']
     output = ds['output']
     datasetId = ds['datasetId']
+    do_umap = ds['do_umap']
+    do_cluster = ds['do_cluster']
     parameters = ds['imputation_params']
     layer = None
     if parameters['layer'] is not None and parameters['layer'].strip != "":
@@ -73,12 +75,13 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(job_id, "Output already exists, start from the result of the last run.")
                 adata = load_anndata(output)
-                redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                if msg is not None: redislogger.warning(job_id, msg)
-
-                redislogger.info(job_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                if do_umap:
+                    redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(job_id, msg)
+                if do_cluster:
+                    redislogger.info(job_id, "Clustering the neighborhood graph.")
+                    adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
@@ -113,12 +116,13 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         data_magic = magic_impute(counts, genes)
                         adata.layers['MAGIC'] = data_magic
 
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(job_id, msg)
-
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                        if do_umap:
+                            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                            adata, msg = run_dimension_reduction(adata, layer='MAGIC', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                            if msg is not None: redislogger.warning(job_id, msg)
+                        if do_cluster:
+                            redislogger.info(job_id, "Clustering the neighborhood graph.")
+                            adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
@@ -183,12 +187,13 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
             if os.path.exists(output): # If output exist from the last run, then just pick up it.
                 redislogger.info(job_id, "Output already exists, start from the last run.")
                 adata = load_anndata(output)
-                redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                adata, msg = run_dimension_reduction(adata, layer='SAVER', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                if msg is not None: redislogger.warning(job_id, msg)
-
-                redislogger.info(job_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                if do_umap:
+                    redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    adata, msg = run_dimension_reduction(adata, layer='SAVER', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    if msg is not None: redislogger.warning(job_id, msg)
+                if do_cluster:
+                    redislogger.info(job_id, "Clustering the neighborhood graph.")
+                    adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
@@ -232,12 +237,13 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                         if os.path.exists(output):
                             adata = load_anndata(output)
-                            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                            adata, msg = run_dimension_reduction(adata, layer='SAVER', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                            if msg is not None: redislogger.warning(job_id, msg)
-
-                            redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                            if do_umap:
+                                redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                                adata, msg = run_dimension_reduction(adata, layer='SAVER', n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                                if msg is not None: redislogger.warning(job_id, msg)
+                            if do_cluster:
+                                redislogger.info(job_id, "Clustering the neighborhood graph.")
+                                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                             imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')

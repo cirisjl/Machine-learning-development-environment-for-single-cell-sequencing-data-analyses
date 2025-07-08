@@ -15,6 +15,9 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
         msg = "Normalize Pearson_residuals may create NaN values, which are not accepted by PCA."
         return adata, msg
 
+    if n_pcs == 0:
+        n_pcs=None
+
     if layer is not None and layer in adata.layers.keys(): # and (layer+'_umap' not in adata.obsm.keys() or layer+'_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
         if not (skip_if_exist and layer+'_pca' in adata.obsm.keys()):
@@ -63,14 +66,19 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             if use_rep is not None and n_pcs is not None and adata.obsm[use_rep].shape[1] < n_pcs:
                 msg = f"{use_rep} does not have enough Dimensions. Set n_pcs to {adata.obsm[use_rep].shape[1]}."
                 n_pcs = adata.obsm[use_rep].shape[1]
-            elif use_rep is None:
-                use_rep = 'X_pca'
+            # elif use_rep is None:
+            #     use_rep = 'X_pca'
             sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
         # tSNE
         if not (skip_if_exist and 'X_tsne' in adata.obsm.keys()):
             tsne = TSNE(n_components=2, random_state=random_state)
             adata.obsm['X_tsne'] = tsne.fit_transform(adata.obsm['X_pca'])
+
+        # 3D tSNE
+        if not (skip_if_exist and 'X_tsne_3D' in adata.obsm.keys()):
+            tsne = TSNE(n_components=3, random_state=random_state)
+            adata.obsm['X_tsne_3D'] = tsne.fit_transform(adata.obsm['X_pca'])
 
         # 2D UMAP
         if not (skip_if_exist and 'X_umap' in adata.obsm.keys()):
