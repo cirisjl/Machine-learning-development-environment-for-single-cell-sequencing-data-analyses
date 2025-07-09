@@ -8,7 +8,7 @@ function LeftNavComponent(props) {
           category_id: 1,
           category_name: 'Workflow',
           expanded: true,
-          filters: ['Clustering'],
+        filters: ['Clustering', 'Integration', 'Annotation'],
         }
       ]);
 

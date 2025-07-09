@@ -43,7 +43,7 @@ export const uiSchema = {
         //   creatable: false,
         //   searchable: true,
         //   opts: []
-        // }
+        //   }
         // },
         // "geneRange": {
         //   "ui:classNames": "sub-category",
@@ -139,65 +139,6 @@ export const uiSchema = {
               { value: 10000, label: '10000'}]
           }
         },
-        "n_neighbors": {
-          "ui:classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:title': 'n_neighbors: ', 
-          'ui:options': {
-            title: 'n_neighbors: ', // Title for the slider
-            min: 2,
-            max: 100,
-            step: 1,
-            marks:[
-              { value: 2, label: '2' },
-              { value: 5, label: '5' },
-              { value: 10, label: '10' },
-              { value: 15, label: '15*' },
-              { value: 20, label: '20' },
-              { value: 50, label: '50' },
-              { value: 100, label: '100' },
-            ]
-          }
-        },
-        "n_pcs": {
-          "ui:classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:title': 'n_pcs: ', 
-          'ui:options': {
-            title: 'n_pcs: ', 
-            min: 0,
-            max: 200,
-            step: 1,
-            marks:[
-              { value: 0, label: '0' },
-              { value: 5, label: '5' },
-              { value: 10, label: '10' },
-              { value: 20, label: '20*' },
-              { value: 40, label: '40' },
-              { value: 50, label: '50' },
-              { value: 125, label: '125' },
-              { value: 200, label: '200' },
-            ]
-          }
-        },
-        "resolution": {
-          "ui:classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:title': 'Resolution: ', 
-          'ui:options': {
-            title: 'Resolution: ', 
-            min: 0,
-            max: 5,
-            step: 0.05,
-            marks:[
-              { value: 0.1, label: '0.1' },
-              { value: 0.5, label: '0.5*' },
-              { value: 1, label: '1' },
-              { value: 2.5, label: '2.5' },
-              { value: 5, label: '5' },
-            ]
-          }
-        },
         "doublet_rate": {
           "ui:classNames": "sub-category",
           "ui:widget": "RangeSlider",
@@ -225,29 +166,86 @@ export const uiSchema = {
           "ui:widget": "toggle"
         }
       },
-      "process_type":{
-        "ui:classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          placeholder: "Select the Output Format",
-          creatable: false,
-          searchable: true,
-          opts:["Normalization", "Imputation"] 
-        }
-      },
-      "normalization_params": {
+      "integration_params": {
       "ui:classNames": "form-subset sub-category",
         "methods": {
           "ui:classNames": "sub-category",
           "ui:widget": "MultiSelectComponent",
-        },  
+        }, 
+        "batch_key": {
+          "type": "string",
+          "title": "Batch Key",
+          "description": "Please specify the Batch Key.",
+          "default": ""
+        },
+        "pseudo_replicates": {
+          "type": "integer",
+          "title": "Pseudo Replicates",
+          "description": "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
+          "default": 0
+        },
       },
-      "imputation_params": {
+      "reduction_params": {
       "ui:classNames": "form-subset sub-category",   
-        "methods": {
+        "n_neighbors": {
           "ui:classNames": "sub-category",
-          "ui:widget": "MultiSelectComponent",
-        }
+          "ui:widget": "RangeSlider",
+          'ui:title': 'n_neighbors: ',
+          'ui:options': {
+            title: 'n_neighbors: ', // Title for the slider
+            min: 2,
+            max: 100,
+            step: 1,
+            marks: [
+              { value: 2, label: '2' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 15, label: '15' },
+              { value: 20, label: '20' },
+              { value: 30, label: '30*' },
+              { value: 100, label: '100' },
+            ]
+          }
+        },
+        "n_pcs": {
+          "ui:classNames": "sub-category",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'n_pcs: ',
+          'ui:options': {
+            title: 'n_pcs: ',
+            min: 0,
+            max: 200,
+            step: 1,
+            marks: [
+              { value: 0, label: '0' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 20, label: '20' },
+              { value: 30, label: '30*' },
+              { value: 50, label: '50' },
+              { value: 125, label: '125' },
+              { value: 200, label: '200' },
+            ]
+          }
+        },
+        "resolution": {
+          "ui:classNames": "sub-category",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'Resolution: ',
+          'ui:options': {
+            title: 'Resolution: ',
+            min: 0,
+            max: 5,
+            step: 0.05,
+            marks: [
+              { value: 0.1, label: '0.1' },
+              { value: 0.5, label: '0.5*' },
+              { value: 1, label: '1' },
+              { value: 2.5, label: '2.5' },
+              { value: 5, label: '5' },
+            ]
+          }
+        },
       }
   }
 }

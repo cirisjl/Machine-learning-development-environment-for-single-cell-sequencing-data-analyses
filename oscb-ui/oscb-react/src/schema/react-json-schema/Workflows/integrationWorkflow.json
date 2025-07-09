@@ -1,0 +1,143 @@
+{
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type": "object",
+      "title": "Parameters for Integration Workflow",
+      "properties": {
+        "species": {
+          "type": "string",
+          "title": "Species Type"
+        },
+        "qc_params": {
+          "type": "object",
+          "title": "Quality Control Parameters",
+          "required": [
+            "methods"
+          ],
+          "properties": {
+            "methods": {
+              "type": "array",
+              "title": "Method",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Bioconductor",
+                  "Seurat",
+                  "Scanpy",
+                  "Dropkick"
+                ]
+              },
+              "default": [
+                "Scanpy"
+              ],
+              "uniqueItems": true
+            },
+            "assay": {
+              "type": "string",
+              "title": "Default Assay (If applicable)",
+              "default": "RNA"
+            },
+            "min_genes": {
+              "type": "integer",
+              "title": "Min Genes",
+              "default": 200
+            },
+            "max_genes": {
+              "type": "integer",
+              "title": "Max Genes",
+              "default": 20000
+            },
+            "min_cells": {
+              "type": "integer",
+              "title": "Min Cells",
+              "default": 2
+            },
+            "target_sum": {
+              "type": "integer",
+              "title": "Target Sum:",
+              "default": 10000
+            },
+            "n_top_genes": {
+              "type": "integer",
+              "title": "Highly Variable Genes (n_top_genes):",
+              "default": 2000
+            },
+            "doublet_rate": {
+              "type": "number",
+              "title": "Expected Doublet Rate: ",
+              "default": 0.08
+            },
+            "regress_cell_cycle": {
+              "type": "boolean",
+              "title": "Regress Cell Cycle",
+              "default": false,
+              "format": "switch"
+            },
+            "use_default": {
+              "type": "boolean",
+              "title": "Use Default",
+              "default": true,
+              "format": "switch"
+            }
+          }
+        }
+      },
+      "integration_params": {
+        "type": "object",
+        "title": "Integration Parameters",
+        "required": [
+          "methods"
+        ],
+        "properties": {
+          "methods": {
+            "type": "array",
+            "title": "Method",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Liger",
+                "Harmony",
+                "Seurat",
+                "scVI"
+              ]
+            },
+            "uniqueItems": true,
+            "minItems": 1
+          },
+          "batch_key": {
+            "type": "string",
+            "title": "Batch Key",
+            "description": "Please specify the Batch Key.",
+            "default": ""
+          },
+          "pseudo_replicates": {
+            "type": "integer",
+            "title": "Pseudo Replicates",
+            "description": "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
+            "default": 0
+          }
+        }
+      },
+      "reduction_params": {
+        "type": "object",
+        "title": "Visualization Parameters",
+        "properties": {
+          "n_neighbors": {
+            "type": "integer",
+            "default": 30
+          },
+          "n_pcs": {
+            "type": "integer",
+            "default": 30
+          },
+          "resolution": {
+            "type": "number",
+            "title": "Resolution:",
+            "default": 0.5
+          }
+        }
+      }
+    }
+  }
+}

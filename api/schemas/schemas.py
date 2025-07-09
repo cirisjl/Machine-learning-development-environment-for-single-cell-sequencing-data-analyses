@@ -92,7 +92,7 @@ class annotationParameters(BaseModel):
 class integrationParameters(BaseModel):
     # description: Optional[str] = None
     # datasetId: Optional[str] = None
-    method: Optional[str] = None
+    methods: Optional[List[str]]= None
     batch_key: Optional[str] = None
     pseudo_replicates: Optional[int] = 0
     assay: Optional[str] = 'RNA' # Required for Seurat
@@ -150,6 +150,7 @@ class Datasets(BaseModel):
     qc_params: QCParameters = Field(default_factory=QCParameters)
     integration_params: integrationParameters = Field(default_factory=integrationParameters)
     annotation_params: annotationParameters = Field(default_factory=annotationParameters)
+    reduction_params: reductionParameters = Field(default_factory=reductionParameters)
    
 
 
