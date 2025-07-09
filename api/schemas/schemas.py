@@ -132,7 +132,7 @@ class Dataset(BaseModel):
 
 
 
-class IntegrationDataset(BaseModel):
+class Datasets(BaseModel):
     process: Optional[str] = None
     description: Optional[str] = None
     datasetIds: List[str] = None
@@ -146,8 +146,10 @@ class IntegrationDataset(BaseModel):
     batch_key: Optional[str] = None
     pseudo_replicates: Optional[int] = 0
     do_umap: Optional[bool] = True
-    do_cluster: Optional[bool] = True  
-    params: integrationParameters = Field(default_factory=integrationParameters)
+    do_cluster: Optional[bool] = True
+    qc_params: QCParameters = Field(default_factory=QCParameters)
+    integration_params: integrationParameters = Field(default_factory=integrationParameters)
+    annotation_params: annotationParameters = Field(default_factory=annotationParameters)
    
 
 

@@ -46,7 +46,7 @@
           "format": "switch",
           "description": "Toggle this switch to decide whether to perform Cluster analysis after processing your data."
         },
-        "params": {
+        "integration_params": {
           "type": "object",
           "title": "Integration Parameters",
           "properties": {

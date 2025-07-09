@@ -3,8 +3,8 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_clustering_task, create_annotation_task
-from schemas.schemas import Dataset
+from celery_tasks.tasks import create_clustering_task, create_annotation_wf_task, create_integration_wf_task
+from schemas.schemas import Dataset, Datasets
 router = APIRouter(prefix='/api/workflows', tags=['workflows'], responses={404: {"description": "API Not found"}})
 
 
@@ -15,14 +15,24 @@ async def create_clustering_task_async(ds: Dataset):
     """
     ds_dict = ds.dict()  # Convert the Pydantic model to a dict
     task = create_clustering_task.apply_async(args=[ds_dict])
-    return JSONResponse({"job_id": task.id, "status": "Clustering task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "status": "Clustering task is submitted successfully"})
+
+
+@router.post("/integration")
+async def create_integration_wf_task_async(dss: Datasets):
+    """
+    Create a task for integration
+    """
+    dss_dict = dss.dict()  # Convert the Pydantic model to a dict
+    task = create_integration_wf_task.apply_async(args=[dss_dict])
+    return JSONResponse({"job_id": task.id, "status": "Integration task is submitted successfully"})
 
 
 @router.post("/annotation")
-async def create_annotation_task_async(ds: Dataset):
+async def create_annotation_wf_task_async(dss: Datasets):
     """
     Create a task for annotation
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
-    task = create_annotation_task.apply_async(args=[ds_dict])
-    return JSONResponse({"job_id": task.id, "status": "Annotation task submitted successfully"})
+    dss_dict = dss.dict()  # Convert the Pydantic model to a dict
+    task = create_annotation_wf_task.apply_async(args=[dss_dict])
+    return JSONResponse({"job_id": task.id, "status": "Annotation task is submitted successfully"})

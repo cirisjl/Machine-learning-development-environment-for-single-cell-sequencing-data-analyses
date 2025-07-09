@@ -333,7 +333,7 @@ export function ClusteringWorkFlowComponent(props) {
       <div className="separator heading">
         <div className="stripe"></div> 
           <h2 className="h-sm font-weight-bold">
-            Tool Parameters 
+            Datasets 
           </h2> 
         <div className="stripe"></div>
       </div>

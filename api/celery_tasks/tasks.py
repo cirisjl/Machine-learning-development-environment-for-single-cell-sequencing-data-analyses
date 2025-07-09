@@ -14,7 +14,8 @@ from benchmarks.run_benchmarks import run_benchmarks
 from benchmarks.run_data_split import run_data_split
 from benchmarks.run_subset_data import run_subset_data
 from workflows.clustering import run_clustering
-# from workflows.annotation import run_annotation
+from workflows.integration import run_integration_wf
+from workflows.annotation import run_annotation_wf
 from oscb_cli.runDownloadDataset import run_download_dataset
 
 
@@ -108,6 +109,20 @@ def create_subset_data_task(self, task_dict:dict):
 def create_clustering_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_clustering(job_id, ds_dict)
+    return results
+
+
+@shared_task(bind=True, name='tools:create_integration_wf_task') 
+def create_integration_wf_task(self, dss_dict:dict):
+    job_id = self.request.id
+    results = run_integration_wf(job_id, dss_dict)
+    return results
+
+
+@shared_task(bind=True, name='tools:create_annotation_wf_task') 
+def create_annotation_wf_task(self, dss_dict:dict):
+    job_id = self.request.id
+    results = run_annotation_wf(job_id, dss_dict)
     return results
 
 

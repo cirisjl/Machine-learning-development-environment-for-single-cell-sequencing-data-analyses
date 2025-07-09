@@ -40,6 +40,7 @@ export default function ToolsDetailsComponent(props) {
       quality_control: 'qc_params',
       normalization: 'normalization_params',
       imputation: 'imputation_params',
+      integration: 'integration_params',
       annotation: 'annotation_params',
       visualization: 'reduction_params'
     };
@@ -189,9 +190,7 @@ export default function ToolsDetailsComponent(props) {
     if (currentSelectedRefDatasets[datasetId]) {
       delete currentSelectedRefDatasets[datasetId];
     } else {
-      if (filterCategory !== "integration") {
-        currentSelectedRefDatasets = {};
-      }
+      currentSelectedRefDatasets = {};
       currentSelectedRefDatasets[datasetId] = dataset;
     }
     setSelectedRefDatasets(currentSelectedRefDatasets)

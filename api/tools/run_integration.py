@@ -33,15 +33,14 @@ def run_integration(job_id, ids:dict, fig_path=None):
     do_cluster = ids['do_cluster']
     pseudo_replicates = ids['pseudo_replicates']
     # output_format = ids['output_format']
-    parameters = ids['params']
+    parameters = ids['integration_params']
     default_assay = parameters['default_assay']
     # reference = parameters['reference']
     dims = parameters['dims']
     npcs = parameters['npcs']
     resolution = parameters['resolution']
     integration_output = []
-
-    # print(inputs)
+    adata_outputs = []
 
     upsert_jobs(
         {
@@ -68,12 +67,13 @@ def run_integration(job_id, ids:dict, fig_path=None):
                 input = unzip_file_if_compressed(job_id, input)
                 md5 = md5 + get_md5(input)
                 abs_inputList.append(input)
+    else:
+        raise CeleryTaskException("No input file is found.")
 
     if datasets is not None:
         dataset = datasets[0]
     datasets = list_to_string(datasets)
     input = list_to_string_default(abs_inputList)
-    
 
     # #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -95,6 +95,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
         if integration_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip Integration.")
             integration_output = integration_results['outputs']
+            adata_outputs.append(integration_results['adata_path'])
             process_ids.append(process_id)
         else:
             try:
@@ -102,7 +103,13 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     adata = None
                     if len(inputs) > 1:
                         adatas = [load_anndata(input) for input in inputs]
+                        for input in inputs:
+                            ad = load_anndata(input)
+                            if batch_key is None or batch_key.strip() == '':
+                                ad.obs['batch'] = os.path.basename(input).split('.')[0] # If bacth_key is empty, use filename as batch_key                           
                         adata = sc.concat(adatas, join='outer')
+                        if batch_key is None or batch_key.strip() == '':
+                            batch_key = 'batch'
                     elif len(inputs) == 1:
                         adata = load_anndata(inputs[0])
 
@@ -141,6 +148,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
+                        adata_outputs.append(adata_path)
                         adata = None
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
@@ -169,6 +177,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
+                        adata_outputs.append(adata_path)
                         adata = None
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
@@ -229,6 +238,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     integration_output.append({f"{method}_Seurat": output})
                     integration_output.append({f"{method}_Report": report_path})
                     integration_results['outputs'] = integration_output
+                    adata_outputs.append(adata_path)
                     adata = None
                     redislogger.info(job_id, integration_results['info'])
                     integration_results['datasetIds'] = datasetIds
@@ -251,6 +261,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
         "output": integration_output,
         "default_assay": default_assay,
         "md5": md5,
+        "adata_path": adata_outputs,
         "process_ids": process_ids
     }
 

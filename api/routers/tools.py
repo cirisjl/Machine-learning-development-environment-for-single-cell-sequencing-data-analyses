@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 
 # from api import tools
 from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task, load_metadata_task, create_annotation_task
-from schemas.schemas import Dataset, IntegrationDataset, PathRequest, UMAPRequest, UploadRequest
+from schemas.schemas import Dataset, Datasets, PathRequest, UMAPRequest, UploadRequest
 from datetime import datetime
 from utils.mongodb import upsert_jobs
 
@@ -115,7 +115,7 @@ async def create_conversion_task_async(ds: Dataset):
 
 
 @router.post("/integrate")
-async def create_integration_task_async(ids: IntegrationDataset):
+async def create_integration_task_async(ids: Datasets):
     """
     Create a task for integration
     """

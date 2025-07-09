@@ -2,33 +2,28 @@ import os
 from tools.formating.formating import *
 from tools.run_qc import run_qc
 from tools.run_integration import run_integration
-from tools.run_annotation import run_annotation
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from utils.redislogger import *
 from utils.mongodb import generate_workflow_id, upsert_jobs, upsert_workflows
 from datetime import datetime
 
-def run_annotation_wf(job_id, dss:dict, random_state=0):
+def run_integration_wf(job_id, dss:dict, random_state=0):
     wf_results = {}
     process_ids = []
     userID = dss['userID']
     datasetIds = dss['datasetIds']
     datasets = dss['dataset']
-    species = dss['species']
     inputs = dss['input']
     do_umap = dss['do_umap']
     do_cluster = dss['do_cluster']
     batch_key = dss['batch_key']
     pseudo_replicates = dss['pseudo_replicates']
-    user_refs = dss['user_refs']
     qc_params = dss['qc_params']
     integration_params = dss['integration_params']
-    annotation_params = dss['annotation_params']
     fig_path = None
     md5 = None
     adata_outputs = None
-    final_outputs = []
 
     # Initialize methodMap
     methodMap = {}
@@ -40,13 +35,9 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     # Extract methods for Integration
     if integration_params and "methods" in integration_params and integration_params["methods"]:
         methodMap["Integration"] = ", ".join(integration_params["methods"])
-
-    # Extract methods for Annotation
-    if annotation_params and "methods" in annotation and annotation["methods"]:
-        methodMap["Annotation"] = ", ".join(annotation["methods"])
         
     output = None
-    description = "Annotation Workflow"
+    description = "Integration Workflow"
 
     abs_inputList = []
 
@@ -116,38 +107,12 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         wf_results['integration_output'] = integration_results['output']
         output = integration_results['output']
         adata_outputs = integration_results['adata_path']
-    
-    if len(adata_outputs) > 0 and len(annotation_params["methods"]) > 0:
-        ann_process_ids = []
-        ann_outputs = []
-        for adata_output in adata_outputs:
-            ds = {}
-            ds['userID'] = userID
-            ds['input'] = adata_output
-            ds['output'] = dss['output']
-            ds['datasetId'] = datasetIds[0]
-            ds['dataset'] = datasets[0]
-            ds['species'] = species
-            ds['user_refs'] = user_refs
-            ds['do_umap'] = do_umap
-            ds['do_cluster'] = do_cluster
-            ds['annotation_params'] = annotation_params
-
-            annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
-            ann_process_ids.extend(annotation_results["process_ids"])
-            process_ids.extend(annotation_results["process_ids"])
-            ann_outputs.append(annotation_results['output'])
-            final_outputs.append(annotation_results['adata_path'])
-
-        wf_results['annotation'] = ann_process_ids
-        wf_results['annotation_output'] = ann_outputs
-        output = ann_outputs
 
     results = {
         "output": output,
         # "workflow_id": workflow_id,
         "md5": md5,
-        "adata_path": final_outputs,
+        "adata_path": adata_outputs,
         "wf_results": wf_results,
         # "figures":fig_path, 
         "process_ids": process_ids
