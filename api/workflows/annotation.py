@@ -70,7 +70,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         raise CeleryTaskException("No input file is found.")
 
     # Create folders for output figures
-    workflow_id = generate_workflow_id(md5, "integration", dss)
+    workflow_id = generate_workflow_id(md5, "annotation", dss)
     fig_path = os.path.join(os.path.dirname(inputs[0]), 'workflow', workflow_id)
     if not os.path.exists(fig_path):
         os.makedirs(fig_path, exist_ok=True)
@@ -79,9 +79,9 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     # for method i want methodMap key value pairs.
 
     if datasetIds is not None:
-        description = f"Integration Workflow for {datasetIds}"
+        description = f"Annotation Workflow for {datasetIds}"
     elif dataset is not None:
-        description = f"Integration Workflow for {datasets}"
+        description = f"Annotation Workflow for {datasets}"
 
     # wf_results = pp_result_exists(process_id)
     upsert_jobs(
@@ -92,7 +92,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             "method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
             "datasetURL": str(inputs).replace("'", "").replace("{", "").replace("}", ""),
             "datasetId": str(datasetIds).replace("'", "").replace("{", "").replace("}", ""),
-            "process": "Integration",
+            "process": "Annotation",
+            "category": 'workflow',
             "created_on": datetime.now(),
             "status": "Processing"
         }
@@ -150,7 +151,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
             ann_process_ids.extend(annotation_results["process_ids"])
             process_ids.extend(annotation_results["process_ids"])
-            ann_outputs.append(annotation_results['output'])
+            ann_outputs = ann_outputs + annotation_results['output']
             final_outputs.append(annotation_results['adata_path'])
 
         wf_results['annotation'] = ann_process_ids

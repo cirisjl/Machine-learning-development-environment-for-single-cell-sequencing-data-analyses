@@ -48,6 +48,7 @@ def create_job(job_id, ds_dict: dict):
             "method": ds_dict['method'],
             "datasetURL": ds_dict['input'],
             "process": ds_dict['process'],
+            "class": 'category',
             "created_on": datetime.now(), 
             "status": "Queued"
         }
@@ -130,6 +131,7 @@ async def create_integration_task_async(ids: Datasets):
             "method": ids_dict['method'],
             "datasetURL": ids_dict['input'],
             "process": ids_dict['process'],
+            "class": 'tools',
             "created_on": datetime.now(), 
             "status": "Queued"
         }

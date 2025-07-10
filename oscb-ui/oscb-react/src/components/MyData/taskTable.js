@@ -234,7 +234,7 @@ const TaskTable = () => {
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             <a
                                                 onClick={() => {
-                                                if (task.process && task.process.toLowerCase() === 'clustering') {
+                                                if (task.process && task.category.toLowerCase() === 'workflow') {
                                                     navigate("/mydata/workflowTaskDetails", {
                                                         state: {
                                                         job_id: task.job_id,

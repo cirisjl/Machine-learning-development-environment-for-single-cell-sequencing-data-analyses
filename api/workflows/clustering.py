@@ -64,6 +64,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
             "datasetURL": input,
             "datasetId": datasetId,
             "process": "Clustering",
+            "category": 'workflow',
             "created_on": datetime.now(),
             "status": "Processing"
         }

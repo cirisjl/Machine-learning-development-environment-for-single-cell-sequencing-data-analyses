@@ -84,6 +84,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
             "datasetURL": str(inputs).replace("'", "").replace("{", "").replace("}", ""),
             "datasetId": str(datasetIds).replace("'", "").replace("{", "").replace("}", ""),
             "process": "Integration",
+            "category": 'workflow',
             "created_on": datetime.now(),
             "status": "Processing"
         }
