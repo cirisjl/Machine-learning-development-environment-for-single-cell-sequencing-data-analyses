@@ -71,6 +71,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         )
         raise CeleryTaskException(detail)
 
+    redislogger.info(job_id, f"Using Annotation Parameters: {parameters}")
+
     methods = [x.upper() for x in methods if isinstance(x,str)]
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)

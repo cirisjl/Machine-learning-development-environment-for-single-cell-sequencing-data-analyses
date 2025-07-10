@@ -367,8 +367,9 @@ const onSelectRefSubItem = (mainItem, subItem) => {
                 return adataPath;
             });
 
-            formData.input = inputArray;           // if the input file is at location /usr/src/storage/dataset1/filename.h5ad
-            formData.output = "/IntegrationResults"; // Integration results are stored at the output location /usr/src/storage/dataset1/IntegrationResults/
+            formData.input = inputArray;  // if the input file is at location /usr/src/storage/dataset1/filename.h5ad
+            const directory = extractDir(formData.input[0]);
+            formData.output = directory + "/integration";
           } else {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset for non-integration category
               formData.dataset = dataset.Title;
@@ -420,20 +421,32 @@ const onSelectRefSubItem = (mainItem, subItem) => {
           } else if (filterCategory === "formatting") {
             method = "Convert";
           } else if (parametersKey[filterCategory]) {
-            method = formData[parametersKey[filterCategory]].methods[0];
+            method = formData[parametersKey[filterCategory]].methods;
           } else {
-            method = formData.methods[0];
+            method = formData.methods;
           }
 
           let job_description = "";
           if (typeof formData.dataset === 'string') {
-            job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset;
+            if (typeof method === 'string') {
+              job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset;
+            } else{
+              job_description = method.join(', ') + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset;
+            }
           } else if (Array.isArray(formData.dataset)) {
             if (formData.dataset.length > 1) {
               let datasets = formData.dataset.join(', ');
-              job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + datasets;
+              if (typeof method === 'string') {
+                job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + datasets;
+              } else {
+                job_description = method.join(', ') + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + datasets;
+              }
             } else if (formData.dataset.length === 1) {
-              job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset[0];
+              if (typeof method === 'string') {
+                job_description = method + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset[0];
+              } else {
+                job_description = method.join(', ') + ' ' + filterStaticCategoryMap[filterCategory] + ' for ' + formData.dataset[0];
+              }
             }
           }
 

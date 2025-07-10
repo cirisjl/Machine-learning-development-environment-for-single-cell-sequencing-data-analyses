@@ -201,6 +201,109 @@ export const uiSchema = (dynamicOptions) => ({
           }
         },
       },
+      "annotation_params": {
+        "classNames": "form-subset sub-category",
+        "methods": {
+          "classNames": "sub-category",
+          "ui:widget": "MultiSelectComponent",
+        },
+        "celltypist_model": {
+          "classNames": "sub-category",
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+            clearable: true,
+            placeholder: "Select the CellTypist Model.",
+            creatable: false,
+            searchable: true,
+            opts: [
+              "Human_Placenta_Decidua.pkl",
+              "Adult_Mouse_Gut.pkl",
+              "Human_Longitudinal_Hippocampus.pkl",
+              "Adult_Human_Skin.pkl",
+              "Fetal_Human_AdrenalGlands.pkl",
+              "Immune_All_Low.pkl",
+              "Human_Developmental_Retina.pkl",
+              "Human_Endometrium_Atlas.pkl",
+              "COVID19_Immune_Landscape.pkl",
+              "Developing_Human_Organs.pkl",
+              "Mouse_Postnatal_DentateGyrus.pkl",
+              "Developing_Human_Hippocampus.pkl",
+              "Mouse_Isocortex_Hippocampus.pkl",
+              "Human_AdultAged_Hippocampus.pkl",
+              "Adult_Pig_Hippocampus.pkl",
+              "Adult_Human_MTG.pkl",
+              "Cells_Human_Tonsil.pkl",
+              "Healthy_Mouse_Liver.pkl",
+              "Human_IPF_Lung.pkl",
+              "Cells_Fetal_Lung.pkl",
+              "Mouse_Whole_Brain.pkl",
+              "Adult_CynomolgusMacaque_Hippocampus.pkl",
+              "Human_Embryonic_YolkSac.pkl",
+              "Developing_Mouse_Hippocampus.pkl",
+              "Cells_Intestinal_Tract.pkl",
+              "Fetal_Human_Pituitary.pkl",
+              "Adult_Human_Vascular.pkl",
+              "Autopsy_COVID19_Lung.pkl",
+              "Healthy_COVID19_PBMC.pkl",
+              "Healthy_Human_Liver.pkl",
+              "COVID19_HumanChallenge_Blood.pkl",
+              "Adult_RhesusMacaque_Hippocampus.pkl",
+              "Nuclei_Lung_Airway.pkl",
+              "Developing_Human_Gonads.pkl",
+              "Developing_Human_Brain.pkl",
+              "Healthy_Adult_Heart.pkl",
+              "Adult_COVID19_PBMC.pkl",
+              "Cells_Adult_Breast.pkl",
+              "Immune_All_High.pkl",
+              "Lethal_COVID19_Lung.pkl",
+              "Fetal_Human_Skin.pkl",
+              "Adult_Human_PrefrontalCortex.pkl",
+              "Human_PF_Lung.pkl",
+              "Adult_Mouse_OlfactoryBulb.pkl",
+              "Human_Lung_Atlas.pkl",
+              "Pan_Fetal_Human.pkl",
+              "Cells_Lung_Airway.pkl",
+              "Fetal_Human_Retina.pkl",
+              "Human_Colorectal_Cancer.pkl",
+              "Mouse_Dentate_Gyrus.pkl",
+              "Developing_Mouse_Brain.pkl",
+              "Adult_Human_PancreaticIslet.pkl",
+              "Developing_Human_Thymus.pkl",
+              "Fetal_Human_Pancreas.pkl"
+            ]
+          }
+        },
+        "SingleR_ref": {
+          "classNames": "sub-category",
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+            clearable: true,
+            placeholder: "Select the SingleR Reference.",
+            creatable: false,
+            searchable: true,
+            opts: [
+              "MouseRNAseqData",
+              "HumanPrimaryCellAtlasData",
+              "DatabaseImmuneCellExpressionData",
+              "BlueprintEncodeData",
+              "ImmGenData",
+              "MonacoImmuneData",
+              "NovershternHematopoieticData"
+            ]
+          }
+        },
+        "user_label": {
+          "classNames": "sub-category",
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+            clearable: true,
+            placeholder: "Specify the labels",
+            creatable: false,
+            searchable: true,
+            opts: dynamicOptions.obs_names_ref
+          }
+        }
+      },
       "reduction_params": {
       "ui:classNames": "form-subset sub-category",   
         "n_neighbors": {

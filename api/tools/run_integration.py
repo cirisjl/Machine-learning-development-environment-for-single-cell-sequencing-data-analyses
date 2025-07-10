@@ -27,13 +27,14 @@ def run_integration(job_id, ids:dict, fig_path=None):
     inputs = ids['input']
     userID = ids['userID']
     output = ids['output']
-    methods = ids['methods']
-    batch_key = ids['batch_key']
     do_umap = ids['do_umap']
     do_cluster = ids['do_cluster']
-    pseudo_replicates = ids['pseudo_replicates']
+    
     # output_format = ids['output_format']
     parameters = ids['integration_params']
+    batch_key = parameters['batch_key']
+    pseudo_replicates = parameters['pseudo_replicates']
+    methods = parameters['methods']
     default_assay = parameters['default_assay']
     # reference = parameters['reference']
     dims = parameters['dims']
@@ -74,6 +75,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
         dataset = datasets[0]
     datasets = list_to_string(datasets)
     input = list_to_string_default(abs_inputList)
+    
+    redislogger.info(job_id, f"Using Integration Parameters: {parameters}")
 
     # #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -143,7 +146,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
                         adata.write_h5ad(output, compression='gzip')
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
@@ -172,7 +175,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, scanpy_cluster=batch_key)
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
                         adata.write_h5ad(output, compression='gzip')
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
@@ -232,7 +235,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, ids, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                     integration_output.append({f"{method}_AnnDate": adata_path})
                     integration_output.append({f"{method}_Seurat": output})

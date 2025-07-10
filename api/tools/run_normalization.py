@@ -54,6 +54,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
         detail = 'No normalization method is selected.'
         raise CeleryTaskException(detail)
     redislogger.info(job_id, f"Selected methods: {methods}")
+    redislogger.info(job_id, f"Using Normalization Parameters: {parameters}")
     # Get the absolute path for the given input
     # input = get_input_path(input, userID)
     input = unzip_file_if_compressed(job_id, ds['input'])

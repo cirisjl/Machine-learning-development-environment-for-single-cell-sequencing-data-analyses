@@ -494,7 +494,7 @@ function WorkflowTaskDetailsComponent() {
                     { /* <Button onClick={downloadFile(datasetURL)}>
                       {getFileNameFromURL(datasetURL) || 'Not available'}
                     </Button> */ }
-                    { process === "Integration" ?
+                    {Array.isArray(datasetURL) ?
                       ( datasetURL.map((inpput, index) => (
                           <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
                             {getFileNameFromURL(inpput) || 'Not available'}

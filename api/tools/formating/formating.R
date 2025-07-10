@@ -111,12 +111,13 @@ LoadSeurat <- function(path, project = NULL) {
         # srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
         project_name <- sub("\\.h5ad$", "", basename(path))
         adata <- LoadAnndata(path)
-        tryCatch({
-            srat <- AnndataToSeurat(adata, project_name = project_name)
-        }, error = function(e) {
-            print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
-            srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
-        }) 
+        srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        # tryCatch({
+        #     srat <- AnndataToSeurat(adata, project_name = project_name)
+        # }, error = function(e) {
+        #     print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
+        #     srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        # }) 
         
         rm(adata)
     } else if(suffix == "rds"){

@@ -15,12 +15,9 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     userID = dss['userID']
     datasetIds = dss['datasetIds']
     datasets = dss['dataset']
-    species = dss['species']
     inputs = dss['input']
     do_umap = dss['do_umap']
     do_cluster = dss['do_cluster']
-    batch_key = dss['batch_key']
-    pseudo_replicates = dss['pseudo_replicates']
     user_refs = dss['user_refs']
     qc_params = dss['qc_params']
     integration_params = dss['integration_params']
@@ -39,7 +36,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     annotation_params['n_pcs'] = n_pcs 
     annotation_params['resolution'] = resolution
     fig_path = None
-    md5 = None
+    md5 = []
     adata_outputs = None
     final_outputs = []
 
@@ -55,15 +52,15 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         methodMap["Integration"] = ", ".join(integration_params["methods"])
 
     # Extract methods for Annotation
-    if annotation_params and "methods" in annotation and annotation["methods"]:
-        methodMap["Annotation"] = ", ".join(annotation["methods"])
+    if annotation_params and "methods" in annotation_params and annotation_params["methods"]:
+        methodMap["Annotation"] = ", ".join(annotation_params["methods"])
         
     output = None
     description = "Annotation Workflow"
 
     abs_inputList = []
 
-    if inputs is not None:
+    if len(inputs) > 0:
         for input in inputs:
             if input is not None:
                 input = unzip_file_if_compressed(job_id, input)
@@ -81,7 +78,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
 
     # for method i want methodMap key value pairs.
 
-    if datasetId is not None:
+    if datasetIds is not None:
         description = f"Integration Workflow for {datasetIds}"
     elif dataset is not None:
         description = f"Integration Workflow for {datasets}"
@@ -102,6 +99,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     )
 
     integration_inputs = []
+    qc_process_ids = []
     for i in range(len(abs_inputList)):
         ds = {}
         ds['userID'] = userID
@@ -117,8 +115,9 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         if qc_results is not None:
             integration_inputs.append(qc_results['adata_path'])
             process_ids.extend(qc_results["process_ids"])
+            qc_process_ids.extend(qc_results["process_ids"])
 
-    wf_results['QC'] = process_ids
+    wf_results['QC'] = qc_process_ids
     wf_results['QC_output'] = integration_inputs
 
     if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
@@ -129,6 +128,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         wf_results['integration_output'] = integration_results['output']
         output = integration_results['output']
         adata_outputs = integration_results['adata_path']
+    else:
+        raise CeleryTaskException("No integration input file is found.")
     
     if len(adata_outputs) > 0 and len(annotation_params["methods"]) > 0:
         ann_process_ids = []
@@ -140,7 +141,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             ds['output'] = dss['output']
             ds['datasetId'] = datasetIds[0]
             ds['dataset'] = datasets[0]
-            ds['species'] = species
+            ds['species'] = dss['species']
             ds['user_refs'] = user_refs
             ds['do_umap'] = do_umap
             ds['do_cluster'] = do_cluster
@@ -155,6 +156,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         wf_results['annotation'] = ann_process_ids
         wf_results['annotation_output'] = ann_outputs
         output = ann_outputs
+    else:
+        raise CeleryTaskException("No annotation input file is found.")
 
     results = {
         "output": output,

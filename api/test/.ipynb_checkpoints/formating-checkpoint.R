@@ -19,7 +19,6 @@ GetSuffix <- function(path) {
     return(parts[[1]][nparts])
 }
 
-
 # Read csv/xlsx/h5ad/hdf5/h5/loom/mtx/txt/tab/data/gz file to create AnnData object
 LoadAnndata <- function(path) {
     adata <- NULL
@@ -105,7 +104,15 @@ LoadSeurat <- function(path, project = NULL) {
         # srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
         project_name <- sub("\\.h5ad$", "", basename(path))
         adata <- LoadAnndata(path)
-        srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        # srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        tryCatch({
+            srat <- AnndataToSeurat(adata, project_name = project_name)
+        }, error = function(e) {
+            print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
+            srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+            return(srat)
+        }) 
+        
         rm(adata)
     } else if(suffix == "rds"){
         print("insode if else block of rds")
@@ -624,7 +631,7 @@ IsNormalized <- function(Expression_Matrix, min_genes=200){
   colnames(var_df) <- sub("dispersions_norm", "mvp.dispersion.scaled", colnames(var_df))
   colnames(var_df) <- sub("dispersions", "mvp.dispersion", colnames(var_df))
   colnames(var_df) <- sub("means", "mvp.mean", colnames(var_df))
-  colnames(var_df) <- sub("highly_variable", "highly.variable", colnames(var_df))
+  colnames(var_df) <- sub("highly_variable", "vst.variable", colnames(var_df))
   return(var_df)
 }
 
@@ -753,25 +760,27 @@ SaveSeurat <- function(srat, output){
 
 CleanSeurat <- function(srat){
     # Scanpy
-    if('outlier' %in% names(srat@meta.data) and 'mt_outlier' %in% names(srat@meta.data))
-        srat <- subset(srat, subset = outlier == 'False')
-        srat <- subset(srat, subset = mt_outlier == 'False')
+    if('outlier' %in% names(srat@meta.data) && 'mt_outlier' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = outlier == FALSE)
+        srat <- subset(srat, subset = mt_outlier == FALSE)
+    }
 
-    if('predicted_doublets' %in% names(srat@meta.data))
-        srat <- subset(srat, subset = predicted_doublets == 'False')
+    if('predicted_doublets' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = predicted_doublets == FALSE)
+    }
 
     # Bioconductor
-    if('discard' %in% names(srat@meta.data))
-        srat <- subset(srat, subset = discard == 'False')
-    if('discard' %in% names(srat[['RNA']]@meta.features))
-        srat <- subset(srat, features = discard == 'False')
+    if('discard' %in% names(srat@meta.data)){
+        srat <- subset(srat, subset = discard == FALSE)
+    }
 
     # Seurat
-    if('doublet_class' %in% names(srat@meta.data))
+    if('doublet_class' %in% names(srat@meta.data)){
         srat <- subset(srat, subset = doublet_class == 'Singlet')
+    }
 
-    if('vst.variable' %in% names(srat[['RNA']]@meta.features))
+    if('vst.variable' %in% names(srat[['RNA']]@meta.features)){
         srat <- srat[VariableFeatures(object = srat), ]
-
+    }
     srat
 }

@@ -35,6 +35,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             "status": "Processing"
         }
     )
+
+    redislogger.info(job_id, f"Using Visualization Parameters: {parameters}")
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)

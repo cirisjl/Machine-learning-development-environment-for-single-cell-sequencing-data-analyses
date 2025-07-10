@@ -1,41 +1,6 @@
 export const uiSchema = (dynamicOptions) => ({
   "parameters": {
     "classNames": "category",
-    "methods": {
-      "classNames": "sub-category",
-      "ui:widget": "MultiSelectComponent",
-    },
-    "batch_key": {
-      "classNames": "sub-category",
-      "ui:widget": "SelectComponent",
-      'ui:options': {
-        clearable: true,
-        placeholder: "Please select the Batch Key",
-        creatable: false,
-        searchable: true,
-        opts: dynamicOptions.obs_names
-      }
-    },
-    "pseudo_replicates": {
-      "classNames": "sub-category",
-      "ui:widget": "RangeSlider",
-      'ui:title': 'Pseudo Replicates: ',
-      'ui:options': {
-        title: 'Pseudo Replicates: ',
-        min: 0,
-        max: 50,
-        step: 1,
-        marks: [
-          { value: 0, label: '0*' },
-          { value: 5, label: '3' },
-          { value: 5, label: '6' },
-          { value: 10, label: '10' },
-          { value: 20, label: '20' },
-          { value: 30, label: '30' },
-          { value: 50, label: '50' },
-        ]
-      }
-    },
     "do_umap": {
       "classNames": "sub-category",
       "ui:widget": "toggle"
@@ -44,8 +9,43 @@ export const uiSchema = (dynamicOptions) => ({
       "classNames": "sub-category",
       "ui:widget": "toggle"
     },
-    "params": {
+    "integration_params": {
       "classNames": "form-subset sub-category",
+      "methods": {
+        "classNames": "sub-category",
+        "ui:widget": "MultiSelectComponent",
+      },
+      "batch_key": {
+        "classNames": "sub-category",
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          clearable: true,
+          placeholder: "Please select the Batch Key",
+          creatable: false,
+          searchable: true,
+          opts: dynamicOptions.obs_names
+        }
+      },
+      "pseudo_replicates": {
+        "classNames": "sub-category",
+        "ui:widget": "RangeSlider",
+        'ui:title': 'Pseudo Replicates: ',
+        'ui:options': {
+          title: 'Pseudo Replicates: ',
+          min: 0,
+          max: 50,
+          step: 1,
+          marks: [
+            { value: 0, label: '0*' },
+            { value: 3, label: '3' },
+            { value: 6, label: '6' },
+            { value: 10, label: '10' },
+            { value: 20, label: '20' },
+            { value: 30, label: '30' },
+            { value: 50, label: '50' },
+          ]
+        }
+      },
       "default_assay": {
         "classNames": "sub-category",
         "ui:widget": "ClusterLabelInput"

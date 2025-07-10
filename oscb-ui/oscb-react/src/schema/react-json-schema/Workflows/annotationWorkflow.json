@@ -111,6 +111,47 @@
             }
           }
         },
+        "annotation_params": {
+          "type": "object",
+          "title": "Annotation Parameters",
+          "required": [
+            "methods"
+          ],
+          "properties": {
+            "methods": {
+              "type": "array",
+              "title": "Method",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CellTypist",
+                  "scVI",
+                  "SingleR"
+                ]
+              },
+              "default": [
+                "CellTypist"
+              ],
+              "uniqueItems": true,
+              "minItems": 1
+            },
+            "celltypist_model": {
+              "type": "string",
+              "title": "CellTypist Model",
+              "description": "Choose the CellTypist model for annotation."
+            },
+            "SingleR_ref": {
+              "type": "string",
+              "title": "SingleR Reference",
+              "description": "Choose the SingleR Reference for annotation."
+            },
+            "user_label": {
+              "type": "string",
+              "title": "User's Reference Labels",
+              "description": "Specify the labels"
+            }
+          }
+        },
         "reduction_params": {
           "type": "object",
           "title": "Visualization Parameters",

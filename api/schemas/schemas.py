@@ -23,14 +23,14 @@ class QCParameters(BaseModel):
     methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    min_genes: int = 200
-    max_genes: int = 0
-    min_cells: int = 2
-    target_sum: int =1e4
-    n_top_genes: int = 2000
-    n_neighbors: int = 15
-    n_pcs: int = 1 # Scanpy
-    resolution: float = 0.5
+    min_genes: Optional[int] = 200
+    max_genes: Optional[int] = 0
+    min_cells: Optional[int] = 2
+    target_sum: Optional[int] =1e4
+    n_top_genes: Optional[int] = 2000
+    n_neighbors: Optional[int] = 15
+    n_pcs: Optional[int] = 20 # Scanpy
+    resolution: Optional[float] = 0.5
     doublet_rate: Optional[float] = 0
     regress_cell_cycle: Optional[bool] = False
     use_default: Optional[bool] = True 
@@ -48,9 +48,9 @@ class imputationParameters(BaseModel):
     layer: Optional[str] = None
     genes: Optional[List[str]] = None
     ncores: Optional[int] = 4
-    n_neighbors: int = 15
-    n_pcs: int = 1 # Scanpy
-    resolution: float = 0.5
+    n_neighbors: Optional[int] = 15
+    n_pcs: Optional[int] = 20 # Scanpy
+    resolution: Optional[float] = 0.5
 
 
 
@@ -58,9 +58,9 @@ class normalizationParameters(BaseModel):
     methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    n_neighbors: int = 15
-    n_pcs: int = 1 # Scanpy
-    resolution: float = 0.5
+    n_neighbors: Optional[int] = 15
+    n_pcs: Optional[int] = 20 # Scanpy
+    resolution: Optional[float] = 0.5
     use_default: Optional[bool] = True
 
 
@@ -69,37 +69,37 @@ class reductionParameters(BaseModel):
     methods: Optional[List[str]]= None
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
-    n_neighbors: int = 15
-    n_pcs: int = 1 # Scanpy
-    resolution: float = 0.5
+    n_neighbors: Optional[int] = 15
+    n_pcs: Optional[int] = 20 # Scanpy
+    resolution: Optional[float] = 0.5
     use_default: Optional[bool] = True
 
 
 
 class annotationParameters(BaseModel):
-    methods: Optional[List[str]]= None
+    methods: Optional[List[str]]= []
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[str] = None
     user_label: Optional[str] = None
-    n_neighbors: int = 20
-    n_pcs: int = 20
-    resolution: float = 0.3
+    n_neighbors: Optional[int] = 20
+    n_pcs: Optional[int] = 20
+    resolution: Optional[float] = 0.3
 
 
 
 class integrationParameters(BaseModel):
     # description: Optional[str] = None
     # datasetId: Optional[str] = None
-    methods: Optional[List[str]]= None
+    methods: Optional[List[str]]= []
     batch_key: Optional[str] = None
     pseudo_replicates: Optional[int] = 0
-    assay: Optional[str] = 'RNA' # Required for Seurat
+    # assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     dims: Optional[int] = 30
     npcs: Optional[int] = 30
-    resolution: float = 0.5
+    resolution: Optional[float] = 0.5
     default_assay: Optional[str] = 'RNA' # Required for Seurat
     reference: Optional[str] = None
     # show_umap: Optional[bool] = True
@@ -113,11 +113,11 @@ class Dataset(BaseModel):
     output: Optional[str] = None
     user_refs: Optional[List[str]] = []
     userID: Optional[str] = None
-    description: Optional[str] = None,
+    description: Optional[str] = None
     datasetId: Optional[str] = None
-    method: Optional[str] = None,
-    process: Optional[str] = None,
-    output_format: Optional[str] = 'AnnData'
+    method: Optional[List[str]] = []
+    process: Optional[str] = None
+    # output_format: Optional[str] = 'AnnData'
     species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
@@ -133,18 +133,22 @@ class Dataset(BaseModel):
 
 
 class Datasets(BaseModel):
-    process: Optional[str] = None
-    description: Optional[str] = None
-    datasetIds: List[str] = None
-    dataset: List[str] = None
-    input: List[str] = None
-    output: str
+    datasetIds: List[str] = []
+    dataset: List[str] = []
+    input: List[str] = []
+    user_refs: Optional[List[str]] = []
+    output: Optional[str] = None
     userID: str
     # output_format: str
-    methods: List[str] = None
-    method: Optional[str] = None,
-    batch_key: Optional[str] = None
-    pseudo_replicates: Optional[int] = 0
+    # methods: Optional[List[str]] = []
+    method: Optional[List[str]] = []
+    # batch_key: Optional[str] = None
+    # pseudo_replicates: Optional[int] = 0
+    species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
+    cluster_label: Optional[str] = None
+    process: Optional[str] = None
+    description: Optional[str] = None
     do_umap: Optional[bool] = True
     do_cluster: Optional[bool] = True
     qc_params: QCParameters = Field(default_factory=QCParameters)

@@ -17,8 +17,6 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
     inputs = dss['input']
     do_umap = dss['do_umap']
     do_cluster = dss['do_cluster']
-    batch_key = dss['batch_key']
-    pseudo_replicates = dss['pseudo_replicates']
     qc_params = dss['qc_params']
     integration_params = dss['integration_params']
     reduction_params = dss['reduction_params']
@@ -31,8 +29,10 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
     integration_params['dims'] = n_neighbors
     integration_params['npcs'] = n_pcs 
     integration_params['resolution'] = resolution
+    batch_key = integration_params['batch_key']
+    pseudo_replicates = integration_params['pseudo_replicates']
     fig_path = None
-    md5 = None
+    md5 = []
     adata_outputs = None
 
     # Initialize methodMap
@@ -51,7 +51,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
 
     abs_inputList = []
 
-    if inputs is not None:
+    if len(inputs) > 0:
         for input in inputs:
             if input is not None:
                 input = unzip_file_if_compressed(job_id, input)
@@ -69,7 +69,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
 
     # for method i want methodMap key value pairs.
 
-    if datasetId is not None:
+    if datasetIds is not None:
         description = f"Integration Workflow for {datasetIds}"
     elif dataset is not None:
         description = f"Integration Workflow for {datasets}"
@@ -90,6 +90,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
     )
 
     integration_inputs = []
+    qc_process_ids = []
     for i in range(len(abs_inputList)):
         ds = {}
         ds['userID'] = userID
@@ -105,8 +106,9 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
         if qc_results is not None:
             integration_inputs.append(qc_results['adata_path'])
             process_ids.extend(qc_results["process_ids"])
+            qc_process_ids.extend(qc_results["process_ids"])
 
-    wf_results['QC'] = process_ids
+    wf_results['QC'] = qc_process_ids
     wf_results['QC_output'] = integration_inputs
 
     if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
@@ -117,6 +119,8 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
         wf_results['integration_output'] = integration_results['output']
         output = integration_results['output']
         adata_outputs = integration_results['adata_path']
+    else:
+        raise CeleryTaskException("No integration input file is found.")
 
     results = {
         "output": output,

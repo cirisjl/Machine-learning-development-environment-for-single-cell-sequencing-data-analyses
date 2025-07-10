@@ -59,6 +59,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     # output = get_output(output, userID, job_id)
 
     methods = [x.upper() for x in methods if isinstance(x,str)]
+
+    redislogger.info(job_id, f"Using Imputation Parameters: {parameters}")
     
     if "MAGIC" in methods:
         adata = None
