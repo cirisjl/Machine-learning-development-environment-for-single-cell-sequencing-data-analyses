@@ -57,6 +57,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     
     input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
+    # process_id = generate_process_id(md5, process, methods, parameters)
+    # output = get_output_path(output, process_id, dataset, method='annotation')
 
     adata = load_anndata(input)
     if adata is None:
@@ -76,13 +78,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     methods = [x.upper() for x in methods if isinstance(x,str)]
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
+        adata_path = get_output_path(output, process_id, dataset, method=method)
         annotation_results = pp_result_exists(process_id)
-        output = get_output_path(output, process_id, dataset, method=method)
 
         if annotation_results is not None:
             redislogger.info(job_id, f"Found existing pre-process results in database, skip {method} annotation.")
             process_ids.append(process_id)
-            annotation_output = annotation_results["outputs"]
+            annotation_output = annotation_results["output"]
         else:
             if method == "CELLTYPIST":
                 try:
@@ -99,14 +101,14 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
 
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(output, compression='gzip')
-                    annotation_output.append({"CellTypist": output})
-                    annotation_results["outputs"] = annotation_output
+                    adata.write_h5ad(adata_path, compression='gzip')
+                    annotation_output.append({"CellTypist": adata_path})
+                    annotation_results["output"] = annotation_output
                     redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
                     process_ids.append(process_id)
 
@@ -142,15 +144,15 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
 
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(output, compression='gzip')
-                    annotation_output.append({"scVI": output})
-                    annotation_results["outputs"] = annotation_output
-                    adata = None
+                    adata.write_h5ad(adata_path, compression='gzip')
+                    annotation_output.append({"scVI": adata_path})
+                    annotation_results["output"] = annotation_output
+                    # adata = None
                     redislogger.info(job_id, "AnnData object for scVI annotation is saved successfully")
                     process_ids.append(process_id)
                     annotation_results['datasetId'] = datasetId
@@ -167,7 +169,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             "status": "Failure"
                         }
                     )
-                    os.remove(output)
+                    os.remove(adata_path)
                     raise CeleryTaskException(detail)
 
             if method == "SINGLER":
@@ -176,8 +178,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                 try:
                     # report_path = get_report_path(dataset, output, "SAVER")
-                    report_path = output.replace(".h5ad", "_report.html")
-                    output_folder = os.path.dirname(output)
+                    report_path = adata_path.replace(".h5ad", "_report.html")
+                    output_folder = os.path.dirname(adata_path)
                     
                     # Get the absolute path of the current file
                     current_file = os.path.abspath(__file__)
@@ -234,16 +236,16 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output)
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
                     
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(output, compression='gzip')
+                    adata.write_h5ad(adata_path, compression='gzip')
                     
-                    annotation_output.append({"SingleR": output})
+                    annotation_output.append({"SingleR": adata_path})
                     annotation_output.append({"Report": report_path})
-                    annotation_results["outputs"] = annotation_output
+                    annotation_results["output"] = annotation_output
                     redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
                     process_ids.append(process_id)
                     annotation_results['datasetId'] = datasetId
@@ -264,10 +266,11 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
         
     process_ids = list(set(process_ids)) # De-duplicate process_ids
+    adata = None
 
     results = {
         "output": annotation_output,
-        "adata_path": output,
+        "adata_path": adata_path,
         "md5": md5,
         "process_ids": process_ids,
     }
@@ -277,7 +280,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
             "job_id": job_id, 
             "datasetId": datasetId,
             "process_ids": process_ids,
-            "adata_path": output,
+            "adata_path": adata_path,
             "output": annotation_output,
             "results": results,
             "completed_on": datetime.now(),
