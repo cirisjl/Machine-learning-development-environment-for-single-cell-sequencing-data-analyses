@@ -89,9 +89,10 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             "job_id": job_id, 
             "created_by": userID,
             "description": description,
-            "method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
-            "datasetURL": str(inputs).replace("'", "").replace("{", "").replace("}", ""),
-            "datasetId": str(datasetIds).replace("'", "").replace("{", "").replace("}", ""),
+            # "method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
+            "method": methodMap,
+            "datasetURL": inputs,
+            "datasetId": datasetIds,
             "process": "Annotation",
             "category": 'workflow',
             "created_on": datetime.now(),
@@ -144,8 +145,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             ds['dataset'] = datasets[0]
             ds['species'] = dss['species']
             ds['user_refs'] = user_refs
-            ds['do_umap'] = do_umap
-            ds['do_cluster'] = do_cluster
+            ds['do_umap'] = False
+            ds['do_cluster'] = False
             ds['annotation_params'] = annotation_params
 
             annotation_results = run_annotation(job_id, ds, fig_path=fig_path)

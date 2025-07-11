@@ -213,7 +213,11 @@ const TaskTable = () => {
                                         </Typography>
                                     </TableCell>
                                     <TableCell>{task.process}</TableCell>
-                                    <TableCell>{task.method}</TableCell>
+                                    <TableCell>{
+                                        typeof(task.method) !== 'string' && Object.keys(task.method).length > 0 ? (
+                                            Object.entries(task.method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>))) 
+                                            : (<Typography variant="body1">{task.method}</Typography>) }
+                                    </TableCell>
                                     <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.created_on).local()))}</TableCell>
                                     <TableCell>
                                         {new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.completed_on).local()))}
@@ -238,7 +242,7 @@ const TaskTable = () => {
                                                     navigate("/mydata/workflowTaskDetails", {
                                                         state: {
                                                         job_id: task.job_id,
-                                                        methodMap: task.methodMap,
+                                                        methodMap: task.method,
                                                         datasetURL: task.datasetURL,
                                                         description: task.description,
                                                         process: task.process,

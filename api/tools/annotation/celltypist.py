@@ -14,7 +14,7 @@ def run_celltypist(adata, model_name, refs = [], labels = None, species = 'mouse
 
     if model_name is not None:
         model = celltypist.Model.load(model_name)
-        if species == 'mouse' and "Mouse" not in model_name:
+        if species.lower() == 'mouse' and "Mouse" not in model_name:
             model.convert()
         adata = reset_x_to_raw(adata)
 

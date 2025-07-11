@@ -21,7 +21,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     pp_stage = "Annotation"
     process = "Annotation"
     dataset = ds['dataset']
-    species = ds['species']
+    species = ds['species'].lower()
     input = ds['input']
     user_refs = ds['user_refs']
     userID = ds['userID']
@@ -84,7 +84,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         if annotation_results is not None:
             redislogger.info(job_id, f"Found existing pre-process results in database, skip {method} annotation.")
             process_ids.append(process_id)
-            annotation_output = annotation_results["output"]
+            annotation_output = annotation_results["outputs"]
         else:
             if method == "CELLTYPIST":
                 try:
@@ -108,7 +108,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         adata.X = csr_matrix(adata.X)
                     adata.write_h5ad(adata_path, compression='gzip')
                     annotation_output.append({"CellTypist": adata_path})
-                    annotation_results["output"] = annotation_output
+                    annotation_results["outputs"] = annotation_output
                     redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
                     process_ids.append(process_id)
 
@@ -151,7 +151,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         adata.X = csr_matrix(adata.X)
                     adata.write_h5ad(adata_path, compression='gzip')
                     annotation_output.append({"scVI": adata_path})
-                    annotation_results["output"] = annotation_output
+                    annotation_results["outputs"] = annotation_output
                     # adata = None
                     redislogger.info(job_id, "AnnData object for scVI annotation is saved successfully")
                     process_ids.append(process_id)
@@ -245,7 +245,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     
                     annotation_output.append({"SingleR": adata_path})
                     annotation_output.append({"Report": report_path})
-                    annotation_results["output"] = annotation_output
+                    annotation_results["outputs"] = annotation_output
                     redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
                     process_ids.append(process_id)
                     annotation_results['datasetId'] = datasetId
@@ -266,7 +266,6 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
         
     process_ids = list(set(process_ids)) # De-duplicate process_ids
-    adata = None
 
     results = {
         "output": annotation_output,
@@ -287,6 +286,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
             "status": "Success"
         }
     )
+
+    adata = None
 
     return results
 

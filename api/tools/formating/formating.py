@@ -1163,7 +1163,7 @@ def reset_x_to_raw(adata, min_genes=200):
         if "raw_counts" in adata.layers.keys():
             adata.layers["normalized_X"] = adata.X.copy()
             adata.X = adata.layers['raw_counts'].copy()
-        elif adata.raw.X is not None:
+        elif adata.raw is not None:
             adata.layers["normalized_X"] = adata.X.copy()
             adata.X = adata.raw.X.copy()
         else:
