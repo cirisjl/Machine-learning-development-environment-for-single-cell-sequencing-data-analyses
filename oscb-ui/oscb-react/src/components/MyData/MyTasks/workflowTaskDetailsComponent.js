@@ -570,7 +570,7 @@ function WorkflowTaskDetailsComponent() {
                     {taskResult && taskResult.wf_results && taskResult.wf_results.figures && (
                       <div>
                         <Typography variant="subtitle1"><strong>Figures: </strong></Typography>
-                        <TaskImageGallery taskResult={taskResult} />
+                        <TaskImageGallery figures={taskResult.wf_results.figures} />
                       </div>
                     )}
                   </CardContent>

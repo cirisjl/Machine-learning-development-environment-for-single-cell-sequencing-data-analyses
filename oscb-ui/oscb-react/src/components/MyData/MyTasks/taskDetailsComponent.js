@@ -21,6 +21,7 @@ import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
+import TaskImageGallery from './taskImageGallery';
 
 
 // Initialize Octokit with your GitHub personal access token
@@ -379,7 +380,7 @@ function TaskDetailsComponent() {
                     { /* <Button onClick={downloadFile(datasetURL)}>
                       {getFileNameFromURL(datasetURL) || 'Not available'}
                     </Button> */ }
-                    {Array.isArray(datasetURL) ?
+                    {datasetURL && Array.isArray(datasetURL) ?
                       ( datasetURL.map((inpput, index) => (
                           <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
                             {getFileNameFromURL(inpput) || 'Not available'}
@@ -406,7 +407,12 @@ function TaskDetailsComponent() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle1" gutterBottom><strong>Method:</strong></Typography>
-                      <Typography variant="body1">{method || 'Not available'}</Typography>
+                      {
+                        method && Array.isArray(method) ? (method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) :
+                        (typeof (method) !== 'string' && Object.keys(method).length > 0 ? (
+                          Object.entries(method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>)))
+                          : (<Typography variant="body1">{method}</Typography>))
+                      }
                     </Grid>
                     <Grid item xs={12}> 
                       <Typography variant="subtitle1" gutterBottom><strong>Status:</strong></Typography>
@@ -445,6 +451,12 @@ function TaskDetailsComponent() {
                             </Typography></>
                         ))
                       )
+                    )}
+                    {taskResult && taskResult.figures && (
+                      <div>
+                        <Typography variant="subtitle1"><strong>Figures: </strong></Typography>
+                        <TaskImageGallery figures={taskResult.figures} />
+                      </div>
                     )}
                   </CardContent>
                 </Card>

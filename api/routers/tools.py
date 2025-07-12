@@ -48,7 +48,7 @@ def create_job(job_id, ds_dict: dict):
             "method": ds_dict['method'],
             "datasetURL": ds_dict['input'],
             "process": ds_dict['process'],
-            "class": 'category',
+            "category": 'tools',
             "created_on": datetime.now(), 
             "status": "Queued"
         }

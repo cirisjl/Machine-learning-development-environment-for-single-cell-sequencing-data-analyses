@@ -214,9 +214,11 @@ const TaskTable = () => {
                                     </TableCell>
                                     <TableCell>{task.process}</TableCell>
                                     <TableCell>{
-                                        typeof(task.method) !== 'string' && Object.keys(task.method).length > 0 ? (
+                                        task.method && Array.isArray(task.method) ? (task.method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) : 
+                                            (typeof(task.method) !== 'string' && Object.keys(task.method).length > 0 ? (
                                             Object.entries(task.method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>))) 
-                                            : (<Typography variant="body1">{task.method}</Typography>) }
+                                            : (<Typography variant="body1">{task.method}</Typography>)) 
+                                            }
                                     </TableCell>
                                     <TableCell>{new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(task.created_on).local()))}</TableCell>
                                     <TableCell>
@@ -225,7 +227,7 @@ const TaskTable = () => {
                                     <TableCell style={{ textAlign: 'center' }}>
                                         {task.status === 'Success' ? (
                                             <CheckCircleIcon style={{ color: 'green' }} />
-                                        ) : task.status === 'Failed' ? (
+                                        ) : task.status === 'Failure' ? (
                                             <CancelIcon style={{ color: 'red' }} />
                                         ) : (
                                             <HourglassEmptyIcon style={{ color: 'gray' }} />
@@ -238,7 +240,7 @@ const TaskTable = () => {
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             <a
                                                 onClick={() => {
-                                                if (task.process && task.category.toLowerCase() === 'workflow') {
+                                                if (task.category && task.category.toLowerCase() === 'workflow') {
                                                     navigate("/mydata/workflowTaskDetails", {
                                                         state: {
                                                         job_id: task.job_id,

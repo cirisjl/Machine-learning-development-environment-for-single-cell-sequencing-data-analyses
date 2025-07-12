@@ -59,6 +59,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     md5 = get_md5(input)
     # process_id = generate_process_id(md5, process, methods, parameters)
     # output = get_output_path(output, process_id, dataset, method='annotation')
+    adata_path = get_output_path(output, 'annotation', dataset)
 
     adata = load_anndata(input)
     if adata is None:
@@ -78,7 +79,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     methods = [x.upper() for x in methods if isinstance(x,str)]
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
-        adata_path = get_output_path(output, process_id, dataset, method=method)
+        # adata_path = get_output_path(output, process_id, dataset, method=method)
         annotation_results = pp_result_exists(process_id)
 
         if annotation_results is not None:
@@ -169,7 +170,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             "status": "Failure"
                         }
                     )
-                    os.remove(adata_path)
+                    # os.remove(adata_path)
                     raise CeleryTaskException(detail)
 
             if method == "SINGLER":

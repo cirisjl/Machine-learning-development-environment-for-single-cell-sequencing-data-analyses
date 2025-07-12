@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { NODE_API_URL } from '../../../constants/declarations';
 
-function TaskImageGallery({ taskResult }) {
+function TaskImageGallery({ figures }) {
   const [images, setImages] = useState([]);
 
   useEffect(() => {
-    if (taskResult?.wf_results?.figures) {
+    if (figures) {
       fetch(NODE_API_URL + '/load-images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderPath: taskResult.wf_results.figures }),
+        body: JSON.stringify({ folderPath: figures }),
       })
         .then(res => res.json())
         .then(data => {
@@ -23,11 +23,11 @@ function TaskImageGallery({ taskResult }) {
           console.error('Failed to load images:', err);
         });
     }
-  }, [taskResult]);
+  }, [figures]);
 
   return (
     <>
-      {taskResult?.wf_results?.figures && (
+      {figures && (
         <div className="grid grid-cols-3 gap-4 p-4">
           {images.map(({ fileName, base64 }, idx) => {
             const nameWithoutExt = fileName.replace(/_/g, ' ')        // Replace underscores with spaces

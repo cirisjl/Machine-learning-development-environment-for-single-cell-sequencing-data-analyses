@@ -20,12 +20,11 @@ np.random.seed(0)
 
 
 def scvi_integrate(adata, batch_key, model_path, fig_path=None):
-    # Start monitoring
     model = None
     if 'pct_counts_mt' in adata.obs.keys() and 'pct_counts_ribo' in adata.obs.keys():
-        scvi.model.SCVI.setup_anndata(adata, categorical_covariate_keys = batch_key, continuous_covariate_keys=['pct_counts_mt', 'pct_counts_ribo'])
+        scvi.model.SCVI.setup_anndata(adata, categorical_covariate_keys = [batch_key], continuous_covariate_keys=['pct_counts_mt', 'pct_counts_ribo'])
     else:
-        scvi.model.SCVI.setup_anndata(adata, categorical_covariate_keys = batch_key)
+        scvi.model.SCVI.setup_anndata(adata, categorical_covariate_keys = [batch_key])
     if not os.path.exists(model_path):
         model = scvi.model.SCVI(adata, n_hidden = 192, n_latent = 50, n_layers = 2, gene_likelihood = 'zinb')
         model.train(max_epochs = 400, early_stopping = True)

@@ -297,12 +297,26 @@ export function AnnotationWorkFlowComponent(props) {
       setFormErrors("Please select at least one datasets for scVI annotation before submitting the form");
       console.log("Failed to submit the form");
     } else if (formData['annotation_params'].methods.includes("CellTypist") && formData['annotation_params'].celltypist_model.trim().length === 0) {
-      setFormErrors("Please select at least one datasets for scVI annotation before submitting the form");
+      setFormErrors("Please select a CellTypist model before submitting the form");
       console.log("Failed to submit the form");
     } else if (formData['annotation_params'].methods.includes("SingleR") && formData['annotation_params'].SingleR_ref.trim().length === 0) {
-      setFormErrors("Please select at least one datasets for scVI annotation before submitting the form");
+      setFormErrors("Please select a SingleR reference before submitting the form");
       console.log("Failed to submit the form");
     }
+
+    if ((formData["integration_params"].methods.includes("Seurat") || formData["integration_params"].methods.includes("Liger")) && Object.keys(selectedDatasets).length < 2) {
+      setFormErrors("Please select at least two datasets for Seurat or Liger integration before submitting the form.");
+      console.log("Failed to submit the form.");
+    }
+    else if ((formData["integration_params"].methods.includes("scVI") || formData["integration_params"].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData["integration_params"].batch_key === "") {
+      setFormErrors("Please select Batch_Key if you only select one dataset for scVI or Harmony integration before submitting the form.");
+      console.log("Failed to submit the form.");
+    }
+    else if (Object.keys(selectedDatasets).length === 0) {
+      setFormErrors("Please select a dataset before submitting the form.");
+      console.log("Failed to submit the form.");
+    }
+
     console.log("In submit function");
     console.log("Submitted data:", formData);
     console.log(selectedDatasets);

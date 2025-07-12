@@ -221,6 +221,20 @@ export function IntegrationWorkFlowComponent(props) {
           //TODO - Change this logic accordingly based on other workflows in the future
           formData.userID = authData.username;
           console.log("Adding user data");
+
+          if ((formData["integration_params"].methods.includes("Seurat") || formData["integration_params"].methods.includes("Liger")) && Object.keys(selectedDatasets).length < 2) {
+            setFormErrors("Please select at least two datasets for Seurat or Liger integration before submitting the form.");
+            console.log("Failed to submit the form.");
+          }
+          else if ((formData["integration_params"].methods.includes("scVI") || formData["integration_params"].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData["integration_params"].batch_key === "") {
+            setFormErrors("Please select Batch_Key if you only select one dataset for scVI or Harmony integration before submitting the form.");
+            console.log("Failed to submit the form.");
+          }
+          else if (Object.keys(selectedDatasets).length === 0) {
+            setFormErrors("Please select a dataset before submitting the form.");
+            console.log("Failed to submit the form.");
+          }
+
           if(Object.keys(selectedDatasets).length > 0) {
             const datasetsArray = Object.values(selectedDatasets);
             const titlesArray = datasetsArray.map(dataset => dataset.Title);

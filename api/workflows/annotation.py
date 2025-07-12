@@ -37,8 +37,6 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     annotation_params['resolution'] = resolution
     fig_path = None
     md5 = []
-    adata_outputs = None
-    final_outputs = []
 
     # Initialize methodMap
     methodMap = {}
@@ -100,7 +98,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         }
     )
 
-    integration_inputs = []
+    # Run QC
+    qc_outputs = []
     qc_process_ids = []
     for i in range(len(abs_inputList)):
         ds = {}
@@ -115,34 +114,24 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         
         qc_results = run_qc(job_id, ds, fig_path=fig_path)
         if qc_results is not None:
-            integration_inputs.append(qc_results['adata_path'])
+            qc_outputs.append(qc_results['adata_path'])
             process_ids.extend(qc_results["process_ids"])
             qc_process_ids.extend(qc_results["process_ids"])
 
     wf_results['QC'] = qc_process_ids
-    wf_results['QC_output'] = integration_inputs
-
-    if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
-        dss['input'] = integration_inputs
-        integration_results = run_integration(job_id, dss, fig_path=fig_path)
-        wf_results['integration'] = integration_results["process_ids"]
-        process_ids.extend(integration_results["process_ids"])
-        wf_results['integration_output'] = integration_results['output']
-        output = integration_results['output']
-        adata_outputs = integration_results['adata_path']
-    else:
-        raise CeleryTaskException("No integration input file is found.")
+    wf_results['QC_output'] = qc_outputs
     
-    if len(adata_outputs) > 0 and len(annotation_params["methods"]) > 0:
-        ann_process_ids = []
-        ann_outputs = []
-        for adata_output in adata_outputs:
+    # Run Annotation
+    ann_process_ids = []
+    integration_inputs = []
+    if len(qc_outputs) > 0 and len(annotation_params["methods"]) > 0:
+        for i in range(len(qc_outputs)):
             ds = {}
             ds['userID'] = userID
-            ds['input'] = adata_output
-            ds['output'] = dss['output']
-            ds['datasetId'] = datasetIds[0]
-            ds['dataset'] = datasets[0]
+            ds['input'] = annotation_input
+            ds['output'] = annotation_input
+            ds['datasetId'] = datasetIds[i]
+            ds['dataset'] = datasets[i]
             ds['species'] = dss['species']
             ds['user_refs'] = user_refs
             ds['do_umap'] = False
@@ -152,20 +141,30 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
             ann_process_ids.extend(annotation_results["process_ids"])
             process_ids.extend(annotation_results["process_ids"])
-            ann_outputs = ann_outputs + annotation_results['output']
-            final_outputs.append(annotation_results['adata_path'])
+            ann_outputs.append(annotation_results['output'])
+            integration_inputs.append(annotation_results['adata_path'])
+    wf_results['annotation'] = ann_process_ids
+    wf_results['annotation_output'] = ann_outputs
 
-        wf_results['annotation'] = ann_process_ids
-        wf_results['annotation_output'] = ann_outputs
-        output = ann_outputs
+    # Run Integration
+    integration_process_ids = []
+    integration_outputs = []
+    if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
+        dss['input'] = integration_inputs
+        integration_results = run_integration(job_id, dss, fig_path=fig_path)
+        wf_results['integration'] = integration_results["process_ids"]
+        process_ids.extend(integration_results["process_ids"])
+        wf_results['integration_output'] = integration_results['output']
+        output = integration_results['output']
+        adata_outputs = integration_results['adata_path']
     else:
-        raise CeleryTaskException("No annotation input file is found.")
+        output = ann_outputs
 
     results = {
         "output": output,
         # "workflow_id": workflow_id,
         "md5": md5,
-        "adata_path": final_outputs,
+        "adata_path": adata_outputs,
         "wf_results": wf_results,
         # "figures":fig_path, 
         "process_ids": process_ids

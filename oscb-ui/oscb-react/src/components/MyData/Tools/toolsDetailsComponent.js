@@ -340,12 +340,22 @@ const onSelectRefSubItem = (mainItem, subItem) => {
         }
 
         // Perform form validation and set formErrors accordingly
-        if(filterCategory === "integration" && Object.keys(selectedDatasets).length < 2) {
-          setFormErrors("Please select at least two datasets for integration before submitting the form");
-          console.log("Failed to submit the form");
+        if(filterCategory === "integration") {
+          if ((formData[parametersKey[filterCategory]].methods.includes("Seurat") || formData[parametersKey[filterCategory]].methods.includes("Liger")) && Object.keys(selectedDatasets).length < 2) {
+            setFormErrors("Please select at least two datasets for Seurat or Liger integration before submitting the form.");
+            console.log("Failed to submit the form.");
+          }
+          else if ((formData[parametersKey[filterCategory]].methods.includes("scVI") || formData[parametersKey[filterCategory]].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData[parametersKey[filterCategory]].batch_key === "") {
+            setFormErrors("Please select Batch_Key if you only select one dataset for scVI or Harmony integration before submitting the form.");
+            console.log("Failed to submit the form.");
+          } 
+          else if (Object.keys(selectedDatasets).length === 0){
+            setFormErrors("Please select a dataset before submitting the form.");
+            console.log("Failed to submit the form.");
+          }
         }
         else if(filterCategory !== "integration" && Object.keys(selectedDatasets).length === 0) {
-          setFormErrors("Please select a dataset before submitting the form");
+          setFormErrors("Please select a dataset before submitting the form.");
           console.log("Failed to submit the form");
         } else {
           setLoading(true);

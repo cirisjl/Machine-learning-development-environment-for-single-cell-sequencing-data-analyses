@@ -84,7 +84,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
     # output = get_output(output, userID, job_id)
     for method in methods:
         process_id = generate_process_id(md5, process, method, parameters)
-        output = os.path.join(os.path.dirname(inputs[0]), 'integration', f"{method}_integration.h5seurat")
+        output = os.path.join(os.path.dirname(inputs[0]), 'integration', process_id, f"{method}_integration.h5seurat")
         if not os.path.exists(os.path.dirname(output)):
             os.makedirs(os.path.dirname(output))
         adata_path = output.replace(".h5seurat", ".h5ad")
@@ -102,20 +102,25 @@ def run_integration(job_id, ids:dict, fig_path=None):
             process_ids.append(process_id)
         else:
             try:
-                if ("HARMONY" in methods or "SCVI" in methods) and batch_key is not None :
+                if ("HARMONY" in methods or "SCVI" in methods):
                     adata = None
                     if len(inputs) > 1:
-                        adatas = [load_anndata(input) for input in inputs]
+                        # adatas = [load_anndata(input) for input in inputs]
+                        adatas = []
                         for input in inputs:
                             ad = load_anndata(input)
                             if batch_key is None or batch_key.strip() == '':
-                                ad.obs['batch'] = os.path.basename(input).split('.')[0] # If bacth_key is empty, use filename as batch_key                           
+                                ad.obs['batch'] = os.path.basename(input).split('.')[0] # If bacth_key is empty, use filename as batch_key
+                            adatas.append(ad)                        
                         adata = sc.concat(adatas, join='outer')
                         if batch_key is None or batch_key.strip() == '':
                             batch_key = 'batch'
                     elif len(inputs) == 1:
                         adata = load_anndata(inputs[0])
-
+                        if batch_key is None or batch_key.strip() == '':
+                            adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
+                            batch_key = 'batch'
+                    
                     # Check if X is normalized
                     if adata is not None:
                         if not is_normalized(adata.X) and check_nonnegative_integers(adata.X):
@@ -128,7 +133,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         adata = create_pseudo_replicates(adata, batch_key, pseudo_replicates)
       
                     if "HARMONY" in methods and adata is not None:
-                        redislogger.info(job_id, "Start Harmony integration...")
+                        redislogger.info(job_id, f"Start {method} integration...")
                         import scanpy.external as sce
                         sc.pp.normalize_total(adata)
                         sc.pp.log1p(adata)
@@ -147,7 +152,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
-                        adata.write_h5ad(output, compression='gzip')
+                        adata.write_h5ad(adata_path, compression='gzip')
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -176,7 +181,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
-                        adata.write_h5ad(output, compression='gzip')
+                        adata.write_h5ad(adata_path, compression='gzip')
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output

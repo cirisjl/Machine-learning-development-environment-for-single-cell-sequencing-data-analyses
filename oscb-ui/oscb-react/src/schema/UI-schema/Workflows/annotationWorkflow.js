@@ -162,45 +162,6 @@ export const uiSchema = (dynamicOptions) => ({
           "ui:widget": "SwitchComponent"
         },
       },
-      "integration_params": {
-        "ui:classNames": "form-subset sub-category",
-        "methods": {
-          "ui:classNames": "sub-category",
-          "ui:widget": "MultiSelectComponent",
-        }, 
-        "batch_key": {
-          "classNames": "sub-category",
-          "ui:widget": "SelectComponent",
-          'ui:options': {
-            clearable: true,
-            placeholder: "Please select the Batch Key",
-            creatable: false,
-            searchable: true,
-            opts: dynamicOptions.obs_names
-          }
-        },
-        "pseudo_replicates": {
-          "classNames": "sub-category",
-          "ui:widget": "RangeSlider",
-          'ui:title': 'Pseudo Replicates: ',
-          'ui:options': {
-            title: 'Pseudo Replicates: ',
-            description: "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
-            min: 0,
-            max: 50,
-            step: 1,
-            marks: [
-              { value: 0, label: '0*' },
-              { value: 3, label: '3' },
-              { value: 6, label: '6' },
-              { value: 10, label: '10' },
-              { value: 20, label: '20' },
-              { value: 30, label: '30' },
-              { value: 50, label: '50' },
-            ]
-          }
-        },
-      },
       "annotation_params": {
         "classNames": "form-subset sub-category",
         "methods": {
@@ -303,6 +264,45 @@ export const uiSchema = (dynamicOptions) => ({
             opts: dynamicOptions.obs_names_ref
           }
         }
+      },
+      "integration_params": {
+        "ui:classNames": "form-subset sub-category",
+        "methods": {
+          "ui:classNames": "sub-category",
+          "ui:widget": "MultiSelectComponent",
+        }, 
+        "batch_key": {
+          "classNames": "sub-category",
+          "ui:widget": "SelectComponent",
+          'ui:options': {
+            clearable: true,
+            placeholder: "Please select the Batch Key",
+            creatable: false,
+            searchable: true,
+            opts: dynamicOptions.obs_names
+          }
+        },
+        "pseudo_replicates": {
+          "classNames": "sub-category",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'Pseudo Replicates: ',
+          'ui:options': {
+            title: 'Pseudo Replicates: ',
+            description: "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
+            min: 0,
+            max: 50,
+            step: 1,
+            marks: [
+              { value: 0, label: '0*' },
+              { value: 3, label: '3' },
+              { value: 6, label: '6' },
+              { value: 10, label: '10' },
+              { value: 20, label: '20' },
+              { value: 30, label: '30' },
+              { value: 50, label: '50' },
+            ]
+          }
+        },
       },
       "reduction_params": {
       "ui:classNames": "form-subset sub-category",   
