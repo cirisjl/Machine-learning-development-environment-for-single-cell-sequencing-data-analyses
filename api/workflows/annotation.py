@@ -124,12 +124,13 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     # Run Annotation
     ann_process_ids = []
     integration_inputs = []
+    annotation_outputs = []
     if len(qc_outputs) > 0 and len(annotation_params["methods"]) > 0:
         for i in range(len(qc_outputs)):
             ds = {}
             ds['userID'] = userID
-            ds['input'] = annotation_input
-            ds['output'] = annotation_input
+            ds['input'] = qc_outputs[i]
+            ds['output'] = dss['output']
             ds['datasetId'] = datasetIds[i]
             ds['dataset'] = datasets[i]
             ds['species'] = dss['species']
@@ -141,10 +142,10 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
             ann_process_ids.extend(annotation_results["process_ids"])
             process_ids.extend(annotation_results["process_ids"])
-            ann_outputs.append(annotation_results['output'])
+            annotation_outputs.append(annotation_results['output'])
             integration_inputs.append(annotation_results['adata_path'])
     wf_results['annotation'] = ann_process_ids
-    wf_results['annotation_output'] = ann_outputs
+    wf_results['annotation_output'] = annotation_outputs
 
     # Run Integration
     integration_process_ids = []
@@ -158,7 +159,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         output = integration_results['output']
         adata_outputs = integration_results['adata_path']
     else:
-        output = ann_outputs
+        output = annotation_outputs
 
     results = {
         "output": output,

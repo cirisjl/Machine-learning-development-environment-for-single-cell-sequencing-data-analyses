@@ -117,7 +117,7 @@ class Dataset(BaseModel):
     datasetId: Optional[str] = None
     method: Optional[List[str]] = []
     process: Optional[str] = None
-    # output_format: Optional[str] = 'AnnData'
+    output_format: Optional[str] = 'AnnData'
     species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
@@ -139,7 +139,7 @@ class Datasets(BaseModel):
     user_refs: Optional[List[str]] = []
     output: Optional[str] = None
     userID: str
-    # output_format: str
+    output_format: Optional[str] = 'AnnData'
     # methods: Optional[List[str]] = []
     method: Optional[List[str]] = []
     # batch_key: Optional[str] = None
