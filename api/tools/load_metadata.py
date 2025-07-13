@@ -100,7 +100,7 @@ def load_metadata(job_id, file_dict):
         adata.obs.insert(loc=1, column='batch', value=adata.obs.pop('batch'))
         print(f"Add sample to AnnData.obs and set the value to {sample}.")
     
-    cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings = get_cell_metadata(adata, adata_path=adata_path)
+    cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm = get_cell_metadata(adata, adata_path=adata_path)
     adata.write_h5ad(adata_path, compression='gzip')
     adata = None
     results['cell_metadata'] = cell_metadata
@@ -112,5 +112,8 @@ def load_metadata(job_id, file_dict):
     results['info'] = info
     results['adata_size'] = adata_size
     results['embeddings'] = embeddings
+    results['uns'] = uns
+    results['obsp'] = obsp
+    results['varm'] = varm
 
     return results

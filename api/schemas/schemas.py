@@ -248,7 +248,12 @@ class BenchmarksRequest(BaseModel):
     userID: Optional[str] = None
     task_type: str
     adata_path: str
-    label: str
+    label:  Optional[str] = None
+    batch_key: Optional[str] = None
+    celltypist_model: Optional[str] = None
+    SingleR_ref: Optional[str] = None
+    mi_aligned1: Optional[str] = None
+    mi_aligned2: Optional[str] = None
     # data: List[TaskDataRequest]
 
 

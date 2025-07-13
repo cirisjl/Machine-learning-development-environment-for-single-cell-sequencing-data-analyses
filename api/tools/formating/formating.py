@@ -235,6 +235,9 @@ def get_cell_metadata(adata, adata_path=None):
     adata_size = None
     cell_metadata_head = None
     embeddings = []
+    uns = None
+    obsp = None
+    varm = None
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -249,11 +252,14 @@ def get_cell_metadata(adata, adata_path=None):
         cell_metadata = df_to_dict(obs)
         cell_metadata_head = obs.dropna().head().to_dict()
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        uns = list(adata.uns.keys())
+        obsp = list(adata.obsp.keys())
+        varm = list(adata.varm.keys())
         for name in embedding_names:
             # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
             embeddings.append(name)
     
-    return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings
+    return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm
 
 
 def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden', n_top_genes=2000): 
@@ -292,6 +298,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     min_genes = None
     target_sum = None
     obs = None
+    uns = None
+    obsp = None
+    varm = None
 
 
     if adata_path is not None and os.path.exists(adata_path):
@@ -377,6 +386,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # gene_metadata = gzip_dict(var_dict)
 
         embedding_names = list(adata.obsm.keys()) # PCA, tSNE, UMAP
+        uns = list(adata.uns.keys())
+        obsp = list(adata.obsp.keys())
+        varm = list(adata.varm.keys())
         for name in embedding_names:
             # embeddings.append({name: json_numpy.dumps(adata.obsm[name])})
             embeddings.append(name)
@@ -471,6 +483,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "nGenes": nGenes,
             "genes": genes,
             "embeddings": embeddings,
+            "uns": uns,
+            "obsp": obsp,
+            "varm": varm,
             "umap": umap,
             "umap_3d": umap_3d,
             "tsne": tsne,

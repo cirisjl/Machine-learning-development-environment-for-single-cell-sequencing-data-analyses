@@ -3042,6 +3042,9 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                     "layers": "$layers",
                                     "obs_names": "$obs_names",
                                     "embeddings": "$embeddings",
+                                    "uns": "$uns",
+                                    "obsp": "$obsp",
+                                    "varm": "$varm",
                                 }, 
                                 uniqueValues: { $addToSet: '$Id' }
                             }
@@ -3069,6 +3072,9 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 'layers': "$_id.layers",
                                 "obs_names": "$_id.obs_names",
                                 "embeddings": "$_id.embeddings",
+                                "uns": "$_id.uns",
+                                "obsp": "$_id.obsp",
+                                "varm": "$_id.varm",
                                 totalCount: { $size: "$uniqueValues" }
                             }
                         }

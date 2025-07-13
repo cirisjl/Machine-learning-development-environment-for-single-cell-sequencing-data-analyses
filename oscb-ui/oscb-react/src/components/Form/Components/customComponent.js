@@ -257,6 +257,9 @@ class MyForm extends Component {
       formData.info = taskData.quality_control.qc_results[0]?.info;
       formData.layers = taskData.quality_control.qc_results[0]?.layers;
       formData.obs_names = taskData.quality_control.qc_results[0]?.obs_names;
+      formData.uns = taskData.quality_control.qc_results[0]?.uns;
+      formData.obsp = taskData.quality_control.qc_results[0]?.obsp;
+      formData.varm = taskData.quality_control.qc_results[0]?.varm;
       // formData.format = taskData.quality_control.qc_results[0]?.format;
       formData.default_assay = taskData.quality_control.seurat_meta?.default_assay;
       formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;
@@ -291,6 +294,9 @@ class MyForm extends Component {
         formData.info = taskData.upload.final_files.info;
         formData.adata_size = taskData.upload.final_files.adata_size;
         formData.embeddings = taskData.upload.final_files.embeddings;
+        formData.uns = taskData.upload.final_files.uns;
+        formData.obsp = taskData.upload.final_files.obsp;
+        formData.varm = taskData.upload.final_files.varm;
         formData.projectAccess = taskData.upload.project_name;
       }
 
