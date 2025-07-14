@@ -8,7 +8,7 @@ from tools.evaluation.monitor import *
 from tools.evaluation.integration import integration_metrics
 
 
-def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):
+def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):
     adata_int = None
     # Start monitoring
     monitor = Monitor(1)
@@ -22,7 +22,7 @@ def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_ty
     output = os.path.join(os.path.dirname(inputs[0]), f'{method}_integration')
     adata_path = input[0].replace(".h5ad", f"{method}_integration.h5ad")
     report_path = os.path.join(output, f'{method}_integration_report.html')
-    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasetId}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='SEURAT'), output_file='{report_path}')\""], shell = True)
+    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasetId}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='LIGER'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
@@ -39,7 +39,7 @@ def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_ty
             "benchmarksId": benchmarksId,
             "datasetId": datasetId,
             "task_type": task_type,
-            "tool": "Seurat",
+            "tool": "Liger",
             "time_points": time_points,
             "cpu_usage": cpu_usage,
             "mem_usage": mem_usage,
@@ -47,7 +47,7 @@ def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_ty
             "created_on": current_date_and_time
             }
 
-    results["Seurat"] = {**sys_usage, **metrics_dict}
+    results["Liger"] = {**sys_usage, **metrics_dict}
     adata_int = None
 
     return results

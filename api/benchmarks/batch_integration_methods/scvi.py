@@ -36,5 +36,6 @@ def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetI
             }
 
     results["scVI"] = {**sys_usage, **metrics_dict}
+    adata_int = None
 
     return results

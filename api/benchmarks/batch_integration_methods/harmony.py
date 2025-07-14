@@ -41,5 +41,6 @@ def harmony_integration(adata, label, batch_key, benchmarksId, datasetId, task_t
             }
 
     results["Harmony"] = {**sys_usage, **metrics_dict}
+    adata_int = None
 
     return results
