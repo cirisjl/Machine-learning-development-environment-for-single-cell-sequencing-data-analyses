@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 sys.path.append('..')
-# from tools.formating.formating import *
+from tools.formating.formating import *
 from tools.evaluation.monitor import *
 from tools.evaluation.integration import integration_metrics
 
@@ -19,9 +19,9 @@ def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_ty
     relative_path = os.path.join(os.path.dirname(current_file), 'integration.Rmd')
     # Get the absolute path of the desired file
     rmd_path = os.path.abspath(relative_path)
-    output = os.path.join(os.path.dirname(inputs[0]), f'{method}_integration')
-    adata_path = input[0].replace(".h5ad", f"{method}_integration.h5ad")
-    report_path = os.path.join(output, f'{method}_integration_report.html')
+    output = os.path.join(os.path.dirname(inputs[0]), 'Seurat_integration')
+    adata_path = input[0].replace(".h5ad", 'Seurat_integration.h5ad')
+    report_path = os.path.join(output, 'Seurat_integration_report.html')
     s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasetId}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='SEURAT'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring

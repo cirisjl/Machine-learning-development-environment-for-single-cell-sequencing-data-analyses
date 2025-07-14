@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 sys.path.append('..')
-# from tools.formating.formating import *
+from tools.formating.formating import *
 from tools.evaluation.monitor import *
 from tools.evaluation.annotation import annotation_metrics
 

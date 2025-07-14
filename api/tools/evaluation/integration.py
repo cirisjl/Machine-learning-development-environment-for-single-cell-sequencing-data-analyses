@@ -46,10 +46,13 @@ def integration_metrics(adata, adata_int, batch_key='batch', label_key='cell_typ
     biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
     metrics_dict = metrics_all.dropna().to_dict()[0]
 
+    for key, value in metrics_dict.items():
+        metrics_dict[key] = float('{:.4f}'.format(value))
+
     bc_total = 0
     for key in biological_conservation_metrics:
         bc_total += metrics_dict[key]
-    biological_conservation_score = bc_total/len(biological_conservation_metrics)
+    biological_conservation_score = float('{:.4f}'.format(bc_total/len(biological_conservation_metrics)))
 
     metrics_dict['Biological Conservation'] = biological_conservation_score
 
