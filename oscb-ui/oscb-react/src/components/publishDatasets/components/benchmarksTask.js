@@ -118,12 +118,12 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         userID: dataset.Owner,
         task_type: dataset.taskType.label,
         adata_path: dataset.dataSplit.adataPath,
-        label: dataset.taskLabel.label || '',
-        batch_key: dataset.batch_key.label || '',
-        celltypist_model: dataset.celltypist_model.label || '',
-        SingleR_ref: dataset.SingleR_ref.label || '',
-        mi_aligned1: dataset.mi_aligned1.label || '',
-        mi_aligned2: dataset.mi_aligned2.label || '',
+        label: dataset?.taskLabel?.label || '',
+        batch_key: dataset?.batch_key?.label || '',
+        celltypist_model: dataset?.celltypist_model?.label || '',
+        SingleR_ref: dataset?.SingleR_ref?.label || '',
+        mi_aligned1: dataset?.mi_aligned1?.label || '',
+        mi_aligned2: dataset?.mi_aligned2?.label || '',
       }));
       const postBody = body[0];
 

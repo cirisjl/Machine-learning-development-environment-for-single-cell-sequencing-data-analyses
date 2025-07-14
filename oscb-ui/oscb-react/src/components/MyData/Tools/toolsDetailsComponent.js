@@ -334,8 +334,8 @@ const onSelectRefSubItem = (mainItem, subItem) => {
 
         if(filterCategory === "annotation") {
           if (formData[parametersKey[filterCategory]].methods.includes("scVI") && Object.keys(selectedRefDatasets).length < 1){
-            setFormErrors("Please select at least one datasets for scVI annotation before submitting the form");
-            console.log("Failed to submit the form");
+            setFormErrors("Please select one reference dataset for scVI annotation before submitting the form.");
+            console.log("Failed to submit the form.");
           }
         }
 
@@ -345,16 +345,18 @@ const onSelectRefSubItem = (mainItem, subItem) => {
             setFormErrors("Please select at least two datasets for Seurat or Liger integration before submitting the form.");
             console.log("Failed to submit the form.");
           }
-          else if ((formData[parametersKey[filterCategory]].methods.includes("scVI") || formData[parametersKey[filterCategory]].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData[parametersKey[filterCategory]].batch_key === "") {
+          if ((formData[parametersKey[filterCategory]].methods.includes("scVI") || formData[parametersKey[filterCategory]].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData[parametersKey[filterCategory]].batch_key === "") {
             setFormErrors("Please select Batch_Key if you only select one dataset for scVI or Harmony integration before submitting the form.");
             console.log("Failed to submit the form.");
           } 
-          else if (Object.keys(selectedDatasets).length === 0){
-            setFormErrors("Please select a dataset before submitting the form.");
-            console.log("Failed to submit the form.");
-          }
+          // if (Object.keys(selectedDatasets).length === 0){
+          //   setFormErrors("Please select a dataset before submitting the form.");
+          //   console.log("Failed to submit the form.");
+          // }
         }
-        else if(filterCategory !== "integration" && Object.keys(selectedDatasets).length === 0) {
+
+        // if(filterCategory !== "integration" && Object.keys(selectedDatasets).length === 0) {
+        if (Object.keys(selectedDatasets).length === 0) {
           setFormErrors("Please select a dataset before submitting the form.");
           console.log("Failed to submit the form");
         } else {

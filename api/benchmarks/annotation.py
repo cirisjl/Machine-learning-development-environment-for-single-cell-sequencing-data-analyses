@@ -1,15 +1,16 @@
 from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
 from tools.visualization.plot import plot_bar, plot_line
-from tools.annotation.celltypist import run_celltypist
-from tools.annotation.scvi import scvi_transfer
+from benchmarks.annotation_methods.celltypist import celltypist_annotation
+from benchmarks.annotation_methods.scvi import scvi_annotation
+from benchmarks.annotation_methods.singler import singler_annotation
 from utils.mongodb import generate_process_id, create_bm_results, benchmark_result_exists
 from utils.redislogger import *
 from datetime import datetime
 import os
 
 
-def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, task_type='annotation'):
-    redislogger.info(job_id, "Start running benchmarks for annotation task.")
+def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypist_model=None, SingleR_ref=None, species="mouse", task_type='Cell Type Annotation'):
+    redislogger.info(job_id, "Start running benchmarks for Cell Type Annotation task.")
     annotation_results = []
     y_values = {}
     y_values_ur = {}
@@ -18,151 +19,104 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     # Load AnnData
     adata = load_anndata(adata_path)
     scvi_path = get_scvi_path(adata_path)
-    adata = clean_anndata(adata)
-    # adata = adata[adata.obs.split_idx.str.contains('test'), :]
+    adata = clean_anndata(adata) # Remove outliers
+    train_adata = adata[adata.obs.split_idx.str.contains('train'), :]
+    ref_path = adata_path.replace(".h5ad", "_ref.h5ad")
+    train_adata.write_h5ad(ref_path, compression='gzip')
+    test_adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None
 
     #static array to define the metrics evaluated for the annotation methods
-    metrics = ['ARI', 'Silhouette', 'NMI', 'Fowlkes Mallows']
+    metrics = ['Accuracy', 'F1_macro', 'F1_micro', 'F1_weighted']
     
-    # scanpy
+    # CellTypist
     try:
-        redislogger.info(job_id, "Running scanpy for annotation task.")
-        process_id = generate_process_id(md5, task_type, 'scanpy', label)
-        scanpy_results = benchmark_result_exists(process_id)
+        redislogger.info(job_id, "Running CellTypist for Cell Type Annotation task.")
+        process_id = generate_process_id(md5, task_type, 'CellTypist', label)
+        celltypist_results = benchmark_result_exists(process_id)
 
-        if scanpy_results is not None:
-            redislogger.info(job_id, "Found existing scanpy Benchmarks results in database, skip scanpy.")
+        if celltypist_results is not None:
+            redislogger.info(job_id, "Found existing CellTypist Benchmarks results in database, skip CellTypist.")
         else:
-            # Call scanpy_annotation method
-            sys_info, asw_scanpy, nmi_scanpy, ari_scanpy, fm_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_annotation(adata, label)
-            scanpy_results = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
-                "tool": "scanpy",
-                "asw_score": asw_scanpy,
-                "nmi_score": nmi_scanpy,
-                "ari_score": ari_scanpy,
-                "fm_score": fm_scanpy,
-                "time_points": time_points_scanpy,
-                "cpu_usage": cpu_usage_scanpy,
-                "mem_usage": mem_usage_scanpy,
-                "gpu_mem_usage": gpu_mem_usage_scanpy,
-                "created_on": current_date_and_time
-            }
-            create_bm_results(process_id, scanpy_results)
-
-        sys_info = scanpy_results['sys_info']
-        y_values['scanpy'] = [scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score'], scanpy_results['fm_score']]
-        y_values_ur['Scanpy_CPU'] = scanpy_results['cpu_usage']
-        y_values_ur['Scanpy_Memory'] = scanpy_results['mem_usage']
-        y_values_ur['Scanpy_GPU'] = scanpy_results['gpu_mem_usage']
-        x_timepoints = scanpy_results['time_points']
-        annotation_results.append({'scanpy': scanpy_results})
-        redislogger.info(job_id, "scanpy annotation is done.")
-        redislogger.info(job_id, f"Silhouette: {scanpy_results['asw_score']}, NMI: {scanpy_results['nmi_score']}, ARI: {scanpy_results['ari_score']}, Fowlkes Mallows: {scanpy_results['fm_score']}")
+            # Call CellTypist method
+            celltypist_results = celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, celltypist_model=celltypist_model, ref=train_adata, species=species)
+            create_bm_results(process_id, celltypist_results)
+            annotation_results.append({'CellTypist': celltypist_results})
+            redislogger.info(job_id, "CellTypist annotation is done.")
+        if len(celltypist_results) > 0:
+            for key, result in celltypist_results.item
+                sys_info = result['sys_info']
+                y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
+                y_values_ur['CellTypist_CPU'] = result['cpu_usage']
+                y_values_ur['CellTypist_Memory'] = result['mem_usage']
+                y_values_ur['CellTypist_GPU'] = result['gpu_mem_usage']
+                x_timepoints = result['time_points']
+                redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
     except Exception as e:
         # Handle exceptions as needed
-        redislogger.error(job_id, f"scanpy annotation is failed: {e}")
+        redislogger.error(job_id, f"CellTypist annotation is failed: {e}")
 
-    # Seurat
-    try: 
-        redislogger.info(job_id, "Running Seurat for annotation task.")
-        process_id = generate_process_id(md5, task_type, 'Seurat', label)
-        seurat_results = benchmark_result_exists(process_id)
-
-        if seurat_results is not None:
-            redislogger.info(job_id, "Found existing Seurat Benchmarks results in database, skip Seurat.")
-        else:
-            # Call seurat_annotation method
-            sys_info, asw_seurat, nmi_seurat, ari_seurat, fm_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_annotation(adata_path, label)
-
-            seurat_results = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
-                "tool": "Seurat",
-                "asw_score": asw_seurat,
-                "nmi_score": nmi_seurat,
-                "ari_score": ari_seurat,
-                "fm_score": fm_seurat,
-                "time_points": time_points_seurat,
-                "cpu_usage": cpu_usage_seurat,
-                "mem_usage": mem_usage_seurat,
-                "gpu_mem_usage": gpu_mem_usage_seurat,
-                "created_on": current_date_and_time
-                
-            }
-            create_bm_results(process_id, seurat_results)
-
-        sys_info = seurat_results['sys_info']
-        y_values['Seurat'] = [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score'], seurat_results['fm_score']]
-        y_values_ur['Seurat_CPU'] = seurat_results['cpu_usage']
-        y_values_ur['Seurat_Memory'] = seurat_results['mem_usage']
-        y_values_ur['Seurat_GPU'] = seurat_results['gpu_mem_usage']
-        if len(x_timepoints) < len(seurat_results['time_points']):
-            x_timepoints = seurat_results['time_points']
-        annotation_results.append({'Seurat': seurat_results})
-        redislogger.info(job_id, "Seurat annotation is done.")
-        redislogger.info(job_id, f"Silhouette: {seurat_results['asw_score']}, NMI: {seurat_results['nmi_score']}, ARI: {seurat_results['ari_score']}, Fowlkes Mallows: {seurat_results['fm_score']}")
-
-    except Exception as e:
-        # Handle exceptions as needed
-        redislogger.error(job_id, f"Seurat annotation is failed: {e}")
-    
     # scVI
-    try: 
-        redislogger.info(job_id, "Running scvi for annotation task.")
+    try:
+        redislogger.info(job_id, "Running scVI for Cell Type Annotation task.")
         process_id = generate_process_id(md5, task_type, 'scVI', label)
         scvi_results = benchmark_result_exists(process_id)
 
         if scvi_results is not None:
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
-            # Call scvi_annotation method
-            adata, sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_annotation(adata, label, scvi_path)
-            adata.write_h5ad(adata_path, compression='gzip')
-            scvi_results = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
-                "tool": "scVI",
-                "asw_score": asw_scvi,
-                "nmi_score": nmi_scvi,
-                "ari_score": ari_scvi,
-                "fm_score": fm_scvi,
-                "time_points": time_points_scvi,
-                "cpu_usage": cpu_usage_scvi,
-                "mem_usage": mem_usage_scvi,
-                "gpu_mem_usage": gpu_mem_usage_scvi,
-                "created_on": current_date_and_time
-            }
+            # Call scVI method
+            scvi_results = scvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=train_adata, species=species)
             create_bm_results(process_id, scvi_results)
-
-        sys_info = scvi_results['sys_info']
-        y_values['scvi'] = [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score'], scvi_results['fm_score']]
-        y_values_ur['scvi_CPU'] = scvi_results['cpu_usage']
-        y_values_ur['scvi_Memory'] = scvi_results['mem_usage']
-        y_values_ur['scvi_GPU'] = scvi_results['gpu_mem_usage']
-        if len(x_timepoints) < len(scvi_results['time_points']):
-            x_timepoints = scvi_results['time_points']
-        annotation_results.append({'scvi': scvi_results})
-        redislogger.info(job_id, "scvi annotation is done.")
-        redislogger.info(job_id, f"Silhouette: {scvi_results['asw_score']}, NMI: {scvi_results['nmi_score']}, ARI: {scvi_results['ari_score']}, Fowlkes Mallows: {scvi_results['fm_score']}")
+            annotation_results.append({'scVI': scvi_results})
+            redislogger.info(job_id, "scVI annotation is done.")
+        if len(scvi_results) > 0:
+            for key, result in scvi_results.item
+                sys_info = result['sys_info']
+                y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
+                y_values_ur['scVI_CPU'] = result['cpu_usage']
+                y_values_ur['scVI_Memory'] = result['mem_usage']
+                y_values_ur['scVI_GPU'] = result['gpu_mem_usage']
+                x_timepoints = result['time_points']
+                redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
     except Exception as e:
         # Handle exceptions as needed
-        redislogger.error(job_id, f"scvi annotation is failed: {e}")
+        redislogger.error(job_id, f"scVI annotation is failed: {e}")
+    
+    # SingleR
+    try:
+        redislogger.info(job_id, "Running SingleR for Cell Type Annotation task.")
+        process_id = generate_process_id(md5, task_type, 'SingleR', label)
+        singler_results = benchmark_result_exists(process_id)
+
+        if singler_results is not None:
+            redislogger.info(job_id, "Found existing SingleR Benchmarks results in database, skip SingleR.")
+        else:
+            # Call SingleR method
+            singler_results = singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_type, SingleR_ref, ref_path=ref_path, species=species)
+            create_bm_results(process_id, singler_results)
+            annotation_results.append({'SingleR': singler_results})
+            redislogger.info(job_id, "SingleR annotation is done.")
+        if len(singler_results) > 0:
+            for key, result in singler_results.item
+                sys_info = result['sys_info']
+                y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
+                y_values_ur['SingleR_CPU'] = result['cpu_usage']
+                y_values_ur['SingleR_Memory'] = result['mem_usage']
+                y_values_ur['SingleR_GPU'] = result['gpu_mem_usage']
+                x_timepoints = result['time_points']
+                redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
+
+    except Exception as e:
+        # Handle exceptions as needed
+        redislogger.error(job_id, f"SingleR annotation is failed: {e}")
     
     redislogger.info(job_id, "Creating bar plot for evaluation.")
     # Call the plot_bar function
-    benchmarks_plot = plot_bar(x=metrics, y=y_values, title='Benchmarks')
+    benchmarks_plot = plot_bar(x=metrics, y=y_values, title='Benchmarks: Cell Type Annotation')
 
     redislogger.info(job_id, "Creating line plot for computing resourses utilization rate.")
     # Call the plot_line function with an empty array for x

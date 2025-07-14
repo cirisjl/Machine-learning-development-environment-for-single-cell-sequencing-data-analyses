@@ -163,7 +163,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     
     redislogger.info(job_id, "Creating bar plot for evaluation.")
     # Call the plot_bar function
-    benchmarks_plot = plot_bar(x=metrics, y=y_values, title='Benchmarks')
+    benchmarks_plot = plot_bar(x=metrics, y=y_values, title='Benchmarks: Clustering')
 
     redislogger.info(job_id, "Creating line plot for computing resourses utilization rate.")
     # Call the plot_line function with an empty array for x
@@ -176,6 +176,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         "benchmarksId": benchmarksId,
         "datasetId": datasetId,
         "task_type": task_type,
+        "label": label,
         "metrics": metrics,
         "methods": clustering_results,
         # "sys_info": sys_info,

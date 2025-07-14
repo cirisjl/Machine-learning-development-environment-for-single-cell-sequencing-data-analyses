@@ -1,8 +1,8 @@
-from scib.metrics import metrics_all
+from scib.metrics import metrics
 
 # https://github.com/theislab/scib/blob/main/scib/metrics/metrics.py
 # https://scib.readthedocs.io/en/latest/api/scib.metrics.metrics_all.html
-def integration_metrics(adata, adata_int, ebed="X_pca", batch_key='batch', label_key='cell_type', cluster_key="leiden", organism="mouse"):
+def integration_metrics(adata, adata_int, batch_key='batch', label_key='cell_type', species="mouse"):
     """All metrics
 
     :Biological conservation:
@@ -41,4 +41,16 @@ def integration_metrics(adata, adata_int, ebed="X_pca", batch_key='batch', label
             + ``subsample``
             + ``type_``
     """
-    return metrics_all(adata, adata_int, ebed="X_pca", batch_key='batch', label_key='label_key', cluster_key = "leiden", organism="mouse")
+
+    metrics_all = metrics(adata, adata_int, batch_key=batch_key, label_key=label_key, cluster_nmi=None, ari_=True, nmi_=True, nmi_method='arithmetic', nmi_dir=None, silhouette_=True, si_metric='euclidean', pcr_=True, cell_cycle_=True, organism=species, hvg_score_=True, isolated_labels_=True, isolated_labels_f1_=True, isolated_labels_asw_=True, n_isolated=True, graph_conn_=True, trajectory_=False, kBET_=True)
+    biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
+    metrics_dict = metrics_all.dropna().to_dict()[0]
+
+    bc_total = 0
+    for key in biological_conservation_metrics:
+        bc_total += metrics_dict[key]
+    biological_conservation_score = bc_total/len(biological_conservation_metrics)
+
+    metrics_dict['Biological Conservation'] = biological_conservation_score
+
+    return metrics_dict
