@@ -257,6 +257,8 @@ def highest_expr_genes(adata, n_top=30):
     import scanpy as sc
     from scipy.sparse import issparse
 
+    if type(adata.X) != np.ndarray:
+        adata.X = adata.X.todense()
     # compute the percentage of each gene per cell
     norm_dict = sc.pp.normalize_total(adata, target_sum=100, inplace=False)
 
