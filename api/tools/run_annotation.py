@@ -4,6 +4,7 @@ import sys
 from tools.formating.formating import *
 from tools.annotation.celltypist import run_celltypist
 from tools.annotation.scvi import scvi_transfer
+from tools.annotation.SingleR import singler_annotation
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
@@ -174,59 +175,61 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     raise CeleryTaskException(detail)
 
             if method == "SINGLER":
-                if SingleR_ref is None and (len(refs) == 0 or labels is None):
+                if len(SingleR_ref) == 0 and (len(user_refs) == 0 or user_label is None):
                     raise CeleryTaskException(f"SingleR annotation is failed due to empty reference ({SingleR_ref}) and empty user reference ({user_refs}) or cell labels ({user_label}).")
 
                 try:
-                    # report_path = get_report_path(dataset, output, "SAVER")
-                    report_path = adata_path.replace(".h5ad", "_report.html")
-                    output_folder = os.path.dirname(adata_path)
+                    # # report_path = get_report_path(dataset, output, "SAVER")
+                    # report_path = adata_path.replace(".h5ad", "_report.html")
+                    # output_folder = os.path.dirname(adata_path)
                     
-                    # Get the absolute path of the current file
-                    current_file = os.path.abspath(__file__)
+                    # # Get the absolute path of the current file
+                    # current_file = os.path.abspath(__file__)
 
-                    # Construct the relative path to the desired file
-                    relative_path = os.path.join(os.path.dirname(current_file), 'annotation', 'singleR.Rmd')
+                    # # Construct the relative path to the desired file
+                    # relative_path = os.path.join(os.path.dirname(current_file), 'annotation', 'singleR.Rmd')
 
-                    # Get the absolute path of the desired file
-                    singler_path = os.path.abspath(relative_path)
+                    # # Get the absolute path of the desired file
+                    # singler_path = os.path.abspath(relative_path)
 
-                    redislogger.info(job_id, " Start SingleR annotation ...")
-                    if user_label is not None and len(user_refs) > 0:
-                        s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}', user_ref='{user_refs[0]}', user_label='{user_label}'), output_file='{report_path}')\""], shell = True)
-                    else:
-                        s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}'), output_file='{report_path}')\""], shell = True)
+                    # redislogger.info(job_id, " Start SingleR annotation ...")
+                    # if user_label is not None and len(user_refs) > 0:
+                    #     s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}', user_ref='{user_refs[0]}', user_label='{user_label}'), output_file='{report_path}')\""], shell = True)
+                    # else:
+                    #     s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{job_id}', dataset='{dataset}', input='{input}', output_folder='{output_folder}', dims={n_neighbors}, npcs={n_pcs}, resolution={resolution}, species='{species}', default_assay='{assay}', reference='{SingleR_ref}'), output_file='{report_path}')\""], shell = True)
 
-                    csv_main = output_folder + "/results_main.csv"
-                    csv_fine = output_folder + "/results_fine.csv"
-                    csv_user = output_folder + "/results_user.csv"
+                    # csv_main = output_folder + "/results_main.csv"
+                    # csv_fine = output_folder + "/results_fine.csv"
+                    # csv_user = output_folder + "/results_user.csv"
 
-                    if not (os.path.exists(csv_main) or os.path.exists(csv_fine) or os.path.exists(csv_user)):
-                        upsert_jobs(
-                            {
-                                "job_id": job_id, 
-                                "results": "SingleR annotation is failed.",
-                                "completed_on": datetime.now(),
-                                "status": "Failure"
-                            }
-                        )
-                        # redislogger.warning(job_id, 'SingleR annotation is failed.')
-                        raise CeleryTaskException('SingleR annotation is failed.')
+                    # if not (os.path.exists(csv_main) or os.path.exists(csv_fine) or os.path.exists(csv_user)):
+                    #     upsert_jobs(
+                    #         {
+                    #             "job_id": job_id, 
+                    #             "results": "SingleR annotation is failed.",
+                    #             "completed_on": datetime.now(),
+                    #             "status": "Failure"
+                    #         }
+                    #     )
+                    #     # redislogger.warning(job_id, 'SingleR annotation is failed.')
+                    #     raise CeleryTaskException('SingleR annotation is failed.')
 
-                    if os.path.exists(csv_main):
-                        df_main = pd.read_csv(csv_main, index_col=0)
-                        adata.obs['SingleR_main'] = df_main['labels']
-                        adata.obs['SingleR_main.pruned'] = df_main['pruned.labels']
+                    # if os.path.exists(csv_main):
+                    #     df_main = pd.read_csv(csv_main, index_col=0)
+                    #     adata.obs['SingleR_main'] = df_main['labels']
+                    #     adata.obs['SingleR_main.pruned'] = df_main['pruned.labels']
                     
-                    if os.path.exists(csv_fine):
-                        df_fine = pd.read_csv(csv_fine, index_col=0)
-                        adata.obs['SingleR_fine'] = df_fine['labels']
-                        adata.obs['SingleR_fine.pruned'] = df_fine['pruned.labels']
+                    # if os.path.exists(csv_fine):
+                    #     df_fine = pd.read_csv(csv_fine, index_col=0)
+                    #     adata.obs['SingleR_fine'] = df_fine['labels']
+                    #     adata.obs['SingleR_fine.pruned'] = df_fine['pruned.labels']
 
-                    if os.path.exists(csv_user):
-                        df_user = pd.read_csv(csv_user, index_col=0)
-                        adata.obs['SingleR_user_ref'] = df_user['labels']
-                        adata.obs['SingleR_user_ref.pruned'] = df_user['pruned.labels']
+                    # if os.path.exists(csv_user):
+                    #     df_user = pd.read_csv(csv_user, index_col=0)
+                    #     adata.obs['SingleR_user_ref'] = df_user['labels']
+                    #     adata.obs['SingleR_user_ref.pruned'] = df_user['pruned.labels']
+
+                    adata = singler_annotation(adata, SingleR_ref=SingleR_ref, user_ref=user_refs, user_label=user_label)
 
                     if do_umap:
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -245,7 +248,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     adata.write_h5ad(adata_path, compression='gzip')
                     
                     annotation_output.append({"SingleR": adata_path})
-                    annotation_output.append({"Report": report_path})
+                    # annotation_output.append({"Report": report_path})
                     annotation_results["outputs"] = annotation_output
                     redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
                     process_ids.append(process_id)

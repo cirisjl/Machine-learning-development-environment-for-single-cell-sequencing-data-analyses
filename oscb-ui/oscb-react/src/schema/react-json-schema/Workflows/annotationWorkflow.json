@@ -108,7 +108,7 @@
             "SingleR_ref": {
               "type": "string",
               "title": "SingleR Reference",
-              "description": "Choose the SingleR Reference for annotation."
+              "description": "Choose the SingleR Reference(s) for annotation."
             },
             "user_label": {
               "type": "string",

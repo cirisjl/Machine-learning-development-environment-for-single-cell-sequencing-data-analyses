@@ -81,7 +81,7 @@ class annotationParameters(BaseModel):
     assay: Optional[str] = 'RNA' # Required for Seurat
     layer: Optional[str] = None
     celltypist_model: Optional[str] = None
-    SingleR_ref: Optional[str] = None
+    SingleR_ref: Optional[List[str]]= []
     user_label: Optional[str] = None
     n_neighbors: Optional[int] = 20
     n_pcs: Optional[int] = 20

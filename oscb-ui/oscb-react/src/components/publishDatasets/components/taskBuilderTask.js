@@ -93,13 +93,13 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   ]
 
   const singlerOptions = [
-    { label: "MouseRNAseqData", value: "MouseRNAseqData" },
-    { label: "HumanPrimaryCellAtlasData", value: "HumanPrimaryCellAtlasData" },
-    { label: "DatabaseImmuneCellExpressionData", value: "DatabaseImmuneCellExpressionData" },
-    { label: "BlueprintEncodeData", value: "BlueprintEncodeData" },
-    { label: "ImmGenData", value: "ImmGenData" },
-    { label: "MonacoImmuneData", value: "MonacoImmuneData" },
-    { label: "NovershternHematopoieticData", value: "NovershternHematopoieticData" }
+    { label: "dice", value: "dice" },
+    { label: "blueprint_encode", value: "blueprint_encode" },
+    { label: "immgen", value: "immgen" },
+    { label: "mouse_rnaseq", value: "mouse_rnaseq" },
+    { label: "hpca", value: "hpca" },
+    { label: "novershtern_hematopoietic", value: "novershtern_hematopoietic" },
+    { label: "monaco_immune", value: "monaco_immune" }
   ]
 
   const handleOpenDialog = (mode) => {
@@ -663,7 +663,7 @@ const onSelectSubItem = (mainItem, subItem) => {
 
                 {dataset && dataset.taskType && dataset.taskType.value === 'CT' && (<Typography variant="body2" component="p">
                   <label>
-                    <p>Please Choose the SingleR Reference:</p>
+                    <p>Please Choose the SingleR Reference(s):</p>
                     <Select
                       value={dataset.SingleR_ref}
                       options={singlerOptions}
