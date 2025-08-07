@@ -4,7 +4,7 @@ import sys
 import shutil
 from umap import UMAP
 from tools.qc.scanpy_qc import run_scanpy_qc
-# from tools.qc.dropkick_qc import run_dropkick_qc
+from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
 from tools.qc.scrublet_calls import predict_scrublet
 # sys.path.append('..')
@@ -230,92 +230,92 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 pp_results.append(qc_results)
                 process_ids.append(process_id)
 
-            # # Dropkick QC
-            # if "DROPKICK" in methods:
-            #     method='Dropkick'
-            #     process_id = generate_process_id(md5, process, method, parameters)
-            #     qc_results = pp_result_exists(process_id)
+            # Dropkick QC
+            if "DROPKICK" in methods:
+                method='Dropkick'
+                process_id = generate_process_id(md5, process, method, parameters)
+                qc_results = pp_result_exists(process_id)
 
-            #     if qc_results is not None:
-            #         redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
-            #         nCells = qc_results["nCells"]
-            #         qc_output.append({'AnnData': qc_results["adata_path"]})
-            #         adata_path = qc_results["adata_path"]
-            #     else:
-            #         output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
-            #         if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
-            #             redislogger.info(job_id, "Output already exists, start from the result of the last run.")
-            #             dropkick_results = load_anndata(output_path)
+                if qc_results is not None:
+                    redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
+                    nCells = qc_results["nCells"]
+                    qc_output.append({'AnnData': qc_results["adata_path"]})
+                    adata_path = qc_results["adata_path"]
+                else:
+                    output_path = get_output_path(output, process_id, ds['dataset'], method='dropkick')
+                    if os.path.exists(output_path): # If output exist from the last run, then just pick up it.
+                        redislogger.info(job_id, "Output already exists, start from the result of the last run.")
+                        dropkick_results = load_anndata(output_path)
             
-            #             if do_umap:
-            #                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            #                 dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
-            #                 dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
-            #                 if msg is not None: redislogger.warning(job_id, msg)
-            #             if do_cluster:
-            #                 redislogger.info(job_id, "Clustering the neighborhood graph.")
-            #                 dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
+                        if do_umap:
+                            redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                            dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
+                            dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                            if msg is not None: redislogger.warning(job_id, msg)
+                        if do_cluster:
+                            redislogger.info(job_id, "Clustering the neighborhood graph.")
+                            dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
-            #             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-            #             qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
-            #             nCells = qc_results["nCells"]
-            #             redislogger.info(job_id, "Saving AnnData object.")
-            #             dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
-            #             dropkick_results.write_h5ad(output_path, compression='gzip')
-            #             qc_output.append({'AnnData': output_path})
-            #             adata_path = output_path
-            #             dropkick_results = None
-            #             redislogger.info(job_id, qc_results['info'])
-            #             qc_results['datasetId'] = datasetId
-            #             create_pp_results(process_id, qc_results) # Insert pre-process results to database
-            #         else:
-            #             try:
-            #                 redislogger.info(job_id, "Start Dropkick QC...")
-            #                 adata = load_anndata(input_path)
-            #                 dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], n_hvg=parameters['n_top_genes'], random_state=random_state)
-            #                 dropkick_results.write_h5ad(output_path, compression='gzip')
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                        nCells = qc_results["nCells"]
+                        redislogger.info(job_id, "Saving AnnData object.")
+                        dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
+                        dropkick_results.write_h5ad(output_path, compression='gzip')
+                        qc_output.append({'AnnData': output_path})
+                        adata_path = output_path
+                        dropkick_results = None
+                        redislogger.info(job_id, qc_results['info'])
+                        qc_results['datasetId'] = datasetId
+                        create_pp_results(process_id, qc_results) # Insert pre-process results to database
+                    else:
+                        try:
+                            redislogger.info(job_id, "Start Dropkick QC...")
+                            adata = load_anndata(input_path)
+                            dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], n_hvg=parameters['n_top_genes'], random_state=random_state)
+                            dropkick_results.write_h5ad(output_path, compression='gzip')
 
-            #                 if do_umap:
-            #                     redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-            #                     dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
-            #                     dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
-            #                     if msg is not None: redislogger.warning(job_id, msg)
-            #                 if do_cluster:
-            #                     redislogger.info(job_id, "Clustering the neighborhood graph.")
-            #                     dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
+                            if do_umap:
+                                redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                                dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
+                                dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                                if msg is not None: redislogger.warning(job_id, msg)
+                            if do_cluster:
+                                redislogger.info(job_id, "Clustering the neighborhood graph.")
+                                dropkick_results = run_clustering(dropkick_results, resolution=parameters['resolution'], random_state=random_state)
 
-            #                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-            #                 qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
-            #                 nCells = qc_results["nCells"]
-            #                 redislogger.info(job_id, "Saving AnnData object.")
-            #                 # redislogger.info(job_id, "output path")
-            #                 # redislogger.info(job_id, output_path)
-            #                 dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
-            #                 dropkick_results.write_h5ad(output_path, compression='gzip')
-            #                 adata_path = output_path
-            #                 qc_output.append({'AnnData': output_path})
-            #                 dropkick_results = None
-            #                 redislogger.info(job_id, qc_results['info'])
-            #                 qc_results['datasetId'] = datasetId
-            #                 create_pp_results(process_id, qc_results) # Insert pre-process results to database
-            #             except Exception as e:
-            #                 detail = f"Error during Dropkick_QC: {str(e)}"
-            #                 redislogger.error(job_id, detail)
-            #                 upsert_jobs(
-            #                     {
-            #                         "job_id": job_id, 
-            #                         "results": detail,
-            #                         "completed_on": datetime.now(),
-            #                         "status": "Failure"
-            #                     }
-            #                 )
-            #                 os.remove(output_path)
-            #                 raise CeleryTaskException(detail)
+                            redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                            qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)
+                            nCells = qc_results["nCells"]
+                            redislogger.info(job_id, "Saving AnnData object.")
+                            # redislogger.info(job_id, "output path")
+                            # redislogger.info(job_id, output_path)
+                            dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
+                            dropkick_results.write_h5ad(output_path, compression='gzip')
+                            adata_path = output_path
+                            qc_output.append({'AnnData': output_path})
+                            dropkick_results = None
+                            redislogger.info(job_id, qc_results['info'])
+                            qc_results['datasetId'] = datasetId
+                            create_pp_results(process_id, qc_results) # Insert pre-process results to database
+                        except Exception as e:
+                            detail = f"Error during Dropkick_QC: {str(e)}"
+                            redislogger.error(job_id, detail)
+                            upsert_jobs(
+                                {
+                                    "job_id": job_id, 
+                                    "results": detail,
+                                    "completed_on": datetime.now(),
+                                    "status": "Failure"
+                                }
+                            )
+                            os.remove(output_path)
+                            raise CeleryTaskException(detail)
                     
-            #     pp_results.append(qc_results)
-            #     process_ids.append(process_id)
+                pp_results.append(qc_results)
+                process_ids.append(process_id)
                 
-            # adata = None
+            adata = None
 
         # Seurat QC
         if "SEURAT" in methods:

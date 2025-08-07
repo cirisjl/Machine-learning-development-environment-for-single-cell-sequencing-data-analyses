@@ -5,7 +5,8 @@
 # FROM stormgod/oscb-seurat-cuda117:4.4.1
 # FROM stormgod/oscb-seurat-cuda117-singler:4.4.1
 # FROM stormgod/oscb-cuda128-r45
-FROM stormgod/oscb-cuda128-r45:seurat440
+# FROM stormgod/oscb-cuda128-r45:seurat440
+FROM stormgod/oscb-cuda126-r45-seurat440:1.0
 
 # RUN apt-get update && apt-get install -yq --no-install-recommends libglpk-dev libmagick++-dev
 

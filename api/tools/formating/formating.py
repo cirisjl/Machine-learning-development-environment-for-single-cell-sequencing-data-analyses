@@ -699,7 +699,7 @@ def get_scvi_path(adata_path, task = None):
     if task is None:
         return os.path.join(os.path.dirname(os.path.abspath(adata_path)), 'scvi_model')
     else:
-        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), task + '_scvi_model')
+        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), task + '_model')
 
 
 def list_py_to_r(list):

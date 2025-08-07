@@ -4,7 +4,7 @@ import scanpy as sc
 from tools.formating.formating import load_anndata, reset_x_to_raw
 from exceptions.custom_exceptions import CeleryTaskException
 
-def scvi_transfer(adata, refs = [], ref_adata = None, labels = None):
+def scanvi_transfer(adata, refs = [], ref_adata = None, labels = None):
     if len(refs) > 0 and labels is not None:
         adata = reset_x_to_raw(adata)
         adata.obs['CellType'] = 'Unknown'
@@ -30,11 +30,11 @@ def scvi_transfer(adata, refs = [], ref_adata = None, labels = None):
 
         lvae.train(max_epochs=20, n_samples_per_label=100)
 
-        dater.obs['scVI_predicted'] = lvae.predict(dater)
-        dater.obs['scVI_transfer_score'] = lvae.predict(soft = True).max(axis = 1)
+        dater.obs['scANVI_predicted'] = lvae.predict(dater)
+        dater.obs['scANVI_transfer_score'] = lvae.predict(soft = True).max(axis = 1)
         dater = dater[dater.obs.Batch == 'Unknown']
 
-        adata.obs = adata.obs.merge(right = dater.obs[['scVI_predicted', 'scVI_transfer_score']], left_index=True, right_index=True)
+        adata.obs = adata.obs.merge(right = dater.obs[['scANVI_predicted', 'scANVI_transfer_score']], left_index=True, right_index=True)
         adata.obs = adata.obs.drop('CellType', axis=1)
 
     elif ref_adata is not None and labels is not None:
@@ -62,13 +62,13 @@ def scvi_transfer(adata, refs = [], ref_adata = None, labels = None):
 
         lvae.train(max_epochs=20, n_samples_per_label=100)
 
-        dater.obs['scVI_predicted'] = lvae.predict(dater)
-        dater.obs['scVI_transfer_score'] = lvae.predict(soft = True).max(axis = 1)
+        dater.obs['scANVI_predicted'] = lvae.predict(dater)
+        dater.obs['scANVI_transfer_score'] = lvae.predict(soft = True).max(axis = 1)
         dater = dater[dater.obs.Batch == 'Unknown']
 
-        adata.obs = adata.obs.merge(right = dater.obs[['scVI_predicted', 'scVI_transfer_score']], left_index=True, right_index=True)
+        adata.obs = adata.obs.merge(right = dater.obs[['scANVI_predicted', 'scANVI_transfer_score']], left_index=True, right_index=True)
         adata.obs = adata.obs.drop('CellType', axis=1)
     else:
-        raise CeleryTaskException(f"scVI annotation is failed due to empty user reference or cell labels ({labels}).")
+        raise CeleryTaskException(f"scANVI annotation is failed due to empty user reference or cell labels ({labels}).")
 
     return adata

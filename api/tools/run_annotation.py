@@ -3,7 +3,7 @@ import subprocess
 import sys
 from tools.formating.formating import *
 from tools.annotation.celltypist import run_celltypist
-from tools.annotation.scvi import scvi_transfer
+from tools.annotation.scanvi import scanvi_transfer
 from tools.annotation.SingleR import singler_annotation
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
@@ -131,11 +131,11 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # os.remove(output)
                     raise CeleryTaskException(detail)
 
-            if method == "SCVI":
+            if method == "scANVI":
                 try:
-                    redislogger.info(job_id, "Start scVI annotation...")
-                    adata = scvi_transfer(adata, refs = user_refs, labels = user_label)
-                    redislogger.info(job_id, "scVI cell type transfer has been added to AnnData.obs.")
+                    redislogger.info(job_id, "Start scANVI annotation...")
+                    adata = scanvi_transfer(adata, refs = user_refs, labels = user_label)
+                    redislogger.info(job_id, "scANVI cell type transfer has been added to AnnData.obs.")
 
                     if do_umap:
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -152,17 +152,17 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
                     adata.write_h5ad(adata_path, compression='gzip')
-                    annotation_output.append({"scVI": adata_path})
+                    annotation_output.append({"scANVI": adata_path})
                     annotation_results["outputs"] = annotation_output
                     # adata = None
-                    redislogger.info(job_id, "AnnData object for scVI annotation is saved successfully")
+                    redislogger.info(job_id, "AnnData object for scANVI annotation is saved successfully")
                     process_ids.append(process_id)
                     annotation_results['datasetId'] = datasetId
                     create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
                     pp_results.append(annotation_results)
 
                 except Exception as e:
-                    detail = f"scVI annotation is failed: {e}"
+                    detail = f"scANVI annotation is failed: {e}"
                     upsert_jobs(
                         {
                             "job_id": job_id, 

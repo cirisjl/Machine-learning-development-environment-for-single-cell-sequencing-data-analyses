@@ -1,4 +1,4 @@
-from tools.formating.formating import load_anndata, load_anndata_to_csv, get_md5, clean_anndata, get_scvi_path
+from tools.formating.formating import load_anndata, load_anndata_to_csv, get_md5, clean_anndata
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.imputation_methods.celltypist import celltypist_imputation
 from benchmarks.imputation_methods.scvi import scvi_imputation

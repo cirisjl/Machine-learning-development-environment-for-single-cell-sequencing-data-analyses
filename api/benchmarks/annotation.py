@@ -1,7 +1,7 @@
 from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.annotation_methods.celltypist import celltypist_annotation
-from benchmarks.annotation_methods.scvi import scvi_annotation
+from benchmarks.annotation_methods.scanvi import scanvi_annotation
 from benchmarks.annotation_methods.singler import singler_annotation
 from utils.mongodb import generate_process_id, create_bm_results, benchmark_result_exists
 from utils.redislogger import *

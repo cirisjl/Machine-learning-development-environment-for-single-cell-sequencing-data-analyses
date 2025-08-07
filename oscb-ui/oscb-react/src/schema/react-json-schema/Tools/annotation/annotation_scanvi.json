@@ -45,12 +45,12 @@
                 "type": "string",
                 "enum": [
                   "CellTypist",
-                  "scVI",
+                  "scANVI",
                   "SingleR"
                 ]
               },
               "default": [
-                "scVI"
+                "scANVI"
               ],
               "uniqueItems": true,
               "minItems": 1

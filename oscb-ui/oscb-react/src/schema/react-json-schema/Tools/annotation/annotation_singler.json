@@ -48,7 +48,7 @@
                 "type": "string",
                 "enum": [
                   "CellTypist",
-                  "scVI",
+                  "scANVI",
                   "SingleR"
                 ]
               },

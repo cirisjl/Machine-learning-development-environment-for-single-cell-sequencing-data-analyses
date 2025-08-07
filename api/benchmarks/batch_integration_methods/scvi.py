@@ -4,6 +4,7 @@ sys.path.append('..')
 from tools.integration.scvi import scvi_integrate
 from tools.evaluation.monitor import *
 from tools.evaluation.integration import integration_metrics
+from tools.formating.formating import get_scvi_path
 
 
 def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):
