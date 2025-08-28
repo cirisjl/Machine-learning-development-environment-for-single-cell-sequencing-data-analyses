@@ -210,6 +210,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         train_fraction: dataset.dataSplit.trainFraction,
         validation_fraction: dataset.dataSplit.validationFraction,
         test_fraction: dataset.dataSplit.testFraction,
+        label: dataset.taskLabel.value || null, // Ensure label is set correctly
       };
   
       const totalFraction = userData.train_fraction + userData.validation_fraction + userData.test_fraction;
@@ -272,7 +273,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Check if all datasets have a task type, label and data split performed
     const allDatasetsValid = Object.values(taskData.task_builder.selectedDatasets).every(dataset => 
       dataset.taskType && 
-      dataset.taskLabel && 
+      (dataset.taskLabel || dataset.ccc_target || dataset.denoised_layer || dataset.bm_traj || (dataset.mi_aligned1 && dataset.mi_aligned2)) && 
       dataset.dataSplit.dataSplitPerformed
     );
   
@@ -284,7 +285,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   
       setActiveTask(5);
     } else {
-      setMessage('Please ensure that the task type, labels, and data split for each dataset are valid.');
+      setMessage('Please ensure that the task type, label, and data split for each dataset are valid.');
       setHasMessage(true);
       setIsError(true);
     }
@@ -349,6 +350,23 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
+  const handleCCCLabelChange = (datasetId, selectedOption) => {
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        selectedDatasets: {
+          ...prevTaskData.task_builder.selectedDatasets,
+          [datasetId]: {
+            ...prevTaskData.task_builder.selectedDatasets[datasetId],
+            cccTarget: selectedOption
+          }
+        }
+      }
+    }));
+  };
+
+
   const handleCellTypistModelChange = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
@@ -400,7 +418,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
-  const handleImLayerChange = (datasetId, selectedOption) => {
+  const handleDenoisedLayerChange = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
@@ -409,7 +427,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           ...prevTaskData.task_builder.selectedDatasets,
           [datasetId]: {
             ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            im_label: selectedOption
+            denoisedLayer: selectedOption
           }
         }
       }
@@ -417,7 +435,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
-  const handleTjLabelChange = (datasetId, selectedOption) => {
+  const handleBMTrajChange = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
@@ -426,24 +444,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           ...prevTaskData.task_builder.selectedDatasets,
           [datasetId]: {
             ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            tj_label: selectedOption
-          }
-        }
-      }
-    }));
-  };
-
-
-  const handleCccLabelChange = (datasetId, selectedOption) => {
-    setTaskData(prevTaskData => ({
-      ...prevTaskData,
-      task_builder: {
-        ...prevTaskData.task_builder,
-        selectedDatasets: {
-          ...prevTaskData.task_builder.selectedDatasets,
-          [datasetId]: {
-            ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            ccc_label: selectedOption
+            BMTraj: selectedOption
           }
         }
       }
@@ -595,10 +596,10 @@ const onSelectSubItem = (mainItem, subItem) => {
                 </label>
               </Typography>
 
-              {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT'|| dataset.taskType.value === 'BI') && 
+              {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT' || dataset.taskType.value === 'BI' || dataset.taskType.value === 'CCC') && 
                 (<Typography variant="body2" component="p">
                   <label>
-                    <p>Please Choose the Label:</p>
+                    <p>Please Choose the Cell Type Label:</p>
                     <Select
                       options={Object.keys(JSON.parse(dataset.cell_metadata_head)).map((key) => ({
                         label: key,
@@ -640,12 +641,12 @@ const onSelectSubItem = (mainItem, subItem) => {
                   <label>
                     <p>Please Choose the Label Layer for Imputation:</p>
                     <Select
-                      value={dataset.taskLabel}
+                      value={dataset.denoisedLayer}
                       options={dataset.layers.map((key, index) => ({
                         label: key,
                         value: key,
                       }))}
-                      onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
+                      onChange={(selectedOption) => handleDenoisedLayerChange(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}
@@ -676,12 +677,12 @@ const onSelectSubItem = (mainItem, subItem) => {
                   <label>
                     <p>Please Choose the Label for Trajectory:</p>
                     <Select
-                      value={dataset.taskLabel}
+                      value={dataset.BMTraj}
                       options={dataset.uns.map((key, index) => ({
                         label: key,
                         value: key,
                       }))}
-                      onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
+                      onChange={(selectedOption) => handleBMTrajChange(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}
@@ -690,12 +691,12 @@ const onSelectSubItem = (mainItem, subItem) => {
                   <label>
                     <p>Please Choose the Label for Cell-Cell Communication:</p>
                     <Select
-                      value={dataset.taskLabel}
+                      value={dataset.cccTarget}
                       options={dataset.uns.map((key, index) => ({
                         label: key,
                         value: key,
                       }))}
-                      onChange={(selectedOption) => handleLabelChange(key, selectedOption)}
+                      onChange={(selectedOption) => handleCCCLabelChange(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}

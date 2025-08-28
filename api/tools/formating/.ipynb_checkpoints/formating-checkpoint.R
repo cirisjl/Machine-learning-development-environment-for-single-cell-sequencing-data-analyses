@@ -666,7 +666,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   obs_df <- .obs2metadata(adata$obs)
   var_df <- .var2feature_metadata(adata$var)
   X <- t(adata$X)
-  if (class(X) != "dgCMatrix"){
+  if ("dgCMatrix" %in% class(X) || "dgRMatrix" %in% class(X)){
     X <- as.matrix(X)
   }
   colnames(X) <- rownames(obs_df)
@@ -687,7 +687,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   for (layer in names(adata$layers)){
     if (layer != 'scale.data'){
         layer_data <- t(adata$layers[layer])
-        if (class(layer_data) != "dgCMatrix"){
+        if ("dgCMatrix"  %in% class(layer_data) || "dgRMatrix" %in% class(layer_data)){
             layer_data <- as.matrix(layer_data)
         }
         srat[[layer]] <- CreateAssayObject(data=layer_data)

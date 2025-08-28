@@ -112,8 +112,10 @@ LoadSeurat <- function(path, project = NULL) {
             srat <- AnndataToSeurat(adata, project_name = project_name)
         }, error = function(e) {
             print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
-            srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
-            return(srat)
+        }, finally = {
+          # Finally block: executed regardless of errors/warnings
+          srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+          return(srat)
         }) 
         
         rm(adata)
@@ -670,7 +672,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   obs_df <- .obs2metadata(adata$obs)
   var_df <- .var2feature_metadata(adata$var)
   X <- t(adata$X)
-  if (class(X) != "dgCMatrix"){
+  if ("dgCMatrix" %in% class(X) || "dgRMatrix" %in% class(X)){
     X <- as.matrix(X)
   }
   colnames(X) <- rownames(obs_df)
@@ -693,7 +695,7 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
     for (layer in names(adata$layers)){
         if (layer != 'scale.data'){
             layer_data <- t(adata$layers[layer])
-            if (class(layer_data) != "dgCMatrix"){
+            if ("dgCMatrix"  %in% class(layer_data) || "dgRMatrix" %in% class(layer_data)){
                 layer_data <- as.matrix(layer_data)
             }
             srat[[layer]] <- CreateAssayObject(data=layer_data)
@@ -782,8 +784,8 @@ CleanSeurat <- function(srat){
         srat <- subset(srat, subset = doublet_class == 'Singlet')
     }
 
-    if('vst.variable' %in% names(srat[['RNA']]@meta.features)){
-        srat <- srat[VariableFeatures(object = srat), ]
-    }
+    # if('vst.variable' %in% names(srat[['RNA']]@meta.features)){
+    #     srat <- srat[VariableFeatures(object = srat), ]
+    # }
     srat
 }

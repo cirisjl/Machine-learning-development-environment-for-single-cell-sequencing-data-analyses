@@ -119,11 +119,15 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         task_type: dataset.taskType.label,
         adata_path: dataset.dataSplit.adataPath,
         label: dataset?.taskLabel?.label || '',
+        ccc_target: dataset?.cccTarget?.label || '',
         batch_key: dataset?.batch_key?.label || '',
+        denoised_layer: dataset?.denoisedLayer?.label || '',
+        bm_traj: dataset?.BMTraj?.label || '',
         celltypist_model: dataset?.celltypist_model?.label || '',
         SingleR_ref: dataset?.SingleR_ref?.label || '',
         mi_aligned1: dataset?.mi_aligned1?.label || '',
         mi_aligned2: dataset?.mi_aligned2?.label || '',
+        species: dataset?.Species?.label.toLowerCase() || 'mouse',
       }));
       const postBody = body[0];
 

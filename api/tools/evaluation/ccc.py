@@ -7,9 +7,9 @@ from sklearn.metrics import auc
 from sklearn.metrics import precision_recall_curve
 
 # Cell cell communication
-def ccc_metrics(adata, ccc_label="ccc_target", top_prop=0.05):
+def ccc_metrics(adata, ccc_pred="ccc_pred", ccc_target="ccc_target", top_prop=0.05):
     # Precision-recall AUC
-    gt = join_truth_and_pred(adata)
+    gt = join_truth_and_pred(adata, ccc_pred, ccc_target)
     precision, recall, _ = precision_recall_curve(
         gt["response"], gt["score"], pos_label=1
     )
@@ -18,7 +18,7 @@ def ccc_metrics(adata, ccc_label="ccc_target", top_prop=0.05):
 
     # Odds Ratio
     gt = gt.sort_values("score", ascending=False)
-    top_n = int(adata.uns[ccc_label].shape[0] * top_prop)
+    top_n = int(adata.uns[ccc_target].shape[0] * top_prop)
 
     # assign the top rank interactions to 1
     a = np.zeros(len(gt["score"]))
@@ -50,9 +50,9 @@ def ccc_metrics(adata, ccc_label="ccc_target", top_prop=0.05):
 
 
 # Join predictions to target
-def join_truth_and_pred(adata):
+def join_truth_and_pred(adata, ccc_pred="ccc_pred", ccc_target="ccc_target"):
     merge_keys = list(adata.uns["merge_keys"])
-    gt = adata.uns[ccc_label].merge(adata.uns["ccc_pred"], on=merge_keys, how="left")
+    gt = adata.uns[ccc_target].merge(adata.uns[ccc_pred], on=merge_keys, how="left")
 
     gt.loc[gt["response"].isna(), "response"] = 0
     gt.loc[gt["score"].isna(), "score"] = np.nanmin(gt["score"]) - np.finfo(float).eps

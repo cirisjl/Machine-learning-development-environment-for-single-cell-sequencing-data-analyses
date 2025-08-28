@@ -37,7 +37,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scanpy Benchmarks results in database, skip scanpy.")
         else:
             # Call scanpy_clustering method
-            sys_info, asw_scanpy, nmi_scanpy, ari_scanpy, fm_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, label)
+            sys_info, asw_scanpy, nmi_scanpy, ari_scanpy, fm_scanpy, time_points_scanpy, cpu_usage_scanpy, mem_usage_scanpy, gpu_usage_scanpy, gpu_mem_usage_scanpy = scanpy_clustering(adata, label)
             scanpy_results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
@@ -51,6 +51,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
                 "time_points": time_points_scanpy,
                 "cpu_usage": cpu_usage_scanpy,
                 "mem_usage": mem_usage_scanpy,
+                "gpu_usage": gpu_usage_scanpy,
                 "gpu_mem_usage": gpu_mem_usage_scanpy,
                 "created_on": current_date_and_time
             }
@@ -60,7 +61,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values['scanpy'] = [scanpy_results['ari_score'], scanpy_results['asw_score'], scanpy_results['nmi_score'], scanpy_results['fm_score']]
         y_values_ur['Scanpy_CPU'] = scanpy_results['cpu_usage']
         y_values_ur['Scanpy_Memory'] = scanpy_results['mem_usage']
-        y_values_ur['Scanpy_GPU'] = scanpy_results['gpu_mem_usage']
+        # y_values_ur['Scanpy_GPU'] = scanpy_results['gpu_mem_usage']
         x_timepoints = scanpy_results['time_points']
         clustering_results.append({'scanpy': scanpy_results})
         redislogger.info(job_id, "scanpy clustering is done.")
@@ -80,7 +81,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing Seurat Benchmarks results in database, skip Seurat.")
         else:
             # Call seurat_clustering method
-            sys_info, asw_seurat, nmi_seurat, ari_seurat, fm_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, label)
+            sys_info, asw_seurat, nmi_seurat, ari_seurat, fm_seurat, time_points_seurat, cpu_usage_seurat, mem_usage_seurat, gpu_usage_seurat, gpu_mem_usage_seurat = seurat_clustering(adata_path, label)
 
             seurat_results = {
                 "sys_info": sys_info,
@@ -95,6 +96,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
                 "time_points": time_points_seurat,
                 "cpu_usage": cpu_usage_seurat,
                 "mem_usage": mem_usage_seurat,
+                "gpu_usage": gpu_usage_seurat,
                 "gpu_mem_usage": gpu_mem_usage_seurat,
                 "created_on": current_date_and_time
                 
@@ -105,7 +107,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values['Seurat'] = [seurat_results['ari_score'], seurat_results['asw_score'], seurat_results['nmi_score'], seurat_results['fm_score']]
         y_values_ur['Seurat_CPU'] = seurat_results['cpu_usage']
         y_values_ur['Seurat_Memory'] = seurat_results['mem_usage']
-        y_values_ur['Seurat_GPU'] = seurat_results['gpu_mem_usage']
+        # y_values_ur['Seurat_GPU'] = seurat_results['gpu_mem_usage']
         if len(x_timepoints) < len(seurat_results['time_points']):
             x_timepoints = seurat_results['time_points']
         clustering_results.append({'Seurat': seurat_results})
@@ -126,7 +128,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
             # Call scvi_clustering method
-            adata, sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
+            adata, sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
             adata.write_h5ad(adata_path, compression='gzip')
             scvi_results = {
                 "sys_info": sys_info,
@@ -141,6 +143,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
                 "time_points": time_points_scvi,
                 "cpu_usage": cpu_usage_scvi,
                 "mem_usage": mem_usage_scvi,
+                "gpu_usage": gpu_usage_scvi,
                 "gpu_mem_usage": gpu_mem_usage_scvi,
                 "created_on": current_date_and_time
             }
@@ -150,7 +153,8 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
         y_values['scvi'] = [scvi_results['ari_score'], scvi_results['asw_score'], scvi_results['nmi_score'], scvi_results['fm_score']]
         y_values_ur['scvi_CPU'] = scvi_results['cpu_usage']
         y_values_ur['scvi_Memory'] = scvi_results['mem_usage']
-        y_values_ur['scvi_GPU'] = scvi_results['gpu_mem_usage']
+        y_values_ur['scvi_GPU'] = scvi_results['gpu_usage']
+        y_values_ur['scvi_GPU_Memory'] = scvi_results['gpu_mem_usage']
         if len(x_timepoints) < len(scvi_results['time_points']):
             x_timepoints = scvi_results['time_points']
         clustering_results.append({'scvi': scvi_results})

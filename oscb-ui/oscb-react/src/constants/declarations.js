@@ -22,42 +22,42 @@ export const owner = process.env.REACT_APP_OWNER;
 export const repo = process.env.REACT_APP_REPO;
 
 export const defaultValues = {
-    min_genes: 200,
-    max_genes: 20000, // No limit
-    min_cells: 2,
-    target_sum: 1e4,
-    n_top_genes: 2000,
-    n_neighbors: 15,
-    n_pcs: 20, // None
-    resolution: 0.5,
-    regress_cell_cycle: false,
-    use_default: true,
-    doublet_rate: 0.08
-  };
-  export const defaultQcParams = {
-    assay: "RNA",
-    min_genes: 200,
-    max_genes: 20000,
-    min_cells: 2,
-    target_sum: 10000,
-    n_top_genes: 2000,
-    n_neighbors: 15,
-    n_pcs: 20,
-    resolution: 0.5,
-    doublet_rate: 0.08,
-    regress_cell_cycle: false
-  };
+  min_genes: 200,
+  max_genes: 20000, // No limit
+  min_cells: 2,
+  target_sum: 1e4,
+  n_top_genes: 3000,
+  n_neighbors: 15,
+  n_pcs: 20, // None
+  resolution: 0.5,
+  regress_cell_cycle: false,
+  use_default: true,
+  doublet_rate: 0.08
+};
+export const defaultQcParams = {
+  assay: "RNA",
+  min_genes: 200,
+  max_genes: 20000,
+  min_cells: 2,
+  target_sum: 10000,
+  n_top_genes: 3000,
+  n_neighbors: 15,
+  n_pcs: 20,
+  resolution: 0.5,
+  doublet_rate: 0.08,
+  regress_cell_cycle: false
+};
 
-  export const defaultNormalizationParams = {
-    assay: "RNA",
-    n_neighbors: 15,
-    n_pcs: 20,
-    resolution: 0.5,
-  };
+export const defaultNormalizationParams = {
+  assay: "RNA",
+  n_neighbors: 15,
+  n_pcs: 20,
+  resolution: 0.5,
+};
 
-  export const defaultReductionParams = {
-    assay: "RNA",
-    n_neighbors: 15,
-    n_pcs: 20,
-    resolution: 0.5,
-  };
+export const defaultReductionParams = {
+  assay: "RNA",
+  n_neighbors: 15,
+  n_pcs: 20,
+  resolution: 0.5,
+};

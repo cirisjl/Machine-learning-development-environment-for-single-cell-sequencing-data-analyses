@@ -1,9 +1,9 @@
 from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
 from tools.visualization.plot import plot_bar, plot_line
-from benchmarks.batch_integration_methods_methods.harmony import harmony_integration
-from benchmarks.batch_integration_methods_methods.scvi import scvi_integration
-from benchmarks.batch_integration_methods_methods.seurat import seurat_integration
-from benchmarks.batch_integration_methods_methods.liger import liger_integration
+from benchmarks.batch_integration_methods.harmony import harmony_integration
+from benchmarks.batch_integration_methods.scvi import scvi_integration
+from benchmarks.batch_integration_methods.seurat import seurat_integration
+from benchmarks.batch_integration_methods.liger import liger_integration
 from utils.mongodb import generate_process_id, create_bm_results, benchmark_result_exists
 from utils.redislogger import *
 from datetime import datetime
@@ -52,12 +52,13 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
             integration_results.append({'Harmony': harmony_results})
             redislogger.info(job_id, "Harmony Integration is done.")
         if len(harmony_results) > 0:
-            for key, result in harmony_results.item
+            for key, result in harmony_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['graph_conn'], result['kBET'], result['PCR_batch'], result['ASW_label/batch'], result['Biological Conservation']]
                 y_values_ur['Harmony_CPU'] = result['cpu_usage']
                 y_values_ur['Harmony_Memory'] = result['mem_usage']
-                y_values_ur['Harmony_GPU'] = result['gpu_mem_usage']
+                y_values_ur['Harmony_GPU'] = result['gpu_usage']
+                y_values_ur['Harmony_GPU_Memory'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Graph Connectivity: {result['graph_conn']}, kBET: {result['kBET']}, Principal component regression score: {result['PCR_batch']}, Batch ASW: {result['ASW_label/batch']}, Biological Conservation: {result['Biological Conservation']}")
 
@@ -80,12 +81,13 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
             integration_results.append({'scVI': scvi_results})
             redislogger.info(job_id, "scVI Integration is done.")
         if len(scvi_results) > 0:
-            for key, result in scvi_results.item
+            for key, result in scvi_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['graph_conn'], result['kBET'], result['PCR_batch'], result['ASW_label/batch'], result['Biological Conservation']]
                 y_values_ur['scVI_CPU'] = result['cpu_usage']
                 y_values_ur['scVI_Memory'] = result['mem_usage']
-                y_values_ur['scVI_GPU'] = result['gpu_mem_usage']
+                y_values_ur['scVI_GPU'] = result['gpu_usage']
+                y_values_ur['scVI_GPU_Memory'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Graph Connectivity: {result['graph_conn']}, kBET: {result['kBET']}, Principal component regression score: {result['PCR_batch']}, Batch ASW: {result['ASW_label/batch']}, Biological Conservation: {result['Biological Conservation']}")
 
@@ -108,12 +110,12 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
             integration_results.append({'Seurat': seurat_results})
             redislogger.info(job_id, "Seurat Integration is done.")
         if len(seurat_results) > 0:
-            for key, result in seurat_results.item
+            for key, result in seurat_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['graph_conn'], result['kBET'], result['PCR_batch'], result['ASW_label/batch'], result['Biological Conservation']]
                 y_values_ur['Seurat_CPU'] = result['cpu_usage']
                 y_values_ur['Seurat_Memory'] = result['mem_usage']
-                y_values_ur['Seurat_GPU'] = result['gpu_mem_usage']
+                # y_values_ur['Seurat_GPU'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Graph Connectivity: {result['graph_conn']}, kBET: {result['kBET']}, Principal component regression score: {result['PCR_batch']}, Batch ASW: {result['ASW_label/batch']}, Biological Conservation: {result['Biological Conservation']}")
 
@@ -136,7 +138,7 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
             integration_results.append({'Liger': liger_results})
             redislogger.info(job_id, "Liger Integration is done.")
         if len(liger_results) > 0:
-            for key, result in liger_results.item
+            for key, result in liger_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['graph_conn'], result['kBET'], result['PCR_batch'], result['ASW_label/batch'], result['Biological Conservation']]
                 y_values_ur['Liger_CPU'] = result['cpu_usage']

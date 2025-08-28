@@ -585,7 +585,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                             }
                         }
                         else {
-                            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
+                            const acceptedFormats = [".tsv", ".csv", ".txt.gz", ".txt", ".h5ad", ".h5mu", "rds", "h5seurat", "h5Seurat", "tsv.gz", "mtx.gz", "h5", "xlsx", "hdf5", "gz", "Robj", "zip", "rar", "tar", "tar.bz2", "tar.xz"];
                             if (!acceptedFormats.some(format => selectedFiles[0].endsWith(format))) {
                                 setErrorMessage("The selected file is not of an accepted standard format.");
                                 return;
@@ -877,7 +877,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                         <div className="modal-content">
                             <div>
                                 <p>
-                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5seurat, Robj
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5ad, h5mu, h5seurat, Robj, zip, gz
                                 </p>
                                 <p>
                                     Standard File Structure for Multi-file Datasets:
@@ -1041,7 +1041,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                         <div className="modal-content">
                             <div>
                                 <p>
-                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5seurat, Robj
+                                    Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5ad, h5mu, h5seurat, Robj, zip, gz
                                 </p>
                                 <p>
                                     Standard File Structure for Multi-file Datasets:

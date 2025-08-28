@@ -17,7 +17,7 @@ def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetI
     adata_int = scvi_integrate(adata, batch_key=batch_key, model_path=scvi_path)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
@@ -32,6 +32,7 @@ def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetI
             "time_points": time_points,
             "cpu_usage": cpu_usage,
             "mem_usage": mem_usage,
+            "gpu_usage": gpu_usage,
             "gpu_mem_usage": gpu_mem_usage,
             "created_on": current_date_and_time
             }

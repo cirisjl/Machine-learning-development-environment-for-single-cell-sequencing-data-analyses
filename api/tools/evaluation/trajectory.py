@@ -58,7 +58,7 @@ def trajectory_metrics(traj, bm_traj, root_node):
     # Tree edit distance
     # Build trees from edge lists
     bm_tree = build_tree_from_edges(bm_traj_ls, root_node)
-    tree = build_tree_from_edges(package_traj_ls, root_node)
+    tree = build_tree_from_edges(traj_ls, root_node)
 
     # Calculate tree edit distance
     tree_distance = zss.distance(

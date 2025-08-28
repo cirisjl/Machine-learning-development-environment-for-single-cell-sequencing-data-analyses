@@ -1,6 +1,6 @@
 import time
 import uvicorn as uvicorn
-from fastapi import FastAPI, WebSocket, Request, Query, HTTPException
+from fastapi import FastAPI, WebSocket, Request, Query, HTTPException, WebSocketException
 from celery.result import AsyncResult
 from celery.app.control import Control
 import asyncio
@@ -56,6 +56,7 @@ celery_control = Control(app=celery)
 # Use a dictionary to store the last_read_index for each job_id
 last_read_indices = {}
 
+
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
     start_time = time.time()
@@ -63,6 +64,7 @@ async def add_process_time_header(request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response
+
 
 @app.websocket("/wsapi/{request_type}/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str):
@@ -81,7 +83,7 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
                 await websocket.send_text(logs)
             await asyncio.sleep(3)
     except Exception as e:
-        print(e)
+        print('Cannot call "send" once a close message has been sent.')
     finally: 
         # Remove the entry from the dictionary when the connection is closed
         if request_type == 'log' and job_id in last_read_indices:

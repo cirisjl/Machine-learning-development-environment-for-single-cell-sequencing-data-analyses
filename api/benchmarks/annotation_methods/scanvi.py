@@ -15,13 +15,13 @@ def scanvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=None
     adata = scanvi_transfer(adata, ref_adata = ref, labels = label)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
     # Model
     if "scVI_predicted" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs.['label'], adata.obs.['scANVI_predicted'])
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['scANVI_predicted'].values)
         results["scANVI"] = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
@@ -35,6 +35,7 @@ def scanvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=None
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }

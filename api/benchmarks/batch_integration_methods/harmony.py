@@ -21,7 +21,7 @@ def harmony_integration(adata, label, batch_key, benchmarksId, datasetId, task_t
     sce.pp.harmony_integrate(adata_int, key = batch_key)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
@@ -36,6 +36,7 @@ def harmony_integration(adata, label, batch_key, benchmarksId, datasetId, task_t
             "time_points": time_points,
             "cpu_usage": cpu_usage,
             "mem_usage": mem_usage,
+            "gpu_usage": gpu_usage,
             "gpu_mem_usage": gpu_mem_usage,
             "created_on": current_date_and_time
             }

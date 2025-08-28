@@ -19,7 +19,7 @@ def seurat_clustering(path, labels, layer=None):
     sys_info = monitor.get_sys_info()
 
     seurat_clustering_r = ro.globalenv['clustering']
-    results = seurat_clustering_r(path, "cluster.ids")
+    results = seurat_clustering_r(path, labels)
     results = list(results)
     labels = list(results[0][0])
     labels_pred = list(results[1][0])
@@ -27,9 +27,9 @@ def seurat_clustering(path, labels, layer=None):
         umap = ro.conversion.rpy2py(results[2])
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     if layer is None: layer = "X"
     asw_score, nmi_score, ari_score, fm_score = clustering_metrics(labels, labels_pred, umap)
 
-    return sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage

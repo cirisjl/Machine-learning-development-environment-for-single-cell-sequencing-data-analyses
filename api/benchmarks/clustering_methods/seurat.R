@@ -32,7 +32,7 @@ clustering <- function(path, labels, dims=1:10){ # labels: column name of labels
     srat
 
     # TSNE
-    srat <- RunTSNE(srat, dims=dims)
+    # srat <- RunTSNE(srat, dims=dims)
     # UMAP
     srat <- RunUMAP(srat, dims=dims)
 

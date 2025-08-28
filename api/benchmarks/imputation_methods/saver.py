@@ -5,7 +5,7 @@ from tools.evaluation.monitor import *
 from tools.evaluation.imputation import imputation_metrics
 
 
-def saver_imputation(csv_path, label, benchmarksId, datasetId, task_type, species="mouse"):
+def saver_imputation(csv_path, denoised_layer, benchmarksId, datasetId, task_type, species="mouse"):
     # Start monitoring
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
@@ -25,7 +25,7 @@ def saver_imputation(csv_path, label, benchmarksId, datasetId, task_type, specie
     s = subprocess.call([f"R -e \"rmarkdown::render('{saver_path}', params=list(dataset='{datasetId}', input='{csv_path}', output='{output}', output_format='AnnData'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
@@ -33,7 +33,7 @@ def saver_imputation(csv_path, label, benchmarksId, datasetId, task_type, specie
         adata_saver = load_anndata(output)
         adata_saver.layers["raw_counts"] = adata.layers["raw_counts"].copy()
 
-    mse, possion = imputation_metrics(adata_saver, train="raw_counts", denoised=label, test="SAVER")
+    mse, possion = imputation_metrics(adata_saver, train="raw_counts", denoised=denoised_layer, test="SAVER")
 
     results["SAVER"] = {
                 "sys_info": sys_info,
@@ -46,6 +46,7 @@ def saver_imputation(csv_path, label, benchmarksId, datasetId, task_type, specie
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }

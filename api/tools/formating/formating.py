@@ -107,6 +107,13 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
             adata_path, assay_names, default_assay = convert_seurat_sce_to_anndata(path, assay=assay)
             if os.path.exists(adata_path):
                 adata = sc.read_h5ad(adata_path)
+        elif path.endswith(".h5mu"):
+            import muon
+            mdata = muon.read_h5mu(path)
+            adata = None
+            for key in mdata.mod.keys():
+                if "rna" in key or "RNA" in key:
+                    adata = mdata[key]
         
     if adata is not None: 
         adata.obs = rename_col(adata.obs, 'n_counts')
@@ -1123,8 +1130,10 @@ def save_anndata(adata, output):
 
 def clean_anndata(adata):
     # Scanpy
-    if 'outlier' in adata.obs.columns and 'mt_outlier' in adata.obs.columns:
-        adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
+    # if 'outlier' in adata.obs.columns and 'mt_outlier' in adata.obs.columns:
+    #     adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
+    if 'outlier' in adata.obs.columns:
+        adata = adata[(~adata.obs.outlier)].copy()
     if 'predicted_doublets' in adata.obs.columns:
         adata = adata[adata.obs.predicted_doublets=="False", :]
 

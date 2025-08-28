@@ -15,13 +15,13 @@ def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, cell
     adata = run_celltypist(adata, model_name=celltypist_model, ref_adata = ref, labels = label, species = species)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
     # Model
     if "celltypist_label" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs.['label'], adata.obs.['celltypist_label'])
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['celltypist_label'].values)
         results[f"CellTypist: {celltypist_model}"] = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
@@ -35,13 +35,14 @@ def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, cell
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }
 
     # Train data
     if "celltypist_ref_label" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(label, "celltypist_ref_label")
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['celltypist_ref_label'].values)
         results[f"CellTypist"] = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
@@ -55,6 +56,7 @@ def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, cell
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }

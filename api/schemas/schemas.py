@@ -222,6 +222,7 @@ class DataSplitRequest(BaseModel):
     train_fraction: float
     validation_fraction: float
     test_fraction: float
+    labels: Optional[str] = None  # Added labels field for filtering rows with NaN labels
 
 
 
@@ -248,12 +249,16 @@ class BenchmarksRequest(BaseModel):
     userID: Optional[str] = None
     task_type: str
     adata_path: str
-    label:  Optional[str] = None
+    label: Optional[str] = None
+    ccc_target: Optional[str] = None
+    denoised_layer: Optional[str] = None
+    bm_traj: Optional[str] = None
     batch_key: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[str] = None
     mi_aligned1: Optional[str] = None
     mi_aligned2: Optional[str] = None
+    species: Optional[str] = 'mouse'
     # data: List[TaskDataRequest]
 
 

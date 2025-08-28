@@ -2,6 +2,7 @@ import anndata
 import scanpy as sc
 import scprep
 import sklearn.metrics
+import numpy as np
 
 
 # test_data = adata.obsm["test"]

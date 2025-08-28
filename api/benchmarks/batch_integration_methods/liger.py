@@ -25,7 +25,7 @@ def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_typ
     s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasetId}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='LIGER'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
@@ -43,6 +43,7 @@ def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_typ
             "time_points": time_points,
             "cpu_usage": cpu_usage,
             "mem_usage": mem_usage,
+            "gpu_usage": gpu_usage,
             "gpu_mem_usage": gpu_mem_usage,
             "created_on": current_date_and_time
             }

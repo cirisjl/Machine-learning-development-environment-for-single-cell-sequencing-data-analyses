@@ -45,12 +45,13 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             annotation_results.append({'CellTypist': celltypist_results})
             redislogger.info(job_id, "CellTypist annotation is done.")
         if len(celltypist_results) > 0:
-            for key, result in celltypist_results.item
+            for key, result in celltypist_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
                 y_values_ur['CellTypist_CPU'] = result['cpu_usage']
                 y_values_ur['CellTypist_Memory'] = result['mem_usage']
-                y_values_ur['CellTypist_GPU'] = result['gpu_mem_usage']
+                y_values_ur['CellTypist_GPU'] = result['gpu_usage']
+                y_values_ur['CellTypist_GPU_Memory'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
@@ -73,12 +74,13 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             annotation_results.append({'scVI': scvi_results})
             redislogger.info(job_id, "scVI annotation is done.")
         if len(scvi_results) > 0:
-            for key, result in scvi_results.item
+            for key, result in scvi_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
                 y_values_ur['scVI_CPU'] = result['cpu_usage']
                 y_values_ur['scVI_Memory'] = result['mem_usage']
-                y_values_ur['scVI_GPU'] = result['gpu_mem_usage']
+                y_values_ur['scVI_GPU'] = result['gpu_usage']
+                y_values_ur['scVI_GPU_Memory'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
@@ -101,12 +103,12 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             annotation_results.append({'SingleR': singler_results})
             redislogger.info(job_id, "SingleR annotation is done.")
         if len(singler_results) > 0:
-            for key, result in singler_results.item
+            for key, result in singler_results.items():
                 sys_info = result['sys_info']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
                 y_values_ur['SingleR_CPU'] = result['cpu_usage']
                 y_values_ur['SingleR_Memory'] = result['mem_usage']
-                y_values_ur['SingleR_GPU'] = result['gpu_mem_usage']
+                # y_values_ur['SingleR_GPU'] = result['gpu_mem_usage']
                 x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 

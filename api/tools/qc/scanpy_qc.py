@@ -41,29 +41,30 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
             sc.pp.filter_cells(adata, max_genes=max_genes)
         sc.pp.filter_genes(adata, min_cells=min_cells)
         # mitochondrial genes
-        redislogger.info(unique_id, "Removing mitochondrial genes.")
+        redislogger.info(unique_id, "Mark mitochondrial genes.")
         adata.var['mt']=adata.var_names.str.startswith('MT-')
         # ribosomal genes
-        redislogger.info(unique_id, "Removing ribosomal genes.")
+        redislogger.info(unique_id, "Mark ribosomal genes.")
         adata.var["ribo"] = adata.var_names.str.startswith(("RPS", "RPL"))
         # hemoglobin genes
-        redislogger.info(unique_id, "Removing hemoglobin genes.")
+        redislogger.info(unique_id, "Mark hemoglobin genes.")
         adata.var["hb"] = adata.var_names.str.contains(("^HB[^(P)]"))
 
         sc.pp.calculate_qc_metrics(adata, qc_vars=["mt", "ribo", "hb"], inplace=True, percent_top=[20], log1p=True)
 
         redislogger.info(unique_id, "Caculating outliers.")
-        adata.obs["outlier"] = (
-            is_outlier(adata, "log1p_total_counts", 5)
-            | is_outlier(adata, "log1p_n_genes_by_counts", 5)
-            | is_outlier(adata, "pct_counts_in_top_20_genes", 5)
+        adata.obs["outlier"] = (is_outlier(adata, 'log1p_total_counts', 5) +\
+            is_outlier(adata, 'log1p_n_genes_by_counts', 5) +\
+            is_outlier(adata, 'pct_counts_in_top_20_genes', 5) +\
+            is_outlier(adata, 'pct_counts_mt', 3, upper_only = True)
         )
         redislogger.info(unique_id, f"Number of outliers: {adata.obs.outlier.value_counts()}")
     
-        adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3) | (
-            adata.obs["pct_counts_mt"] > 8
-        )  
-        redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")
+        # Calculate mitochondrial outliers separately can cause over-filtering
+        # adata.obs["mt_outlier"] = is_outlier(adata, "pct_counts_mt", 3, upper_only=True) | (
+        #     adata.obs["pct_counts_mt"] > 8
+        # )  
+        # redislogger.info(unique_id, f"Number of MT-outliers: {adata.obs.mt_outlier.value_counts()}")
 
         redislogger.info(unique_id, f"Total number of cells: {adata.n_obs}")
         # adata = adata[(~adata.obs.outlier) & (~adata.obs.mt_outlier)].copy()
@@ -126,12 +127,13 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         return adata
 
 
-def is_outlier(adata, metric: str, nmads: int):
+def is_outlier(adata, metric: str, nmads: int, upper_only = False):
     M = adata.obs[metric]
-    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
-        np.median(M) + nmads * median_abs_deviation(M) < M
-    )
-    return outlier
+    if not upper_only:
+        return (M < np.median(M) - nmads * median_abs_deviation(M)) | (
+            np.median(M) + nmads * median_abs_deviation(M) < M
+        )
+    return (M > np.median(M) + nmads * median_abs_deviation(M))
 
 
 def regress_cell_cycle(adata):

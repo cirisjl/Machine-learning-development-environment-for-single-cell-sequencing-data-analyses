@@ -28,6 +28,7 @@ def scvi_clustering(adata, labels, model_path):
     # Start monitoring
     model = None
     monitor = Monitor(1)
+    adata = adata.copy()
     sys_info = monitor.get_sys_info()
     scvi.model.SCVI.setup_anndata(adata)
     if not os.path.exists(model_path):
@@ -51,17 +52,17 @@ def scvi_clustering(adata, labels, model_path):
         library_size=10e4
     )
 
-    adata, msg = run_dimension_reduction(adata, use_rep='X_scVI')
+    adata, msg = run_dimension_reduction(adata, use_rep='X_scVI', skip_tsne=True, skip_3d=True)
     adata = run_clustering(adata, use_rep='X_scVI')
 
-    adata.obsm["X_mde"] = pymde.preserve_neighbors(adata.obsm["X_scVI"])
+    adata.obsm["X_mde"] = pymde.preserve_neighbors(adata.obsm["X_scVI"]).embed().numpy()
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     asw_score, nmi_score, ari_score, fm_score = clustering_metrics(adata.obs[labels], adata.obs["leiden_X_scVI"], adata.obsm["X_mde"])
 
-    return adata, sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_mem_usage
+    return adata, sys_info, asw_score, nmi_score, ari_score, fm_score, time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage
 
 
 

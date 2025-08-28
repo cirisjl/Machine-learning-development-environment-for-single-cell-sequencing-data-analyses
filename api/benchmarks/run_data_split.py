@@ -22,6 +22,7 @@ def run_data_split(job_id, data_dict:dict):
     train_fraction = data_dict['train_fraction']
     validation_fraction = data_dict['validation_fraction']
     test_fraction = data_dict['test_fraction']
+    labels = data_dict['labels']
     # Serializing the dictionary to a JSON string and encoding to bytes
     encoded_data = json.dumps(data_dict, sort_keys=True).encode('utf-8')
     split_id = hashlib.md5(encoded_data).hexdigest()
@@ -39,6 +40,8 @@ def run_data_split(job_id, data_dict:dict):
     try:
         adata = load_anndata(adata_path)
         if adata is not None:
+            if labels is not None and labels != "":
+                adata = adata[~adata.obs[labels].isna()] # Remove rows with NaN labels
             adata = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
         else:
             detail = f'File does not exist at {adata_path}'

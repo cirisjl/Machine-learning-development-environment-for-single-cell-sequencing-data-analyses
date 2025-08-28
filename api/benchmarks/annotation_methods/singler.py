@@ -35,7 +35,7 @@ def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_t
     #     s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{benchmarksId}', dataset='{datasetId}', input='{adata_path}', output_folder='{output_folder}', species='{species}', reference='{SingleR_ref}'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring
-    time_points, cpu_usage, mem_usage, gpu_mem_usage = monitor.stop()
+    time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
 
     current_date_and_time = datetime.now()
 
@@ -60,6 +60,7 @@ def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_t
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }
@@ -81,13 +82,14 @@ def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_t
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }
 
     # if os.path.exists(csv_user):
     #     df_user = pd.read_csv(csv_user, index_col=0)
-    if "SingleR_user_ref" in adata.obs.keys()
+    if "SingleR_user_ref" in adata.obs.keys():
         accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs.SingleR_user_ref.values)
         results[f"SingleR"] = {
                 "sys_info": sys_info,
@@ -102,6 +104,7 @@ def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_t
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
                 "gpu_mem_usage": gpu_mem_usage,
                 "created_on": current_date_and_time
             }

@@ -6,7 +6,7 @@ from liana.mt import rank_aggregate
 from liana.method import singlecellsignalr, connectome, cellphonedb, natmi, logfc, cellchat, geometric_mean
 
 # https://liana-py.readthedocs.io/en/latest/notebooks/basic_usage.html
-def run_liana_ccc(adata, cell_type_label, specie):
+def run_liana_ccc(adata, cell_type_label, species):
     if adata is None:
         raise ValueError("Failed to load AnnData object.")
     
@@ -24,7 +24,7 @@ def run_liana_ccc(adata, cell_type_label, specie):
             raise ValueError("Liana only take raw counts, not normalized data.")
 
     resource_name = 'consensus'
-    if specie == "mouse":
+    if species == "mouse":
         resource_name = "mouseconsensus"
             
     # run cellphonedb

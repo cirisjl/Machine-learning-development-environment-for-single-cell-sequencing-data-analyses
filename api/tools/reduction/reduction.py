@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
-def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0, skip_if_exist=False):
+def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_pcs=None, random_state=0, skip_if_exist=False, skip_tsne=False, skip_3d=False):
     msg = None
     if layer == "Pearson_residuals":
         msg = "Normalize Pearson_residuals may create NaN values, which are not accepted by PCA."
@@ -17,6 +17,12 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
 
     if n_pcs == 0:
         n_pcs=None
+
+    perplexity = 30.0
+    if adata.n_obs < 3 * perplexity + 1:
+        perplexity = (adata.n_obs - 1) / 3
+        # warnings.warn(f"The number of cells is too small for the default perplexity 30.0. Set perplexity to {perplexity}.")
+        msg = f"The number of cells is too small for the default perplexity 30.0. Set perplexity to {perplexity}."
 
     if layer is not None and layer in adata.layers.keys(): # and (layer+'_umap' not in adata.obsm.keys() or layer+'_umap_3D' not in adata.obsm.keys()):
         # Principal component analysis
@@ -35,12 +41,12 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
         
         # tSNE
-        if not (skip_if_exist and layer+'_tsne' in adata.obsm.keys()):
-            tsne = TSNE(n_components=2, random_state=random_state)
+        if not (skip_tsne or (skip_if_exist and layer+'_tsne' in adata.obsm.keys())):
+            tsne = TSNE(n_components=2, perplexity=perplexity, random_state=random_state)
             adata.obsm[layer+'_tsne'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
 
-        if not (skip_if_exist and layer+'_tsne_3D' in adata.obsm.keys()):
-            tsne = TSNE(n_components=3, random_state=random_state)
+        if not (skip_tsne or (skip_if_exist and layer+'_tsne_3D' in adata.obsm.keys())):
+            tsne = TSNE(n_components=3, perplexity=perplexity, random_state=random_state)
             adata.obsm[layer+'_tsne_3D'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
         
         # UMAP
@@ -48,7 +54,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             umap_2d = UMAP(n_components=2, init='random', random_state=random_state)
             adata.obsm[layer+'_umap'] = umap_2d.fit_transform(adata.obsm[layer+'_pca'])
 
-        if not (skip_if_exist and layer+'_umap_3D' in adata.obsm.keys()):
+        if not (skip_3d or (skip_if_exist and layer+'_umap_3D' in adata.obsm.keys())):
             umap_3d = UMAP(n_components=3, init='random', random_state=random_state)
             adata.obsm[layer+"_umap_3D"] = umap_3d.fit_transform(adata.obsm[layer+'_pca'])
 
@@ -71,13 +77,13 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             sc.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep, random_state=random_state)
 
         # tSNE
-        if not (skip_if_exist and 'X_tsne' in adata.obsm.keys()):
-            tsne = TSNE(n_components=2, random_state=random_state)
+        if not (skip_tsne or (skip_if_exist and 'X_tsne' in adata.obsm.keys())):
+            tsne = TSNE(n_components=2, perplexity=perplexity, random_state=random_state)
             adata.obsm['X_tsne'] = tsne.fit_transform(adata.obsm['X_pca'])
 
         # 3D tSNE
-        if not (skip_if_exist and 'X_tsne_3D' in adata.obsm.keys()):
-            tsne = TSNE(n_components=3, random_state=random_state)
+        if not (skip_tsne or (skip_if_exist and 'X_tsne_3D' in adata.obsm.keys())):
+            tsne = TSNE(n_components=3, perplexity=perplexity, random_state=random_state)
             adata.obsm['X_tsne_3D'] = tsne.fit_transform(adata.obsm['X_pca'])
 
         # 2D UMAP
@@ -89,7 +95,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             #             copy=False, maxiter=None)
         
         # 3D UMAP
-        if not (skip_if_exist and 'X_umap_3D' in adata.obsm.keys()):
+        if not (skip_3d or (skip_if_exist and 'X_umap_3D' in adata.obsm.keys())):
             umap_3d = UMAP(n_components=3, init='random', random_state=random_state)
             adata.obsm["X_umap_3D"] = umap_3d.fit_transform(adata.obsm['X_pca'])
             # adata_3D = sc.tl.umap(adata, random_state=random_state, 

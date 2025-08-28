@@ -50,7 +50,7 @@ def scvi_integrate(adata, batch_key, model_path, fig_path=None):
         plt.legend()
         plt.savefig(fig_path, bbox_inches='tight')
         
-    adata.obsm["X_mde"] = pymde.preserve_neighbors(adata.obsm["X_scVI"])
+    adata.obsm["X_mde"] = pymde.preserve_neighbors(adata.obsm["X_scVI"]).embed().numpy()
 
     return adata
 
