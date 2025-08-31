@@ -1,9 +1,10 @@
 import sys
 sys.path.append('..')
-# from tools.formating.formating import *
+from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
 from tools.evaluation.monitor import *
 from tools.evaluation.imputation import imputation_metrics
+from datetime import datetime
 
 
 def magic_imputation(adata, denoised_layer, benchmarksId, datasetId, task_type, species="mouse"):

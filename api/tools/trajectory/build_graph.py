@@ -64,7 +64,7 @@ def extract_data_matrix_from_adata(adata, use_rep=None, torch_tensor=True, data_
             # Check if the error is due to negative strides
             if "negative strides" in str(e):
                 print("Caught ValueError due to negative strides in the given numpy array. Transform it into contiguous array.")
-                feature_matrix= np.ascontiguousarray(feature_matrix)
+                feature_matrix= numpy.ascontiguousarray(feature_matrix)
                 feature_matrix = torch.tensor(feature_matrix, dtype=data_dtype, device=device) 
             else:
                 raise e

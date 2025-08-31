@@ -4,6 +4,7 @@ sys.path.append('..')
 from tools.annotation.celltypist import run_celltypist
 from tools.evaluation.monitor import *
 from tools.evaluation.annotation import annotation_metrics
+from datetime import datetime
 
 
 def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, celltypist_model=None, ref=None, species="mouse"):

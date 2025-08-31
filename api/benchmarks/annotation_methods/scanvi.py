@@ -4,6 +4,7 @@ sys.path.append('..')
 from tools.annotation.scanvi import scanvi_transfer
 from tools.evaluation.monitor import *
 from tools.evaluation.annotation import annotation_metrics
+from datetime import datetime
 
 
 def scanvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=None, species="mouse"):

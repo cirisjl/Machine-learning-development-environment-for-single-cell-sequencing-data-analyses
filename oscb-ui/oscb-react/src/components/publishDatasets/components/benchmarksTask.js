@@ -123,6 +123,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         batch_key: dataset?.batch_key?.label || '',
         denoised_layer: dataset?.denoisedLayer?.label || '',
         bm_traj: dataset?.BMTraj?.label || '',
+        origin_group: dataset?.originGroup?.label || '',
         celltypist_model: dataset?.celltypist_model?.label || '',
         SingleR_ref: dataset?.SingleR_ref?.label || '',
         mi_aligned1: dataset?.mi_aligned1?.label || '',

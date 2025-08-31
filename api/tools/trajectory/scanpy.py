@@ -2,22 +2,24 @@ import numpy as np
 import matplotlib.pyplot as pl
 import scanpy as sc
 from tools.trajectory.build_graph import *
+from tools.formating.formating import *
+from utils.redislogger import *
 
 
-def run_scanpy_trajectory(adata, cell_type_label=None, color=["leiden"], n_neighbors=10, n_pcs=20, resolution=1.0):
+def run_scanpy_trajectory(adata, unique_id, cell_type_label=None, color=["leiden"], origin_group=None, n_neighbors=10, n_pcs=20, resolution=1.0):
     if adata is None:
         raise ValueError("Failed to load AnnData object.")
     
     if is_normalized(adata.X, 200) and not check_nonnegative_integers(adata.X):
         redislogger.info(unique_id, "adata.X is not raw counts.")
-        if adata.raw.X is not None:
-            redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
-            adata.layers["normalized_X"] = adata.X.copy()
-            adata.X = adata.raw.X.copy()
-        elif "raw_counts" in adata.layers.keys():
+        if "raw_counts" in adata.layers.keys():
             redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy adata.X to layer 'normalized_X'.")
             adata.layers["normalized_X"] = adata.X.copy()
             adata.X = adata.layers['raw_counts'].copy()
+        elif adata.raw.X is not None:
+            redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
+            adata.layers["normalized_X"] = adata.X.copy()
+            adata.X = adata.raw.X.copy()
         else:
             raise ValueError("scanpy trajectory only take raw counts, not normalized data.")
 
@@ -51,16 +53,16 @@ def run_scanpy_trajectory(adata, cell_type_label=None, color=["leiden"], n_neigh
         # save=True,  # save figure to file figures/paga_compare.pdf
     )
     
-    if cell_type_label is not None and cell_type_label in adata.obs.keys():
+    if cell_type_label is not None and cell_type_label in adata.obs.keys() and origin_group is not None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         build_graph(adata, 
-                    use_rep='X_draw_graph_trajectory', # The same as 'use_rep' in Scanpy. Choosing cell embeddings.
+                    use_rep='X_diffmap', # The same as 'use_rep' in Scanpy. Choosing cell embeddings.
                     k=10,            # K for building a KNN graph.
                     device=device)
         
         build_trajectory(adata, 
-                        use_groups = cell_type_label,       # cell labels used to infer trajectory
-                        origin_group = 'neoblast 1', # set the root cell label of trajectory
+                        use_groups=cell_type_label,       # cell labels used to infer trajectory
+                        origin_group=origin_group, # set the root cell label of trajectory
                         use_community=None,          # If None, use cell labels to build cell community.
                         traj_shape='mdo_tree',       # Choose build-in tree shape trajectory inference method.
                         device=device) 

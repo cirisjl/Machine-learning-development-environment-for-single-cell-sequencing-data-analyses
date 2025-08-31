@@ -1,9 +1,10 @@
 import sys
 sys.path.append('..')
-# from tools.formating.formating import *
+from tools.formating.formating import *
 from tools.ccc.liana import run_liana_ccc
 from tools.evaluation.monitor import *
 from tools.evaluation.ccc import ccc_metrics
+from datetime import datetime
 
 
 def liana_ccc(adata, cell_type_label, benchmarksId, datasetId, task_type, species, ccc_pred='liana_res', ccc_target="ccc_target"):

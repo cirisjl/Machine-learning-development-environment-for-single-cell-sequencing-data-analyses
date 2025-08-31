@@ -6,6 +6,7 @@ from tools.annotation.SingleR import singler_annotation
 from tools.formating.formating import *
 from tools.evaluation.monitor import *
 from tools.evaluation.annotation import annotation_metrics
+from datetime import datetime
 
 
 def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_type, SingleR_ref, ref_path=None, species="mouse"):

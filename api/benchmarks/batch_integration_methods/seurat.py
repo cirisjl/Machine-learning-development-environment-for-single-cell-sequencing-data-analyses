@@ -6,6 +6,7 @@ sys.path.append('..')
 from tools.formating.formating import *
 from tools.evaluation.monitor import *
 from tools.evaluation.integration import integration_metrics
+from datetime import datetime
 
 
 def seurat_integration(input, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):

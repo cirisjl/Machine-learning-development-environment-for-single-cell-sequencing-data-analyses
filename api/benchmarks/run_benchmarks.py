@@ -26,6 +26,9 @@ def run_benchmarks(job_id, task_dict:dict):
     celltypist_model = task_dict['celltypist_model']
     SingleR_ref = task_dict['SingleR_ref']
     bm_traj = task_dict['bm_traj']
+    origin_group = task_dict['origin_group']
+
+    redislogger.info(job_id, f"Task parameters: {task_dict}")
 
     upsert_jobs(
         {
@@ -61,11 +64,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Clustering benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -100,11 +105,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Cell Type Annotation benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -139,11 +146,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Cell-cell communication benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -179,11 +188,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Imputation benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -218,11 +229,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Batch Integration benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -257,11 +270,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Multimodal benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 
@@ -275,7 +290,7 @@ def run_benchmarks(job_id, task_dict:dict):
     if(task_type=="Trajectory"):
         try:
             if os.path.exists(adata_path):
-                trajectory_results = trajectory_task(adata_path, label, benchmarksId, datasetId, job_id, bm_traj=bm_traj, task_type='Trajectory')
+                trajectory_results = trajectory_task(adata_path, label, origin_group, benchmarksId, datasetId, job_id, bm_traj=bm_traj, task_type='Trajectory')
                 upsert_benchmarks(benchmarksId, trajectory_results)
                 results = {
                     "datasetId": datasetId,
@@ -296,11 +311,13 @@ def run_benchmarks(job_id, task_dict:dict):
                 return results
             else:
                 detail = f'File does not exist at {adata_path}'
+                redislogger.error(job_id, detail)
                 raise CeleryTaskException(detail)
             
         except Exception as e:
             # Handle exceptions as needed
             detail=f"Trajectory benchmarks is failed: {str(e)}"
+            redislogger.error(job_id, detail)
             upsert_jobs(
                 {
                     "job_id": job_id, 

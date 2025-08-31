@@ -4,6 +4,7 @@ sys.path.append('..')
 import scanpy.external as sce
 from tools.evaluation.monitor import *
 from tools.evaluation.integration import integration_metrics
+from datetime import datetime
 
 
 def harmony_integration(adata, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):

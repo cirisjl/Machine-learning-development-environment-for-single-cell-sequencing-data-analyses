@@ -273,7 +273,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Check if all datasets have a task type, label and data split performed
     const allDatasetsValid = Object.values(taskData.task_builder.selectedDatasets).every(dataset => 
       dataset.taskType && 
-      (dataset.taskLabel || dataset.ccc_target || dataset.denoised_layer || dataset.bm_traj || (dataset.mi_aligned1 && dataset.mi_aligned2)) && 
+      ((dataset.taskType.value === 'CL' && dataset.taskLabel) || (dataset.taskType.value === 'IM' && dataset.denoisedLayer) || (dataset.taskType.value === 'BI' && dataset.taskLabel && dataset.batch_key) || (dataset.taskType.value === 'TJ' && dataset.taskLabel && dataset.BMTraj && dataset.originGroup) || (dataset.taskType.value === 'CCC' && dataset.taskLabel && dataset.cccTarget) || (dataset.taskType.value === 'CT' && dataset.taskLabel && dataset.celltypist_model && dataset.SingleR_ref) || (dataset.taskType.value === 'MI' && dataset.mi_aligned1 && dataset.mi_aligned2)) && 
       dataset.dataSplit.dataSplitPerformed
     );
   
@@ -452,6 +452,23 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
+  const handleOriginGroupChange = (datasetId, selectedOption) => {
+    setTaskData(prevTaskData => ({
+      ...prevTaskData,
+      task_builder: {
+        ...prevTaskData.task_builder,
+        selectedDatasets: {
+          ...prevTaskData.task_builder.selectedDatasets,
+          [datasetId]: {
+            ...prevTaskData.task_builder.selectedDatasets[datasetId],
+            originGroup: selectedOption
+          }
+        }
+      }
+    }));
+  };
+
+
   const handleMiAligned1Change = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
@@ -596,7 +613,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                 </label>
               </Typography>
 
-              {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT' || dataset.taskType.value === 'BI' || dataset.taskType.value === 'CCC') && 
+                {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT' || dataset.taskType.value === 'BI' || dataset.taskType.value === 'CCC' || dataset.taskType.value === 'TJ') && 
                 (<Typography variant="body2" component="p">
                   <label>
                     <p>Please Choose the Cell Type Label:</p>
@@ -683,6 +700,20 @@ const onSelectSubItem = (mainItem, subItem) => {
                         value: key,
                       }))}
                       onChange={(selectedOption) => handleBMTrajChange(key, selectedOption)}
+                    />
+                  </label>
+                </Typography>)}
+
+                {dataset && dataset.taskType && dataset.uns && dataset.taskType.value === 'TJ' && (<Typography variant="body2" component="p">
+                  <label>
+                    <p>Please Choose the Origin Group for Trajectory:</p>
+                    <Select
+                      value={dataset.originGroup}
+                      options={dataset.uns.map((key, index) => ({
+                        label: key,
+                        value: key,
+                      }))}
+                      onChange={(selectedOption) => handleOriginGroupChange(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}

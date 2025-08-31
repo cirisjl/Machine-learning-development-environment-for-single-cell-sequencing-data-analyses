@@ -4,6 +4,9 @@ sys.path.append('..')
 from tools.multimodal.MultiVI import run_multivi
 from tools.evaluation.monitor import *
 from tools.evaluation.multimodal import multimodal_metrics
+from tools.formating.formating import *
+from utils.redislogger import *
+from datetime import datetime
 
 
 def multivi_multimodal(mdata, benchmarksId, datasetId, task_type):

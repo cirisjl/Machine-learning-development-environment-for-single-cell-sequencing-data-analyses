@@ -253,6 +253,7 @@ class BenchmarksRequest(BaseModel):
     ccc_target: Optional[str] = None
     denoised_layer: Optional[str] = None
     bm_traj: Optional[str] = None
+    origin_group: Optional[str] = None
     batch_key: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[str] = None
