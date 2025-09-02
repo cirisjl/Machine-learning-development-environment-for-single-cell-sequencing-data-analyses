@@ -3,7 +3,8 @@ import pandas as pd
 import scanpy as sc
 import sklearn
 import dropkick as dk
-from tools.formating.formating import is_normalized
+from scipy.sparse import csr_matrix
+from tools.formating.formating import is_normalized, check_nonnegative_integers
 sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 # sc.logging.print_header()
 # sc.settings.set_figure_params(dpi=80, facecolor='white')

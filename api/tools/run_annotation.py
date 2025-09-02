@@ -11,6 +11,7 @@ from tools.reduction.reduction import run_dimension_reduction, run_clustering
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
+from scipy.sparse import csr_matrix
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
     

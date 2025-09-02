@@ -2,6 +2,7 @@ import os
 import muon
 import numpy as np
 import scanpy as sc
+from scipy.sparse import csr_matrix
 import scvi
 import seaborn as sns
 import torch

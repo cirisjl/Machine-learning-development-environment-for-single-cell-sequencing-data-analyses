@@ -558,12 +558,12 @@ def anndata_to_csv(adata, output_path, layer=None, compress=False):
     counts = None
 
     if layer is None:
-        if type(adata.X) != "numpy.ndarray":
+        if type(adata.X) != np.ndarray:
             counts = adata.X.toarray()
         else:
             counts = adata.X
     else:
-        if type(adata.layers[layer]) != "numpy.ndarray":
+        if type(adata.layers[layer]) != np.ndarray:
             counts = adata.layers[layer].toarray()
         else:
             counts = adata.layers[layer]
