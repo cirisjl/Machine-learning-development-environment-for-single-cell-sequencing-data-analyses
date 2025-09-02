@@ -1,4 +1,4 @@
-from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
+from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path, save_anndata
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.batch_integration_methods.harmony import harmony_integration
 from benchmarks.batch_integration_methods.scvi import scvi_integration
@@ -28,7 +28,8 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
     for sample in adata.obs[batch_key].unique():
         adata_sub = adata[adata.obs[batch_key]==sample, :]
         adata_sub_path = f"input_folder/{sample}.h5ad"
-        adata_sub.write_h5ad(adata_sub_path, compression='gzip')
+        # adata_sub.write_h5ad(adata_sub_path, compression='gzip')
+        save_anndata(adata_sub, adata_sub_path)
         input.append(adata_sub_path)
 
     current_date_and_time = datetime.now()

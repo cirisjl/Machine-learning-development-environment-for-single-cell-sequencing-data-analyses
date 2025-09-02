@@ -23,7 +23,8 @@
           "type": "object",
           "title": "Integration Parameters",
           "required": [
-            "methods"
+            "methods",
+            "batch_key"
           ],
           "properties": {
             "methods": {

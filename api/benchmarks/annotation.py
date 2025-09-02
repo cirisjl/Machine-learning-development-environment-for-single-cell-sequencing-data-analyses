@@ -1,4 +1,4 @@
-from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path
+from tools.formating.formating import load_anndata, get_md5, clean_anndata, get_scvi_path, save_anndata
 from tools.visualization.plot import plot_bar, plot_line
 from benchmarks.annotation_methods.celltypist import celltypist_annotation
 from benchmarks.annotation_methods.scanvi import scanvi_annotation
@@ -22,7 +22,8 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
     adata = clean_anndata(adata) # Remove outliers
     train_adata = adata[adata.obs.split_idx.str.contains('train'), :]
     ref_path = adata_path.replace(".h5ad", "_ref.h5ad")
-    train_adata.write_h5ad(ref_path, compression='gzip')
+    # train_adata.write_h5ad(ref_path, compression='gzip')
+    save_anndata(train_adata, ref_path)
     test_adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None

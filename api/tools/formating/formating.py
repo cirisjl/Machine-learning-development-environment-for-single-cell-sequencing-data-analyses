@@ -118,6 +118,12 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
     if adata is not None: 
         adata.obs = rename_col(adata.obs, 'n_counts')
 
+    # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
+    #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+    #     # Example: Replacing NaNs with 0 (use with caution based on your data)
+    #     adata.X[np.isnan(adata.X)] = 0
+    #     adata.X[np.isinf(adata.X)] = 0
+
     return adata
 
 
@@ -1118,6 +1124,11 @@ def is_number(s):
 
 
 def save_anndata(adata, output):
+    # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
+    #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+    #     # Example: Replacing NaNs with 0 (use with caution based on your data)
+    #     adata.X[np.isnan(adata.X)] = 0
+    #     adata.X[np.isinf(adata.X)] = 0
     if not isinstance(adata.X, csr_matrix):
         adata.X = csr_matrix(adata.X)
     if adata.raw is not None:

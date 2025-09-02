@@ -61,7 +61,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output)
             output = get_output_path(output, process_id=process_id, dataset=dataset, method='UMAP_t-SNE')
-            adata.write_h5ad(output, compression='gzip')
+            # adata.write_h5ad(output, compression='gzip')
+            save_anndata(adata, output)
             adata = None
             reduction_results['datasetId'] = datasetId
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database

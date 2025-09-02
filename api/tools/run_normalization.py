@@ -135,7 +135,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         # Converrt dense martrix to sparse matrix
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
-                        adata.write_h5ad(adata_path, compression='gzip')
+                        # adata.write_h5ad(adata_path, compression='gzip')
+                        save_anndata(adata, adata_path)
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")
                         normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)

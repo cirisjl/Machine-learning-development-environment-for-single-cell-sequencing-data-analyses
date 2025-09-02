@@ -91,7 +91,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 # Converrt dense martrix to sparse matrix
                 if isinstance(adata.X, np.ndarray):
                     adata.X = csr_matrix(adata.X)
-                adata.write_h5ad(output, compression='gzip')
+                # adata.write_h5ad(output, compression='gzip')
+                save_anndata(adata, output)
                 imputation_output.append({"MAGIC": output})
                 imputation_results["outputs"] = imputation_output
                 adata = None
@@ -133,7 +134,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         # Converrt dense martrix to sparse matrix
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
-                        adata.write_h5ad(output, compression='gzip')
+                        # adata.write_h5ad(output, compression='gzip')
+                        save_anndata(adata, output)
                         imputation_output.append({"MAGIC": output})
                         imputation_results["outputs"] = imputation_output
                         adata = None
@@ -204,7 +206,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 # Converrt dense martrix to sparse matrix
                 if isinstance(adata.X, np.ndarray):
                     adata.X = csr_matrix(adata.X)
-                adata.write_h5ad(output, compression='gzip')
+                # adata.write_h5ad(output, compression='gzip')
+                save_anndata(adata, output)
                 imputation_output.append({"SAVER": output})
                 imputation_output.append({"Report": report_path})
                 imputation_results["outputs"] = imputation_output
@@ -254,7 +257,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             # Converrt dense martrix to sparse matrix
                             if isinstance(adata.X, np.ndarray):
                                 adata.X = csr_matrix(adata.X)
-                            adata.write_h5ad(output, compression='gzip')
+                            # adata.write_h5ad(output, compression='gzip')
+                            save_anndata(adata, output)
                             
                             imputation_output.append({"SAVER": output})
                             imputation_output.append({"Report": report_path})

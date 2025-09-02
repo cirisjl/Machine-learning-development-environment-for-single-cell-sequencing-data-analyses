@@ -109,7 +109,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(adata_path, compression='gzip')
+                    # adata.write_h5ad(adata_path, compression='gzip')
+                    save_anndata(adata, adata_path)
                     annotation_output.append({"CellTypist": adata_path})
                     annotation_results["outputs"] = annotation_output
                     redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
@@ -152,7 +153,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(adata_path, compression='gzip')
+                    # adata.write_h5ad(adata_path, compression='gzip')
+                    save_anndata(adata, adata_path)
                     annotation_output.append({"scANVI": adata_path})
                     annotation_results["outputs"] = annotation_output
                     # adata = None
@@ -246,7 +248,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # Converrt dense martrix to sparse matrix
                     if isinstance(adata.X, np.ndarray):
                         adata.X = csr_matrix(adata.X)
-                    adata.write_h5ad(adata_path, compression='gzip')
+                    # adata.write_h5ad(adata_path, compression='gzip')
+                    save_anndata(adata, adata_path)
                     
                     annotation_output.append({"SingleR": adata_path})
                     # annotation_output.append({"Report": report_path})

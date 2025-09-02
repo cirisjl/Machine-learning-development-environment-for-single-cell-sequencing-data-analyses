@@ -112,15 +112,17 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             ad = load_anndata(input)
                             if batch_key is None or batch_key.strip() == '':
                                 ad.obs['batch'] = os.path.basename(input).split('.')[0] # If bacth_key is empty, use filename as batch_key
+                                batch_key = 'batch'
                             adatas.append(ad)                        
                         adata = sc.concat(adatas, join='outer')
-                        if batch_key is None or batch_key.strip() == '':
-                            batch_key = 'batch'
+                        # if batch_key is None or batch_key.strip() == '':
+                        #     batch_key = 'batch'
                     elif len(inputs) == 1:
                         adata = load_anndata(inputs[0])
                         if batch_key is None or batch_key.strip() == '':
-                            adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
-                            batch_key = 'batch'
+                            # adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
+                            # batch_key = 'batch'
+                            raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for single file input.")
                     
                     # Check if X is normalized
                     if adata is not None:
@@ -128,6 +130,12 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
                     else:
                         raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+
+                    if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
+                        # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+                        # Example: Replacing NaNs with 0 (use with caution based on your data)
+                        adata.X[np.isnan(adata.X)] = 0
+                        adata.X[np.isinf(adata.X)] = 0
                     
                     # Pseudo replicates
                     if pseudo_replicates > 1:
@@ -142,7 +150,14 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         sc.pp.scale(adata)
                         sc.pp.pca(adata, use_highly_variable=True) #True since we didnt subset
                         sce.pp.harmony_integrate(adata, key = batch_key)
-                        sc.pp.neighbors(adata, use_rep = "X_pca_harmony")
+
+                        if np.isnan(adata.obsm["X_pca_harmony"].data).any() or np.isinf(adata.obsm["X_pca_harmony"].data).any():
+                            # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+                            # Example: Replacing NaNs with 0 (use with caution based on your data)
+                            adata.obsm["X_pca_harmony"][np.isnan(adata.obsm["X_pca_harmony"])] = 0
+                            adata.obsm["X_pca_harmony"][np.isinf(adata.obsm["X_pca_harmony"])] = 0
+                            
+                        # sc.pp.neighbors(adata, use_rep = "X_pca_harmony")
                         if do_umap:
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                             adata, msg = run_dimension_reduction(adata, n_neighbors=dims, n_pcs=npcs, use_rep="X_pca_harmony", random_state=0)
@@ -153,7 +168,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
-                        adata.write_h5ad(adata_path, compression='gzip')
+                        # adata.write_h5ad(adata_path, compression='gzip')
+                        save_anndata(adata, adata_path)
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -182,7 +198,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
-                        adata.write_h5ad(adata_path, compression='gzip')
+                        # adata.write_h5ad(adata_path, compression='gzip')
+                        save_anndata(adata, adata_path)
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -194,6 +211,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         process_ids.append(process_id)
 
                 else:
+                    if batch_key is None or batch_key.strip() == '':
+                        # adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
+                        # batch_key = 'batch'
+                        raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for {method} integration.")
                     redislogger.info(job_id, f"Start {method} integration...")
                     # report_path = get_report_path(dataset, output, "integration")
                     # Get the absolute path of the current file
@@ -203,7 +224,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     # Get the absolute path of the desired file
                     rmd_path = os.path.abspath(relative_path)
                     # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{batch_key}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, str(s))
                     # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
@@ -227,7 +248,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
 
-                        adata.write_h5ad(adata_path, compression='gzip')
+                        # adata.write_h5ad(adata_path, compression='gzip')
+                        save_anndata(adata, adata_path)
                         adata_3D = None
                     else:
                         upsert_jobs(

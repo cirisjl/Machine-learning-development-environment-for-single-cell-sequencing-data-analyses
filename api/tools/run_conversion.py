@@ -44,7 +44,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
         else:
             try:
                 adata = load_anndata(input) 
-                adata.write_h5ad(adata_path, compression='gzip')
+                # adata.write_h5ad(adata_path, compression='gzip')
+                save_anndata(adata, adata_path)
                 adata = None
                 outputs.append({'AnnData': adata_path})
                 redislogger.info(job_id, "AnnData object is saved successfully")

@@ -1,5 +1,5 @@
 import os
-from tools.formating.formating import load_anndata, convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_cell_metadata
+from tools.formating.formating import load_anndata, convert_seurat_sce_to_anndata, load_anndata, change_file_extension, get_cell_metadata, save_anndata
 from utils.unzip import unzip_file_if_compressed
 from exceptions.custom_exceptions import CeleryTaskException
 
@@ -57,7 +57,8 @@ def load_metadata(job_id, file_dict):
                 format = "h5ad"
             else:
                 adata_path = change_file_extension(fileDetails[0], 'h5ad')
-                adata.write_h5ad(adata_path, compression='gzip')
+                # adata.write_h5ad(adata_path, compression='gzip')
+                save_anndata(adata, adata_path)
             results["adata_path"] = adata_path
     
             if file.endswith(('.h5Seurat', 'h5seurat')):
@@ -101,7 +102,8 @@ def load_metadata(job_id, file_dict):
         print(f"Add sample to AnnData.obs and set the value to {sample}.")
     
     cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm = get_cell_metadata(adata, adata_path=adata_path)
-    adata.write_h5ad(adata_path, compression='gzip')
+    # adata.write_h5ad(adata_path, compression='gzip')
+    save_anndata(adata, adata_path)
     adata = None
     results['cell_metadata'] = cell_metadata
     results['cell_metadata_head'] = cell_metadata_head

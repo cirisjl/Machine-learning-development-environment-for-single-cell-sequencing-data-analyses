@@ -345,7 +345,8 @@ const onSelectRefSubItem = (mainItem, subItem) => {
             setFormErrors("Please select at least two datasets for Seurat or Liger integration before submitting the form.");
             console.log("Failed to submit the form.");
           }
-          if ((formData[parametersKey[filterCategory]].methods.includes("scVI") || formData[parametersKey[filterCategory]].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData[parametersKey[filterCategory]].batch_key === "") {
+          // if ((formData[parametersKey[filterCategory]].methods.includes("scVI") || formData[parametersKey[filterCategory]].methods.includes("Harmony")) && Object.keys(selectedDatasets).length === 1 && formData[parametersKey[filterCategory]].batch_key === "") {
+          if (formData[parametersKey[filterCategory]].batch_key === "") {
             setFormErrors("Please select Batch_Key if you only select one dataset for scVI or Harmony integration before submitting the form.");
             console.log("Failed to submit the form.");
           } 
