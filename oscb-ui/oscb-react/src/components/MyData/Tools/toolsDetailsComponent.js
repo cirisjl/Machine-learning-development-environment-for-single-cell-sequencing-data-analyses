@@ -32,7 +32,7 @@ export default function ToolsDetailsComponent(props) {
       integration: '/tools/integrate',
       annotation: '/tools/annotate',
       formatting: '/tools/convert',
-      visualization: '/tools/reduce'
+      visualization: '/tools/reduce',
       // Add more filter categories and their corresponding URL paths as needed
     };
 
@@ -430,9 +430,9 @@ const onSelectRefSubItem = (mainItem, subItem) => {
           let method = "";
 
           if (filterCategory === "visualization") {
-            method = "UMAP";
+            method = ["UMAP", "t-SNE"];
           } else if (filterCategory === "formatting") {
-            method = "Convert";
+            method = ["Convert"];
           } else if (parametersKey[filterCategory]) {
             method = formData[parametersKey[filterCategory]].methods;
           } else {

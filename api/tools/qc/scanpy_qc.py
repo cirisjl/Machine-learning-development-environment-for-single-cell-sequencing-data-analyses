@@ -74,7 +74,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # adata=adata[adata.obs.n_genes_by_counts < 2500, :]
         # adata=adata[adata.obs.pct_counts_mt < 5, :]
 
-        adata.raw = adata # Freeze the state in `.raw`
+        # adata.raw = adata # Freeze the state in `.raw`
         adata.layers["raw_counts"] = adata.X.copy() # Preserve raw counts
 
         try:

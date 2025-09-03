@@ -68,7 +68,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         method='MAGIC'
         process_id = generate_process_id(md5, process, method, parameters)
         imputation_results = pp_result_exists(process_id)
-        output = get_output_path(output, process_id, dataset, method='MAGIC_imputation')
+        output = get_output_path(ds['output'], process_id, dataset, method='MAGIC_imputation')
         
         if imputation_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip MAGIC imputation.")
@@ -181,7 +181,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         process_id = generate_process_id(md5, process, method, parameters)
         imputation_results = pp_result_exists(process_id)
         adata = None
-        output = get_output_path(output, process_id, dataset, method='SAVER_imputation')
+        output = get_output_path(ds['output'], process_id, dataset, method='SAVER_imputation')
         csv_path = output.replace(".h5ad", ".csv")
 
         if imputation_results is not None:

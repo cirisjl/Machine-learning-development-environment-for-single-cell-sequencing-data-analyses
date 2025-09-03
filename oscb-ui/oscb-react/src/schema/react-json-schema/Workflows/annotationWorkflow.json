@@ -106,9 +106,22 @@
               "description": "Choose the CellTypist model for annotation."
             },
             "SingleR_ref": {
-              "type": "string",
+              "type": "array",
               "title": "SingleR Reference",
-              "description": "Choose the SingleR Reference(s) for annotation."
+              "description": "Choose the SingleR Reference(s) for annotation.",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "dice",
+                  "blueprint_encode",
+                  "immgen",
+                  "mouse_rnaseq",
+                  "hpca",
+                  "novershtern_hematopoietic",
+                  "monaco_immune"
+                ]
+              },
+              "uniqueItems": true
             },
             "user_label": {
               "type": "string",

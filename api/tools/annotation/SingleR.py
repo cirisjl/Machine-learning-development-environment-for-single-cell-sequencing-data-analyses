@@ -3,6 +3,7 @@ import celldex
 import singler
 import scanpy as sc
 from tools.formating.formating import load_anndata, reset_x_to_raw
+from celldex import list_references, search_references
 from exceptions.custom_exceptions import CeleryTaskException
 
 def singler_annotation(adata, SingleR_ref, user_ref = None, user_label = None):

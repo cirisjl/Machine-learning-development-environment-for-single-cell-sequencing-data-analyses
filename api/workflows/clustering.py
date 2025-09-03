@@ -78,13 +78,13 @@ def run_clustering(job_id, ds:dict, random_state=0):
         process_ids.extend(qc_results["process_ids"])
         wf_results['QC'] = qc_results["process_ids"]
         wf_results['QC_output'] = qc_results['output']
-        if ds["normalization_params"]["methods"] is not None:
+        if normalization_params["methods"] is not None:
             normalization_results = run_normalization(job_id, ds, fig_path=fig_path)
             wf_results['normalization'] = normalization_results["process_ids"]
             process_ids.extend(normalization_results["process_ids"])
             wf_results['normalization_output'] = normalization_results['output']
             output = normalization_results['output']
-        elif ds["imputationParameters"]["methods"] is not None:
+        elif imputation_params["methods"] is not None:
             imputation_results = run_imputation(job_id, ds, fig_path=fig_path)
             wf_results['imputation'] = imputation_results["process_ids"]
             process_ids.extend(imputation_results["process_ids"])

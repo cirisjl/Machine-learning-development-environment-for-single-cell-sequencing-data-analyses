@@ -133,7 +133,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # os.remove(output)
                     raise CeleryTaskException(detail)
 
-            if method == "scANVI":
+            if method == "SCANVI":
                 try:
                     redislogger.info(job_id, "Start scANVI annotation...")
                     adata = scanvi_transfer(adata, refs = user_refs, labels = user_label)

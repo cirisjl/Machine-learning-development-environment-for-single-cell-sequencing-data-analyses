@@ -303,7 +303,7 @@ export function AnnotationWorkFlowComponent(props) {
       console.log("Failed to submit the form");
     } 
     
-    if (formData['annotation_params'].methods.includes("SingleR") && formData['annotation_params'].SingleR_ref.trim().length === 0) {
+    if (formData['annotation_params'].methods.includes("SingleR") && formData['annotation_params'].SingleR_ref.length === 0) {
       setFormErrors("Please select a SingleR reference before submitting the form");
       console.log("Failed to submit the form");
     }

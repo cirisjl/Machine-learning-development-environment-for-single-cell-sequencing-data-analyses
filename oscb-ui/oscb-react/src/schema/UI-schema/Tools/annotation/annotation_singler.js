@@ -39,7 +39,7 @@ export const uiSchema = (dynamicOptions) => ({
       "classNames": "form-subset sub-category",
       "methods": {
         "classNames": "sub-category",
-        "ui:widget": "MultiSelectComponent",
+        "ui:widget": "MultiSelectComponent"
       },
       "assay": {
         "classNames": "sub-category",
@@ -114,21 +114,6 @@ export const uiSchema = (dynamicOptions) => ({
       "SingleR_ref": {
         "classNames": "sub-category",
         "ui:widget": "MultiSelectComponent",
-        'ui:options': {
-          clearable: true,
-          placeholder: "Select the SingleR Reference(s).",
-          creatable: false,
-          searchable: true,
-          opts: [
-            "dice",
-            "blueprint_encode",
-            "immgen",
-            "mouse_rnaseq",
-            "hpca",
-            "novershtern_hematopoietic",
-            "monaco_immune"
-          ]
-        }
       },
       "user_label": {
         "classNames": "sub-category",

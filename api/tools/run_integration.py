@@ -164,7 +164,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0, fig_path=fig_path)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
@@ -194,7 +194,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0, fig_path=fig_path)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)

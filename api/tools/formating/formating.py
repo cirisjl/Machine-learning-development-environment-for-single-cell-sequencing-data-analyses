@@ -1131,9 +1131,6 @@ def save_anndata(adata, output):
     #     adata.X[np.isinf(adata.X)] = 0
     if not isinstance(adata.X, csr_matrix):
         adata.X = csr_matrix(adata.X)
-    if adata.raw is not None:
-        if not isinstance(adata.raw.X, csr_matrix):
-            adata.raw.X = csr_matrix(adata.raw.X)
     adata.write_h5ad(output, compression='gzip')
     
     return output
