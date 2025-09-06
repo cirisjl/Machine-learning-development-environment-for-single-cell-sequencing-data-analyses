@@ -122,10 +122,10 @@ def run_benchmarks(job_id, task_dict:dict):
             )
             raise CeleryTaskException(detail)
 
-    if(task_type=="Cell-cell communication"):
+    if(task_type=="Cell-Cell Communication"):
         try:
             if os.path.exists(adata_path):
-                ccc_results = ccc_task(adata_path, ccc_target, benchmarksId, datasetId, job_id, task_type='Cell-cell communication')
+                ccc_results = ccc_task(adata_path, ccc_target, benchmarksId, datasetId, job_id, task_type='Cell-Cell Communication')
                 upsert_benchmarks(benchmarksId, ccc_results)
                 results = {
                     "datasetId": datasetId,
@@ -151,7 +151,7 @@ def run_benchmarks(job_id, task_dict:dict):
             
         except Exception as e:
             # Handle exceptions as needed
-            detail=f"Cell-cell communication benchmarks is failed: {str(e)}"
+            detail=f"Cell-Cell Communication benchmarks is failed: {str(e)}"
             redislogger.error(job_id, detail)
             upsert_jobs(
                 {

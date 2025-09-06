@@ -22,8 +22,8 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
     adata = clean_anndata(adata) # Remove outliers
     train_adata = adata[adata.obs.split_idx.str.contains('train'), :]
     ref_path = adata_path.replace(".h5ad", "_ref.h5ad")
-    # train_adata.write_h5ad(ref_path, compression='gzip')
-    save_anndata(train_adata, ref_path)
+    train_adata.write_h5ad(ref_path, compression='gzip')
+    # save_anndata(train_adata, ref_path)
     test_adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None
@@ -41,7 +41,7 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             redislogger.info(job_id, "Found existing CellTypist Benchmarks results in database, skip CellTypist.")
         else:
             # Call CellTypist method
-            celltypist_results = celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, celltypist_model=celltypist_model, ref=train_adata, species=species)
+            celltypist_results = celltypist_annotation(test_adata.copy(), label, benchmarksId, datasetId, task_type, celltypist_model=celltypist_model, ref=[train_adata], species=species)
             create_bm_results(process_id, celltypist_results)
             annotation_results.append({'CellTypist': celltypist_results})
             redislogger.info(job_id, "CellTypist annotation is done.")
@@ -70,7 +70,7 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             redislogger.info(job_id, "Found existing scVI Benchmarks results in database, skip scVI.")
         else:
             # Call scVI method
-            scvi_results = scvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=train_adata, species=species)
+            scvi_results = scanvi_annotation(test_adata.copy(), label, benchmarksId, datasetId, task_type, ref=[train_adata], species=species)
             create_bm_results(process_id, scvi_results)
             annotation_results.append({'scVI': scvi_results})
             redislogger.info(job_id, "scVI annotation is done.")
@@ -99,7 +99,7 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             redislogger.info(job_id, "Found existing SingleR Benchmarks results in database, skip SingleR.")
         else:
             # Call SingleR method
-            singler_results = singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_type, SingleR_ref, ref_path=ref_path, species=species)
+            singler_results = singler_annotation(test_adata.copy(), label, benchmarksId, datasetId, task_type, SingleR_ref, user_refdata=[train_adata], species=species)
             create_bm_results(process_id, singler_results)
             annotation_results.append({'SingleR': singler_results})
             redislogger.info(job_id, "SingleR annotation is done.")

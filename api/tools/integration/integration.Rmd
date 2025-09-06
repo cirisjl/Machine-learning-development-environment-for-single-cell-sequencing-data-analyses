@@ -45,7 +45,7 @@ library(SeuratWrappers)
 library(reshape2)
 library(RColorBrewer)
 library(dplyr)
-source("../formating/formating.R")
+# source("../formating/formating.R")
 
 RedisInfo(unique_id, "Loading datasets ...")
 

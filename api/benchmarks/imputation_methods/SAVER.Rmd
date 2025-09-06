@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo=params$show_code, include=TRUE, warning=params$show_w
 library(SAVER)
 packageVersion("SAVER")
 
-source("../formating/formating.R")
+source("../../tools/formating/formating.R")
 adata <- NULL
 # Check if output file already exists
 if(file.exists(params$output)){

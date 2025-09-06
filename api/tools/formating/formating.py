@@ -1129,6 +1129,13 @@ def save_anndata(adata, output):
     #     # Example: Replacing NaNs with 0 (use with caution based on your data)
     #     adata.X[np.isnan(adata.X)] = 0
     #     adata.X[np.isinf(adata.X)] = 0
+    
+    # Convert to float64 to avoid potential issues with dgRMatrix
+    adata.X = adata.X.astype(np.float64)
+    if len(adata.layers) > 0:
+        for layer in adata.layers.keys():
+            adata.layers[layer] = adata.layers[layer].astype(np.float64)
+
     if not isinstance(adata.X, csr_matrix):
         adata.X = csr_matrix(adata.X)
     adata.write_h5ad(output, compression='gzip')

@@ -7,7 +7,7 @@ import shutil
 from utils.redislogger import *
 from utils.mongodb import upsert_benchmarks, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
-from tools.formating.formating import convert_seurat_sce_to_anndata, load_anndata
+from tools.formating.formating import *
 from tools.utils.datasplit import sc_train_val_test_split
 from fastapi import HTTPException, status
 import json
@@ -40,16 +40,20 @@ def run_data_split(job_id, data_dict:dict):
     try:
         adata = load_anndata(adata_path)
         if adata is not None:
-            if labels is not None and labels != "":
-                adata = adata[~adata.obs[labels].isna()] # Remove rows with NaN labels
-            adata = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+            if not (test_fraction ==1 and 'split_idx' in adata.obs.keys()):
+                if labels is not None and labels != "":
+                    adata = adata[~adata.obs[labels].isna()] # Remove rows with NaN labels
+                adata = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
+                save_anndata(adata, adata_path)
+                adata = None
         else:
             detail = f'File does not exist at {adata_path}'
             raise CeleryTaskException(detail)
 
         # Write AnnData objects to files with unique filenames in the temporary directory
-        if adata is not None: 
-            adata.write(adata_path, compression='gzip')
+        # if adata is not None: 
+        #     # adata.write(adata_path, compression='gzip')
+        #     save_anndata(adata, adata_path)
         
         # Updating records using string paths
         upsert_benchmarks(benchmarksId, {

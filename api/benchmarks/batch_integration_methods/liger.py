@@ -9,7 +9,7 @@ from tools.evaluation.integration import integration_metrics
 from datetime import datetime
 
 
-def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):
+def liger_integration(adata, input, label, batch_key, datasets, benchmarksId, datasetId, task_type, species="mouse"):
     adata_int = None
     # Start monitoring
     monitor = Monitor(1)
@@ -20,10 +20,12 @@ def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_typ
     relative_path = os.path.join(os.path.dirname(current_file), 'integration.Rmd')
     # Get the absolute path of the desired file
     rmd_path = os.path.abspath(relative_path)
-    output = os.path.join(os.path.dirname(inputs[0]), 'Liger_integration')
+    # output = os.path.join(os.path.dirname(input[0]), 'Liger_integration')
+    output = os.path.dirname(input[0])
     adata_path = input[0].replace(".h5ad", 'Liger_integration.h5ad')
     report_path = os.path.join(output, 'Liger_integration_report.html')
-    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasetId}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='LIGER'), output_file='{report_path}')\""], shell = True)
+    input = list_to_string_default(input)
+    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{benchmarksId}', datasets='{datasets}', batch_key='{batch_key}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='LIGER'), output_file='{report_path}')\""], shell = True)
     
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()
@@ -32,24 +34,27 @@ def liger_integration(input, label, batch_key, benchmarksId, datasetId, task_typ
 
     if os.path.exists(adata_path):
         adata_int = load_anndata(adata_path)
+        adata_int.obsm['X_pca'] = adata_int.obsm['X_inmfnorm']
+        metrics_dict = integration_metrics(adata, adata_int, batch_key=batch_key, label_key=label, species=species)
 
-    metrics_dict = integration_metrics(adata, adata_int, batch_key=batch_key, label_key=label, cluster_key=cluster_key, organism=species)
+        sys_usage = {
+                "sys_info": sys_info,
+                "benchmarksId": benchmarksId,
+                "datasetId": datasetId,
+                "task_type": task_type,
+                "tool": "Liger",
+                "time_points": time_points,
+                "cpu_usage": cpu_usage,
+                "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
+                "gpu_mem_usage": gpu_mem_usage,
+                "created_on": current_date_and_time
+                }
 
-    sys_usage = {
-            "sys_info": sys_info,
-            "benchmarksId": benchmarksId,
-            "datasetId": datasetId,
-            "task_type": task_type,
-            "tool": "Liger",
-            "time_points": time_points,
-            "cpu_usage": cpu_usage,
-            "mem_usage": mem_usage,
-            "gpu_usage": gpu_usage,
-            "gpu_mem_usage": gpu_mem_usage,
-            "created_on": current_date_and_time
-            }
-
-    results["Liger"] = {**sys_usage, **metrics_dict}
-    adata_int = None
+        results = {**sys_usage, **metrics_dict}
+        adata_int = None
+    else:
+        detail=f"Liger integration failed: output file {adata_path} not found."
+        raise Exception(detail)
 
     return results

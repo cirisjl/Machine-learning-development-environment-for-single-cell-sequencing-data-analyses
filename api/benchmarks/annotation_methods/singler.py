@@ -9,7 +9,7 @@ from tools.evaluation.annotation import annotation_metrics
 from datetime import datetime
 
 
-def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_type, SingleR_ref, ref_path=None, species="mouse"):
+def singler_annotation(adata, label, benchmarksId, datasetId, task_type, SingleR_ref, user_refdata=None, species="mouse"):
 
     # # report_path = get_report_path(dataset, output, "SAVER")
     # report_path = adata_path.replace(".h5ad", "_report.html")
@@ -28,7 +28,7 @@ def singler_annotation(adata, adata_path, label, benchmarksId, datasetId, task_t
     sys_info = monitor.get_sys_info()
     results = {}
 
-    adata = singler_annotation(adata, SingleR_ref=SingleR_ref, user_ref=ref_path, user_label=label)
+    adata = singler_annotation(adata, SingleR_ref=SingleR_ref, user_refdata=user_refdata, user_label=label)
 
     # if label is not None and ref_path is not None:
     #     s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{benchmarksId}', dataset='{datasetId}', input='{adata_path}', output_folder='{output_folder}', species='{species}', reference='{SingleR_ref}', user_ref='{ref_path}', user_label='{label}'), output_file='{report_path}')\""], shell = True)

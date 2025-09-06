@@ -8,7 +8,7 @@ from tools.formating.formating import get_scvi_path
 from datetime import datetime
 
 
-def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetId, task_type, cluster_key="leiden", species="mouse"):
+def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetId, task_type, species="mouse"):
     # Start monitoring
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
@@ -22,7 +22,7 @@ def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetI
 
     current_date_and_time = datetime.now()
 
-    metrics_dict = integration_metrics(adata, adata_int, batch_key=batch_key, label_key=label, cluster_key=cluster_key, organism=species)
+    metrics_dict = integration_metrics(adata, adata_int, batch_key=batch_key, label_key=label, species=species)
 
     sys_usage = {
             "sys_info": sys_info,
@@ -38,7 +38,7 @@ def scvi_integration(adata, adata_path, label, batch_key, benchmarksId, datasetI
             "created_on": current_date_and_time
             }
 
-    results["scVI"] = {**sys_usage, **metrics_dict}
+    results = {**sys_usage, **metrics_dict}
     adata_int = None
 
     return results

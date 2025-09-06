@@ -24,39 +24,39 @@ if (countDocuments === 0) {
 },
 {
 	"field": "Task",
-	"name": "Marker gene identification",
+	"name": "Batch Integration",
 	"username": "default",
-	"abbreviation": "MGI"
+	"abbreviation": "BI"
 },
 {
 	"field": "Task",
 	"name": "Trajectory",
 	"username": "default",
-	"abbreviation": "TR"
+	"abbreviation": "TJ"
 },
 {
 	"field": "Task",
-	"name": "Cell-cell communication",
+	"name": "Cell-Cell Communication",
 	"username": "default",
 	"abbreviation": "CCC"
 },
 {
 	"field": "Task",
-	"name": "Multi-omic data integration",
+	"name": "Multimodal Data Integration",
 	"username": "default",
 	"abbreviation": "MDI"
 },
 {
 	"field": "Task",
-	"name": "Gene regulatory relations",
+	"name": "Gene Regulatory Relations",
 	"username": "default",
 	"abbreviation": "GRR"
 },
 {
 	"field": "Task",
-	"name": "Cell type identification",
+	"name": "Cell Type Annotation",
 	"username": "default",
-	"abbreviation": "CTI"
+	"abbreviation": "CT"
 },
 {
 	"field": "Task",

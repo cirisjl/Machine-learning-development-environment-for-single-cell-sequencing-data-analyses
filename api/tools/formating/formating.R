@@ -114,16 +114,18 @@ LoadSeurat <- function(path, project = NULL) {
         # srat <- LoadH5Seurat(paste0(tools::file_path_sans_ext(path), ".h5seurat"))
         project_name <- sub("\\.h5ad$", "", basename(path))
         adata <- LoadAnndata(path)
-        srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
-        # tryCatch({
-        #     srat <- AnndataToSeurat(adata, project_name = project_name)
-        # }, error = function(e) {
-        #     print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
-        # }, finally = {
-        #   # Finally block: executed regardless of errors/warnings
-        #   srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
-        #   return(srat)
-        # }) 
+        # srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+        tryCatch({
+            srat <- AnndataToSeurat(adata, project_name = project_name)
+        }, error = function(e) {
+            print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
+        }, finally = {
+          # Finally block: executed regardless of errors/warnings
+          srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+          rm(adata)
+          gc()
+          return(srat)
+        }) 
         
         rm(adata)
     } else if(suffix == "rds"){
@@ -678,10 +680,10 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
   
   obs_df <- .obs2metadata(adata$obs)
   var_df <- .var2feature_metadata(adata$var)
-  X <- t(adata$X)
-  if ("dgCMatrix" %in% class(X) || "dgRMatrix" %in% class(X)){
-    X <- as.matrix(X)
+  if ("dgCMatrix" %in% class(adata$X) || "dgRMatrix" %in% class(adata$X)){
+    adata$X <- as.matrix(adata$X)
   }
+  X <- t(adata$X)
   colnames(X) <- rownames(obs_df)
   rownames(X) <- rownames(var_df)
 

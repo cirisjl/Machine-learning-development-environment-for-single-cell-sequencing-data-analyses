@@ -8,8 +8,8 @@ from tools.formating.formating import load_anndata, reset_x_to_raw
 models.get_all_models()
 
 
-def run_celltypist(adata, model_name, refs = [], ref_adata = None, labels = None, species = 'mouse'):
-    if model_name is None and (len(refs) == 0 or labels is None):
+def run_celltypist(adata, model_name, refs = None, ref_adata = None, labels = None, species = 'mouse'):
+    if model_name is None and (refs is None or labels is None) and (ref_adata is None or labels is None):
         raise CeleryTaskException(f"CellTypist annotation is failed due to empty model_name ({model_name}) and empty user reference ({refs}) or cell labels ({labels}).")
 
     if model_name is not None:
@@ -30,7 +30,7 @@ def run_celltypist(adata, model_name, refs = [], ref_adata = None, labels = None
         adata.obs["celltypist_label"] = predictions_adata.obs.loc[adata.obs.index, "predicted_labels"]
         adata.obs["celltypist_score"] = predictions_adata.obs.loc[adata.obs.index, "conf_score"]
 
-    if len(refs) > 0 and labels is not None:
+    if refs is not None and labels is not None:
         for input in refs:
             try:
                 name = os.path.basename(input).split(".")[0]
@@ -50,7 +50,7 @@ def run_celltypist(adata, model_name, refs = [], ref_adata = None, labels = None
                 print(e)
                 continue
     
-    if ref_adata is not None and labels is not None:
+    elif ref_adata is not None and labels is not None:
         ref_adata = reset_x_to_raw(ref_adata)
         sc.pp.filter_genes(ref_adata, min_cells = 10)
         sc.pp.normalize_total(ref_adata, target_sum = 1e4) #Note this is only for cell annotation, recommended by authors but not best

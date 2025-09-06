@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 params:
   unique_id: integration # unique_id for live log, which could be job_id, user_id or process_id
   datasets: NA # Strings  of the datasets names
+  batch_key: orig.ident # Batch key in the metadata of Seurat object
   inputs: NA # Strings  of input file path to scRNA data.
   output_folder: NA # Output file path of the Seurat object.
   # output_format: Seurat  # Seurat or AnnData
@@ -24,6 +25,7 @@ output: html_document
 ```{r setup, echo=params$show_code, warning=params$show_warning, message=params$show_message}
 knitr::opts_chunk$set(echo=params$show_code, include=TRUE, warning=params$show_warning, message=params$show_message)
 ```
+
 # Integration
 
 ```{r Load data, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message}
@@ -32,36 +34,38 @@ datasets <- strsplit(params$datasets, ",")[[1]]
 inputs <- strsplit(params$inputs, ",")[[1]]
 npcs <- params$npcs
 dims <- params$dims
+batch_key <- params$batch_key
 methods <- strsplit(params$methods, ",")[[1]]
 methods = toupper(methods)
 if(is.null(params$methods)) stop("No integration method is selected.")
 if(length(datasets) != length(inputs)) stop("The number of datasets and files does not match.")
 if(length(inputs) < 2 ) stop("Integration requires at least 2 samples.")
 
-library(SeuratWrappers)
+# library(SeuratWrappers)
 library(reshape2)
 library(RColorBrewer)
 library(dplyr)
-library(RhpcBLASctl)
-blas_set_num_threads(1)
-omp_set_num_threads(1)
-source("../formating/formating.R")
+# library("here")
+# source(here::here('api/tools/formating/formating.R')) # Unit test
+# source(here::here('tools/formating/formating.R'))
+source('../../tools/formating/formating.R')
 
 RedisInfo(unique_id, "Loading datasets ...")
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
   srats.list[[datasets[i]]] <- LoadSeurat(inputs[i], project = datasets[i])
-  srats.list[[datasets[i]]]@meta.data$orig.ident <- datasets[i]
+  srats.list[[datasets[i]]]@meta.data[batch_key] <- datasets[i]
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
-  print(paste("Seurat object for '",datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
+  print(paste("Seurat object for '", datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
   if(params$default_assay == 'RNA') srats.list[[datasets[i]]] <- NormalizeData(srats.list[[datasets[i]]], verbose = F)
   srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
 }
 names(srats.list) <-datasets
 
 ```
+
 ## Seurat
 
 ```{r Seurat, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
@@ -106,7 +110,7 @@ if("SEURAT" %in% methods) {
     srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
 
     DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
-    DimPlot(srats.integrated, reduction = "umap", split.by = "orig.ident") + NoLegend()
+    DimPlot(srats.integrated, reduction = "umap", split.by = batch_key) + NoLegend()
 
     srats.integrated <- FindNeighbors(srats.integrated, dims = 1:dims, k.param = 10, verbose = F)
     srats.integrated <- FindClusters(srats.integrated, verbose = F, resolution = params$resolution)
@@ -127,7 +131,9 @@ if("SEURAT" %in% methods) {
 } else {
   print("Not selected by user, skipped.")
 }
+
 ```
+
 ## Harmony
 
 ```{r Harmony, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
@@ -142,13 +148,13 @@ if("HARMONY" %in% methods) {
     srat.harmony <- ScaleData(srat.harmony, verbose = F)
     srat.harmony <- RunPCA(srat.harmony, npcs = npcs, verbose = F)
     srat.harmony <- RunUMAP(srat.harmony, reduction = "pca", dims = 1:dims, verbose = F)
-    srat.harmony <- srat.harmony %>% RunHarmony("orig.ident", plot_convergence = T)
+    srat.harmony <- srat.harmony %>% RunHarmony(batch_key, plot_convergence = T)
     harmony_embeddings <- Embeddings(srat.harmony, 'harmony')
     RedisInfo(unique_id, "Harmony integration is done.")
     harmony_embeddings[1:5, 1:5]
 
-    p1 <- DimPlot(object = srat.harmony, reduction = "harmony", pt.size = .1, group.by = "orig.ident") + NoLegend()
-    p2 <- VlnPlot(object = srat.harmony, features = "harmony_1", group.by = "orig.ident", pt.size = .1) + NoLegend()
+    p1 <- DimPlot(object = srat.harmony, reduction = "harmony", pt.size = .1, group.by = batch_key) + NoLegend()
+    p2 <- VlnPlot(object = srat.harmony, features = "harmony_1", group.by = batch_key, pt.size = .1) + NoLegend()
     plot_grid(p1,p2)
 
     srat.harmony <- srat.harmony %>% 
@@ -157,10 +163,10 @@ if("HARMONY" %in% methods) {
     FindClusters(resolution = params$resolution) %>% 
     identity()
 
-    srat.harmony <- SetIdent(srat.harmony, value = "orig.ident")
+    srat.harmony <- SetIdent(srat.harmony, value = batch_key)
     DimPlot(srat.harmony, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Harmony integration")
 
-    DimPlot(srat.harmony, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
+    DimPlot(srat.harmony, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
 
     srat.harmony <- SetIdent(srat.harmony, value = "seurat_clusters")
     DimPlot(srat.harmony, label = T) + NoLegend()
@@ -180,7 +186,9 @@ if("HARMONY" %in% methods) {
 } else {
   print("Not selected by user, skipped.")
 }
+
 ```
+
 ## Liger
 
 ```{r Liger, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
@@ -191,18 +199,18 @@ if("LIGER" %in% methods) {
     srat.liger <- Reduce(merge, srats.list)
     srat.liger <- NormalizeData(srat.liger)
     srat.liger <- FindVariableFeatures(srat.liger)
-    srat.liger <- ScaleData(srat.liger, split.by = "orig.ident", do.center = F)
-    srat.liger <- RunOptimizeALS(srat.liger, k = 30, lambda = 5, split.by = "orig.ident") ## this one takes a while
-    srat.liger <- RunQuantileNorm(srat.liger, split.by = "orig.ident")
-    srat.liger <- FindNeighbors(srat.liger, reduction = "iNMF", k.param = 10, dims = 1:dims)
+    srat.liger <- ScaleData(srat.liger, split.by = batch_key, do.center = F)
+    srat.liger <- runIntegration(srat.liger, k = 30)
+    srat.liger <- alignFactors(srat.liger , method = "centroidAlign")
+    srat.liger <- FindNeighbors(srat.liger, reduction = "inmf", k.param = 10, dims = 1:dims)
     srat.liger <- FindClusters(srat.liger, resolution = params$resolution)
 
     RedisInfo(unique_id, "LIGER integration is done.")
 
-    srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["iNMF"]]), reduction = "iNMF", verbose = F)
-    srat.liger <- SetIdent(srat.liger,value = "orig.ident")
+    srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["inmf"]]), reduction = "inmf", verbose = F)
+    srat.liger <- SetIdent(srat.liger,value = batch_key)
     DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
-    DimPlot(srat.liger, reduction = "umap", group.by = "orig.ident", pt.size = .1, split.by = 'orig.ident') + NoLegend()
+    DimPlot(srat.liger, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
 
     srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
     DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()

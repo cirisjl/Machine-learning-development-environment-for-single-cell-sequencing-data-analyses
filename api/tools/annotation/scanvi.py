@@ -4,8 +4,8 @@ import scanpy as sc
 from tools.formating.formating import load_anndata, reset_x_to_raw
 from exceptions.custom_exceptions import CeleryTaskException
 
-def scanvi_transfer(adata, refs = [], ref_adata = None, labels = None):
-    if len(refs) > 0 and labels is not None:
+def scanvi_transfer(adata, refs = None, ref_adata = None, labels = None):
+    if refs is not None and labels is not None:
         adata = reset_x_to_raw(adata)
         adata.obs['CellType'] = 'Unknown'
         adata.obs['Batch'] = 'Unknown'

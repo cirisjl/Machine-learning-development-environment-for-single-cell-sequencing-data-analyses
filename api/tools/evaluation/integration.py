@@ -44,7 +44,8 @@ def integration_metrics(adata, adata_int, batch_key='batch', label_key='cell_typ
 
     metrics_all = metrics(adata, adata_int, batch_key=batch_key, label_key=label_key, cluster_nmi=None, ari_=True, nmi_=True, nmi_method='arithmetic', nmi_dir=None, silhouette_=True, si_metric='euclidean', pcr_=True, cell_cycle_=True, organism=species, hvg_score_=True, isolated_labels_=True, isolated_labels_f1_=True, isolated_labels_asw_=True, n_isolated=True, graph_conn_=True, trajectory_=False, kBET_=True)
     biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
-    metrics_dict = metrics_all.dropna().to_dict()[0]
+    # metrics_dict = metrics_all.dropna().to_dict()[0]
+    metrics_dict = metrics_all.fillna(0).to_dict()[0]
 
     for key, value in metrics_dict.items():
         metrics_dict[key] = float('{:.4f}'.format(value))

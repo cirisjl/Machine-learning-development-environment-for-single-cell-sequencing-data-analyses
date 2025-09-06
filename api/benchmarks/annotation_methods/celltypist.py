@@ -13,7 +13,7 @@ def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, cell
     sys_info = monitor.get_sys_info()
     results = {}
 
-    adata = run_celltypist(adata, model_name=celltypist_model, ref_adata = ref, labels = label, species = species)
+    adata = run_celltypist(adata, model_name=celltypist_model, ref_adata=ref, labels=label, species=species)
     
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()

@@ -21,6 +21,7 @@ np.random.seed(0)
 
 def scvi_integrate(adata, batch_key, model_path, fig_path=None):
     model = None
+    adata = adata.copy()
     if 'pct_counts_mt' in adata.obs.keys() and 'pct_counts_ribo' in adata.obs.keys():
         scvi.model.SCVI.setup_anndata(adata, categorical_covariate_keys = [batch_key], continuous_covariate_keys=['pct_counts_mt', 'pct_counts_ribo'])
     else:
