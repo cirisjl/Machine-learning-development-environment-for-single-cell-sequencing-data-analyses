@@ -125,7 +125,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         bm_traj: dataset?.BMTraj?.label || '',
         origin_group: dataset?.originGroup?.label || '',
         celltypist_model: dataset?.celltypist_model?.label || '',
-        SingleR_ref: dataset?.SingleR_ref?.label || '',
+        SingleR_ref: dataset?.SingleR_ref?.map(item => item.label) || [],
         mi_aligned1: dataset?.mi_aligned1?.label || '',
         mi_aligned2: dataset?.mi_aligned2?.label || '',
         species: dataset?.Species?.label.toLowerCase() || 'mouse',
