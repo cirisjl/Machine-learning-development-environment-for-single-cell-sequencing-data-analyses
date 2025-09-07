@@ -45,14 +45,16 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             create_bm_results(process_id, singler_results)
             annotation_results.append(singler_results)
             redislogger.info(job_id, "SingleR annotation is done.")
-        if len(singler_results) > 0:
-            for key, result in singler_results.items():
-                sys_info = result['sys_info']
+
+        sys_info = singler_results['sys_info']     
+        y_values_ur['SingleR_CPU'] = singler_results['cpu_usage']
+        y_values_ur['SingleR_Memory'] = singler_results['mem_usage']
+        # y_values_ur['SingleR_GPU'] = result['gpu_mem_usage']
+        x_timepoints = singler_results['time_points']
+        if len(singler_results['results']) > 0:
+            for result in singler_results['results']:
+                key = result['tool']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
-                y_values_ur['SingleR_CPU'] = result['cpu_usage']
-                y_values_ur['SingleR_Memory'] = result['mem_usage']
-                # y_values_ur['SingleR_GPU'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
     except Exception as e:
@@ -73,15 +75,18 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             create_bm_results(process_id, celltypist_results)
             annotation_results.append(celltypist_results)
             redislogger.info(job_id, "CellTypist annotation is done.")
-        if len(celltypist_results) > 0:
-            for key, result in celltypist_results.items():
-                sys_info = result['sys_info']
+
+        sys_info = celltypist_results['sys_info']
+        y_values_ur['CellTypist_CPU'] = celltypist_results['cpu_usage']
+        y_values_ur['CellTypist_Memory'] = celltypist_results['mem_usage']
+        y_values_ur['CellTypist_GPU'] = celltypist_results['gpu_usage']
+        y_values_ur['CellTypist_GPU_Memory'] = celltypist_results['gpu_mem_usage']
+        x_timepoints = celltypist_results['time_points']
+        
+        if len(celltypist_results['results']) > 0:
+            for result in celltypist_results['results']:
+                key = result['tool']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
-                y_values_ur['CellTypist_CPU'] = result['cpu_usage']
-                y_values_ur['CellTypist_Memory'] = result['mem_usage']
-                y_values_ur['CellTypist_GPU'] = result['gpu_usage']
-                y_values_ur['CellTypist_GPU_Memory'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
     except Exception as e:
@@ -102,15 +107,18 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
             create_bm_results(process_id, scvi_results)
             annotation_results.append(scvi_results)
             redislogger.info(job_id, "scANVI annotation is done.")
-        if len(scvi_results) > 0:
-            for key, result in scvi_results.items():
-                sys_info = result['sys_info']
+        
+        sys_info = scvi_results['sys_info']
+        y_values_ur['scANVI_CPU'] = scvi_results['cpu_usage']
+        y_values_ur['scANVI_Memory'] = scvi_results['mem_usage']
+        y_values_ur['scANVI_GPU'] = scvi_results['gpu_usage']
+        y_values_ur['scANVI_GPU_Memory'] = scvi_results['gpu_mem_usage']
+        x_timepoints = scvi_results['time_points']
+
+        if len(scvi_results['results']) > 0:
+            for result in scvi_results['results']:
+                key = result['tool']
                 y_values[key] = [result['Accuracy'], result['F1_macro'], result['F1_micro'], result['F1_weighted']]
-                y_values_ur['scANVI_CPU'] = result['cpu_usage']
-                y_values_ur['scANVI_Memory'] = result['mem_usage']
-                y_values_ur['scANVI_GPU'] = result['gpu_usage']
-                y_values_ur['scANVI_GPU_Memory'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Accuracy: {result['Accuracy']}, F1_macro: {result['F1_macro']}, F1_micro: {result['F1_micro']}, F1_weighted: {result['F1_weighted']}")
 
     except Exception as e:

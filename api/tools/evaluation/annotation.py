@@ -5,6 +5,8 @@ from sklearn.metrics import f1_score, accuracy_score
 
 def annotation_metrics(labels, labels_pred):
     print("Encode labels", flush=True)
+    labels = labels.astype('category')
+    labels_pred = labels_pred.astype('category')
     if labels.isna().any():
         labels = labels.cat.add_categories(['Unkown'])
         labels = labels.fillna('Unkown')

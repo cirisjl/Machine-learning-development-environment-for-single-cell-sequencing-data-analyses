@@ -20,46 +20,40 @@ def celltypist_annotation(adata, label, benchmarksId, datasetId, task_type, cell
 
     current_date_and_time = datetime.now()
 
-    # Model
-    if "celltypist_label" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['celltypist_label'].values)
-        results[f"CellTypist: {celltypist_model}"] = {
+    results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
+                "time_points": time_points,
+                "cpu_usage": cpu_usage,
+                "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
+                "gpu_mem_usage": gpu_mem_usage,
+                "created_on": current_date_and_time,
+                "results": []
+            }
+
+    # Model
+    if "celltypist_label" in adata.obs.keys():
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs['celltypist_label'])
+        results["results"].append({ 
                 "tool": f"CellTypist: {celltypist_model}",
                 "Accuracy": accuracy,
                 "F1_macro": f1_macro,
                 "F1_micro": f1_micro,
                 "F1_weighted": f1_weighted,
-                "time_points": time_points,
-                "cpu_usage": cpu_usage,
-                "mem_usage": mem_usage,
-                "gpu_usage": gpu_usage,
-                "gpu_mem_usage": gpu_mem_usage,
-                "created_on": current_date_and_time
-            }
+            })
 
     # Train data
     if "celltypist_ref_label" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['celltypist_ref_label'].values)
-        results[f"CellTypist"] = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs['celltypist_ref_label'])
+        results["results"].append({ 
                 "tool": f"CellTypist",
                 "Accuracy": accuracy,
                 "F1_macro": f1_macro,
                 "F1_micro": f1_micro,
                 "F1_weighted": f1_weighted,
-                "time_points": time_points,
-                "cpu_usage": cpu_usage,
-                "mem_usage": mem_usage,
-                "gpu_usage": gpu_usage,
-                "gpu_mem_usage": gpu_mem_usage,
-                "created_on": current_date_and_time
-            }
+            })
 
     return results

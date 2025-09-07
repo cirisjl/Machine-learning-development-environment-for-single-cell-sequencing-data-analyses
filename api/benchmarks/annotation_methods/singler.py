@@ -46,68 +46,52 @@ def singler_annotation(adata, label, benchmarksId, datasetId, task_type, SingleR
 
     # if os.path.exists(csv_main):
         # df_main = pd.read_csv(csv_main, index_col=0)
-    if "SingleR_main" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs.SingleR_main.values)
-        results[f"SingleR_main: {SingleR_ref}"] = {
+    results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
+                "time_points": time_points,
+                "cpu_usage": cpu_usage,
+                "mem_usage": mem_usage,
+                "gpu_usage": gpu_usage,
+                "gpu_mem_usage": gpu_mem_usage,
+                "created_on": current_date_and_time,
+                "results": []
+            }
+
+    if "SingleR_main" in adata.obs.keys():
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs.SingleR_main)
+        results["results"].append({ 
                 "tool": f"SingleR_main: {SingleR_ref}",
                 "Accuracy": accuracy,
                 "F1_macro": f1_macro,
                 "F1_micro": f1_micro,
                 "F1_weighted": f1_weighted,
-                "time_points": time_points,
-                "cpu_usage": cpu_usage,
-                "mem_usage": mem_usage,
-                "gpu_usage": gpu_usage,
-                "gpu_mem_usage": gpu_mem_usage,
-                "created_on": current_date_and_time
-            }
+            })
     
     # if os.path.exists(csv_fine):
     #     df_fine = pd.read_csv(csv_fine, index_col=0)
     if "SingleR_fine" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs.SingleR_fine.values)
-        results[f"SingleR_fine: {SingleR_ref}"] = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs.SingleR_fine)
+        results["results"].append({ 
                 "tool": f"SingleR_fine: {SingleR_ref}",
                 "Accuracy": accuracy,
                 "F1_macro": f1_macro,
                 "F1_micro": f1_micro,
                 "F1_weighted": f1_weighted,
-                "time_points": time_points,
-                "cpu_usage": cpu_usage,
-                "mem_usage": mem_usage,
-                "gpu_usage": gpu_usage,
-                "gpu_mem_usage": gpu_mem_usage,
-                "created_on": current_date_and_time
-            }
+            })
 
     # if os.path.exists(csv_user):
     #     df_user = pd.read_csv(csv_user, index_col=0)
     if "SingleR_user_ref" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs.SingleR_user_ref.values)
-        results[f"SingleR"] = {
-                "sys_info": sys_info,
-                "benchmarksId": benchmarksId,
-                "datasetId": datasetId,
-                "task_type": task_type,
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs.SingleR_user_ref)
+        results["results"].append({ 
                 "tool": f"SingleR",
                 "Accuracy": accuracy,
                 "F1_macro": f1_macro,
                 "F1_micro": f1_micro,
                 "F1_weighted": f1_weighted,
-                "time_points": time_points,
-                "cpu_usage": cpu_usage,
-                "mem_usage": mem_usage,
-                "gpu_usage": gpu_usage,
-                "gpu_mem_usage": gpu_mem_usage,
-                "created_on": current_date_and_time
-            }
+            })
 
     return results

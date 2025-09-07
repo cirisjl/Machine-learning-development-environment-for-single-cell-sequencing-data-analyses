@@ -22,17 +22,21 @@ def scanvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=None
 
     # Model
     if "scANVI_predicted" in adata.obs.keys():
-        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['scANVI_predicted'].values)
-        results["scANVI"] = {
+        accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label], adata.obs['scANVI_predicted'])
+        results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
                 "task_type": task_type,
-                "tool": "scANVI",
-                "Accuracy": accuracy,
-                "F1_macro": f1_macro,
-                "F1_micro": f1_micro,
-                "F1_weighted": f1_weighted,
+                "results": [
+                    {
+                        "tool": "scANVI",
+                        "Accuracy": accuracy,
+                        "F1_macro": f1_macro,
+                        "F1_micro": f1_micro,
+                        "F1_weighted": f1_weighted,
+                    }
+                ],
                 "time_points": time_points,
                 "cpu_usage": cpu_usage,
                 "mem_usage": mem_usage,
