@@ -6,6 +6,7 @@ warnings.filterwarnings('ignore')
 # sys.path.append('..')
 from scipy.stats import median_abs_deviation
 from tools.formating.formating import is_normalized, check_nonnegative_integers
+from tools.annotation.annotation import *
 from scipy.sparse import csr_matrix
 sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 # sc.logging.print_header()
@@ -13,7 +14,7 @@ sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info 
 from utils.redislogger import redislogger
 
 
-def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, expected_doublet_rate=0.076, regress_cell_cycle=False):
+def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, expected_doublet_rate=0.076, regress_cell_cycle=False, species='mouse'):
         if adata is None:
             raise ValueError("Failed to load AnnData object.")
         # AnnData information
@@ -31,6 +32,21 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
                 adata.X = adata.raw.X.copy()
             else:
                 raise ValueError("Scanpy QC only take raw counts, not normalized data.")
+
+        redislogger.info(unique_id, "Check if adata.var.index is gene symbols.")
+        if is_ensembl(adata.var_names[0]):
+            redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
+            if 'species' is not None:
+                try:
+                    ensembl_ids = adata.var.index.tolist()
+                    symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
+                    adata.var['gene_symbols'] = symbol_ids
+                    adata.var['ensembl_ids'] = ensembl_ids
+                    adata.var = adata.var.set_index('gene_symbols')
+                except Exception as e:
+                    redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
+            else:
+                redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
         
         adata.var_names_make_unique()
 

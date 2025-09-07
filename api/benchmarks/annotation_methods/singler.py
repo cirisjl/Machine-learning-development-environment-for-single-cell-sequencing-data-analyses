@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 sys.path.append('..')
-from tools.annotation.SingleR import singler_annotation
+from tools.annotation.SingleR import run_singler
 from tools.formating.formating import *
 from tools.evaluation.monitor import *
 from tools.evaluation.annotation import annotation_metrics
@@ -28,7 +28,7 @@ def singler_annotation(adata, label, benchmarksId, datasetId, task_type, SingleR
     sys_info = monitor.get_sys_info()
     results = {}
 
-    adata = singler_annotation(adata, SingleR_ref=SingleR_ref, user_refdata=user_refdata, user_label=label)
+    adata = run_singler(adata, SingleR_ref=SingleR_ref, user_refdata=user_refdata, user_label=label)
 
     # if label is not None and ref_path is not None:
     #     s = subprocess.call([f"R -e \"rmarkdown::render('{singler_path}', params=list(unique_id='{benchmarksId}', dataset='{datasetId}', input='{adata_path}', output_folder='{output_folder}', species='{species}', reference='{SingleR_ref}', user_ref='{ref_path}', user_label='{label}'), output_file='{report_path}')\""], shell = True)

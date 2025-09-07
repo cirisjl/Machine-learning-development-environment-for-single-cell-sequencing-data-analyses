@@ -29,6 +29,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     output = ds['output']
     do_umap = ds['do_umap']
     do_cluster = ds['do_cluster']
+    species = ds['species'].lower()
     adata_path = change_file_extension(input_path, 'h5ad')
     assay_names = []
     md5 = get_md5(input_path)
@@ -47,6 +48,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     pp_stage = "Raw"
     process = "QC"
     parameters = ds['qc_params']
+    parameters['species'] = species
     assay = parameters['assay']
     if parameters['max_genes'] == 20000:
         parameters['max_genes'] = None
@@ -192,7 +194,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         try:
                             adata = load_anndata(input_path)
                             redislogger.info(job_id, "Start scanpy QC...")
-                            scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                            scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'], species=species)
                             # scanpy_results.write_h5ad(output_path, compression='gzip')
                             save_anndata(scanpy_results, output_path)
 
@@ -425,7 +427,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     bioconductor_path = os.path.abspath(relative_path)
                     
                     # bioconductor_path = os.path.abspath("qc/bioconductor_qc.Rmd")
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', output_format='SingleCellExperiment', n_hvg={parameters['n_top_genes']}), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{bioconductor_path}', params=list(dataset='{ds['dataset']}', input_path='{input_path}', idtype='{ds['idtype']}', colour_by='{parameters['colour_by']}', shape_by_1='{parameters['shape_by_1']}', shape_by_2='{parameters['shape_by_2'] }', output='{output_path}', adata_path='{adata_path}', species='{species}', output_format='SingleCellExperiment', n_hvg={parameters['n_top_genes']}), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, s)
 
                     if os.path.exists(adata_path):

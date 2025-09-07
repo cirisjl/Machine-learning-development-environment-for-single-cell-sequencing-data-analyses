@@ -3,9 +3,30 @@ import re
 import gzip
 import pickle
 import pandas as pd
+from pyensembl import EnsemblRelease
 
 
 species_dict = {'human': 'Homo_sapiens.GRCh38.110.chr.pkl', 'mouse': 'Homo_sapiens.GRCh38.110.pkl'}
+
+
+def ensembl_to_symbol(ensembl_ids, species):
+    symbol_ids = []
+    data = EnsemblRelease(77, species=species)
+    # if species == 'mouse':
+    #     data = EnsemblRelease(77, species='mouse')
+    # elif species == 'human':
+    #     data = EnsemblRelease(77, species='human')
+    # else:
+    #     raise Exception("ensembl_to_symbol() only work for human and mouse.")
+
+    for ensembl_id in ensembl_ids:
+        try:
+            gene_name = data.gene_name_of_gene_id(ensembl_id)
+            symbol_ids.append(gene_name)
+        except ValueError:
+            symbol_ids.append(ensembl_id) # Handle cases where ID is not found
+
+    return symbol_ids
 
 
 def is_ensembl(gene):

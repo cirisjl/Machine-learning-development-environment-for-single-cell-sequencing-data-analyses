@@ -684,6 +684,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                     <p>Please Choose the SingleR Reference(s):</p>
                     <Select
                       value={dataset.SingleR_ref}
+                      isMulti
                       options={singlerOptions}
                       onChange={(selectedOption) => handleSingleRRefChange(key, selectedOption)}
                     />

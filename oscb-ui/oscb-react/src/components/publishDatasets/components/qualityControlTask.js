@@ -170,6 +170,7 @@ const handleLogMessage = (event) => {
         input: pathToUse,
         output: pathToUse + "/results",
         userID: taskData.quality_control.token,
+        species: taskData.upload.Species.label,
         qc_params : {
           min_genes : values.min_genes,
           max_genes : values.max_genes,

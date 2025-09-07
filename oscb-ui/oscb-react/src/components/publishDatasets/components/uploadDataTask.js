@@ -3,7 +3,7 @@ import UppyUploader from '../../MyData/uppy';
 import { getCookie, isUserAuth, createUniqueFolderName, moveFilesToNewDirectory } from '../../../utils/utilFunctions';
 import { NODE_API_URL} from '../../../constants/declarations';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import close_icon from '../../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../../assets/close_icon_u86_mouseOver.svg';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
@@ -17,6 +17,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import { Select, MenuItem } from '@mui/material';
 import { FormControl, InputLabel } from '@mui/material';
+import CreatableSelect from 'react-select/creatable';
+
 
 function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask , activeTask}) {
 
@@ -25,10 +27,11 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
 
   // State to manage error messages
   const [fileError, setFileError] = useState('');
-  const [titleError, setTitleError] = useState('');
+  // const [titleError, setTitleError] = useState('');
+  const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
   const [hoveredErrPopup, setHoveredErrPopup] = useState(false);
-
+  const [username, setUsername] = useState('');
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState(taskData.upload.files);
   let [selectedAliases, setSelectedAliases] = useState(taskData.upload.files);
@@ -41,7 +44,21 @@ function UploadDataTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       ['barcodes.tsv.gz', 'features.tsv.gz', 'matrix.mtx.gz']
   ];
 
-  // Custom styled components
+  const [formData, setFormData] = useState(
+      {
+        Title: '',
+        Species: '',
+       },
+    );
+
+  const [options, setOptions] = useState(
+      {
+        Species: [],
+      },
+    )
+  const [newOptions, setNewOptions] = useState([]);
+
+// Custom styled components
 const ScrollableListContainer = styled('div')(({ theme }) => ({
   maxHeight: '400px', // Fixed height of the container
   overflowY: 'auto', // Enable vertical scrolling
@@ -56,6 +73,143 @@ const CustomListItem = styled(ListItem)(({ theme }) => ({
   },
   cursor: 'pointer', // Change cursor on hover to indicate an item is clickable
 }));
+
+  useEffect(() => {
+      // Function to check authentication and set user details
+      const checkAuthentication = async () => {
+        if (getCookie('jwtToken') === undefined || getCookie('jwtToken') === '') {
+          // Navigate to the login page
+          window.location.href = '/routing';
+        } else {
+          try {
+            const authData = await isUserAuth(getCookie('jwtToken'));
+            if (authData.isAuth) {
+              setUsername(authData.username);
+              fetchDefaultOptions();
+            } else {
+              console.warn("Token expired! Please login again");
+              window.location.href = '/routing';
+            }
+          } catch (error) {
+            console.error('Error during authentication:', error);
+          }
+        }
+      };
+  
+      // Function to fetch default options
+      const fetchDefaultOptions = async () => {
+        try {
+          const response = await fetch(`${NODE_API_URL}/options`);
+          if (!response.ok) {
+            console.error('Error fetching default options');
+            return;
+          }
+          const data = await response.json();
+  
+          const optionsData = {};
+          const fieldNames = [
+            'Species'
+          ];
+  
+          fieldNames.forEach(fieldName => {
+            if (data[fieldName]) {
+              optionsData[fieldName] = data[fieldName].map(option => ({
+                value: option.abbreviation,
+                label: option.name
+              }));
+            }
+          });
+  
+          setOptions(optionsData);
+        } catch (error) {
+          console.error('Error fetching default options:', error);
+        }
+      };
+  
+      // Call the authentication check function
+      checkAuthentication();
+    }, []);
+  
+    // Handle input changes
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      // Update the specie in the taskData state
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        upload: {
+          ...prevTaskData.upload,
+          [name]: value,
+        },
+      }));
+    };
+  
+    // Handle CreatableSelect changes
+    const handleSelectChange = (name, selectedOption) => {
+      // Update the specie in the taskData state
+      setTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        upload: {
+          ...prevTaskData.upload,
+          [name]: selectedOption,
+        },
+      }));
+    };
+  
+    const optionAlreadyCreated = useCallback((fieldName, inputValue) => {
+      return newOptions.some(
+        (option) => option.field === fieldName && option.name === inputValue
+      );
+    }, [newOptions]);
+  
+    const addNewOptionToMongoDB = useCallback((fieldName, optionName) => {
+      axios
+        .post(`${NODE_API_URL}/addNewOption`, {
+          field: fieldName,
+          name: optionName,
+          username: username
+        })
+        .then((response) => {
+          console.log(`New option "${optionName}" added to MongoDB for field "${fieldName}"`);
+        })
+        .catch((error) => {
+          console.error('Error adding new option to MongoDB:', error);
+        });
+    }, [username]);
+  
+    const handleCreateOption = useCallback((fieldName, inputValue) => {
+      // Check if the option has already been created to prevent duplicate calls
+      if (!optionAlreadyCreated(fieldName, inputValue)) {
+        addNewOptionToMongoDB(fieldName, inputValue);
+      }
+  
+      const newOption = { value: inputValue, label: inputValue };
+  
+      // Update options state
+      setOptions((prevOptions) => {
+        const updatedOptions = { ...prevOptions };
+        updatedOptions[fieldName] = [...(updatedOptions[fieldName] || []), newOption];
+        return updatedOptions;
+      });
+  
+      // Determine if the field should be treated as an array or a single value field
+      setFormData((prevFormData) => {
+        const isArrayField = Array.isArray(prevFormData[fieldName]);
+        const updatedFormData = {
+          ...prevFormData,
+          [fieldName]: isArrayField
+            ? [...(prevFormData[fieldName] || []), newOption] // Append to array field
+            : newOption, // Set as single value for non-array field
+        };
+        return updatedFormData;
+      });
+  
+      // Update newOptions state
+      setNewOptions((prevNewOptions) => [
+        ...prevNewOptions,
+        { field: fieldName, name: inputValue }
+      ]);
+    }, [optionAlreadyCreated, addNewOptionToMongoDB]);
+    
 
   function getAliasOptions(fileName) {
     if (fileName.endsWith('.txt')) {
@@ -112,7 +266,7 @@ function getStandardFileName(fileName, fileType) {
   // Handle the title input change
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
-    setTitleError('');
+    // setTitleError('');
 
     // Update the title in the taskData state
     setTaskData((prevTaskData) => ({
@@ -206,10 +360,22 @@ function getStandardFileName(fileName, fileType) {
             return;
         }
     }
+
     if (!taskData.upload.title) {
-      setTitleError('Title is required.');
+      // setTitleError('Title is required.');
+      setErrors('Title is required.');
+      setErrorMessage("Title is required.");
+      return;
     } else {
-      setTitleError('');
+      setErrors('');
+    }
+
+    if (!taskData.upload.Species || (taskData.upload.Species && taskData.upload.Species === '')) {
+      setErrors('Species is required.');
+      setErrorMessage("Species is required.");
+      return;
+    } else {
+      setErrors('');
     }
 
     // If both file and title are provided, continue to the next step
@@ -386,11 +552,44 @@ function getStandardFileName(fileName, fileType) {
           <h2 className="h-sm font-weight-bold">Parameters</h2>
           <div className="stripe"></div>
       </div>
-      <div className="form-group field field-string">
-        <label className="control-label" for="root_title">Title<span className="required">*</span></label>
-        <input className="form-control" id="root_title" label="Title" required="" placeholder="" type="text" value={taskData.upload.title} fdprocessedid="jwyrb9" onChange={handleTitleChange}></input>
-        {titleError && <div className="error-message"><span className="error-tooltip">{titleError}</span></div>}
+
+      {/* Dataset */}
+      <div className="form-field">
+        <div>
+          <label className="form-label">Title:</label>
+          <span className="ui-form-title-message warning"> * required, name of the dataset. </span>
+        </div>
+        <input
+          type="text"
+          name="Title"
+          required
+          value={taskData.upload.title}
+          onChange={handleTitleChange}
+          className={`form-input ${errors.Title ? 'error' : ''}`}
+        />
+        {errors.Title && <div className="error-tooltip">{errors.Title}</div>}
       </div>
+
+      {/* Species (CreatableSelect) */}
+      <div className="form-field">
+        <div>
+          <label className="form-label">Species:</label> 
+          <span className="ui-form-title-message warning"> * required </span>
+        </div>
+        <CreatableSelect
+          name="Species"
+          value={taskData.upload.Species}
+          isClearable
+          isSearchable
+          required
+          onChange={(selectedOption) => handleSelectChange('Species', selectedOption)} // Use handleSelectChange              
+          onCreateOption={(inputValue) => handleCreateOption('Species', inputValue)}
+          options={options.Species} // Set options to the fetched options
+          className={`form-input ${errors.Species ? 'error' : ''}`}
+        />
+        {errors.Species && <div className="error-tooltip">{errors.Species}</div>}
+      </div>
+
       <div className='next-upon-success'>
         <button type="submit" className="btn btn-info button" onClick={handleTask1Completion}>Next</button>
       </div>

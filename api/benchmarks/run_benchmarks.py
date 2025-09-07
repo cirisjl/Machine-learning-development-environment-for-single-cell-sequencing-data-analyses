@@ -84,7 +84,7 @@ def run_benchmarks(job_id, task_dict:dict):
     if(task_type=="Cell Type Annotation"):
         try:
             if os.path.exists(adata_path):
-                annotation_results = annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypist_model=None, SingleR_ref=None, species=species, task_type='Cell Type Annotation')
+                annotation_results = annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypist_model=celltypist_model, SingleR_ref=SingleR_ref, species=species, task_type='Cell Type Annotation')
                 upsert_benchmarks(benchmarksId, annotation_results)
                 results = {
                     "datasetId": datasetId,

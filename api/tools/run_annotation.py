@@ -4,7 +4,7 @@ import sys
 from tools.formating.formating import *
 from tools.annotation.celltypist import run_celltypist
 from tools.annotation.scanvi import scanvi_transfer
-from tools.annotation.SingleR import singler_annotation
+from tools.annotation.SingleR import run_singler
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from tools.reduction.reduction import run_dimension_reduction, run_clustering
@@ -232,7 +232,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     #     adata.obs['SingleR_user_ref'] = df_user['labels']
                     #     adata.obs['SingleR_user_ref.pruned'] = df_user['pruned.labels']
 
-                    adata = singler_annotation(adata, SingleR_ref=SingleR_ref, user_ref=user_refs, user_label=user_label)
+                    adata = run_singler(adata, SingleR_ref=SingleR_ref, user_ref=user_refs, user_label=user_label)
 
                     if do_umap:
                         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")

@@ -437,6 +437,10 @@ class MyForm extends Component {
     if (typeof taskData.upload.title !== 'undefined') {
       formData.Title = taskData.upload.title;
     }
+
+    if (typeof taskData.upload.Species !== 'undefined') {
+      formData.Species = taskData.upload.Species;
+    }
     
     // If isAdmin is false, render nothing
     if (!isAdmin) {

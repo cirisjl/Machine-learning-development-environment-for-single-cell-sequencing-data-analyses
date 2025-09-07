@@ -12,18 +12,18 @@ def run_celltypist(adata, model_name, refs = None, ref_adata = None, labels = No
     if model_name is None and (refs is None or labels is None) and (ref_adata is None or labels is None):
         raise CeleryTaskException(f"CellTypist annotation is failed due to empty model_name ({model_name}) and empty user reference ({refs}) or cell labels ({labels}).")
 
+    adata = reset_x_to_raw(adata)
+    sc.pp.filter_genes(adata, min_cells = 10)
+    sc.pp.normalize_total(adata, target_sum=1e4) #not recommended for typical pp
+    sc.pp.log1p(adata)
+    
+    if type(adata.X) != np.ndarray:
+        adata.X = adata.X.toarray()
+        
     if model_name is not None:
         model = celltypist.Model.load(model_name)
         if species.lower() == 'mouse' and "Mouse" not in model_name:
             model.convert()
-        adata = reset_x_to_raw(adata)
-
-        sc.pp.filter_genes(adata, min_cells = 10)
-        sc.pp.normalize_total(adata, target_sum=1e4) #not recommended for typical pp
-        sc.pp.log1p(adata)
-        
-        if type(adata.X) != np.ndarray:
-            adata.X = adata.X.toarray()
         
         predictions = celltypist.annotate(adata, model=model, majority_voting=True)
         predictions_adata = predictions.to_adata()

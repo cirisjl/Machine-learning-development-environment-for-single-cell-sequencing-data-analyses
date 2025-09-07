@@ -6,7 +6,7 @@ from tools.formating.formating import load_anndata, reset_x_to_raw
 from celldex import list_references, search_references
 from exceptions.custom_exceptions import CeleryTaskException
 
-def singler_annotation(adata, SingleR_ref, user_ref=None, user_refdata=None, user_label=None):
+def run_singler(adata, SingleR_ref, user_ref=None, user_refdata=None, user_label=None):
     adata = reset_x_to_raw(adata)
     sce_adata = sce.SingleCellExperiment.from_anndata(adata)
     mat = sce_adata.assay("X")

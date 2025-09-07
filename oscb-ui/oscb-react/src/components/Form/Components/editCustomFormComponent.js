@@ -84,6 +84,7 @@ const EditCustomForm = () => {
         try {
           const authData = await isUserAuth(getCookie('jwtToken'));
           if (authData.isAuth) {
+            setUsername(authData.username);
             fetchDefaultOptions();
           } else {
             console.warn("Token expired! Please login again");

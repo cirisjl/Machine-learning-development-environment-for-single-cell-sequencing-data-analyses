@@ -21,7 +21,7 @@ def scanvi_annotation(adata, label, benchmarksId, datasetId, task_type, ref=None
     current_date_and_time = datetime.now()
 
     # Model
-    if "scVI_predicted" in adata.obs.keys():
+    if "scANVI_predicted" in adata.obs.keys():
         accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label].values, adata.obs['scANVI_predicted'].values)
         results["scANVI"] = {
                 "sys_info": sys_info,
