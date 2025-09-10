@@ -38,7 +38,6 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
             create_bm_results(process_id, magic_results)
             imputation_results.append({'Magic': magic_results})
             redislogger.info(job_id, "Magic imputation is done.")
-            adata = None
         key = 'MAGIC'
         sys_info = magic_results['sys_info']
         y_values[key] = [magic_results['MSE'], magic_results['Possion']]
@@ -63,7 +62,7 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
             redislogger.info(job_id, "Found existing Saver Benchmarks results in database, skip Saver.")
         else:
             # Call Saver method
-            saver_results = saver_imputation(csv_path, benchmarksId, datasetId, task_type, species=species)
+            saver_results = saver_imputation(adata, csv_path, benchmarksId, datasetId, task_type, species=species)
             create_bm_results(process_id, saver_results)
             imputation_results.append({'Saver': saver_results})
             redislogger.info(job_id, "Saver imputation is done.")
@@ -88,6 +87,8 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
     redislogger.info(job_id, "Creating line plot for computing resourses utilization rate.")
     # Call the plot_line function with an empty array for x
     utilization_plot = plot_line(x=x_timepoints, y=y_values_ur, sysinfo=sys_info)
+
+    adata = None # Release memory
     
     results = {
         # "adata_path": adata_path,
