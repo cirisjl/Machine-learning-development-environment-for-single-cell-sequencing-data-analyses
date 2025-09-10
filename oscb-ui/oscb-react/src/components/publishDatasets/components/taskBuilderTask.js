@@ -211,6 +211,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
         validation_fraction: dataset.dataSplit.validationFraction,
         test_fraction: dataset.dataSplit.testFraction,
         label: dataset.taskLabel.value || null, // Ensure label is set correctly
+        task_type: dataset.taskType.label || null,
       };
   
       const totalFraction = userData.train_fraction + userData.validation_fraction + userData.test_fraction;
@@ -273,7 +274,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Check if all datasets have a task type, label and data split performed
     const allDatasetsValid = Object.values(taskData.task_builder.selectedDatasets).every(dataset => 
       dataset.taskType && 
-      ((dataset.taskType.value === 'CL' && dataset.taskLabel) || (dataset.taskType.value === 'IM' && dataset.denoisedLayer) || (dataset.taskType.value === 'BI' && dataset.taskLabel && dataset.batch_key) || (dataset.taskType.value === 'TJ' && dataset.taskLabel && dataset.BMTraj && dataset.originGroup) || (dataset.taskType.value === 'CCC' && dataset.taskLabel && dataset.cccTarget) || (dataset.taskType.value === 'CT' && dataset.taskLabel && dataset.celltypist_model && dataset.SingleR_ref) || (dataset.taskType.value === 'MI' && dataset.mi_aligned1 && dataset.mi_aligned2)) && 
+      ((dataset.taskType.value === 'CL' && dataset.taskLabel) || dataset.taskType.value === 'IM' || (dataset.taskType.value === 'BI' && dataset.taskLabel && dataset.batch_key) || (dataset.taskType.value === 'TJ' && dataset.taskLabel && dataset.BMTraj && dataset.originGroup) || (dataset.taskType.value === 'CCC' && dataset.taskLabel && dataset.cccTarget) || (dataset.taskType.value === 'CT' && dataset.taskLabel && dataset.celltypist_model && dataset.SingleR_ref) || (dataset.taskType.value === 'MI' && dataset.mi_aligned1 && dataset.mi_aligned2)) && 
       dataset.dataSplit.dataSplitPerformed
     );
   
@@ -411,23 +412,6 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           [datasetId]: {
             ...prevTaskData.task_builder.selectedDatasets[datasetId],
             batch_key: selectedOption
-          }
-        }
-      }
-    }));
-  };
-
-
-  const handleDenoisedLayerChange = (datasetId, selectedOption) => {
-    setTaskData(prevTaskData => ({
-      ...prevTaskData,
-      task_builder: {
-        ...prevTaskData.task_builder,
-        selectedDatasets: {
-          ...prevTaskData.task_builder.selectedDatasets,
-          [datasetId]: {
-            ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            denoisedLayer: selectedOption
           }
         }
       }
@@ -650,20 +634,6 @@ const onSelectSubItem = (mainItem, subItem) => {
                         value: key,
                       }))}
                       onChange={(selectedOption) => handleBatchKeyChange(key, selectedOption)}
-                    />
-                  </label>
-                </Typography>)}
-
-                {dataset && dataset.taskType && dataset.layers && dataset.taskType.value === 'IM' && (<Typography variant="body2" component="p">
-                  <label>
-                    <p>Please Choose the Label Layer for Imputation:</p>
-                    <Select
-                      value={dataset.denoisedLayer}
-                      options={dataset.layers.map((key, index) => ({
-                        label: key,
-                        value: key,
-                      }))}
-                      onChange={(selectedOption) => handleDenoisedLayerChange(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}

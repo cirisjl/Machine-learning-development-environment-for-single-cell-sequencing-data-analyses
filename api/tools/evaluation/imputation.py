@@ -8,11 +8,11 @@ import numpy as np
 # test_data = adata.obsm["test"]
 # denoised_data = adata.obsm["denoised"]
 # train_data = adata.obsm["train"]
-def imputation_metrics(adata, train, denoised, test):
+def imputation_metrics(adata, denoised_layer, train='train', test='test'):
     #Mean-squared error
-    test_adata = anndata.AnnData(X=adata.layers[test], obs=adata.obs, var=adata.var)
+    test_adata = anndata.AnnData(X=adata.obsm[test], obs=adata.obs, var=adata.var)
     denoised_adata = anndata.AnnData(
-        X=adata.layers[denoised], obs=adata.obs, var=adata.var
+        X=adata.layers[denoised_layer], obs=adata.obs, var=adata.var
     )
 
     # scaling and transformation
@@ -29,11 +29,11 @@ def imputation_metrics(adata, train, denoised, test):
     )
 
     # Poisson loss
-    test_data = adata.layers[test]
-    denoised_data = adata.layers[denoised]
+    test_data = adata.obsm[test]
+    denoised_data = adata.layers[denoised_layer]
 
     # scaling
-    initial_sum = adata.layers[train].sum()
+    initial_sum = adata.obsm[train].sum()
     target_sum = test_data.sum()
     denoised_data = denoised_data * target_sum / initial_sum
 

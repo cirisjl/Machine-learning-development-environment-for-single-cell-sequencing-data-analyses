@@ -20,7 +20,6 @@ def run_benchmarks(job_id, task_dict:dict):
     datasetId = task_dict['datasetId']
     userID = task_dict['userID']
     ccc_target = task_dict['ccc_target']
-    denoised_layer = task_dict['denoised_layer']
     batch_key = task_dict['batch_key']
     species = task_dict['species']
     celltypist_model = task_dict['celltypist_model']
@@ -167,7 +166,7 @@ def run_benchmarks(job_id, task_dict:dict):
     if(task_type=="Imputation"):
         try:
             if os.path.exists(adata_path):
-                imputation_results = imputation_task(adata_path, denoised_layer, benchmarksId, datasetId, job_id, task_type='Imputation')
+                imputation_results = imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_type='Imputation')
                 upsert_benchmarks(benchmarksId, imputation_results)
                 results = {
                     "datasetId": datasetId,

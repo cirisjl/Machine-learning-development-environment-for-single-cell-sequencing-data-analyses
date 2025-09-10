@@ -7,13 +7,13 @@ from tools.evaluation.imputation import imputation_metrics
 from datetime import datetime
 
 
-def magic_imputation(adata, denoised_layer, benchmarksId, datasetId, task_type, species="mouse"):
+def magic_imputation(adata, benchmarksId, datasetId, task_type, species="mouse"):
     # Start monitoring
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
     results = {}
     counts = adata.X
-    data_magic = magic_impute(counts, genes)
+    data_magic = magic_impute(counts)
     adata.layers['MAGIC'] = data_magic
     
     # Stop monitoring
@@ -21,9 +21,9 @@ def magic_imputation(adata, denoised_layer, benchmarksId, datasetId, task_type, 
 
     current_date_and_time = datetime.now()
 
-    mse, possion = imputation_metrics(adata, train="raw_counts", denoised=denoised_layer, test="MAGIC")
+    mse, possion = imputation_metrics(adata, denoised_layer='MAGIC')
 
-    results["MAGIC"] = {
+    results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,

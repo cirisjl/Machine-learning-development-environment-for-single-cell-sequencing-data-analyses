@@ -12,8 +12,8 @@ import axios from 'axios';
 function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
 
   const [loading, setLoading] = useState(false);
-  const [ message, setMessage ] = useState('');
-  const [ isError, setIsError ] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [wsLogs, setWsLogs] = useState('');
   const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
@@ -121,7 +121,6 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         label: dataset?.taskLabel?.label || '',
         ccc_target: dataset?.cccTarget?.label || '',
         batch_key: dataset?.batch_key?.label || '',
-        denoised_layer: dataset?.denoisedLayer?.label || '',
         bm_traj: dataset?.BMTraj?.label || '',
         origin_group: dataset?.originGroup?.label || '',
         celltypist_model: dataset?.celltypist_model?.label || '',

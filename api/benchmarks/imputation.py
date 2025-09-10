@@ -8,7 +8,7 @@ from datetime import datetime
 import os
 
 
-def imputation_task(adata_path, denoised_layer, benchmarksId, datasetId, job_id, task_type='Imputation'):
+def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_type='Imputation'):
     redislogger.info(job_id, "Start running benchmarks for Imputation task.")
     imputation_results = []
     y_values = {}
@@ -27,27 +27,27 @@ def imputation_task(adata_path, denoised_layer, benchmarksId, datasetId, job_id,
     # Magic
     try:
         redislogger.info(job_id, "Running Magic for Imputation task.")
-        process_id = generate_process_id(md5, task_type, 'Magic', denoised_layer)
+        process_id = generate_process_id(md5, task_type, 'Magic', species)
         magic_results = benchmark_result_exists(process_id)
 
         if magic_results is not None:
             redislogger.info(job_id, "Found existing Magic Benchmarks results in database, skip Magic.")
         else:
             # Call Magic method
-            magic_results = magic_imputation(adata, denoised_layer, benchmarksId, datasetId, task_type, species=species)
+            magic_results = magic_imputation(adata, benchmarksId, datasetId, task_type, species=species)
             create_bm_results(process_id, magic_results)
             imputation_results.append({'Magic': magic_results})
             redislogger.info(job_id, "Magic imputation is done.")
-        if len(magic_results) > 0:
-            for key, result in magic_results.items():
-                sys_info = result['sys_info']
-                y_values[key] = [result['MSE'], result['Possion']]
-                y_values_ur['Magic_CPU'] = result['cpu_usage']
-                y_values_ur['Magic_Memory'] = result['mem_usage']
-                y_values_ur['Magic_GPU'] = result['gpu_usage']
-                y_values_ur['Magic_GPU_Memory'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
-                redislogger.info(job_id, f"{key}: MSE: {result['MSE']}, Possion: {result['Possion']}")
+            adata = None
+        key = 'MAGIC'
+        sys_info = magic_results['sys_info']
+        y_values[key] = [magic_results['MSE'], magic_results['Possion']]
+        y_values_ur['MAGIC_CPU'] = magic_results['cpu_usage']
+        y_values_ur['MAGIC_Memory'] = magic_results['mem_usage']
+        y_values_ur['MAGIC_GPU'] = magic_results['gpu_usage']
+        y_values_ur['MAGIC_GPU_Memory'] = magic_results['gpu_mem_usage']
+        x_timepoints = magic_results['time_points']
+        redislogger.info(job_id, f"{key}: MSE: {magic_results['MSE']}, Possion: {magic_results['Possion']}")
 
     except Exception as e:
         # Handle exceptions as needed
@@ -56,27 +56,26 @@ def imputation_task(adata_path, denoised_layer, benchmarksId, datasetId, job_id,
    # Saver
     try:
         redislogger.info(job_id, "Running Saver for Imputation task.")
-        process_id = generate_process_id(md5, task_type, 'Saver', denoised_layer)
+        process_id = generate_process_id(md5, task_type, 'Saver', species)
         saver_results = benchmark_result_exists(process_id)
 
         if saver_results is not None:
             redislogger.info(job_id, "Found existing Saver Benchmarks results in database, skip Saver.")
         else:
             # Call Saver method
-            saver_results = saver_imputation(csv_path, denoised_layer, benchmarksId, datasetId, task_type, species=species)
+            saver_results = saver_imputation(csv_path, benchmarksId, datasetId, task_type, species=species)
             create_bm_results(process_id, saver_results)
             imputation_results.append({'Saver': saver_results})
             redislogger.info(job_id, "Saver imputation is done.")
-        if len(saver_results) > 0:
-            for key, result in saver_results.items():
-                sys_info = result['sys_info']
-                y_values[key] = [result['MSE'], result['Possion']]
-                y_values_ur['Saver_CPU'] = result['cpu_usage']
-                y_values_ur['Saver_Memory'] = result['mem_usage']
-                y_values_ur['Saver_GPU'] = result['gpu_usage']
-                y_values_ur['Saver_GPU_Memory'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
-                redislogger.info(job_id, f"{key}: MSE: {result['MSE']}, Possion: {result['Possion']}")
+        key = 'SAVER'
+        sys_info = saver_results['sys_info']
+        y_values[key] = [saver_results['MSE'], saver_results['Possion']]
+        y_values_ur['SAVER_CPU'] = saver_results['cpu_usage']
+        y_values_ur['SAVER_Memory'] = saver_results['mem_usage']
+        y_values_ur['SAVER_GPU'] = saver_results['gpu_usage']
+        y_values_ur['SAVER_GPU_Memory'] = saver_results['gpu_mem_usage']
+        x_timepoints = saver_results['time_points']
+        redislogger.info(job_id, f"{key}: MSE: {saver_results['MSE']}, Possion: {saver_results['Possion']}")
 
     except Exception as e:
         # Handle exceptions as needed
@@ -89,8 +88,6 @@ def imputation_task(adata_path, denoised_layer, benchmarksId, datasetId, job_id,
     redislogger.info(job_id, "Creating line plot for computing resourses utilization rate.")
     # Call the plot_line function with an empty array for x
     utilization_plot = plot_line(x=x_timepoints, y=y_values_ur, sysinfo=sys_info)
-
-    adata = None # Release memory
     
     results = {
         # "adata_path": adata_path,

@@ -223,6 +223,7 @@ class DataSplitRequest(BaseModel):
     validation_fraction: float
     test_fraction: float
     labels: Optional[str] = None  # Added labels field for filtering rows with NaN labels
+    task_type: Optional[str] = None
 
 
 
@@ -251,7 +252,6 @@ class BenchmarksRequest(BaseModel):
     adata_path: str
     label: Optional[str] = None
     ccc_target: Optional[str] = None
-    denoised_layer: Optional[str] = None
     bm_traj: Optional[str] = None
     origin_group: Optional[str] = None
     batch_key: Optional[str] = None

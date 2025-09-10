@@ -6,7 +6,7 @@ from tools.evaluation.imputation import imputation_metrics
 from datetime import datetime
 
 
-def saver_imputation(csv_path, denoised_layer, benchmarksId, datasetId, task_type, species="mouse"):
+def saver_imputation(csv_path, benchmarksId, datasetId, task_type, species="mouse"):
     # Start monitoring
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
@@ -32,11 +32,10 @@ def saver_imputation(csv_path, denoised_layer, benchmarksId, datasetId, task_typ
 
     if os.path.exists(output):
         adata_saver = load_anndata(output)
-        adata_saver.layers["raw_counts"] = adata.layers["raw_counts"].copy()
 
-    mse, possion = imputation_metrics(adata_saver, train="raw_counts", denoised=denoised_layer, test="SAVER")
+    mse, possion = imputation_metrics(adata_saver, denoised_layer="SAVER")
 
-    results["SAVER"] = {
+    results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,
                 "datasetId": datasetId,
@@ -52,6 +51,6 @@ def saver_imputation(csv_path, denoised_layer, benchmarksId, datasetId, task_typ
                 "created_on": current_date_and_time
             }
 
-    adata = None
+    adata_saver = None
 
     return results
