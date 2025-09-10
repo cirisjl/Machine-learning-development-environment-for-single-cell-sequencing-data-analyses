@@ -6,6 +6,7 @@ from utils.mongodb import generate_process_id, create_bm_results, benchmark_resu
 from utils.redislogger import *
 from datetime import datetime
 import os
+import numpy as np
 
 
 def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_type='Imputation'):
@@ -17,7 +18,10 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
     md5 = get_md5(adata_path)
     # Load AnnData
     csv_path = adata_path.replace(".h5ad", ".csv")
-    adata, counts, csv_path = load_anndata_to_csv(adata_path, csv_path)
+    adata = load_anndata(adata_path)
+    # Save the dense array to a CSV file
+    np.savetxt(csv_path, adata.obsm['train'].toarray(), delimiter=",")
+
     current_date_and_time = datetime.now()
     sys_info = None
 
@@ -77,6 +81,8 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
         redislogger.info(job_id, f"{key}: MSE: {saver_results['MSE']}, Possion: {saver_results['Possion']}")
 
     except Exception as e:
+        if os.path.exists(csv_path):
+            os.remove(csv_path)
         # Handle exceptions as needed
         redislogger.error(job_id, f"Saver imputation is failed: {e}")
     
@@ -89,6 +95,9 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
     utilization_plot = plot_line(x=x_timepoints, y=y_values_ur, sysinfo=sys_info)
 
     adata = None # Release memory
+
+    if os.path.exists(csv_path):
+        os.remove(csv_path)
     
     results = {
         # "adata_path": adata_path,

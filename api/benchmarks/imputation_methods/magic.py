@@ -12,7 +12,7 @@ def magic_imputation(adata, benchmarksId, datasetId, task_type, species="mouse")
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
     results = {}
-    counts = adata.X
+    counts = adata.obsm['train']
     data_magic = magic_impute(counts)
     adata.layers['MAGIC'] = data_magic
     
