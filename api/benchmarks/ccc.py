@@ -15,7 +15,7 @@ def ccc_task(adata_path, label, ccc_target, benchmarksId, datasetId, job_id, spe
     x_timepoints = []
     md5 = get_md5(adata_path)
     # Load AnnData
-    adata, counts = load_anndata(adata_path)
+    adata = load_anndata(adata_path)
     current_date_and_time = datetime.now()
     sys_info = None
 
@@ -32,19 +32,21 @@ def ccc_task(adata_path, label, ccc_target, benchmarksId, datasetId, job_id, spe
             redislogger.info(job_id, "Found existing LIANA Benchmarks results in database, skip LIANA.")
         else:
             # Call LIANA method
-            LIANA_results = liana_ccc(adata, label, ccc_target, benchmarksId, datasetId, task_type, species=species)
+            LIANA_results = liana_ccc(adata, label, benchmarksId, datasetId, task_type, species=species, ccc_target=ccc_target)
             create_bm_results(process_id, LIANA_results)
             ccc_results.append({'LIANA': LIANA_results})
             redislogger.info(job_id, "LIANA Cell-cell communication is done.")
-        if len(LIANA_results) > 0:
-            for key, result in LIANA_results.items():
-                sys_info = result['sys_info']
+        sys_info = LIANA_results['sys_info']
+        y_values_ur['LIANA_CPU'] = LIANA_results['cpu_usage']
+        y_values_ur['LIANA_Memory'] = LIANA_results['mem_usage']
+        y_values_ur['LIANA_GPU'] = LIANA_results['gpu_usage']
+        y_values_ur['LIANA_GPU_Memory'] = LIANA_results['gpu_mem_usage']
+        x_timepoints = LIANA_results['time_points']
+
+        if len(LIANA_results['results']) > 0:
+            for result in LIANA_results['results']:
+                key = result['tool']
                 y_values[key] = [result['Precision-recall AUC'], result['Odds Ratio']]
-                y_values_ur['LIANA_CPU'] = result['cpu_usage']
-                y_values_ur['LIANA_Memory'] = result['mem_usage']
-                y_values_ur['LIANA_GPU'] = result['gpu_usage']
-                y_values_ur['LIANA_GPU_Memory'] = result['gpu_mem_usage']
-                x_timepoints = result['time_points']
                 redislogger.info(job_id, f"{key}: Precision-recall AUC: {result['Precision-recall AUC']}, Odds Ratio: {result['Odds Ratio']}")
 
     except Exception as e:

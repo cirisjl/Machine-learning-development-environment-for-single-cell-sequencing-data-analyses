@@ -124,7 +124,7 @@ def run_benchmarks(job_id, task_dict:dict):
     if(task_type=="Cell-Cell Communication"):
         try:
             if os.path.exists(adata_path):
-                ccc_results = ccc_task(adata_path, ccc_target, benchmarksId, datasetId, job_id, task_type='Cell-Cell Communication')
+                ccc_results = ccc_task(adata_path, label, ccc_target, benchmarksId, datasetId, job_id, species=species, task_type='Cell-Cell Communication')
                 upsert_benchmarks(benchmarksId, ccc_results)
                 results = {
                     "datasetId": datasetId,
