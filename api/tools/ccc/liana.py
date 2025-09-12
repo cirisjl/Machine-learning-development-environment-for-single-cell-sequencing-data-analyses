@@ -129,6 +129,7 @@ def run_liana_ccc(adata, cell_type_label, species, methods=[], aggregate_methods
                             verbose=True, 
                             key_added=f"LIANA ({method})")
         adata.uns[f"LIANA ({method})"]["score"] = adata.uns[f"LIANA ({method})"]["lrscore"]
+        adata.uns[f"LIANA ({method})"]["ligand"] = adata.uns[f"LIANA ({method})"]["ligand_complex"]
 
     # adata.uns['liana_res'].head()
 
