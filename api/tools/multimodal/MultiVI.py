@@ -15,7 +15,7 @@ from tools.formating.formating import get_scvi_path
 scvi.settings.seed = 0
 torch.set_float32_matmul_precision("high")
 
-def run_multivi(mdata_path, rna_subset="rna_subset", atac_subset="atac_subset"):
+def run_multivi(mdata_path, rna_subset="rna", atac_subset="atac"):
     mdata = muon.read_h5mu(mdata_path)
     model_dir = get_scvi_path(mdata_path, "multivi")
     model = None

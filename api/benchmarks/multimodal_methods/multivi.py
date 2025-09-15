@@ -14,7 +14,7 @@ def multivi_multimodal(mdata, benchmarksId, datasetId, task_type):
     monitor = Monitor(1)
     sys_info = monitor.get_sys_info()
     results = {}
-    mdata = run_multivi(mdata_path, rna_subset="rna_subset", atac_subset="atac_subset")
+    mdata = run_multivi(mdata_path, rna_subset="rna", atac_subset="atac")
     
     # Stop monitoring
     time_points, cpu_usage, mem_usage, gpu_usage, gpu_mem_usage = monitor.stop()

@@ -6,6 +6,7 @@ from umap import UMAP
 from tools.qc.scanpy_qc import run_scanpy_qc
 from tools.qc.dropkick_qc import run_dropkick_qc
 from tools.qc.seurat_qc import run_seurat_qc
+from tools.qc.muon_qc import run_muon
 from tools.qc.scrublet_calls import predict_scrublet
 # sys.path.append('..')
 from tools.formating.formating import *
@@ -60,6 +61,11 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     
     methods = parameters['methods']
     method = None
+
+    if input_path.endswith(".h5mu"):
+        methods = ['muon']
+        parameters['methods'] = ['muon']
+
     redislogger.info(job_id, f"Using QC Parameters: {parameters}")
 
     
@@ -486,7 +492,51 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     raise CeleryTaskException(detail)
                     
             pp_results.append(qc_results)
-            process_ids.append(process_id)    
+            process_ids.append(process_id)
+        
+        # muon QC
+        if "MUON" in methods:
+            method='muon'
+            process_id = generate_process_id(md5, process, method, parameters)
+            qc_results = pp_result_exists(process_id)
+
+            if qc_results is not None:
+                redislogger.info(job_id, "Found existing pre-process results in database, skip Quality Control.")
+                nCells = qc_results["nCells"]
+                qc_output.append({'MuData': qc_results["mdata_path"]})
+                mdata_path = qc_results["mdata_path"]
+            else:
+                output_path = None
+                output_path = get_output_path(output, process_id, ds['dataset'], format='MuData', method='muon')
+                # Run muon QC 
+                try:
+                    redislogger.info(job_id, "Start muon QC...")
+                    mdata, qc_results = run_muon(input_path, output_path, md5, parameters, job_id, process_id, mod1='rna', mod2='atac', min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'],  species=species)
+                    nCells = qc_results["nCells"]
+                    
+                    qc_output.append({'MuData': output_path})
+                    adata_path = output_path
+                    mdata = None
+                    redislogger.info(job_id, qc_results['info'])
+                    qc_results['datasetId'] = datasetId
+                    
+                    create_pp_results(process_id, qc_results)  # Insert pre-process results to database
+                except Exception as e:
+                    detail = f"Error during muon QC: {str(e)}"
+                    upsert_jobs(
+                        {
+                            "job_id": job_id, 
+                            "results": detail,
+                            "completed_on": datetime.now(),
+                            "status": "Failure"
+                        }
+                    )
+                    redislogger.error(job_id, detail)
+                    raise CeleryTaskException(detail)
+                
+            pp_results.append(qc_results)
+            process_ids.append(process_id) 
+
 
     results = {
         "nCells": nCells,

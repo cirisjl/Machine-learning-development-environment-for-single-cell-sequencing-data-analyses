@@ -80,6 +80,11 @@ const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, pl
               // If umap plots are available, we can set them in the plotData state
               setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
             }
+          } else if (plotName === 'atac_umap') {
+            if (plot || plot_3d) {
+              // If ATAC umap plots are available, we can set them in the plotData state
+              setPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
+            }
           }
         } catch (error) {
           console.error('Error fetching plot data:', error);
@@ -168,7 +173,7 @@ const handleLogMessage = (event) => {
       let inputRequest = {
         dataset: taskData.upload.title,
         input: pathToUse,
-        output: pathToUse + "/results",
+        output: extractDir(pathToUse),
         userID: taskData.quality_control.token,
         species: taskData.upload.Species.label,
         qc_params : {
@@ -311,7 +316,8 @@ const handleAssaySelectionSubmit = async () => {
     let inputRequest = {
       dataset: taskData.upload.title,
       input: taskData.quality_control.seurat_meta.file,
-      output: extractDir(taskData.quality_control.seurat_meta.file) + "/results",
+      // output: extractDir(taskData.quality_control.seurat_meta.file) + "/results",
+      output: extractDir(taskData.quality_control.seurat_meta.file),
       userID: taskData.quality_control.token,
       qc_params : {
         min_genes : values.min_genes,
@@ -435,201 +441,291 @@ const handleAssaySelectionSubmit = async () => {
         {taskData.quality_control.qc_results &&
           taskData.quality_control.qc_results.map((result, index) => (
             <React.Fragment key={index}>
-                  {(result.umap_plot || result.umap_plot_3d) && (
-                    <>
-                    <h2>UMAP Plot</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
-                      {/* Radio buttons */}
-                      <div>
-                        <label>
-                          <input
-                            type="radio"
-                            value="2D"
-                            checked={plotDimension === "2D"}
-                            onChange={(e) => setPlotDimension(e.target.value)}
-                          />
-                          2D
-                        </label>
-                        <label style={{ marginLeft: '8px' }}>
-                          <input
-                            type="radio"
-                            value="3D"
-                            checked={plotDimension === "3D"}
-                            onChange={(e) => setPlotDimension(e.target.value)}
-                          />
-                          3D
-                        </label>
-                      </div>
+              {(result.umap_plot || result.umap_plot_3d) && (
+                <>
+                <h2>UMAP Plot</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                  {/* Radio buttons */}
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        value="2D"
+                        checked={plotDimension === "2D"}
+                        onChange={(e) => setPlotDimension(e.target.value)}
+                      />
+                      2D
+                    </label>
+                    <label style={{ marginLeft: '8px' }}>
+                      <input
+                        type="radio"
+                        value="3D"
+                        checked={plotDimension === "3D"}
+                        onChange={(e) => setPlotDimension(e.target.value)}
+                      />
+                      3D
+                    </label>
+                  </div>
 
-                      <select
-                        value={clusteringPlotType}
-                        onChange={(e) => {
-                          const selectedPlotType = e.target.value;
-                          setClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap");
-                        }}
-                        style={{
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: '1px solid #ccc',
-                          backgroundColor: '#fff',
-                          fontSize: '14px',
-                          fontFamily: 'Arial, sans-serif',
-                          outline: 'none',
-                          transition: 'border-color 0.2s, box-shadow 0.2s',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                          cursor: 'pointer',
-                          minWidth: '150px',
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#1976d2';
-                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#ccc';
-                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-                        }}
-                      >
-                      
-                         {Array.isArray(result.obs_names) && (
-                            result.obs_names.map((key, idx) => (
+                  <select
+                    value={clusteringPlotType}
+                    onChange={(e) => {
+                      const selectedPlotType = e.target.value;
+                      setClusteringPlotType(selectedPlotType);
+                      fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap");
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #ccc',
+                      backgroundColor: '#fff',
+                      fontSize: '14px',
+                      fontFamily: 'Arial, sans-serif',
+                      outline: 'none',
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      cursor: 'pointer',
+                      minWidth: '150px',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#1976d2';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#ccc';
+                      e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                    }}
+                  >
+                  
+                      {Array.isArray(result.obs_names) && (
+                        result.obs_names.map((key, idx) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                        ))
+                      )}
+                  </select>
+
+                </div>
+
+            
+                {plotDimension === '2D' ? (
+                  plotData?.umap_plot || result.umap_plot ? (
+                    <>
+                      <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                  )
+                ) : plotDimension === '3D' ? (
+                  plotData?.umap_plot_3d || result.umap_plot_3d ? (
+                    <>
+                      <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
+                  )
+                ) : null}
+                    
+                </>
+              )}
+
+              {(result.atac_umap_plot || result.atac_umap_plot_3d) && (
+                <>
+                  <h2>ATAC UMAP Plot</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                    {/* Radio buttons */}
+                    <div>
+                      <label>
+                        <input
+                          type="radio"
+                          value="2D"
+                          checked={plotDimension === "2D"}
+                          onChange={(e) => setPlotDimension(e.target.value)}
+                        />
+                        2D
+                      </label>
+                      <label style={{ marginLeft: '8px' }}>
+                        <input
+                          type="radio"
+                          value="3D"
+                          checked={plotDimension === "3D"}
+                          onChange={(e) => setPlotDimension(e.target.value)}
+                        />
+                        3D
+                      </label>
+                    </div>
+
+                    <select
+                      value={clusteringPlotType}
+                      onChange={(e) => {
+                        const selectedPlotType = e.target.value;
+                        setClusteringPlotType(selectedPlotType);
+                        fetchPlotData(selectedPlotType, result.obs, result.umap, result.atac_umap_3d, "atac_umap");
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        backgroundColor: '#fff',
+                        fontSize: '14px',
+                        fontFamily: 'Arial, sans-serif',
+                        outline: 'none',
+                        transition: 'border-color 0.2s, box-shadow 0.2s',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                        cursor: 'pointer',
+                        minWidth: '150px',
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#1976d2';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#ccc';
+                        e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                      }}
+                    >
+
+                      {Array.isArray(result.obs_names) && (
+                        result.obs_names.map((key, idx) => (
                           <option key={key} value={key}>
                             {key}
                           </option>
-                            ))
-                          )}
-                      </select>
+                        ))
+                      )}
+                    </select>
 
-                    </div>
+                  </div>
 
+
+                  {plotDimension === '2D' ? (
+                    plotData?.atac_umap_plot || result.atac_umap_plot ? (
+                      <>
+                        <ReactPlotly plot_data={plotData?.atac_umap_plot || result.atac_umap_plot} />
+                      </>
+                    ) : (
+                      <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                    )
+                  ) : plotDimension === '3D' ? (
+                    plotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
+                      <>
+                        <ReactPlotly plot_data={plotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />
+                      </>
+                    ) : (
+                      <div style={{ textAlign: 'center', width: '100%' }}>ATAC 3D UMAP plot does not exist.</div>
+                    )
+                  ) : null}
+
+                </>
+              )}
+
+              {(result.tsne_plot || result.tsne_plot_3d) && (
+              <>
+              <h2>t-SNE Plot</h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                {/* Radio buttons */}
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      value="2D"
+                      checked={tsnePlotDimension === "2D"}
+                      onChange={(e) => setTsnePlotDimension(e.target.value)}
+                    />
+                    2D
+                  </label>
+                  <label style={{ marginLeft: '8px' }}>
+                    <input
+                      type="radio"
+                      value="3D"
+                      checked={tsnePlotDimension === "3D"}
+                      onChange={(e) => setTsnePlotDimension(e.target.value)}
+                    />
+                    3D
+                  </label>
+                </div>
+
+                <select
+                  value={tsneClusteringPlotType}
+                  onChange={(e) => {
+                    const selectedPlotType = e.target.value;
+                    setTsneClusteringPlotType(selectedPlotType);
+                    fetchPlotData(selectedPlotType, result.obs, result.tsne, result.tsne_3d, "tsne");
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #ccc',
+                    backgroundColor: '#fff',
+                    fontSize: '14px',
+                    fontFamily: 'Arial, sans-serif',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    cursor: 'pointer',
+                    minWidth: '150px',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#1976d2';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#ccc';
+                    e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                  }}
+                >
                 
-                    {plotDimension === '2D' ? (
-                      plotData?.umap_plot || result.umap_plot ? (
-                        <>
-                          <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
-                      )
-                    ) : plotDimension === '3D' ? (
-                      plotData?.umap_plot_3d || result.umap_plot_3d ? (
-                        <>
-                          <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
-                      )
-                    ) : null}
-                       
-                    </>
-                  )}
-                   {(result.tsne_plot || result.tsne_plot_3d) && (
-                    <>
-                    <h2>t-SNE Plot</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
-                      {/* Radio buttons */}
-                      <div>
-                        <label>
-                          <input
-                            type="radio"
-                            value="2D"
-                            checked={tsnePlotDimension === "2D"}
-                            onChange={(e) => setTsnePlotDimension(e.target.value)}
-                          />
-                          2D
-                        </label>
-                        <label style={{ marginLeft: '8px' }}>
-                          <input
-                            type="radio"
-                            value="3D"
-                            checked={tsnePlotDimension === "3D"}
-                            onChange={(e) => setTsnePlotDimension(e.target.value)}
-                          />
-                          3D
-                        </label>
-                      </div>
+                    {Array.isArray(result.obs_names) && (
+                      result.obs_names.map((key, idx) => (
+                        <option key={key} value={key}>
+                          {key}
+                        </option>
+                      ))
+                    )}
+                </select>
 
-                      <select
-                        value={tsneClusteringPlotType}
-                        onChange={(e) => {
-                          const selectedPlotType = e.target.value;
-                          setTsneClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "tsne");
-                        }}
-                        style={{
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: '1px solid #ccc',
-                          backgroundColor: '#fff',
-                          fontSize: '14px',
-                          fontFamily: 'Arial, sans-serif',
-                          outline: 'none',
-                          transition: 'border-color 0.2s, box-shadow 0.2s',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                          cursor: 'pointer',
-                          minWidth: '150px',
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#1976d2';
-                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#ccc';
-                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-                        }}
-                      >
-                      
-                         {Array.isArray(result.obs_names) && (
-                            result.obs_names.map((key, idx) => (
-                              <option key={key} value={key}>
-                                {key}
-                              </option>
-                            ))
-                          )}
-                      </select>
+              </div>
 
-                    </div>
-
-                
-                    {tsnePlotDimension === '2D' ? (
-                      tsnePlotData?.tsne_plot || result.tsne_plot ? (
-                        <>
-                          <ReactPlotly plot_data={tsnePlotData?.tsne_plot || result.tsne_plot} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>2D t-SNE plot does not exist.</div>
-                      )
-                    ) : tsnePlotDimension === '3D' ? (
-                      tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d ? (
-                        <>
-                          <ReactPlotly plot_data={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>3D t-SNE plot does not exist.</div>
-                      )
-                    ) : null}
-                       
-                    </>
-                  )}
-                  {result.violin_plot && (
-                    <>
-                      <h2>Violin Plot</h2>
-                      <ReactPlotly plot_data={result.violin_plot} />
-                    </>
-                  )}
-                  {result.scatter_plot && (
-                    <>
-                      <h2>Scatter Plot</h2>
-                      <ReactPlotly plot_data={result.scatter_plot} />
-                    </>
-                  )}
-                  {result.highest_expr_genes_plot && (
-                    <>
-                      <h2>Highest Expression Genes Plot</h2>
-                      <ReactPlotly plot_data={result.highest_expr_genes_plot} />
-                    </>
-                  )}
-                </React.Fragment>
+          
+              {tsnePlotDimension === '2D' ? (
+                tsnePlotData?.tsne_plot || result.tsne_plot ? (
+                  <>
+                    <ReactPlotly plot_data={tsnePlotData?.tsne_plot || result.tsne_plot} />
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', width: '100%' }}>2D t-SNE plot does not exist.</div>
+                )
+              ) : tsnePlotDimension === '3D' ? (
+                tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d ? (
+                  <>
+                    <ReactPlotly plot_data={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d} />
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', width: '100%' }}>3D t-SNE plot does not exist.</div>
+                )
+              ) : null}
+                  
+              </>
+            )}
+            {result.violin_plot && (
+              <>
+                <h2>Violin Plot</h2>
+                <ReactPlotly plot_data={result.violin_plot} />
+              </>
+            )}
+            {result.scatter_plot && (
+              <>
+                <h2>Scatter Plot</h2>
+                <ReactPlotly plot_data={result.scatter_plot} />
+              </>
+            )}
+            {result.highest_expr_genes_plot && (
+              <>
+                <h2>Highest Expression Genes Plot</h2>
+                <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+              </>
+            )}
+          </React.Fragment>
         ))}
         </div>
         {!taskData.quality_control.seurat_meta.displayAssayNames && (

@@ -50,7 +50,7 @@ except ImportError:
 def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
     # path = os.path.abspath(path)
     adata = None
-    print(path)
+    # print(path)
 
     # if (os.path.isdir(path) and os.path.exists(os.path.join(path, "matrix.mtx")) and os.path.exists(
     #         os.path.join(path, "genes.tsv")) and os.path.exists(os.path.join(path, "barcodes.tsv"))) 
@@ -660,6 +660,9 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
         if format == "AnnData":
             output_path = os.path.join(output, process_id, dataset + method + ".h5ad")
             print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
+        elif format == "MuData":
+            output_path = os.path.join(output, process_id, dataset + method + ".h5mu")
+            print("The output path is a directory, adding output file " + dataset + method + ".h5mu to the path.")
         elif format == "SingleCellExperiment":
             output_path = os.path.join(output, process_id, dataset + method + ".rds")
             print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
@@ -676,6 +679,8 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
     else:
         if format == "AnnData":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
+        elif format == "MuData":
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5mu"))
         elif format == "SingleCellExperiment":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".rds"))
         elif format == "Seurat":

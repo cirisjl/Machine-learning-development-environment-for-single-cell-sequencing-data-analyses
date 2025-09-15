@@ -232,6 +232,14 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
                 pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
                 pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
 
+            if 'atac_umap' in pp_result.keys():
+                pp_result['atac_umap_plot'] = plot_UMAP_obs(obs, pp_result['atac_umap'], layer='X')
+                pp_result['atac_umap'] = pp_result['atac_umap'].tolist()
+
+            if 'atac_umap_3d' in pp_result.keys():
+                pp_result['atac_umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['atac_umap_3d'], layer='X', n_dim=3)
+                pp_result['atac_umap_3d'] = pp_result['atac_umap_3d'].tolist()
+
             if pp_result['process'] == 'QC':
                 pp_result['violin_plot'] = plot_violin(obs)
                 pp_result['scatter_plot'] = plot_scatter(obs)

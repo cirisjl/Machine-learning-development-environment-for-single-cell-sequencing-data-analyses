@@ -63,7 +63,7 @@ def get_pp_results(process_ids, umap=False, record_type=None):
     pp_results = None
     if not umap:
         if record_type == None:
-            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1, "embeddings" : 1, "tsne": 1, "tsne_3d": 1, "uns": 1, "obsp": 1, "varm": 1})
+            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1, "embeddings" : 1, "tsne": 1, "tsne_3d": 1, "atac_umap": 1, "atac_umap_3d": 1, "uns": 1, "obsp": 1, "varm": 1})
         elif record_type == 'table':
             pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1,"layers" : 1, "layer" : 1, "embeddings" : 1, "uns": 1, "obsp": 1, "varm": 1})
     else:
@@ -97,6 +97,12 @@ def get_pp_results(process_ids, umap=False, record_type=None):
 
             if 'tsne_3d' in pp_result.keys():
                 pp_result['tsne_3d'] = json_numpy.loads(pp_result['tsne_3d'])
+            
+            if 'atac_umap' in pp_result.keys():
+                pp_result['atac_umap'] = json_numpy.loads(pp_result['atac_umap'])
+
+            if 'atac_umap_3d' in pp_result.keys():
+                pp_result['atac_umap_3d'] =json_numpy.loads(pp_result['atac_umap_3d'])
             
             if 'highest_expr_genes' in pp_result.keys():
                 pp_result['highest_expr_genes']['counts_top_genes'] = json_numpy.loads(pp_result['highest_expr_genes']['counts_top_genes'])
