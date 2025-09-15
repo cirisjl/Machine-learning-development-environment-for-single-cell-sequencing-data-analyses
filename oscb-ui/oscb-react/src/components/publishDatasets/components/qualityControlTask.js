@@ -47,6 +47,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
   const [clusteringPlotType, setClusteringPlotType] = useState('');
   const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+  const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
@@ -83,7 +84,7 @@ const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, pl
           } else if (plotName === 'atac_umap') {
             if (plot || plot_3d) {
               // If ATAC umap plots are available, we can set them in the plotData state
-              setPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
+              setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
             }
           }
         } catch (error) {
@@ -561,7 +562,7 @@ const handleAssaySelectionSubmit = async () => {
                       onChange={(e) => {
                         const selectedPlotType = e.target.value;
                         setClusteringPlotType(selectedPlotType);
-                        fetchPlotData(selectedPlotType, result.obs, result.umap, result.atac_umap_3d, "atac_umap");
+                        fetchPlotData(selectedPlotType, result.obs, result.atac_umap, result.atac_umap_3d, "atac_umap");
                       }}
                       style={{
                         padding: '8px 12px',
@@ -599,17 +600,17 @@ const handleAssaySelectionSubmit = async () => {
 
 
                   {plotDimension === '2D' ? (
-                    plotData?.atac_umap_plot || result.atac_umap_plot ? (
+                    atacPlotData?.atac_umap_plot || result.atac_umap_plot ? (
                       <>
-                        <ReactPlotly plot_data={plotData?.atac_umap_plot || result.atac_umap_plot} />
+                        <ReactPlotly plot_data={atacPlotData?.atac_umap_plot || result.atac_umap_plot} />
                       </>
                     ) : (
                       <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
                     )
                   ) : plotDimension === '3D' ? (
-                    plotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
+                    atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
                       <>
-                        <ReactPlotly plot_data={plotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />
+                        <ReactPlotly plot_data={atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />
                       </>
                     ) : (
                       <div style={{ textAlign: 'center', width: '100%' }}>ATAC 3D UMAP plot does not exist.</div>

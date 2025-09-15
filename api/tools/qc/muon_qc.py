@@ -47,12 +47,12 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
     if is_normalized(rna.X, min_genes) and not check_nonnegative_integers(rna.X):
         redislogger.info(unique_id, "rna.X is not raw counts.")
         if "raw_counts" in rna.layers.keys():
-            redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy rna.X to layer 'normalized_X'.")
-            rna.layers["normalized_X"] = rna.X.copy()
+            redislogger.info(unique_id, "Use layer 'raw_counts' instead.")
+            # rna.layers["normalized_X"] = rna.X.copy()
             rna.X = rna.layers['raw_counts'].copy()
         elif rna.raw is not None:
-            redislogger.info(unique_id, "Use rna.raw.X instead. Copy rna.X to layer 'normalized_X'.")
-            rna.layers["normalized_X"] = rna.X.copy()
+            redislogger.info(unique_id, "Use rna.raw.X instead.")
+            # rna.layers["normalized_X"] = rna.X.copy()
             rna.X = rna.raw.X.copy()
         else:
             raise ValueError("muon QC only take raw counts, not normalized data.")
@@ -140,12 +140,12 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
     if is_normalized(atac.X, min_genes) and not check_nonnegative_integers(atac.X):
         redislogger.info(unique_id, "atac.X is not raw counts.")
         if "raw_counts" in atac.layers.keys():
-            redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy atac.X to layer 'normalized_X'.")
-            atac.layers["normalized_X"] = atac.X.copy()
+            redislogger.info(unique_id, "Use layer 'raw_counts' instead.")
+            # atac.layers["normalized_X"] = atac.X.copy()
             atac.X = atac.layers['raw_counts'].copy()
         elif atac.raw is not None:
-            redislogger.info(unique_id, "Use atac.raw.X instead. Copy atac.X to layer 'normalized_X'.")
-            atac.layers["normalized_X"] = atac.X.copy()
+            redislogger.info(unique_id, "Use atac.raw.X instead.")
+            # atac.layers["normalized_X"] = atac.X.copy()
             atac.X = atac.raw.X.copy()
         else:
             raise ValueError("muon QC only take raw counts, not normalized data.")
@@ -206,6 +206,7 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
             "info": info,
             "mdata_path": output_path,
             "mdata_size": mdata_size,
+            "layer": "X",
             "layers": layers,
             "obs_names": obs_names,
             "cell_metadata": cell_metadata,
