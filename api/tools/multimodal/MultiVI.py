@@ -10,14 +10,42 @@ import scipy
 from scipy import sparse
 import sys
 sys.path.append('..')
-from tools.formating.formating import get_scvi_path
+from tools.formating.formating import *
 
 scvi.settings.seed = 0
 torch.set_float32_matmul_precision("high")
 
-def run_multivi(mdata_path, rna_subset="rna", atac_subset="atac"):
-    mdata = muon.read_h5mu(mdata_path)
+def run_multivi(mdata_path, mdata=None, rna_subset="rna", atac_subset="atac"):
+    if mdata == None:
+        mdata = muon.read_h5mu(mdata_path)
     model_dir = get_scvi_path(mdata_path, "multivi")
+
+    if is_normalized(mdata[rna_subset].X, 200) and not check_nonnegative_integers(mdata[rna_subset].X):
+        print("mdata[rna_subset].X is not raw counts.")
+        if "raw_counts" in mdata[rna_subset].layers.keys():
+            print("Use layer 'raw_counts' instead.")
+            # mdata[rna_subset].layers["normalized_X"] = mdata[rna_subset].X.copy()
+            mdata[rna_subset].X = mdata[rna_subset].layers['raw_counts'].copy()
+        elif mdata[rna_subset].raw is not None:
+            print("Use mdata[rna_subset].raw.X instead.")
+            # mdata[rna_subset].layers["normalized_X"] = mdata[rna_subset].X.copy()
+            mdata[rna_subset].X = mdata[rna_subset].raw.X.copy()
+        else:
+            raise ValueError("MultiVI only take raw counts, not normalized data.")
+
+    if is_normalized(mdata[atac_subset].X, 200) and not check_nonnegative_integers(mdata[atac_subset].X):
+        print("mdata[atac_subset].X is not raw counts.")
+        if "raw_counts" in mdata[atac_subset].layers.keys():
+            print("Use layer 'raw_counts' instead.")
+            # mdata[atac_subset].layers["normalized_X"] = mdata[atac_subset].X.copy()
+            mdata[atac_subset].X = mdata[atac_subset].layers['raw_counts'].copy()
+        elif mdata[atac_subset].raw is not None:
+            print("Use mdata[atac_subset].raw.X instead.")
+            # mdata[atac_subset].layers["normalized_X"] = mdata[atac_subset].X.copy()
+            mdata[atac_subset].X = mdata[atac_subset].raw.X.copy()
+        else:
+            raise ValueError("MultiVI only take raw counts, not normalized data.")
+
     model = None
     if not os.path.exists(model_dir):
         scvi.model.MULTIVI.setup_mudata(
@@ -37,11 +65,11 @@ def run_multivi(mdata_path, rna_subset="rna", atac_subset="atac"):
         # For our sparse matrices, we want CSR rather than CSC as training will be faster
         if type(mdata.mod[rna_subset].X) == scipy.sparse._csc.csc_matrix:
             mdata.mod[rna_subset].X = mdata.mod[rna_subset].X.tocsr()
-        elif type(mdata.mod[rna_subset].X) == np.matrix:
+        elif type(mdata.mod[rna_subset].X) == np.matrix or type(mdata.mod[rna_subset].X) == np.ndarray:
             mdata.mod[rna_subset].X = sparse.csr_matrix(mdata.mod[rna_subset].X)
         if type(mdata.mod[atac_subset].X) == scipy.sparse._csc.csc_matrix:
             mdata.mod[atac_subset].X = mdata.mod[atac_subset].X.tocsr()
-        elif type(mdata.mod[atac_subset].X) == np.matrix:
+        elif type(mdata.mod[atac_subset].X) == np.matrix or type(mdata.mod[atac_subset].X) == np.ndarray:
             mdata.mod[atac_subset].X = sparse.csr_matrix(mdata.mod[atac_subset].X)
         mdata.update()
         model.train()

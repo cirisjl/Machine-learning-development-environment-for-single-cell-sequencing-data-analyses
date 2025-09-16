@@ -499,8 +499,15 @@ def plot_bar(x=[], y={}, title="Benchmarks"):
 
     if len(x) > 0 and len(y) > 0:
         for key, value in y.items():
+            # Remove method with a sum of 0 score
             if sum(value) == 0:
                 continue
+
+            # # Remove metrics with 0 score
+            # for i in range(len(value)):
+            #     if value[i] == 0:
+            #         x.pop(i)
+            #         value.pop(i)
 
             traces.append({
                 "type": "bar",

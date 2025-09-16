@@ -39,68 +39,68 @@ def run_data_split(job_id, data_dict:dict):
         }
     )
 
-    adata_path = unzip_file_if_compressed(job_id, adata_path) 
+    adata_path = unzip_file_if_compressed(job_id, adata_path)
 
-    try:
-        adata = load_anndata(adata_path)
-        if adata is not None:
-            if task_type == "Imputation":
-                if not 'train' in adata.obsm.keys():
-                    adata = split_imputation_data(adata)
+    if not adata_path.endswith(".h5mu"): 
+        try:
+            adata = load_anndata(adata_path)
+            if adata is not None:
+                if task_type == "Imputation":
+                    if not 'train' in adata.obsm.keys():
+                        adata = split_imputation_data(adata)
+                        save_anndata(adata, adata_path)
+
+                elif not (test_fraction ==1 and 'split_idx' in adata.obs.keys()):
+                    if labels is not None and labels != "":
+                        adata = adata[~adata.obs[labels].isna()] # Remove rows with NaN labels
+                    adata = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
                     save_anndata(adata, adata_path)
-
-            elif not (test_fraction ==1 and 'split_idx' in adata.obs.keys()):
-                if labels is not None and labels != "":
-                    adata = adata[~adata.obs[labels].isna()] # Remove rows with NaN labels
-                adata = sc_train_val_test_split(adata, train_fraction, validation_fraction, test_fraction)
-                save_anndata(adata, adata_path)
-            adata = None
-        else:
-            detail = f'File does not exist at {adata_path}'
+                adata = None
+            else:
+                detail = f'File does not exist at {adata_path}'
+                raise CeleryTaskException(detail)
+        except Exception as e:
+            # Handle any errors
+            detail=f"Data split is failed: {str(e)}"
+            upsert_jobs(
+                {
+                    "job_id": job_id,
+                    "results": detail,
+                    "completed_on": datetime.now(),
+                    "status": "Failure"
+                }
+            )
             raise CeleryTaskException(detail)
-
-        # Write AnnData objects to files with unique filenames in the temporary directory
-        # if adata is not None: 
-        #     # adata.write(adata_path, compression='gzip')
-        #     save_anndata(adata, adata_path)
-        
-        # Updating records using string paths
-        upsert_benchmarks(benchmarksId, {
-            "datasetId": datasetId,
-            "adata_path": adata_path
-        })        
-        results = {
+    
+    # Write AnnData objects to files with unique filenames in the temporary directory
+    # if adata is not None: 
+    #     # adata.write(adata_path, compression='gzip')
+    #     save_anndata(adata, adata_path)
+    
+    # Updating records using string paths
+    upsert_benchmarks(benchmarksId, {
+        "datasetId": datasetId,
+        "adata_path": adata_path
+    })        
+    results = {
+        "datasetId": datasetId,
+        "benchmarksId": benchmarksId,
+        "adata_path": adata_path
+    }
+    
+    upsert_jobs(
+        {
+            "job_id": job_id,
             "datasetId": datasetId,
             "benchmarksId": benchmarksId,
-            "adata_path": adata_path
+            "output": adata_path,
+            "adata_path": adata_path,
+            "completed_on": datetime.now(),
+            "results": results,
+            "status": "Success"
         }
-        
-        upsert_jobs(
-            {
-                "job_id": job_id,
-                "datasetId": datasetId,
-                "benchmarksId": benchmarksId,
-                "output": adata_path,
-                "adata_path": adata_path,
-                "completed_on": datetime.now(),
-                "results": results,
-                "status": "Success"
-            }
-        ) 
-        return results
-    
-    except Exception as e:
-        # Handle any errors
-        detail=f"Data split is failed: {str(e)}"
-        upsert_jobs(
-            {
-                "job_id": job_id,
-                "results": detail,
-                "completed_on": datetime.now(),
-                "status": "Failure"
-            }
-        )
-        raise CeleryTaskException(detail)
+    ) 
+    return results
 
 
 def split_imputation_data(

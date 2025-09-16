@@ -63,6 +63,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     method = None
 
     if input_path.endswith(".h5mu"):
+        benchmarks_data = True
         methods = ['muon']
         parameters['methods'] = ['muon']
 
@@ -507,7 +508,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                 mdata_path = qc_results["mdata_path"]
             else:
                 output_path = None
-                output_path = get_output_path(output, process_id, ds['dataset'], format='MuData', method='muon')
+                if benchmarks_data:
+                    output_path = get_output_path(output, '', ds['dataset'], format='MuData', method='muon')
+                else:
+                    output_path = get_output_path(output, process_id, ds['dataset'], format='MuData', method='muon')
                 # Run muon QC 
                 try:
                     redislogger.info(job_id, "Start muon QC...")

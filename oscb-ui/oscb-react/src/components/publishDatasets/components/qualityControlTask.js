@@ -47,6 +47,8 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [celeryTaskResults, setCeleryTaskResults] = useState({});
   const [clusteringPlotType, setClusteringPlotType] = useState('');
   const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+  const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
+  const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
   const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
@@ -541,8 +543,8 @@ const handleAssaySelectionSubmit = async () => {
                         <input
                           type="radio"
                           value="2D"
-                          checked={plotDimension === "2D"}
-                          onChange={(e) => setPlotDimension(e.target.value)}
+                          checked={atacPlotDimension === "2D"}
+                          onChange={(e) => setAtacPlotDimension(e.target.value)}
                         />
                         2D
                       </label>
@@ -550,19 +552,19 @@ const handleAssaySelectionSubmit = async () => {
                         <input
                           type="radio"
                           value="3D"
-                          checked={plotDimension === "3D"}
-                          onChange={(e) => setPlotDimension(e.target.value)}
+                          checked={atacPlotDimension === "3D"}
+                          onChange={(e) => setAtacPlotDimension(e.target.value)}
                         />
                         3D
                       </label>
                     </div>
 
                     <select
-                      value={clusteringPlotType}
+                      value={clusteringAtacPlotType}
                       onChange={(e) => {
                         const selectedPlotType = e.target.value;
-                        setClusteringPlotType(selectedPlotType);
-                        fetchPlotData(selectedPlotType, result.obs, result.atac_umap, result.atac_umap_3d, "atac_umap");
+                        setAtacClusteringPlotType(selectedPlotType);
+                        fetchPlotData(selectedPlotType, result.atac_obs, result.atac_umap, result.atac_umap_3d, "atac_umap");
                       }}
                       style={{
                         padding: '8px 12px',
@@ -587,19 +589,17 @@ const handleAssaySelectionSubmit = async () => {
                       }}
                     >
 
-                      {Array.isArray(result.obs_names) && (
-                        result.obs_names.map((key, idx) => (
+                      {Array.isArray(result.atac_obs_names) && (
+                        result.atac_obs_names.map((key, idx) => (
                           <option key={key} value={key}>
                             {key}
                           </option>
                         ))
                       )}
                     </select>
-
                   </div>
 
-
-                  {plotDimension === '2D' ? (
+                  {atacPlotDimension === '2D' ? (
                     atacPlotData?.atac_umap_plot || result.atac_umap_plot ? (
                       <>
                         <ReactPlotly plot_data={atacPlotData?.atac_umap_plot || result.atac_umap_plot} />
@@ -607,7 +607,7 @@ const handleAssaySelectionSubmit = async () => {
                     ) : (
                       <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
                     )
-                  ) : plotDimension === '3D' ? (
+                  ) : atacPlotDimension === '3D' ? (
                     atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
                       <>
                         <ReactPlotly plot_data={atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />

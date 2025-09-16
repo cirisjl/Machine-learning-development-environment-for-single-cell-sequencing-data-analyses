@@ -7,16 +7,20 @@ import anndata as ad
 import mudata as md
 from umap import UMAP
 from tools.formating.formating import *
+from tools.annotation.annotation import *
 from utils.redislogger import redislogger
 
 def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mod1='rna', mod2='atac', min_genes=200, max_genes=8000, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=20, resolution=.5, species='mouse'):
     layers = None
+    mod_keys = None
     cell_metadata = None
+    atac_cell_metadata = None
     obs_names = None
     nCells = 0
     nGenes = 0
     genes = None
     gene_metadata = None
+    atac_gene_metadata = None
     embeddings = []
     umap = None
     atac_umap = None
@@ -36,10 +40,28 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
         max_genes = 20000
     
     mdata = mu.read(input_path)
+
+    redislogger.info(unique_id, "Check if mdata.var.index is gene symbols.")
+    if is_ensembl(mdata.var_names[0]):
+        redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
+        if 'species' is not None:
+            try:
+                ensembl_ids = mdata.var.index.tolist()
+                symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
+                mdata.var['gene_symbols'] = symbol_ids
+                mdata.var['ensembl_ids'] = ensembl_ids
+                mdata.var = mdata.var.set_index('gene_symbols')
+            except Exception as e:
+                redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
+        else:
+            redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
+
     mdata.var_names_make_unique()
     # MuData information
     redislogger.info(unique_id, mdata.__str__())
     info = mdata.__str__()
+
+    mod_keys = list(mdata.mod.keys())
     
     # RNA
     rna = mdata.mod[mod1]
@@ -56,6 +78,21 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
             rna.X = rna.raw.X.copy()
         else:
             raise ValueError("muon QC only take raw counts, not normalized data.")
+
+    redislogger.info(unique_id, "Check if rna.var.index is gene symbols.")
+    if is_ensembl(rna.var_names[0]):
+        redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
+        if 'species' is not None:
+            try:
+                ensembl_ids = rna.var.index.tolist()
+                symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
+                rna.var['gene_symbols'] = symbol_ids
+                rna.var['ensembl_ids'] = ensembl_ids
+                rna.var = rna.var.set_index('gene_symbols')
+            except Exception as e:
+                redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
+        else:
+            redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
 
     rna.var['mt'] = rna.var_names.str.startswith('MT-')  # annotate the group of mitochondrial genes as 'mt'
     sc.pp.calculate_qc_metrics(rna, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
@@ -149,6 +186,22 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
             atac.X = atac.raw.X.copy()
         else:
             raise ValueError("muon QC only take raw counts, not normalized data.")
+    
+    redislogger.info(unique_id, "Check if atac.var.index is gene symbols.")
+    if is_ensembl(atac.var_names[0]):
+        redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
+        if 'species' is not None:
+            try:
+                ensembl_ids = atac.var.index.tolist()
+                symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
+                atac.var['gene_symbols'] = symbol_ids
+                atac.var['ensembl_ids'] = ensembl_ids
+                atac.var = atac.var.set_index('gene_symbols')
+            except Exception as e:
+                redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
+        else:
+            redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
+            
     sc.pp.calculate_qc_metrics(atac, percent_top=None, log1p=False, inplace=True)
     # mu.pl.histogram(atac, ['n_genes_by_counts', 'total_counts'], linewidth=0)
 
@@ -184,12 +237,27 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
     atac_umap_3d = UMAP(n_components=3, init='random', random_state=11)
     atac.obsm["X_umap_3D"] = atac_umap_3d.fit_transform(atac.obsm['X_pca'])
 
-    if 'X_umap' in rna.obsm.keys():
-        atac_umap = json_numpy.dumps(rna.obsm['X_umap'])
+    atac_obs = regularise_df(atac.obs)
+    atac_obs_names = atac_obs.columns.values.tolist()
+    atac_obs_dict = atac_obs.to_dict('list') # Pandas dataframe
+    atac_obs_dict['index'] = atac_obs.index.tolist()
+    atac_cell_metadata = gzip_dict(atac_obs_dict)
 
-    if 'X_umap_3D' in rna.obsm.keys():
-        atac_umap_3d = json_numpy.dumps(rna.obsm['X_umap_3D'])
+    if "highly_variable" in atac.var.keys():
+        atac_genes = gzip_list(atac.var[atac.var['highly_variable']==True].index.tolist())
+        # gene_metadata = atac.var[atac.var['highly_variable']==True] # pandas dataframe
+        atac_var_dict = atac.var[atac.var['highly_variable']==True].to_dict('list') # Pandas dataframe
+        atac_var_dict['index'] = atac.var[atac.var['highly_variable']==True].index.tolist()
+        atac_gene_metadata = gzip_dict(atac_var_dict)
 
+    if 'X_umap' in atac.obsm.keys():
+        atac_umap = json_numpy.dumps(atac.obsm['X_umap'])
+
+    if 'X_umap_3D' in atac.obsm.keys():
+        atac_umap_3d = json_numpy.dumps(atac.obsm['X_umap_3D'])
+    
+    mdata.update()
+    mu.pp.intersect_obs(mdata)
     mdata.write(output_path)
 
     if output_path is not None and os.path.exists(output_path):
@@ -204,8 +272,10 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
             "method": 'muon',
             "parameters": parameters,
             "info": info,
+            "adata_path": output_path,
             "mdata_path": output_path,
             "mdata_size": mdata_size,
+            "mod_keys": mod_keys,
             "layer": "X",
             "layers": layers,
             "obs_names": obs_names,
@@ -220,6 +290,9 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
             "varm": varm,
             "umap": umap,
             "umap_3d": umap_3d,
+            "atac_obs_names": atac_obs_names,
+            "atac_cell_metadata": atac_cell_metadata,
+            "atac_gene_metadata": atac_gene_metadata,
             "atac_umap": atac_umap,
             "atac_umap_3d": atac_umap_3d,
             "highest_expr_genes": top_genes

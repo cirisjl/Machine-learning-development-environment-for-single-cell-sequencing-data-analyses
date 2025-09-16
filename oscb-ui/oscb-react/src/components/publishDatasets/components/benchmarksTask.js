@@ -117,7 +117,8 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         datasetId: dataset.Id,
         userID: dataset.Owner,
         task_type: dataset.taskType.label,
-        adata_path: dataset.dataSplit.adataPath,
+        // adata_path: dataset.dataSplit.adataPath,
+        adata_path: dataset.adata_path,
         label: dataset?.taskLabel?.label || '',
         ccc_target: dataset?.cccTarget?.label || '',
         batch_key: dataset?.batch_key?.label || '',
@@ -125,8 +126,8 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
         origin_group: dataset?.originGroup?.label || '',
         celltypist_model: dataset?.celltypist_model?.label || '',
         SingleR_ref: dataset?.SingleR_ref?.map(item => item.label) || [],
-        mi_aligned1: dataset?.mi_aligned1?.label || '',
-        mi_aligned2: dataset?.mi_aligned2?.label || '',
+        mod1: dataset?.mod1?.label || '',
+        mod2: dataset?.mod2?.label || '',
         species: dataset?.Species?.label.toLowerCase() || 'mouse',
       }));
       const postBody = body[0];

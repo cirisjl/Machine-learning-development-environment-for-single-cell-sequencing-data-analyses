@@ -274,8 +274,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
     // Check if all datasets have a task type, label and data split performed
     const allDatasetsValid = Object.values(taskData.task_builder.selectedDatasets).every(dataset => 
       dataset.taskType && 
-      ((dataset.taskType.value === 'CL' && dataset.taskLabel) || dataset.taskType.value === 'IM' || (dataset.taskType.value === 'BI' && dataset.taskLabel && dataset.batch_key) || (dataset.taskType.value === 'TJ' && dataset.taskLabel && dataset.BMTraj && dataset.originGroup) || (dataset.taskType.value === 'CCC' && dataset.taskLabel && dataset.cccTarget) || (dataset.taskType.value === 'CT' && dataset.taskLabel && dataset.celltypist_model && dataset.SingleR_ref) || (dataset.taskType.value === 'MI' && dataset.mi_aligned1 && dataset.mi_aligned2)) && 
-      dataset.dataSplit.dataSplitPerformed
+      ((dataset.taskType.value === 'CL' && dataset.taskLabel) || dataset.taskType.value === 'IM' || (dataset.taskType.value === 'BI' && dataset.taskLabel && dataset.batch_key) || (dataset.taskType.value === 'TJ' && dataset.taskLabel && dataset.BMTraj && dataset.originGroup) || (dataset.taskType.value === 'CCC' && dataset.taskLabel && dataset.cccTarget) || (dataset.taskType.value === 'CT' && dataset.taskLabel && dataset.celltypist_model && dataset.SingleR_ref && dataset.dataSplit.dataSplitPerformed) || (dataset.taskType.value === 'MI' && dataset.mod1 && dataset.mod2 && dataset.taskLabel && dataset.batch_key)) // && dataset.dataSplit.dataSplitPerformed
     );
   
     if (allDatasetsValid) {
@@ -453,7 +452,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
-  const handleMiAligned1Change = (datasetId, selectedOption) => {
+  const handleMod1Change = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
@@ -462,7 +461,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           ...prevTaskData.task_builder.selectedDatasets,
           [datasetId]: {
             ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            mi_aligned1: selectedOption
+            mod1: selectedOption
           }
         }
       }
@@ -470,7 +469,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
   };
 
 
-  const handleMiAligned2Change = (datasetId, selectedOption) => {
+  const handleMod2Change = (datasetId, selectedOption) => {
     setTaskData(prevTaskData => ({
       ...prevTaskData,
       task_builder: {
@@ -479,7 +478,7 @@ function TaskBuilderTaskComponent({ setTaskStatus, taskData, setTaskData, setAct
           ...prevTaskData.task_builder.selectedDatasets,
           [datasetId]: {
             ...prevTaskData.task_builder.selectedDatasets[datasetId],
-            mi_aligned2: selectedOption
+            mod2: selectedOption
           }
         }
       }
@@ -597,7 +596,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                 </label>
               </Typography>
 
-                {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT' || dataset.taskType.value === 'BI' || dataset.taskType.value === 'CCC' || dataset.taskType.value === 'TJ') && 
+                {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'CL' || dataset.taskType.value === 'CT' || dataset.taskType.value === 'BI' || dataset.taskType.value === 'CCC' || dataset.taskType.value === 'TJ' || dataset.taskType.value === 'MI') && 
                 (<Typography variant="body2" component="p">
                   <label>
                     <p>Please Choose the Cell Type Label:</p>
@@ -624,7 +623,7 @@ const onSelectSubItem = (mainItem, subItem) => {
                   <TableComponent cellMetadataObs={JSON.parse(dataset.cell_metadata_head)} />
                 </div>
 
-                {dataset && dataset.taskType && dataset.cell_metadata_head && dataset.taskType.value === 'BI' && (<Typography variant="body2" component="p">
+                {dataset && dataset.taskType && dataset.cell_metadata_head && (dataset.taskType.value === 'BI' || dataset.taskType.value === 'MI') && (<Typography variant="body2" component="p">
                   <label>
                     <p>Please Choose the Batch Key:</p>
                     <Select
@@ -703,30 +702,30 @@ const onSelectSubItem = (mainItem, subItem) => {
                   </label>
                 </Typography>)}
 
-                {dataset && dataset.taskType && dataset.embeddings && dataset.taskType.value === 'MI' && (<Typography variant="body2" component="p">
+                {dataset && dataset.taskType && dataset.mod_keys && dataset.taskType.value === 'MI' && (<Typography variant="body2" component="p">
                   <label>
-                    <p>Please Choose the Label for aligned modal 1:</p>
+                    <p>Please Choose the Key for Modality 1:</p>
                     <Select
-                      value={dataset.mi_aligned1}
-                      options={dataset.embeddings.map((key, index) => ({
+                      value={dataset.mod1}
+                      options={dataset.mod_keys.map((key, index) => ({
                         label: key,
                         value: key,
                       }))}
-                      onChange={(selectedOption) => handleMiAligned1Change(key, selectedOption)}
+                      onChange={(selectedOption) => handleMod1Change(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}
 
-                {dataset && dataset.taskType && dataset.embeddings && dataset.taskType.value === 'MI' && (<Typography variant="body2" component="p">
+                {dataset && dataset.taskType && dataset.mod_keys && dataset.taskType.value === 'MI' && (<Typography variant="body2" component="p">
                   <label>
-                    <p>Please Choose the Label for aligned modal 2:</p>
+                    <p>Please Choose the Key for Modality 2:</p>
                     <Select
-                      value={dataset.mi_aligned2}
-                      options={dataset.embeddings.map((key, index) => ({
+                      value={dataset.mo2}
+                      options={dataset.mod_keys.map((key, index) => ({
                         label: key,
                         value: key,
                       }))}
-                      onChange={(selectedOption) => handleMiAligned2Change(key, selectedOption)}
+                      onChange={(selectedOption) => handleMod2Change(key, selectedOption)}
                     />
                   </label>
                 </Typography>)}

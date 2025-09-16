@@ -1,57 +1,47 @@
-from scipy import sparse
 import numpy as np
-import scprep
-import sklearn.decomposition
-import sklearn.neighbors
+import pandas as pd 
+import os
+import subprocess
+import scanpy as sc
+import scipy.io
+import scib
+import muon as mu
+from muon import MuData
 
-# mdata.obsm["aligned"]
-# mdata.obsm["mode2_aligned"]
-def multimodal_metrics(mdata, aligned, mode2_aligned, proportion_neighbors=0.1, n_svd=100):
-    # Mean squared error
-    X = scprep.utils.toarray(aligned)
-    Y = scprep.utils.toarray(mode2_aligned)
 
-    X_shuffled = X[np.random.permutation(np.arange(X.shape[0])), :]
-    error_random = np.mean(np.sum(_square(X_shuffled - Y)))
-    error_abs = np.mean(np.sum(_square(X - Y)))
-    mse = float('{:.4f}'.format(error_abs / error_random))
-
-    # kNN Area Under the Curve
-    n_svd = min([n_svd, min(mdata.X.shape) - 1])
-    n_neighbors = int(np.ceil(proportion_neighbors * mdata.X.shape[0]))
-    X_pca = sklearn.decomposition.TruncatedSVD(n_svd).fit_transform(mdata.X)
-    _, indices_true = (
-        sklearn.neighbors.NearestNeighbors(n_neighbors=n_neighbors)
-        .fit(X_pca)
-        .kneighbors(X_pca)
+def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_type'):
+    scib_anndata = sc.AnnData(mdata.obsm[embed]).copy()
+    scib_anndata.obs = mdata.obs.copy()
+    scib_anndata.obsp["connectivities"] = mdata.obsp["connectivities"].copy()
+    scib_anndata.obsm[embed] = mdata.obsm[embed].copy()
+    scib_anndata.obs[f"{mod1}:{batch}"] = scib_anndata.obs[f"{mod1}:{batch}"].astype("category")
+    scib_anndata.obs[f"{mod1}:{label_key}"] = scib_anndata.obs[f"{mod1}:{label_key}"].astype("category")
+    
+    metrics = scib.metrics.metrics(
+        scib_anndata,
+        scib_anndata,
+        batch_key=f"{mod1}:{batch}",
+        label_key=f"{mod1}:{label_key}",
+        embed=embed,
+        ari_=True,
+        nmi_=True,
+        silhouette_=True,
+        graph_conn_=True,
+        isolated_labels_asw_=True,
     )
-    _, indices_pred = (
-        sklearn.neighbors.NearestNeighbors(n_neighbors=n_neighbors)
-        .fit(mdata.obsm[aligned])
-        .kneighbors(mdata.obsm[mode2_aligned])
-    )
-    neighbors_match = np.zeros(n_neighbors, dtype=int)
-    for i in range(mdata.shape[0]):
-        _, pred_matches, true_matches = np.intersect1d(
-            indices_pred[i], indices_true[i], return_indices=True
-        )
-        neighbors_match_idx = np.maximum(pred_matches, true_matches)
-        neighbors_match += np.sum(
-            np.arange(n_neighbors) >= neighbors_match_idx[:, None],
-            axis=0,
-        )
 
-    neighbors_match_curve = neighbors_match / (
-        np.arange(1, n_neighbors + 1) * mdata.shape[0]
-    )
-    area_under_curve = float('{:.4f}'.format(np.mean(neighbors_match_curve)))
+    biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
+    metrics = metrics.fillna(0).to_dict()[0]
 
-    return mse, area_under_curve
+    for key, value in metrics.items():
+        metrics[key] = float('{:.4f}'.format(value))
 
+    bc_total = 0
+    for key in biological_conservation_metrics:
+        bc_total += metrics[key]
+    biological_conservation_score = float('{:.4f}'.format(bc_total/len(biological_conservation_metrics)))
 
-def _square(X):
-    if sparse.issparse(X):
-        X.data = X.data**2
-        return X
-    else:
-        return scprep.utils.toarray(X) ** 2
+    metrics['Biological Conservation'] = biological_conservation_score
+    scib_anndata = None
+
+    return metrics

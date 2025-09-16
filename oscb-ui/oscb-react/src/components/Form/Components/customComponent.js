@@ -265,6 +265,7 @@ class MyForm extends Component {
       formData.assay_names = taskData.quality_control.seurat_meta?.assay_names;
       formData.adata_size = taskData.quality_control.qc_results[0]?.adata_size;
       formData.embeddings = taskData.quality_control.qc_results[0]?.embeddings;
+      formData.mod_keys = taskData.quality_control.qc_results[0]?.mod_keys;
       // formData.output = taskData.quality_control.seurat_meta?.output;
       // formData.projectAccess = taskData.quality_control.project_name;
 

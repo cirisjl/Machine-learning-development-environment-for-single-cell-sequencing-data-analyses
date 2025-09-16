@@ -156,6 +156,9 @@ function WorkflowTaskDetailsComponent() {
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
   const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+  const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
+  const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
+  const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
   
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
@@ -209,7 +212,12 @@ function WorkflowTaskDetailsComponent() {
               // If umap plots are available, we can set them in the plotData state
               setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
             }
-        }
+          } else if (plotName === 'atac_umap') {
+            if (plot || plot_3d) {
+              // If ATAC umap plots are available, we can set them in the plotData state
+              setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
+            }
+          }
       } catch (error) {
         console.error('Error fetching plot data:', error);
         alert(`Error fetching plot data: ${error}`);
@@ -284,12 +292,25 @@ function WorkflowTaskDetailsComponent() {
             const data = await response.json();
     
             const preProcessResult = data[0];
-            if(preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
-              setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
+
+            // Only set plotData if at least one plot exists
+            if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+              setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
+            } else {
+              setPlotData(null);
             }
-    
-            if(preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
-              setTsnePlotData({tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d})
+
+            if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
+              setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
+            } else {
+              setAtacPlotData(null);
+            }
+
+            // Only set plotData if at least one plot exists
+            if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+              setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
+            } else {
+              setTsnePlotData(null);
             }
     
             // Store the fetched data for the current process_id
@@ -778,6 +799,73 @@ function WorkflowTaskDetailsComponent() {
                                                     plotData && plotData.umap_plot_3d ? (
                                                       <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                                         <ReactPlotly plot_data={plotData.umap_plot_3d} />
+                                                      </div>
+                                                    ) : (
+                                                      <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
+                                                    )
+                                                  ) : null}
+                                                </>
+                                              ) : (
+                                                <div>No plot data available</div>
+                                              )}
+
+                                            </>
+                                          )}
+
+                                          {(details[preProcessResult.process_id].atac_umap_plot || details[preProcessResult.process_id].atac_umap_plot_3d) && (
+                                            <>
+                                              <h2>ATAC UMAP Plot</h2>
+                                              <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <FormControl>
+                                                  <RadioGroup
+                                                    row
+                                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                                    name="row-radio-buttons-group"
+                                                    value={plotDimension}
+                                                    onChange={(event) => setAtacPlotDimension(event.target.value)}
+                                                  >
+                                                    <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+                                                    <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+                                                  </RadioGroup>
+                                                </FormControl>
+
+                                                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                                  <InputLabel id="plot-options-label">Color</InputLabel>
+                                                  <Select
+                                                    labelId="plot-options-label"
+                                                    id="plot-options"
+                                                    value={clusteringAtacPlotType}
+                                                    onChange={(event) => {
+                                                      const selectedPlotType = event.target.value;
+                                                      setAtacClusteringPlotType(selectedPlotType);
+                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].atac_obs, details[preProcessResult.process_id].atac_umap, details[preProcessResult.process_id].atac_umap_3d, "atac_umap"); // Call the API as soon as the selection changes
+                                                    }}
+                                                  >
+                                                    {Array.isArray(details[preProcessResult.process_id].atac_obs_names) && (
+                                                      details[preProcessResult.process_id].atac_obs_names.map((key, idx) => (
+                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
+                                                      ))
+                                                    )}
+                                                  </Select>
+                                                </FormControl>
+
+                                              </div>
+                                              {loadingPlot ? (
+                                                <div>Loading plot data...</div>
+                                              ) : atacPlotData ? (
+                                                <>
+                                                  {atacPlotDimension === '2D' ? (
+                                                    atacPlotData && atacPlotData.atac_umap_plot ? (
+                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <ReactPlotly plot_data={atacPlotData.atac_umap_plot} />
+                                                      </div>
+                                                    ) : (
+                                                      <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                                                    )
+                                                  ) : atacPlotDimension === '3D' ? (
+                                                    atacPlotData && atacPlotData.atac_umap_plot_3d ? (
+                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                                        <ReactPlotly plot_data={atacPlotData.atac_umap_plot_3d} />
                                                       </div>
                                                     ) : (
                                                       <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>

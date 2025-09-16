@@ -257,8 +257,8 @@ class BenchmarksRequest(BaseModel):
     batch_key: Optional[str] = None
     celltypist_model: Optional[str] = None
     SingleR_ref: Optional[List[str]]= []
-    mi_aligned1: Optional[str] = None
-    mi_aligned2: Optional[str] = None
+    mod1: Optional[str] = None
+    mod2: Optional[str] = None
     species: Optional[str] = 'mouse'
     # data: List[TaskDataRequest]
 

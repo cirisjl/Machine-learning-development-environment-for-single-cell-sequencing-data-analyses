@@ -113,6 +113,9 @@ function TaskDetailsComponent() {
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
   const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+  const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
+  const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
+  const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
 
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
@@ -150,6 +153,11 @@ function TaskDetailsComponent() {
             if (plot || plot_3d) {
               // If umap plots are available, we can set them in the plotData state
               setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+            }
+          } else if (plotName === 'atac_umap') {
+            if (plot || plot_3d) {
+              // If ATAC umap plots are available, we can set them in the plotData state
+              setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
             }
           }
         } catch (error) {
@@ -575,6 +583,93 @@ function TaskDetailsComponent() {
                       ) : null}
                       </>
                     )}
+
+                {(result.atac_umap_plot || result.atac_umap_plot_3d) && (
+                  <>
+                    <h2>ATAC UMAP Plot</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
+                      {/* Radio buttons */}
+                      <div>
+                        <label>
+                          <input
+                            type="radio"
+                            value="2D"
+                            checked={atacPlotDimension === "2D"}
+                            onChange={(e) => setAtacPlotDimension(e.target.value)}
+                          />
+                          2D
+                        </label>
+                        <label style={{ marginLeft: '8px' }}>
+                          <input
+                            type="radio"
+                            value="3D"
+                            checked={atacPlotDimension === "3D"}
+                            onChange={(e) => setAtacPlotDimension(e.target.value)}
+                          />
+                          3D
+                        </label>
+                      </div>
+
+                      <select
+                        value={clusteringAtacPlotType}
+                        onChange={(e) => {
+                          const selectedPlotType = e.target.value;
+                          setAtacClusteringPlotType(selectedPlotType);
+                          fetchPlotData(selectedPlotType, result.atac_obs, result.atac_umap, result.atac_umap_3d, "atac_umap");
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid #ccc',
+                          backgroundColor: '#fff',
+                          fontSize: '14px',
+                          fontFamily: 'Arial, sans-serif',
+                          outline: 'none',
+                          transition: 'border-color 0.2s, box-shadow 0.2s',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          cursor: 'pointer',
+                          minWidth: '150px',
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#1976d2';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#ccc';
+                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+                        }}
+                      >
+
+                        {Array.isArray(result.atac_obs_names) && (
+                          result.atac_obs_names.map((key, idx) => (
+                            <option key={key} value={key}>
+                              {key}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+
+                    {atacPlotDimension === '2D' ? (
+                      atacPlotData?.atac_umap_plot || result.atac_umap_plot ? (
+                        <>
+                          <ReactPlotly plot_data={atacPlotData?.atac_umap_plot || result.atac_umap_plot} />
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
+                      )
+                    ) : atacPlotDimension === '3D' ? (
+                      atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
+                        <>
+                          <ReactPlotly plot_data={atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', width: '100%' }}>ATAC 3D UMAP plot does not exist.</div>
+                      )
+                    ) : null}
+
+                  </>
+                )}
 
                       {(result.tsne_plot || result.tsne_plot_3d) && (
                       <>

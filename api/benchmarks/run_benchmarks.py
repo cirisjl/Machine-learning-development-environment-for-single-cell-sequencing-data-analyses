@@ -26,6 +26,8 @@ def run_benchmarks(job_id, task_dict:dict):
     SingleR_ref = task_dict['SingleR_ref']
     bm_traj = task_dict['bm_traj']
     origin_group = task_dict['origin_group']
+    mod1 = task_dict['mod1']
+    mod2 = task_dict['mod2']
 
     redislogger.info(job_id, f"Task parameters: {task_dict}")
 
@@ -245,10 +247,10 @@ def run_benchmarks(job_id, task_dict:dict):
             )
             raise CeleryTaskException(detail)
 
-    if(task_type=="Multimodal"):
+    if(task_type=="Multimodal Data Integration"):
         try:
             if os.path.exists(adata_path):
-                multimodal_results = multimodal_task(adata_path, benchmarksId, datasetId, job_id, task_type='Multimodal')
+                multimodal_results = multimodal_task(adata_path, mod1, mod2, label, batch_key, benchmarksId, datasetId, job_id, task_type="Multimodal Data Integration")
                 upsert_benchmarks(benchmarksId, multimodal_results)
                 results = {
                     "datasetId": datasetId,
@@ -274,7 +276,7 @@ def run_benchmarks(job_id, task_dict:dict):
             
         except Exception as e:
             # Handle exceptions as needed
-            detail=f"Multimodal benchmarks is failed: {str(e)}"
+            detail=f"Multimodal Data Integration benchmarks is failed: {str(e)}"
             redislogger.error(job_id, detail)
             upsert_jobs(
                 {
