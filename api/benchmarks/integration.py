@@ -19,6 +19,7 @@ def integration_task(adata_path, label, batch_key, benchmarksId, datasetId, job_
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
+    adata = adata[~adata.obs[label].isna()] # Remove NaN in cell type label
     scvi_path = get_scvi_path(adata_path)
     adata = clean_anndata(adata) # Remove outliers
     input_folder = os.path.dirname(adata_path)

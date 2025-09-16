@@ -14,6 +14,8 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
     scib_anndata.obs = mdata.obs.copy()
     scib_anndata.obsp["connectivities"] = mdata.obsp["connectivities"].copy()
     scib_anndata.obsm[embed] = mdata.obsm[embed].copy()
+    scib_anndata = scib_anndata[~scib_anndata.obs[f"{mod1}:{batch}"].isna()] # Remove NaN in batch
+    scib_anndata = scib_anndata[~scib_anndata.obs[f"{mod1}:{label_key}"].isna()] # Remove NaN in cell type label
     scib_anndata.obs[f"{mod1}:{batch}"] = scib_anndata.obs[f"{mod1}:{batch}"].astype("category")
     scib_anndata.obs[f"{mod1}:{label_key}"] = scib_anndata.obs[f"{mod1}:{label_key}"].astype("category")
     

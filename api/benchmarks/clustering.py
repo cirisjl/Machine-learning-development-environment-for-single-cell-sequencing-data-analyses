@@ -20,6 +20,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
     adata = load_anndata(adata_path)
     scvi_path = get_scvi_path(adata_path)
     adata = clean_anndata(adata)
+    adata = adata[~adata.obs[label].isna()] # Remove NaN in cell type label
     # adata = adata[adata.obs.split_idx.str.contains('test'), :]
     current_date_and_time = datetime.now()
     sys_info = None
@@ -130,7 +131,7 @@ def clustering_task(adata_path, label, benchmarksId, datasetId, job_id, task_typ
             # Call scvi_clustering method
             adata, sys_info, asw_scvi, nmi_scvi, ari_scvi, fm_scvi, time_points_scvi, cpu_usage_scvi, mem_usage_scvi, gpu_usage_scvi, gpu_mem_usage_scvi = scvi_clustering(adata, label, scvi_path)
             # adata.write_h5ad(adata_path, compression='gzip')
-            save_anndata(adata, adata_path)
+            # save_anndata(adata, adata_path)
             scvi_results = {
                 "sys_info": sys_info,
                 "benchmarksId": benchmarksId,

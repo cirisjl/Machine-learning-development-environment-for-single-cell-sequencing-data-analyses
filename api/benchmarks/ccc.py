@@ -16,6 +16,8 @@ def ccc_task(adata_path, label, ccc_target, benchmarksId, datasetId, job_id, spe
     md5 = get_md5(adata_path)
     # Load AnnData
     adata = load_anndata(adata_path)
+    adata = clean_anndata(adata) # Remove outliers
+    adata = adata[~adata.obs[label].isna()] # Remove NaN in cell type label
     current_date_and_time = datetime.now()
     sys_info = None
 

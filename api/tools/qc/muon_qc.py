@@ -187,20 +187,20 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
         else:
             raise ValueError("muon QC only take raw counts, not normalized data.")
     
-    redislogger.info(unique_id, "Check if atac.var.index is gene symbols.")
-    if is_ensembl(atac.var_names[0]):
-        redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
-        if 'species' is not None:
-            try:
-                ensembl_ids = atac.var.index.tolist()
-                symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
-                atac.var['gene_symbols'] = symbol_ids
-                atac.var['ensembl_ids'] = ensembl_ids
-                atac.var = atac.var.set_index('gene_symbols')
-            except Exception as e:
-                redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
-        else:
-            redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
+    # redislogger.info(unique_id, "Check if atac.var.index is gene symbols.")
+    # if is_ensembl(atac.var_names[0]):
+    #     redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
+    #     if 'species' is not None:
+    #         try:
+    #             ensembl_ids = atac.var.index.tolist()
+    #             symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)
+    #             atac.var['gene_symbols'] = symbol_ids
+    #             atac.var['ensembl_ids'] = ensembl_ids
+    #             atac.var = atac.var.set_index('gene_symbols')
+    #         except Exception as e:
+    #             redislogger.warning(unique_id, f"An error occurred when converting Ensembl IDs to gene symbols, skipped: {e}")
+    #     else:
+    #         redislogger.warning(unique_id, "{species} is not supported by ensembl_to_symbol(), skipped.")
             
     sc.pp.calculate_qc_metrics(atac, percent_top=None, log1p=False, inplace=True)
     # mu.pl.histogram(atac, ['n_genes_by_counts', 'total_counts'], linewidth=0)

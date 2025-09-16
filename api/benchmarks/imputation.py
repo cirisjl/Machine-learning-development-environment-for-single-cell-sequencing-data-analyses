@@ -19,6 +19,7 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
     # Load AnnData
     csv_path = adata_path.replace(".h5ad", ".csv")
     adata = load_anndata(adata_path)
+    adata = clean_anndata(adata) # Remove outliers
     # Save the dense array to a CSV file
     np.savetxt(csv_path, adata.obsm['train'].toarray(), delimiter=",")
 
