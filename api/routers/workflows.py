@@ -13,7 +13,7 @@ async def create_clustering_task_async(ds: Dataset):
     """
     Create a task for clustering
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_clustering_task.apply_async(args=[ds_dict])
     return JSONResponse({"job_id": task.id, "status": "Clustering task is submitted successfully"})
 
@@ -23,7 +23,7 @@ async def create_integration_wf_task_async(dss: Datasets):
     """
     Create a task for integration
     """
-    dss_dict = dss.dict()  # Convert the Pydantic model to a dict
+    dss_dict = dss.model_dump()  # Convert the Pydantic model to a dict
     task = create_integration_wf_task.apply_async(args=[dss_dict])
     return JSONResponse({"job_id": task.id, "status": "Integration task is submitted successfully"})
 
@@ -33,6 +33,6 @@ async def create_annotation_wf_task_async(dss: Datasets):
     """
     Create a task for annotation
     """
-    dss_dict = dss.dict()  # Convert the Pydantic model to a dict
+    dss_dict = dss.model_dump()  # Convert the Pydantic model to a dict
     task = create_annotation_wf_task.apply_async(args=[dss_dict])
     return JSONResponse({"job_id": task.id, "status": "Annotation task is submitted successfully"})

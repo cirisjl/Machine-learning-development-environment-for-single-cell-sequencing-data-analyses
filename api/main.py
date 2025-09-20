@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, workflows, cli
+from routers import tools, benchmarks, workflows, downloader
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -31,7 +31,7 @@ def create_app() -> FastAPI:
     current_app.include_router(tools.router)
     current_app.include_router(benchmarks.router)
     current_app.include_router(workflows.router)
-    current_app.include_router(cli.router)
+    current_app.include_router(downloader.router)
 
     return current_app
 
@@ -197,7 +197,7 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
     """
     Get details of pp_results
     """
-    req_dict = req.dict() 
+    req_dict = req.model_dump() 
     process_ids = req_dict['process_ids']
     record_type = req_dict['record_type']
     if len(process_ids) == 0:
@@ -261,7 +261,7 @@ async def umapplot(req: ProcessResultsRequest) -> list:
     """
     Get details of pp_results
     """
-    req_dict = req.dict() 
+    req_dict = req.model_dump() 
     process_ids = req_dict['process_ids']
     clustering_plot_type = req_dict['clustering_plot_type']
     annotation = req_dict['annotation']

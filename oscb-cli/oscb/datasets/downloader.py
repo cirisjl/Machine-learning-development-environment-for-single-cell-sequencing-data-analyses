@@ -11,15 +11,16 @@ import websockets
 from termcolor import colored
 
 
-def downloadDataset(dataset_id, destination_path, process_type = "quality_control", method = "scanpy"):
-    # Define the base URL for the API
-    base_url = "http://130.127.133.115:5005/api"
+# Define the base URL for the API
+base_url = "http://clgpu015.clemson.cloudlab.us:5005/api"
 
-    ws_base_url = "ws://130.127.133.115:5005/wsapi"  # WebSocket base URL
+ws_base_url = "ws://clgpu015.clemson.cloudlab.us:5005/wsapi"  # WebSocket base URL
 
+
+def DownloadDataset(dataset_id, file_folder = 'dataset/', process_type = "quality_control", method = "scanpy"):
     user_id = get_persistent_machine_id()
     # Step 1: Submit the task
-    submit_url = f"{base_url}/oscb-cli/downloadDataset"
+    submit_url = f"{base_url}/dataset/download"
     payload = {
         "dataset_id": dataset_id,
         "user_id": user_id,
@@ -42,10 +43,10 @@ def downloadDataset(dataset_id, destination_path, process_type = "quality_contro
     print(f"Task submitted successfully. Job ID: {job_id}")
 
     # Start a coroutine to fetch logs in real time
-    asyncio.run(run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path))
+    asyncio.run(run_parallel_tasks(ws_base_url, job_id, dataset_id, file_folder))
 
 
-async def run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path):
+async def run_parallel_tasks(ws_base_url, job_id, dataset_id, file_folder):
     """
     Run the WebSocket log fetching and task status polling concurrently.
     """
@@ -60,7 +61,7 @@ async def run_parallel_tasks(ws_base_url, job_id, dataset_id, destination_path):
     log_task = asyncio.create_task(fetch_logs_from_websocket(ws_base_url, job_id, task_completed_event))  # Run the websocket log fetch within the event loop
     
     # Poll the task status and download the dataset
-    await poll_task_status_and_download(dataset_id, destination_path, job_id, task_completed_event)
+    await poll_task_status_and_download(dataset_id, file_folder, job_id, task_completed_event)
     
     # Wait for the log task to finish
     await log_task
@@ -115,13 +116,13 @@ async def fetch_logs_from_websocket(base_url, job_id, task_completed_event):
         print(f"Error occurred while fetching logs from WebSocket: {e}")
     finally:
         # Ensure WebSocket is closed in case of any error or after the task is completed
-        if websocket.open:
+        if websocket.state == websockets.protocol.State.OPEN:
             await websocket.close()
             print("WebSocket connection explicitly closed.")
 
-async def poll_task_status_and_download(dataset_id, destination_path, job_id, task_completed_event):
+async def poll_task_status_and_download(dataset_id, file_folder, job_id, task_completed_event):
     # Define the base URL for the API
-    base_url = "http://130.127.133.115:5005/api"
+    # base_url = "http://130.127.133.115:5005/api"
 
     task_status_url = f"{base_url}/job/downloadDataset/{job_id}"
     filename = None  # Initialize task_result
@@ -198,7 +199,7 @@ async def poll_task_status_and_download(dataset_id, destination_path, job_id, ta
         print("No valid filename found. Exiting!")
         return
 
-    download_dir = os.path.abspath(destination_path)
+    download_dir = os.path.abspath(file_folder)
 
     # Make sure the destination directory exists
     if not os.path.exists(download_dir):
@@ -230,10 +231,10 @@ def get_persistent_machine_id():
 
 
 if __name__ == "__main__":
-    dataset_id = "U-h-Bladder-wanger-2025@kbcfh"
-    destination_path = "datasets"
+    dataset_id = "m-FACS_Aorta-Tabula-2018"
+    file_folder = "data"
     process_type = "quality_control"
     method = "scanpy"
 
-    downloadDataset(dataset_id, destination_path, process_type, method)
-    # downloadDataset(dataset_id, destination_path)
+    DownloadDataset(dataset_id, file_folder, process_type, method)
+    # DownloadDataset(dataset_id, file_folder)

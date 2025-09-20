@@ -380,7 +380,7 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     """
     Create a task for benchmarks
     """
-    task_dict = benchmarks_task.dict()  # Convert the Pydantic model to a dict
+    task_dict = benchmarks_task.model_dump()  # Convert the Pydantic model to a dict
     task = create_benchmarks_task.apply_async(args=[task_dict])
     upsert_jobs(
         {
@@ -402,7 +402,7 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
     """
     Create a task for data split
     """
-    data_dict = data_split_task.dict()  # Convert the Pydantic model to a dict
+    data_dict = data_split_task.model_dump()  # Convert the Pydantic model to a dict
     task = create_data_split_task.apply_async(args=[data_dict])
     upsert_jobs(
         {
@@ -424,7 +424,7 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
     """
     Create a task for subsetting data
     """
-    data_dict = subset_task.dict()  # Convert the Pydantic model to a dict
+    data_dict = subset_task.model_dump()  # Convert the Pydantic model to a dict
     task = create_subset_data_task.apply_async(args=[data_dict])
     upsert_jobs(
         {

@@ -60,7 +60,7 @@ async def create_qc_task_async(ds: Dataset):
     """
     Create a task for quality control
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_qc_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -72,7 +72,7 @@ async def create_normalization_task_async(ds: Dataset):
     """
     Create a task for normalization
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_normalization_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -84,7 +84,7 @@ async def create_imputation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_imputation_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -96,7 +96,7 @@ async def create_reduction_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_reduction_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -108,7 +108,7 @@ async def create_conversion_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_conversion_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -120,7 +120,7 @@ async def create_integration_task_async(ids: Datasets):
     """
     Create a task for integration
     """
-    ids_dict = ids.dict()  # Convert the Pydantic model to a dict
+    ids_dict = ids.model_dump()  # Convert the Pydantic model to a dict
     task = create_integration_task.apply_async(args=[ids_dict])
 
     upsert_jobs(
@@ -145,7 +145,7 @@ async def create_annotation_task_async(ds: Dataset):
     """
     Create a task for imputation
     """
-    ds_dict = ds.dict()  # Convert the Pydantic model to a dict
+    ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     task = create_annotation_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
@@ -157,7 +157,7 @@ async def create_evaluation_task_async(ds: Dataset):
     """
     Create a task for evaluation
     """
-    ds_dict = ds.dict() 
+    ds_dict = ds.model_dump() 
     task = create_evaluation_task.apply_async(args=[ds['dataset'], ds['input'], ds['userID'], ds['output'], ds['methods']], kwargs={'layer':ds['layer'], 'genes':ds.genes, 'ncores':ds.ncores, 'show_error': ds.show_error})
     create_job(task.id, ds_dict)
 
@@ -166,7 +166,7 @@ async def create_evaluation_task_async(ds: Dataset):
 
 @router.post('/metadata')
 async def load_metadata_async(request_body: UploadRequest):
-    file_dict = request_body.dict()
+    file_dict = request_body.model_dump()
     task = load_metadata_task.apply_async(args=[file_dict])
 
     return JSONResponse({"job_id": task.id}) 

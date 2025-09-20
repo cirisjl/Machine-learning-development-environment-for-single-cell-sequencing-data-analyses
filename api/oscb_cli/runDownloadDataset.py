@@ -58,7 +58,7 @@ def run_download_dataset(job_id, ds: dict, random_state=0):
                 )
                 print(dataset_obj)
 
-                qc_results = run_qc(job_id, dataset_obj.dict())
+                qc_results = run_qc(job_id, dataset_obj.model_dump())
 
                 print(qc_results)
 
@@ -79,7 +79,7 @@ def run_download_dataset(job_id, ds: dict, random_state=0):
                 )
                 print(dataset_obj)
 
-                qc_results = run_normalization(job_id, dataset_obj.dict())
+                qc_results = run_normalization(job_id, dataset_obj.model_dump())
 
                 print(qc_results)
 
@@ -100,7 +100,7 @@ def run_download_dataset(job_id, ds: dict, random_state=0):
                 )
                 print(dataset_obj)
 
-                qc_results = run_imputation(job_id, dataset_obj.dict())
+                qc_results = run_imputation(job_id, dataset_obj.model_dump())
 
                 print(qc_results)
 
