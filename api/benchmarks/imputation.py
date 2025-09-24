@@ -105,6 +105,7 @@ def imputation_task(adata_path, species, benchmarksId, datasetId, job_id, task_t
         "benchmarksId": benchmarksId,
         "datasetId": datasetId,
         "task_type": task_type,
+        "species": species,
         "metrics": metrics,
         "methods": imputation_results,
         # "sys_info": sys_info,

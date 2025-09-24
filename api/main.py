@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, workflows, downloader
+from routers import tools, benchmarks, workflows, pypi
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -31,7 +31,7 @@ def create_app() -> FastAPI:
     current_app.include_router(tools.router)
     current_app.include_router(benchmarks.router)
     current_app.include_router(workflows.router)
-    current_app.include_router(downloader.router)
+    current_app.include_router(pypi.router)
 
     return current_app
 

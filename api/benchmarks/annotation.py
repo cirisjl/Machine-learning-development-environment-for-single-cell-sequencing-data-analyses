@@ -139,6 +139,8 @@ def annotation_task(adata_path, label, benchmarksId, datasetId, job_id, celltypi
         # "adata_path": adata_path,
         "benchmarksId": benchmarksId,
         "datasetId": datasetId,
+        "label": label,
+        "species": species,
         "task_type": task_type,
         "metrics": metrics,
         "methods": annotation_results,

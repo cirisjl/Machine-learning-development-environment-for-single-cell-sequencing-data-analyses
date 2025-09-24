@@ -163,6 +163,11 @@ def upsert_benchmarks(benchmarksId, results):
     return
 
 
+def get_benchmarks_by_id(benchmarksId):
+    results = benchmarks_collection.find_one({'benchmarksId': benchmarksId}, {'_id': 0})
+    return results
+    
+
 def create_bm_results(process_id, bm_results):
     bm_results = clear_dict(bm_results)
     try:

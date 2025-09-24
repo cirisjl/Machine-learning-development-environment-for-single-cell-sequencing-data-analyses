@@ -1,8 +1,8 @@
 import anndata
 import scanpy as sc
-import scprep
 import sklearn.metrics
 import numpy as np
+from tools.utils.formating import toarray
 
 
 # test_data = adata.obsm["test"]
@@ -25,7 +25,7 @@ def imputation_metrics(adata, denoised_layer, train='train', test='test'):
     sc.pp.log1p(denoised_adata)
 
     mse = sklearn.metrics.mean_squared_error(
-        scprep.utils.toarray(test_adata.X), scprep.utils.toarray(denoised_adata.X)
+        toarray(test_adata.X), toarray(denoised_adata.X)
     )
 
     # Poisson loss
@@ -37,7 +37,7 @@ def imputation_metrics(adata, denoised_layer, train='train', test='test'):
     target_sum = test_data.sum()
     denoised_data = denoised_data * target_sum / initial_sum
 
-    possion = poisson_nll_loss(scprep.utils.toarray(test_data), scprep.utils.toarray(denoised_data))
+    possion = poisson_nll_loss(toarray(test_data), toarray(denoised_data))
 
     return float('{:.4f}'.format(mse)), float('{:.4f}'.format(possion))
 

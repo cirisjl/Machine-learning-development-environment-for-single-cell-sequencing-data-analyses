@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 from fastapi.responses import StreamingResponse
-from utils.mongodb import get_file_by_dataset_id
+from utils.mongodb import get_file_by_dataset_id, get_benchmarks_by_id
 from schemas.schemas import DownloadDataset
 from urllib.parse import quote
 
@@ -28,3 +28,16 @@ async def download_dataset(ds: DownloadDataset):
         raise HTTPException(status_code=404, detail="File not found")
 
     return StreamingResponse(iter_file(path=adata_path), media_type="application/octet-stream", headers={f"Content-Disposition": "attachment; filename={}".format(quote(file_name))})
+
+
+@router.get("/benchmarks/{benchmarksId}")
+async def get_benchmark_record(benchmarksId: str) -> dict:
+    """
+    Download a dataset after processing user specified tool
+    """
+    results = get_benchmarks_by_id(benchmarksId)
+
+    if results is None:
+        raise HTTPException(status_code=404, detail="Benchmarks record not found")
+
+    return results
