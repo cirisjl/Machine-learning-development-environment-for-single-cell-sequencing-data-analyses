@@ -37,6 +37,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
+        'Dataset ID': true,
         'Task': true,
         'Title': true,
         'Category': true,
@@ -69,6 +70,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
     const resetColumnVisibility = () => {
         setVisibleColumns({
             'Benchmarks ID': true,
+            'Dataset ID': true,
             'Task': true,
             'Title': true,
             'Species': true,

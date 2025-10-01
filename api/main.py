@@ -213,10 +213,11 @@ async def getPreProcessResults(req: ProcessResultsRequest) -> list:
         obs = pp_result['cell_metadata']
         pp_result['cell_metadata'] = df_to_dict(obs)
         # pp_result['obs'] = pp_result['obs']
-
-        atac_obs = pp_result['atac_cell_metadata']
-        pp_result['atac_cell_metadata'] = df_to_dict(atac_obs)
-        # pp_result['atac_obs'] = pp_result['atac_obs']
+        
+        if 'atac_cell_metadata' in pp_result.keys():
+            atac_obs = pp_result['atac_cell_metadata']
+            pp_result['atac_cell_metadata'] = df_to_dict(atac_obs)
+            # pp_result['atac_obs'] = pp_result['atac_obs']
 
         if record_type == None:
             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA

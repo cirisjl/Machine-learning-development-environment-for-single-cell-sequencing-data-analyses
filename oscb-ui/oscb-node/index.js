@@ -2553,6 +2553,7 @@ app.post('/node/tasks/search', async (req, res) => {
                         { $group: { 
                             _id: {
                                 "Benchmarks ID": "$benchmarksId",
+                                // "Dataset ID": "$datasetDetails.Id",
                                 Title: "$datasetDetails.Title",
                                 'Task': "$task_type",
                                 Species: "$datasetDetails.Species.label",
@@ -2571,6 +2572,7 @@ app.post('/node/tasks/search', async (req, res) => {
                             $project: {
                                 _id: '$_id.Benchmarks ID',
                                 "Benchmarks ID": "$_id.Benchmarks ID",
+                                // "Dataset ID": "$_id.Id",
                                 Title: "$_id.Title",
                                 'Task': "$_id.Task",
                                 Species: "$_id.Species",
@@ -2594,7 +2596,7 @@ app.post('/node/tasks/search', async (req, res) => {
 
         const aggregatedResults = await tasksCollection.aggregate(finalPipeline).toArray();
 
-        console.log(aggregatedResults);
+        // console.log(aggregatedResults);
 
         // Extract the first (and only) element of the aggregatedResults, which contains your facets and documents
         const aggregationResult = aggregatedResults[0];
@@ -3024,6 +3026,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 _id: {
                                     Title: "$Title",
                                     Id: "$Id",
+                                    'Dataset ID': "$Id",
                                     Category: "$Category",
                                     Owner: "$Owner",
                                     Species: "$Species.label",
@@ -3055,6 +3058,7 @@ app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {
                                 _id: "$_id.Id",
                                 Title: "$_id.Title",
                                 Id: "$_id.Id",
+                                'Dataset ID': "$_id.Id",
                                 Category: "$_id.Category",
                                 Owner: "$_id.Owner",
                                 Species: "$_id.Species",

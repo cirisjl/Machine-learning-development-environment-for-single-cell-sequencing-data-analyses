@@ -194,6 +194,7 @@ const clearMessageAfterTimeout = () => {
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
+        'Dataset ID': true,
         'Task': true,
         'Title': true,
         'Category': true,
@@ -226,6 +227,7 @@ const clearMessageAfterTimeout = () => {
     const resetColumnVisibility = () => {
         setVisibleColumns({
             'Benchmarks ID': true,
+            'Dataset ID': true,
             'Task': true,
             'Title': true,
             'Species': true,

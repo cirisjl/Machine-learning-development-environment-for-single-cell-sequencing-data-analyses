@@ -42,6 +42,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
+        'Dataset ID': true,
         'Task': true,
         'Title': true,
         'Category': true,
@@ -73,6 +74,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     const resetColumnVisibility = () => {
         setVisibleColumns({
             'Benchmarks ID': true,
+            'Dataset ID': true,
             'Task': true,
             'Title': true,
             'Species': true,
