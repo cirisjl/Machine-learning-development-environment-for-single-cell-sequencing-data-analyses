@@ -153,7 +153,7 @@ const BenchmarksViewDetailsComponent = () => {
       </div>
 
     <div>
-    {(getCookie('jwtToken') != undefined || getCookie('jwtToken') != '') && (<div className="right-rail">
+    {(getCookie('jwtToken') !== undefined || getCookie('jwtToken') !== '') && (<div className="right-rail">
         <RightRail />
     </div>)}
       </div>

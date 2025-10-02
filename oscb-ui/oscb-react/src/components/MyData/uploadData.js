@@ -554,7 +554,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                     if (!selectedAliases.includes(multiFileSet[i])) {
                                         break;
                                     }
-                                    else if (i == multiFileSet.length - 1)
+                                    else if (i === multiFileSet.length - 1)
                                         isFileSelectionValid = true;
                                 }
                             });
@@ -869,7 +869,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                         </div>
                     </div>)}
                 <div>
-                    <h2 style={{ textAlign: "left" }}><span>{(mode === 'update' ? 'Update Dataset' : "Upload Dataset")}</span></h2>
+                    <h1 style={{ textAlign: "left" }}><span>{(mode === 'update' ? 'Update Dataset' : "Upload Dataset")}</span></h1>
                     {isInfoModalOpen && <div className="modal" style={{ zIndex: 9999, width: "30%", height: "40%" }}>
                         <div className='clear-icon'>
                             <img src={hoveredErrPopup ? close_icon_hover : close_icon} alt="close-icon" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={() => setIsInfoModalOpen(false)} />

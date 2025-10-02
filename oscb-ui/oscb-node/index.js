@@ -2419,13 +2419,13 @@ app.post('/node/tasks/search', async (req, res) => {
                     let condition = {};
                     if (filterCategory === 'Selected Cell Types') {
                         // Handle filtering for the 'Selected Cell Types' array
-                        condition['Selected Cell Types.value'] = {
+                        condition['datasetDetails.Selected Cell Types.value'] = {
                             $in: filterValue
                         };
                     } 
                     // Check if the filter category should use the 'label' property for array of objects
                    else if (fieldsWithLabel.includes(filterCategory)) {
-                    condition[`${filterCategory}.label`] = { $in: filterValue };
+                        condition[`datasetDetails.${filterCategory}.label`] = { $in: filterValue };
 
                     } else {
                         // Directly use the filter category for other fields

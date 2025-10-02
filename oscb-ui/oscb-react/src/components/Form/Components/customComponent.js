@@ -190,7 +190,7 @@ class MyForm extends Component {
       const species = formData.Species.value;
       // const tissue = (formData['Sample Type'] + '_' + formData['Organ Part']).label.replace(' ', '_').replace('-', '_');
       let tissue = formData['Organ Part'].label.replace(' ', '_').replace('-', '_');
-      if (formData['Sample Type'] && formData['Sample Type'].label != ''){
+      if (formData['Sample Type'] && formData['Sample Type'].label !== ''){
         tissue = formData['Sample Type'].label.split(' ')[0].replace('-', '_') + '_' + tissue;
       }
 
@@ -395,7 +395,7 @@ class MyForm extends Component {
     // if (!formData['Anatomical Entity'] || (formData['Anatomical Entity'] && formData['Anatomical Entity'].value === '')) {
     //   errors['Anatomical Entity'] = 'Anatomical Entity is required';
     // }
-    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length == 0 || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length === 0 || formData['Selected Cell Types'].value === '') {
       formData['Selected Cell Types'] = {
         'label': 'Unspecified',
         'value': ['Unspecified']

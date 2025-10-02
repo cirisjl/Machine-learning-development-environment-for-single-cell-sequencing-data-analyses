@@ -25,7 +25,7 @@ const TableWrapper = styled.div`
 
 const Table = styled.table`
   border-collapse: collapse;
-  width: 95%;
+  width: 100%;
   /* max-width: 1000px; */
   min-width: 500px;
 `;
@@ -183,9 +183,10 @@ const TaskTable = () => {
 
     if (jwtToken)
         return (
-            <><div className='table-results'>
+            <><h1 style={{ textAlign: "left" }}>My Jobs</h1>
+            <div className='table-results'>
                 <TableWrapper>
-                    <h1>My Jobs</h1>
+                    
                     <Table>
                         <TableHeader>
                             <TableRow>

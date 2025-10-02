@@ -72,7 +72,7 @@ const StorageChart = () => {
   if (getCookie('jwtToken') !== undefined || getCookie('jwtToken') !== '') {
     return (
       <>
-        <h2>My Data</h2> <br />
+        <h1 style={{ textAlign: "left" }}>My Data</h1> <br />
         {`${percentUsed}% of ${totalStorage} GB used up.`}
         <div width="350px" height="350px">
           <canvas ref={chartRef} />

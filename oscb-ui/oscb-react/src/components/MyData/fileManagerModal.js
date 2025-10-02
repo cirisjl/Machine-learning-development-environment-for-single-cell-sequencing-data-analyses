@@ -157,7 +157,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         const apiUrl = `${NODE_API_URL}/download`;
 
         // If fileUrl is not empty, call the API with fileUrl as query parameter
-        if (tempFileList.length == 1) {
+        if (tempFileList.length === 1) {
             const fileUrl = tempFileList[0]
             const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
             fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}&pwd=${pwd}`)

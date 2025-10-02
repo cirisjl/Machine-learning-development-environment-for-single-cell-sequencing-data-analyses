@@ -9,12 +9,12 @@ import gfm from "remark-gfm";
 import remarkImgToJsx from "remark-unwrap-images";
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
-import { getCookie } from "../utils/utilFunctions";
+// import { getCookie } from "../utils/utilFunctions";
 
 
 export default function Benchmarks() {
-    const [markdownText,setMarkdownText] = useState('')
-    let jwtToken = getCookie('jwtToken');
+    const [markdownText, setMarkdownText] = useState('')
+    // let jwtToken = getCookie('jwtToken');
 
     useEffect(() => {
         async function fetchFileData() {
@@ -45,7 +45,7 @@ export default function Benchmarks() {
         <div className="benchmarks-container">
             <div className="left-nav">  
             </div>
-            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
+            <div className='main-content'>
                 <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
             <div className="right-rail">

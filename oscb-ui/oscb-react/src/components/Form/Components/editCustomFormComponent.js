@@ -271,7 +271,7 @@ const EditCustomForm = () => {
     if (!formData.Species || (formData.Species && formData.Species.value === '')) formErrors.Species = 'Species is required';
     if (!formData['Cell Count Estimate'] || (formData['Cell Count Estimate'] && formData['Cell Count Estimate'].value === '' && formData['Cell Count Estimate'].value === 0)) formErrors['Cell Count Estimate'] = 'Cell Count Estimate is required';
     if (!formData['Organ Part'] || (formData['Organ Part'] && formData['Organ Part'].value === '')) formErrors['Organ Part'] = 'Organ Part is required';
-    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'] && formData['Selected Cell Types'].value === '') {
+    if (!formData['Selected Cell Types'] || formData['Selected Cell Types'].length === 0 || formData['Selected Cell Types'].value === '') {
       formData['Selected Cell Types)'] = {
         'value': 'Unspecified',
         'label': ['Unspecified']
@@ -743,7 +743,7 @@ const EditCustomForm = () => {
       </div>
 
       <div>
-        {(getCookie('jwtToken') != undefined || getCookie('jwtToken') != '') && (<div className="right-rail">
+        {(getCookie('jwtToken') !== undefined || getCookie('jwtToken') !== '') && (<div className="right-rail">
           <RightRail />
         </div>)}
       </div>

@@ -23,7 +23,7 @@ function SearchTasks({taskType}) {
 
   const fetchData = async (currentPage, currentFilters, searchQuery) => {
 
-    console.log(taskType);
+    // console.log(taskType);
     const queryParams = new URLSearchParams({
       page: currentPage,
       task_type: taskType.task_type,

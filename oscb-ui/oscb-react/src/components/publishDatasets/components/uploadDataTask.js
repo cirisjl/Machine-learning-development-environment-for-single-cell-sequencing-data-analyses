@@ -321,7 +321,7 @@ function getStandardFileName(fileName, fileType) {
                 if (!selectedAliases.includes(multiFileSet[i])) {
                     break;
                 }
-                else if (i == multiFileSet.length - 1)
+                else if (i === multiFileSet.length - 1)
                     isFileSelectionValid = true;
             }
         });
