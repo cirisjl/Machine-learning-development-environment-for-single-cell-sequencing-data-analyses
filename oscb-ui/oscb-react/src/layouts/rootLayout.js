@@ -77,7 +77,7 @@ export default function RootLayout() {
                 <header className="border-b border-gray-100">
                     <div className="px-4 flex h-16 items-center">
                         <div className="flex flex-1 items-center">
-                            <a className="mr-5 flex flex-none items-center lg:mr-6" href="/"><span className="hidden whitespace-nowrap text-lg font-bold md:block">OSCB</span></a>
+                            <a className="mr-5 flex flex-none items-center lg:mr-6" href="/"><img src={require("../assets/logo.png")} alt="" /><span className="hidden whitespace-nowrap text-lg font-bold md:block">SINGLE-CELL.AI</span></a>
                             {/* <div className="relative flex-1 lg:max-w-sm mr-2 sm:mr-4 lg:mr-6">
                                 <SearchBox placeHolder="Search models, datasets, users..."/>
                             </div> */}
@@ -96,17 +96,6 @@ export default function RootLayout() {
                                         Get Started
                                     </NavLink>
                                    </li>
-                                 <li data-index="1">
-                                    <NavLink to="updates" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
-                                        <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
-                                            <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
-                                            <path d="M12.5 15C16.6421 15 20 14.1046 20 13V20C20 21.1046 16.6421 22 12.5 22C8.35786 22 5 21.1046 5 20V13C5 14.1046 8.35786 15 12.5 15Z" fill="currentColor" opacity="0.5"></path>
-                                            <path d="M12.5 7C16.6421 7 20 6.10457 20 5V11.5C20 12.6046 16.6421 13.5 12.5 13.5C8.35786 13.5 5 12.6046 5 11.5V5C5 6.10457 8.35786 7 12.5 7Z" fill="currentColor" opacity="0.5"></path>
-                                            <path d="M5.23628 12C5.08204 12.1598 5 12.8273 5 13C5 14.1046 8.35786 15 12.5 15C16.6421 15 20 14.1046 20 13C20 12.8273 19.918 12.1598 19.7637 12C18.9311 12.8626 15.9947 13.5 12.5 13.5C9.0053 13.5 6.06886 12.8626 5.23628 12Z" fill="currentColor"></path>
-                                        </svg>
-                                     Updates
-                                    </NavLink>    
-                                </li>
                                 {/* <li data-index="2">
                                     <NavLink to="competitions" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-blue-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" viewBox="0 0 25 25">
@@ -117,7 +106,7 @@ export default function RootLayout() {
                                         Competition
                                     </NavLink>
                                  </li> */}
-                                 <li data-index="3" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                 <li data-index="1" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink to="benchmarks" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path opacity="0.5" d="M20.9022 5.10334L10.8012 10.8791L7.76318 9.11193C8.07741 8.56791 8.5256 8.11332 9.06512 7.7914L15.9336 3.73907C17.0868 3.08811 18.5002 3.26422 19.6534 3.91519L19.3859 3.73911C19.9253 4.06087 20.5879 4.56025 20.9022 5.10334Z" fill="currentColor"></path>
@@ -127,7 +116,7 @@ export default function RootLayout() {
                                         </svg>
                                         Benchmarks
                                     </NavLink>
-                                    <div className={hoveredChildIndex === 3 ? "suboptions-container" : "suboptions-container hide"}>
+                                    <div className={hoveredChildIndex === 1 ? "suboptions-container" : "suboptions-container hide"}>
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
 
                                         <ul className="ul-suboptions">
@@ -154,7 +143,7 @@ export default function RootLayout() {
                                         Leaderboards
                                     </NavLink>
                                 </li> */ }
-                                 <li data-index="5" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                 <li data-index="2" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                                             <path className="uim-tertiary" d="M15.273 18.728A6.728 6.728 0 1 1 22 11.999V12a6.735 6.735 0 0 1-6.727 6.728z" opacity=".5" fill="currentColor"></path>
@@ -162,7 +151,7 @@ export default function RootLayout() {
                                         </svg>
                                         Analyses
                                     </NavLink>
-                                    <div className={hoveredChildIndex === 5 ? "suboptions-container" : "suboptions-container hide"}>
+                                    <div className={hoveredChildIndex === 2 ? "suboptions-container" : "suboptions-container hide"}>
                                     <div className="rounded-xl border-gray-100 border styles-for-dropdown">
                                         <ul className="ul-suboptions">
                                             <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
@@ -174,7 +163,18 @@ export default function RootLayout() {
                                     </div>
                                     </div>
                                  </li>
-                                 <li data-index="6" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                <li data-index="3">
+                                    <NavLink to="updates" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                        <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
+                                            <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
+                                            <path d="M12.5 15C16.6421 15 20 14.1046 20 13V20C20 21.1046 16.6421 22 12.5 22C8.35786 22 5 21.1046 5 20V13C5 14.1046 8.35786 15 12.5 15Z" fill="currentColor" opacity="0.5"></path>
+                                            <path d="M12.5 7C16.6421 7 20 6.10457 20 5V11.5C20 12.6046 16.6421 13.5 12.5 13.5C8.35786 13.5 5 12.6046 5 11.5V5C5 6.10457 8.35786 7 12.5 7Z" fill="currentColor" opacity="0.5"></path>
+                                            <path d="M5.23628 12C5.08204 12.1598 5 12.8273 5 13C5 14.1046 8.35786 15 12.5 15C16.6421 15 20 14.1046 20 13C20 12.8273 19.918 12.1598 19.7637 12C18.9311 12.8626 15.9947 13.5 12.5 13.5C9.0053 13.5 6.06886 12.8626 5.23628 12Z" fill="currentColor"></path>
+                                        </svg>
+                                        Updates
+                                    </NavLink>
+                                </li>
+                                 <li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink to="tutorial" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
                                             <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
@@ -185,7 +185,7 @@ export default function RootLayout() {
                                         Tutorial
                                     </NavLink>
                                  </li>
-                                 <li data-index="7">
+                                 <li data-index="5">
                                     <NavLink to="team" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path opacity="0.5" d="M20.9022 5.10334L10.8012 10.8791L7.76318 9.11193C8.07741 8.56791 8.5256 8.11332 9.06512 7.7914L15.9336 3.73907C17.0868 3.08811 18.5002 3.26422 19.6534 3.91519L19.3859 3.73911C19.9253 4.06087 20.5879 4.56025 20.9022 5.10334Z" fill="currentColor"></path>
@@ -196,7 +196,7 @@ export default function RootLayout() {
                                         Teams
                                     </NavLink> 
                                  </li>
-                                 <li data-index="8" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                 <li data-index="6" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
                                             <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
@@ -206,7 +206,7 @@ export default function RootLayout() {
                                         </svg>
                                         Login/Sign Up
                                     </NavLink>
-                                    <div className={hoveredChildIndex === 8 ? "suboptions-container" : "suboptions-container hide"}>
+                                    <div className={hoveredChildIndex === 6 ? "suboptions-container" : "suboptions-container hide"}>
                                     <div className="rounded-xl border-gray-100 border styles-for-dropdown">
                                         <ul className="ul-suboptions">
                                             <li><NavLink to="SignUp">Sign Up</NavLink></li>

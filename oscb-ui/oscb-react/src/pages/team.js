@@ -44,10 +44,10 @@ export default function Team() {
 
             <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
                 <div className="team-page-container">
-                    <h1>OSCB Team</h1>
+                    <h1>SINGLE-CELL.AI Team</h1>
                     <div className="team-content">
                         <h3>Core Development</h3>
-                        <p>The core development team can be reached at <a href="/">oscb@cs.missouri.edu</a></p>
+                        <p>The core development team can be reached at <a href="/">leijiang@missouri.edu</a></p>
                     </div>
 
                     <div className="core-team-container">

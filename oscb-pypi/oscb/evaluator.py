@@ -12,7 +12,7 @@ import requests
 import json
 
 
-def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, label_pred_key=None, embedding_key=None, ccc_pred="ccc_pred", ccc_target="ccc_target", score="score", denoised_layer=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj_key=None, bm_traj_key=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
+def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
     if adata is None:
         raise ValueError("adata is required.")
     
@@ -31,6 +31,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                 match task:
                     case "Clustering" | "CL":
                         label_key = benchmarks['label']
+                        labels = adata.obs[label_key]
 
                     case "Imputation" | "IM":
                         species = benchmarks['species']
@@ -44,11 +45,14 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                         label_key = benchmarks['label']
                         root_node = benchmarks['origin_group']
                         bm_traj_key = benchmarks['bm_traj']
+                        bm_traj = adata.uns[bm_traj_key]
+                        root_node = adata.uns[root_node]
 
                     case "Cell-Cell Communication" | "CCC":
                         label_key = benchmarks['label']
-                        ccc_target = benchmarks['ccc_target']
+                        ccc_target_key = benchmarks['ccc_target']
                         species = benchmarks['species']
+                        ccc_target = adata.uns[ccc_target_key]
 
                     case "Multimodal Data Integration" | "MI":
                         mod1_key = benchmarks['mod1']
@@ -58,6 +62,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
 
                     case "Cell Type Annotation" | "CT":
                         label_key = benchmarks['label']
+                        labels = adata.obs[label_key]
                         # species = benchmarks['species']
 
             except Exception as e:
@@ -75,8 +80,8 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
         }
         match task:
             case "Clustering" | "CL":
-                if cluster_key is not None and label_key is not None and embedding_key is not None:
-                    asw_score, nmi_score, ari_score, fm_score = clustering_metrics(adata.obs[label_key], adata.obs[cluster_key], adata.obsm[embedding_key])
+                if labels_pred is not None and labels is not None and embedding is not None:
+                    asw_score, nmi_score, ari_score, fm_score = clustering_metrics(labels, labels_pred, embedding)
                     results = {
                         "benchmarksId": benchmarks_id,
                         "datasetId": dataset_id,
@@ -94,11 +99,11 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
 
                     return results
                 else: 
-                    raise ValueError(f"cluster_key, label_key and embedding_key are required for {task}.")
+                    raise ValueError(f"labels_pred, labels and embedding are required for {task}.")
 
             case "Imputation" | "IM":
                 if denoised_layer is not None:
-                    mse, possion = imputation_metrics(adata, denoised_layer=denoised_layer)
+                    mse, possion = imputation_metrics(adata, denoised=denoised)
                     results = {
                         "benchmarksId": benchmarks_id,
                         "datasetId": dataset_id,
@@ -113,7 +118,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                         plot_bars(task, labels, y_labels, data)
                     return results
                 else: 
-                    raise ValueError(f"denoised_layer is required for {task}.")
+                    raise ValueError(f"denoised is required for {task}.")
 
             case "Batch Integration" | "BI":
                 if adata_int is not None and label_key is not None and batch_key is not None:
@@ -127,8 +132,8 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     raise ValueError(f"adata_int, label_key and batch_key are required for {task}.")
                     
             case "Trajectory" | "TJ":
-                if traj_key is not None and bm_traj_key is not None and root_node is not None:
-                    ged_score, gks_score, jsc_score, ted_score, mean = trajectory_metrics(adata.uns[traj_key], adata.uns[bm_traj_key], adata.uns[root_node])
+                if traj is not None and bm_traj is not None and root_node is not None:
+                    ged_score, gks_score, jsc_score, ted_score, mean = trajectory_metrics(traj, bm_traj, root_node)
                     results = {
                         "benchmarksId": benchmarks_id,
                         "datasetId": dataset_id,
@@ -146,11 +151,11 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                         plot_bars(task, labels, y_labels, data)
                     return results
                 else: 
-                    raise ValueError(f"adata_int, label_key and batch_key are required for {task}.")
+                    raise ValueError(f"traj, bm_traj and root_node are required for {task}.")
 
             case "Cell-Cell Communication" | "CCC":
                 if ccc_pred is not None and ccc_target is not None and score is not None:
-                    auc_score, oddsratio_score = ccc_metrics(adata, ccc_pred=ccc_pred, ccc_target=ccc_target, score='score')
+                    auc_score, oddsratio_score = ccc_metrics(adata, ccc_pred, ccc_target, score='score')
                     results = {
                         "benchmarksId": benchmarks_id,
                         "datasetId": dataset_id,
@@ -179,8 +184,8 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     raise ValueError(f"embedding_key, mod1_key, label_key and batch_key are required for {task}.")
 
             case "Cell Type Annotation" | "CT":
-                if label_pred_key is not None and label_key is not None:
-                    accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(adata.obs[label_key], adata.obs[label_pred_key])
+                if labels_pred is not None and labels is not None:
+                    accuracy, f1_macro, f1_micro, f1_weighted = annotation_metrics(labels, labels_pred)
                     results = {
                         "benchmarksId": benchmarks_id,
                         "datasetId": dataset_id,
@@ -197,7 +202,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                         plot_bars(task, labels, y_labels, data)
                     return results
                 else: 
-                    raise ValueError(f"label_pred_key, and label_key are required for {task}.")
+                    raise ValueError(f"labels_pred, and labels are required for {task}.")
 
             case _:  # Default case, equivalent to 'default' in other languages
                 raise ValueError(f"{task} is not supported. Please input the task name from the following list [Clustering, Imputation, Batch Integration, Trajectory, Cell-Cell Communication, Multimodal Data Integration, Cell Type Annotation].")

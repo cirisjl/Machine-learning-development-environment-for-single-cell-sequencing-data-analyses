@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-server_endpoint = "http://c4130-110233.wisc.cloudlab.us:5005/api/"
+server_endpoint = "http://c4130-110133.wisc.cloudlab.us:5005/api/"
 
 
 def get_dataset_id(benchmarks_id):
