@@ -17,7 +17,7 @@ base_url = "http://clgpu015.clemson.cloudlab.us:5005/api"
 ws_base_url = "ws://clgpu015.clemson.cloudlab.us:5005/wsapi"  # WebSocket base URL
 
 
-def DownloadDataset(dataset_id, file_folder = 'dataset/', process_type = "quality_control", method = "scanpy"):
+def DownloadDataset(dataset_id, file_folder = 'datasets/', process_type = "quality_control", method = "scanpy"):
     user_id = get_persistent_machine_id()
     # Step 1: Submit the task
     submit_url = f"{base_url}/dataset/download"

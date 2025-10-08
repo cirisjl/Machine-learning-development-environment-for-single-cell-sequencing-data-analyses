@@ -46,7 +46,7 @@ export default function Benchmarks() {
             <div className="left-nav">  
             </div>
             <div className='main-content'>
-                <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
+                <ReactMarkdown remarkPlugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
             <div className="right-rail">
                 <RightRail />

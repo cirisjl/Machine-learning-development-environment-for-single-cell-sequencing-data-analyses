@@ -50,7 +50,7 @@ export default function GetStarted() {
             </div>
 
             <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
-                <ReactMarkdown plugins={[gfm, remarkImgToJsx]} children={markdownText}/>
+                <ReactMarkdown remarkPlugins={[gfm, remarkImgToJsx]} children={markdownText}/>
             </div>
 
             <div className="right-rail">
