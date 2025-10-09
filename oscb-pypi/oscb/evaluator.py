@@ -19,6 +19,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
     benchmarks = None
     current_date_and_time = datetime.now()
     benchmarks_data = None
+    dataset_id = None
 
     if benchmarks_id is not None:
         dataset_id, task = get_dataset_id(benchmarks_id)
@@ -32,6 +33,10 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     case "Clustering" | "CL":
                         label_key = benchmarks['label']
                         labels = adata.obs[label_key]
+                        if cluster_key is not None:
+                            labels_pred = adata.obs[cluster_key]
+                        if embedding_key is not None:
+                            embedding = adata.obsm[embedding_key]
 
                     case "Imputation" | "IM":
                         species = benchmarks['species']

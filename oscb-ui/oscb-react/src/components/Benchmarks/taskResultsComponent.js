@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from "react-markdown"
 import 'github-markdown-css';
-// import './taskResultsComponent.css';
 import axios from 'axios';
-// import gfm from "remark-gfm";
-// import remarkImgToJsx from "remark-unwrap-images";
-// import {NODE_API_URL} from '../../constants/declarations'
-// import { getCookie } from "../../utils/utilFunctions";
-// import { useNavigate } from 'react-router-dom';
 import { DIRECTUS_URL } from '../../constants/declarations'
 import RightRail from '../RightNavigation/rightRail';
 import SearchTasks from './components/taskResults';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw'
 import rehypeGithubAlerts from 'rehype-github-alert'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -67,11 +62,12 @@ export default function TaskResultsComponent(task_type) {
         <div className="task-results-container eighty-twenty-grid">
             <div className="main-content task-builder-task">
                 <h1 style={{ textAlign: "left" }}>{title}</h1>
+                <hr />
                 <h2>Datasets</h2>
-                <p><SearchTasks taskType={task_type} /></p>
-                <hr/>
+                <p><SearchTasks taskType={task_type} /></p>  
+                <hr />   
                 <p><ReactMarkdown 
-                    // remarkPlugins={[gfm]} 
+                    remarkPlugins={[remarkGfm]} 
                     rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
                     children={markdownText}
                     components={{
