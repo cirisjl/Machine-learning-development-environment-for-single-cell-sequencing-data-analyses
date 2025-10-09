@@ -3,7 +3,7 @@
 <img src="http://c4130-110133.wisc.cloudlab.us:3000/images/evaluator/Clustering.png">
 </div>
 
-In single-cell analysis, clustering is a critical step to identify distinct cell types or states within a heterogeneous sample. The process begins with a gene expression matrix (step 1), detailing expression levels for thousands of genes across individual cells. To manage this high-dimensional data, dimensionality reduction techniques like PCA, UMAP or t-SNE (step 2) are applied, projecting cells into a 2D or 3D space while preserving transcriptional similarities. Finally, clustering algorithms (step 3) group these projected cells into distinct clusters, where each cluster represents a population of cells with similar gene expression profiles, allowing for the identification and annotation of unique cell types (e.g., T Cells, B Cells, Macrophages, Neurons) from the original sample.
+In single-cell analysis, clustering is a critical step to identify distinct cell types or states within a heterogeneous sample. The process begins with a gene expression matrix (**step 1**), detailing expression levels for thousands of genes across individual cells. To manage this high-dimensional data, dimensionality reduction techniques like PCA, UMAP or t-SNE (**step 2**) are applied, projecting cells into a 2D or 3D space while preserving transcriptional similarities. Finally, clustering algorithms (**step 3**) group these projected cells into distinct clusters, where each cluster represents a population of cells with similar gene expression profiles, allowing for the identification and annotation of unique cell types (e.g., T Cells, B Cells, Macrophages, Neurons) from the original sample.
 
 <hr/>
 
