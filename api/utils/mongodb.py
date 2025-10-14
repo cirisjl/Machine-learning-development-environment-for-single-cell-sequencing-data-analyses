@@ -205,26 +205,25 @@ def create_user_datasets(datasets):
     return
 
 
-def get_file_by_dataset_id(datasetId):
-    collection = datasets_collection # Benchmark datasets
-    # User datasets
-    if datasetId.split("-")[0] == "U":
-        print("Appending new process_ids to user dataset")
-        collection = user_datasets_collection
+def get_file_by_id(id):
+    document = None
+    if id.split("-")[0] in ["CL", "IM", "BI", "TJ", "CCC", "MI", "CT"]: # Benchmark datasets:
+        document = benchmarks_collection.find_one({"benchmarksId": id}, {"_id": 0, "benchmarks_plot": 0, "methods": 0, "utilization_plot": 0})
+        if not document:
+            raise ValueError(f"No document found for benchmarksId: {id}")
+    else:
+        collection = datasets_collection # public datasets
+        # User datasets
+        if id.split("-")[0] == "U":
+            collection = user_datasets_collection
+        
+        # Query MongoDB for the document with the given dataset_id
+        document = collection.find_one({"Id": id}, {"adata_path": 1})
+        
+        if not document:
+            raise ValueError(f"No document found for datasetId: {id}")
     
-    # Query MongoDB for the document with the given dataset_id
-    document = collection.find_one({"Id": datasetId})
-    
-    if not document:
-        raise ValueError(f"No document found for datasetId: {datasetId}")
-    
-    # Extract adata_path
-    adata_path = document.get("adata_path")
-    
-    if not adata_path:
-        raise ValueError(f"'adata_path' is missing in the document for datasetId: {datasetId}")
-    
-    return adata_path
+    return document
 
 
 def clear_dict(d):

@@ -2,9 +2,10 @@ import os
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 from fastapi.responses import StreamingResponse
-from utils.mongodb import get_file_by_dataset_id, get_benchmarks_by_id
+from utils.mongodb import get_file_by_id, get_benchmarks_by_id
 from schemas.schemas import DownloadDataset
 from urllib.parse import quote
+import json
 
 router = APIRouter(prefix='/api', tags=['dataset'], responses={404: {"description": "API Not found"}})
 
@@ -20,14 +21,21 @@ async def download_dataset(ds: DownloadDataset):
 
     ds_dict = ds.model_dump()  # Convert the Pydantic model to a dict
     dataset_id = ds_dict['dataset_id'] 
-
-    adata_path = get_file_by_dataset_id(dataset_id)
-    file_name = os.path.basename(adata_path)
+    document = get_file_by_id(dataset_id)
+    adata_path = document.get("adata_path")
+    document.pop("adata_path", None)  # Remove adata_path from metadata to avoid exposing file system details
 
     if not os.path.isfile(adata_path):
         raise HTTPException(status_code=404, detail="File not found")
+    
+    file_name = os.path.basename(adata_path)
 
-    return StreamingResponse(iter_file(path=adata_path), media_type="application/octet-stream", headers={f"Content-Disposition": "attachment; filename={}".format(quote(file_name))})
+    headers={
+        "Content-Disposition": "attachment; filename={}".format(quote(file_name)),
+        "X-File-Metadata": json.dumps(document)
+        }
+
+    return StreamingResponse(iter_file(path=adata_path), media_type="application/octet-stream", headers=headers)
 
 
 @router.get("/benchmarks/{benchmarksId}")

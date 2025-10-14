@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-server_endpoint = "http://c4130-110133.wisc.cloudlab.us:5005/api/"
+server_endpoint = "http://clgpu018.clemson.cloudlab.us:5005/api/"
 
 
 def get_dataset_id(benchmarks_id):
@@ -57,7 +57,7 @@ def get_bar_plot_data(benchmark_data, user_results=None):
     return labels, y_labels, data
 
 
-def plot_bars(task, labels, y_labels, data, tick_step=1, group_gap=0.2, bar_gap=0):
+def plot_bars(task, labels, y_labels, data, tick_step=1, group_gap=0.2, bar_gap=0, rotation=0):
     x = np.arange(len(labels)) * tick_step
     group_num = len(data)
     group_width = tick_step - group_gap
@@ -68,7 +68,7 @@ def plot_bars(task, labels, y_labels, data, tick_step=1, group_gap=0.2, bar_gap=
     plt.ylabel('Scores')
     plt.title(f'Benchmarks for {task}')
     ticks = x + (group_width - bar_span) / 2
-    plt.xticks(ticks, labels)
+    plt.xticks(ticks, labels, rotation=rotation)
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.show()
 

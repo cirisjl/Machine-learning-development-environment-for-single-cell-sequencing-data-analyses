@@ -12,7 +12,7 @@ import scanpy as sc
 import anndata as ad
 import mudata as md
 from .utils import *
-
+import json
 
 
 class FileDownloader:
@@ -24,7 +24,7 @@ class FileDownloader:
         """
         Extracts filename from Content-Disposition header or URL.
         """
-        print(headers)
+        # print(headers)
         if "content-disposition" in headers:
             cd = headers["content-disposition"]
             match = re.search(r"filename\*?=['\"]?(.*?)['\"]?(?:;|$)", cd)
@@ -35,6 +35,17 @@ class FileDownloader:
                     filename = filename.split("''", 1)[1]
                     filename = requests.utils.unquote(filename)
                 return filename
+        return None
+
+    def get_metadata_from_response(self, headers):
+        """
+        Extracts filename from Content-Disposition header or URL.
+        """
+        # print(headers)
+        if "X-File-Metadata" in headers:
+            metadata = json.loads(headers["X-File-Metadata"])
+            return metadata
+
         return None
         
     def get_file_size(self, response):
@@ -54,6 +65,7 @@ class FileDownloader:
             response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
             total_size = self.get_file_size(response)
             file_name = self.get_filename_from_response(response.headers)
+            metadata = self.get_metadata_from_response(response.headers)
             local_file_path = os.path.join(data_folder, file_name)
             local_file_path = Path(local_file_path)
             # Make dir
@@ -80,7 +92,7 @@ class FileDownloader:
                     
             print(f"File downloaded successfully to: {local_file_path}")
             
-            return local_file_path
+            return local_file_path, metadata
             
         except Exception as e:
             progress.close()
@@ -111,11 +123,15 @@ def DataLoader(benchmarks_id, data_folder='downloads/', server_endpoint=server_e
     else:
         print("Downloading dataset.")
     data_dict = {
-        "dataset_id": dataset_id
+        "dataset_id": benchmarks_id
     }
 
     downloader = FileDownloader()
-    adata_path = downloader.download(server_endpoint, data_dict, data_folder="downloads")
+    adata_path, metadata = downloader.download(server_endpoint, data_dict, data_folder="downloads")
+    if metadata is not None:
+        print("Benchmarks metadata:")
+        for key, value in metadata.items():
+            print(f"{key}: {value}")
 
     if os.path.isfile(adata_path):
         if str(adata_path).endswith(".h5mu"):

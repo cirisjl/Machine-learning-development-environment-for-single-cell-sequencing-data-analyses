@@ -12,7 +12,7 @@ import requests
 import json
 
 
-def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
+def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, batch_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
     if adata is None:
         raise ValueError("adata is required.")
     
@@ -107,7 +107,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     raise ValueError(f"labels_pred, labels and embedding are required for {task}.")
 
             case "Imputation" | "IM":
-                if denoised_layer is not None:
+                if denoised is not None:
                     mse, possion = imputation_metrics(adata, denoised=denoised)
                     results = {
                         "benchmarksId": benchmarks_id,
@@ -131,7 +131,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     results = {**task_info, **metrics_dict}
                     if benchmarks_data is not None:
                         labels, y_labels, data = get_bar_plot_data(benchmarks_data, user_results=results)
-                        plot_bars(task, labels, y_labels, data)
+                        plot_bars(task, labels, y_labels, data, rotation=90)
                     return results
                 else: 
                     raise ValueError(f"adata_int, label_key and batch_key are required for {task}.")
@@ -153,7 +153,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     }
                     if benchmarks_data is not None:
                         labels, y_labels, data = get_bar_plot_data(benchmarks_data, user_results=results)
-                        plot_bars(task, labels, y_labels, data)
+                        plot_bars(task, labels, y_labels, data, rotation=90)
                     return results
                 else: 
                     raise ValueError(f"traj, bm_traj and root_node are required for {task}.")
@@ -172,7 +172,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     }
                     if benchmarks_data is not None:
                         labels, y_labels, data = get_bar_plot_data(benchmarks_data, user_results=results)
-                        plot_bars(task, labels, y_labels, data)
+                        plot_bars(task, labels, y_labels, data, rotation=90)
                     return results
                 else: 
                     raise ValueError(f"ccc_pred, ccc_target and score are required for {task}.")
@@ -183,7 +183,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                     results = {**task_info, **metrics_dict}
                     if benchmarks_data is not None:
                         labels, y_labels, data = get_bar_plot_data(benchmarks_data, user_results=results)
-                        plot_bars(task, labels, y_labels, data)
+                        plot_bars(task, labels, y_labels, data, rotation=90)
                     return results
                 else: 
                     raise ValueError(f"embedding_key, mod1_key, label_key and batch_key are required for {task}.")

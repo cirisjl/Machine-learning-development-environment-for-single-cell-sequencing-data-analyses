@@ -1,6 +1,6 @@
 ## Task info
 <div align="center">
-<img src="http://c4130-110133.wisc.cloudlab.us:3000/images/evaluator/Clustering.png">
+<img src="http://clgpu018.clemson.cloudlab.us:3000/images/evaluator/Clustering.png">
 </div>
 
 In single-cell analysis, clustering is a critical step to identify distinct cell types or states within a heterogeneous sample. The process begins with a gene expression matrix (**step 1**), detailing expression levels for thousands of genes across individual cells. To manage this high-dimensional data, dimensionality reduction techniques like PCA, UMAP or t-SNE (**step 2**) are applied, projecting cells into a 2D or 3D space while preserving transcriptional similarities. Finally, clustering algorithms (**step 3**) group these projected cells into distinct clusters, where each cluster represents a population of cells with similar gene expression profiles, allowing for the identification and annotation of unique cell types (e.g., T Cells, B Cells, Macrophages, Neurons) from the original sample.
@@ -57,7 +57,7 @@ adata = DataLoader("Benchmarks_ID/Dataset_ID", data_folder="./datasets/")
 
 ### Evaluators
 #### OSCB Benchmarks
-For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please replace `Benchmarks_ID` with the Benchmarks ID (e.g., `"CL-m-FACS_Bladder-1268-Tabula-2018"`), `cluster_key` with your cluser key in `adata.obs` (e.g., `"leiden"`) and `embedding_key` with your embedding key in `adata.obsm` (e.g., `"X_umap"`). You can change the method name by modifying the parameter `method`.
+For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please replace `Benchmarks_ID` with the Benchmarks ID (e.g., `"CL-m-FACS_Bladder-1268-Tabula-2018"`), `cluster_key` with your cluser key in `adata.obs` (e.g., `"leiden"`) and `embedding_key` with your embedding key in `adata.obsm` (e.g., `"X_umap"`). To modify the method name, adjust the `method` parameter.
 > [!IMPORTANT]
 > The input types of `benchmarks_id`, `cluster_key` and `embedding_key` are `string`.
 ```python
@@ -68,13 +68,13 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", cluster_key="leiden", 
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c4130-110133.wisc.cloudlab.us:3000/images/evaluator/clustering_evaluation.png">
+> <img src="http://clgpu018.clemson.cloudlab.us:3000/images/evaluator/clustering_evaluation.png">
 > </div>
 
 #### User's datasets
-To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Clustering"`), true `labels`(e.g., `adata.obs['cell_type']`), `labels_pred` from your clustering (e.g., `adata.obs['leiden']`), and an `embedding` (e.g., `adata.obsm["X_umap"]`); the method name can be customized via the `method` parameter.
+To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Clustering"` or `"CL"` for short), true `labels`(e.g., `adata.obs['cell_type']`), `labels_pred` from your clustering (e.g., `adata.obs['leiden']`), and an `embedding` (e.g., `adata.obsm["X_umap"]`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
-> The input types of `labels` and `labels_pred` are `array-like of shape (n_samples,)`, while `embedding` is `{array-like, sparse matrix} of shape (n_samples_a, n_samples_a) if metric == “precomputed” or (n_samples_a, n_features) otherwise`.
+> The input types of `task`, `labels` and `labels_pred` are `array-like of shape (n_samples,)`, while `embedding` is `{array-like, sparse matrix} of shape (n_samples_a, n_samples_a) or (n_samples_a, n_features)`.
 ```python
 from oscb.evaluator import eval, write_json
 
@@ -97,7 +97,7 @@ monitor = Monitor(1)
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c4130-110133.wisc.cloudlab.us:3000/images/evaluator/clustering_utilization.png">
+<img src="http://clgpu018.clemson.cloudlab.us:3000/images/evaluator/clustering_utilization.png">
 </div>
 
 <hr/>
