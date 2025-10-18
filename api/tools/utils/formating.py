@@ -2,9 +2,12 @@ from scipy import sparse
 
 import importlib
 import numbers
+import scanpy as sc
 import numpy as np
 import pandas as pd
 import re
+from typing import Literal
+from scib.preprocessing import get_cell_cycle_genes
 import warnings
 
 
@@ -116,3 +119,48 @@ def SparseDataFrame(X, columns=None, index=None, default_fill_value=0.0):
     if index is not None:
         X.index = index
     return X
+
+
+def has_cell_cyle_genes(
+    adata: sc.AnnData, 
+    species: Literal[
+        "mouse",
+        "mus musculus",
+        "mus_musculus",
+        "human",
+        "homo sapiens",
+        "homo_sapiens",
+        "c_elegans",
+        "c elegans",
+        "caenorhabditis elegans",
+        "caenorhabditis_elegans",
+        "zebrafish",
+        "danio rerio",
+        "danio_rerio",
+    ]):
+    columns = ["gene_name", "gene_id"]
+    gene_map = get_cell_cycle_genes(species)
+    df_s = gene_map.query("phase == 'S'")
+    df_g = gene_map.query("phase == 'G2/M'")
+    
+    n_genes_s = 0
+    for col in columns:
+        _genes = [g for g in df_s[col] if g in adata.var_names]
+        if len(_genes) > n_genes_s:  # pick largest overlapping set
+            n_genes_s = len(_genes)
+            genes_s = _genes
+            
+    if n_genes_s == 0:
+        return False
+
+    n_genes_g = 0
+    for col in columns:
+        _genes = [g for g in df_g[col] if g in adata.var_names]
+        if len(_genes) > n_genes_g:  # pick largest overlapping set
+            n_genes_g = len(_genes)
+            genes_g = _genes
+            
+    if n_genes_g == 0:
+        return False
+        
+    return True

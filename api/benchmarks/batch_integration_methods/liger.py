@@ -2,6 +2,7 @@
 import os
 import subprocess
 import sys
+import scanpy as sc
 sys.path.append('..')
 from tools.formating.formating import *
 from tools.evaluation.monitor import *
@@ -35,7 +36,8 @@ def liger_integration(adata, input, label, batch_key, datasets, benchmarksId, da
     if os.path.exists(adata_path):
         adata_int = load_anndata(adata_path)
         adata_int.obsm['X_pca'] = adata_int.obsm['X_inmfnorm']
-        metrics_dict = integration_metrics(adata, adata_int, batch_key=batch_key, label_key=label, species=species)
+        adata_original = sc.AnnData(X=adata_int.layers['counts'], obs=adata_int.obs, var=adata_int.var).copy()
+        metrics_dict = integration_metrics(adata_original, adata_int, batch_key=batch_key, label_key=label, species=species)
 
         sys_usage = {
                 "sys_info": sys_info,

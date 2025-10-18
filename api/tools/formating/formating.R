@@ -342,7 +342,7 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 }
 
 
-SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", drop_single_values=FALSE, drop_na_values=TRUE) {
+SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="scale.data", transfer_layers="counts", transfer_assay=NULL, transfer_assay_obsm=NULL, transfer_assay_layer=NULL, drop_single_values=FALSE, drop_na_values=TRUE) {
     # print("inside s to a")
     # print(out_file)
     main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
@@ -390,6 +390,31 @@ SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts"
     for (layer in transfer_layers) {
         mat <- Seurat::GetAssayData(object=obj, assay=assay, layer=layer)
         if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
+    }
+
+    assay_names <- names(obj@assays)
+    # Transfer layers from another assay if specified
+    transfer_assay_layer <- transfer_assay_layer[
+        transfer_assay_layer %in% c("data", "counts", "scale.data")
+    ]
+
+    if (!is.null(transfer_assay) && !is.null(transfer_assay_layer) && transfer_assay %in% assay_names) {
+        for (layer in transfer_assay_layer) {
+            mat <- Seurat::GetAssayData(object=obj, assay=transfer_assay, layer=layer)
+            if (all(dim(mat) == dim(X))) layers[[layer]] <- Matrix::t(mat)
+        }
+    }
+
+    # Transfer layers from another assay if specified
+    transfer_assay_obsm <- transfer_assay_obsm[
+        transfer_assay_obsm %in% c("data", "counts", "scale.data")
+    ]
+    
+    if (!is.null(transfer_assay) && !is.null(transfer_assay_obsm) && transfer_assay %in% assay_names) {
+        for (layer in transfer_assay_obsm) {
+            mat <- Seurat::GetAssayData(object=obj, assay=transfer_assay, layer=layer)
+            obsm[paste0(transfer_assay, "_", layer)] <- Matrix::t(mat)
+        }
     }
 
     adata <- AnnData(

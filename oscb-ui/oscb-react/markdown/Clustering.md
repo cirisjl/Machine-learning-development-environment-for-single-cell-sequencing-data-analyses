@@ -17,7 +17,7 @@ We use cell-type as clustering ground truth, and compare it with the predicted c
 
 * **Silhouette:** The Silhouette Score [^3] provides an intrinsic evaluation of clustering quality, independent of external labels. It measures the degree of similarity within clusters versus dissimilarity between clusters, with values ranging from -1 (indicating poor cluster separation) to +1 (denoting highly cohesive and distinct clusters).
 
-* **NMI (Normalised Mutual Information):** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
+* **NMI:** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
 
 <hr/>
 

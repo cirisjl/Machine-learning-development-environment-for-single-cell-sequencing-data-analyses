@@ -179,6 +179,8 @@ const handleLogMessage = (event) => {
         output: extractDir(pathToUse),
         userID: taskData.quality_control.token,
         species: taskData.upload.Species.label,
+        skip_3d: values.skip_3d,
+        skip_tsne: values.skip_tsne,
         qc_params : {
           min_genes : values.min_genes,
           max_genes : values.max_genes,
@@ -322,6 +324,8 @@ const handleAssaySelectionSubmit = async () => {
       // output: extractDir(taskData.quality_control.seurat_meta.file) + "/results",
       output: extractDir(taskData.quality_control.seurat_meta.file),
       userID: taskData.quality_control.token,
+      skip_3d: values.skip_3d,
+      skip_tsne: values.skip_tsne,
       qc_params : {
         min_genes : values.min_genes,
         max_genes : values.max_genes,

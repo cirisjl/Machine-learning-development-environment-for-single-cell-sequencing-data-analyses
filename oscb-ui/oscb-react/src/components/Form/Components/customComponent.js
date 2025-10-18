@@ -195,7 +195,7 @@ class MyForm extends Component {
       }
 
       const author = formData['Author'];
-      const first_author = author.split(' ')[0]
+      const first_author = author.split(' ')[0].replace(',', '').replace('.', '');
       const submissionDate = formData['Submission Date'];
       const year = submissionDate ? new Date(submissionDate).getFullYear().toString() : '';
 

@@ -9,13 +9,35 @@ Single-cell RNA sequencing (scRNA-seq) experiments often face a pervasive challe
 
 ## Metrics
 
-Evaluating single-cell RNA sequencing denoising is challenging due to the lack of ground truth, as existing benchmark methods have limitations that prevent a unified accuracy measure. To address this, molecular cross-validation (MCV) is utilized, a method specifically designed to quantify denoising accuracy by comparing a denoised training set against a partitioned test set, with demonstrated reliability in representing ground truth accuracy [^1].
+This task evaluates batch integration methods by assessing their success in removing technical batch effects while preserving true biological variation (including ARI, ASW label, Cell Cycle Conservation, cLISI, HVG overlap, Isolated label F1 score, Isolated label ASW, and NMI) within single-cell data. Methods are provided with multi-batch, consistently labeled data (either normalized or unnormalized) and produce either a feature matrix, low-dimensional embedding, or neighborhood graph as integrated output. This output is subsequently evaluated using specific metrics that quantify both batch effect removal and biological variance conservation, with the task framework drawing from the most recent and comprehensive single-cell data integration benchmark.
 
 A workflow for creating imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where training data is stored in `adata.obsm["train"]` and test data in `adata.obsm["test"]`.
 
-* **MSE:** The metric measures the reweighted Mean Squared Error (MSE) [^1] between the denoised gene expression counts from the training dataset and the actual gene expression counts from the test dataset, where the reweighting factor is based on the train/test ratio.
+* **ARI:** The Adjusted Rand Index [^1] quantifies the congruence between a derived clustering solution and a predefined ground truth (e.g., cell types), factoring in chance agreement. It delivers a score between 0 (random assignment) and 1 (perfect concordance), reflecting both accurate inclusions and exclusions across partitions.
 
-* **Possion Loss:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+* **ASW batch:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **ASW Label:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **Cell Cycle Conservation:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **cLISI:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **Graph Connectivity:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **HVG overlap:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **iLISI:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **Isolated label ASW:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **Isolated label F1 score:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **kBET:** This metric assesses the Poisson log-likelihood [^1] of observing the true gene counts in the test dataset, given that the denoised counts from the model represent the expected mean parameters of the underlying Poisson distributions.
+
+* **NMI:** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
+
+* **PCR:** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
 
 <hr/>
 
@@ -101,4 +123,6 @@ monitor.stop()
 <hr/>
 
 ## References
-[^1]: Batson, Joshua, and Loic Royer. "Noise2self: Blind denoising by self-supervision." International conference on machine learning. PMLR, 2019.
+[^1]: Hubert, L., & Arabie, P. (1985). Comparing partitions. Journal of Classification, 2(1), 193–218. https://doi.org/10.1007/bf01908075
+
+[^4]: Luecken, M. D., Büttner, M., Chaichoompu, K., Danese, A., Interlandi, M., Mueller, M. F., Strobl, D. C., Zappia, L., Dugas, M., Colomé-Tatché, M., & Theis, F. J. (2021). Benchmarking atlas-level data integration in single-cell genomics. Nature Methods, 19(1), 41–50. https://doi.org/10.1038/s41592-021-01336-8

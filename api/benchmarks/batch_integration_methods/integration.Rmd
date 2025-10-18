@@ -59,10 +59,9 @@ for (i in 1:length(inputs)) {
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay
   print(paste("Seurat object for '", datasets[datasets[i]], "' is loaded and default assay is set to", params$default_assay, "."))
-  if(params$default_assay == 'RNA') srats.list[[datasets[i]]] <- NormalizeData(srats.list[[datasets[i]]], verbose = F)
-  srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F)
 }
 names(srats.list) <-datasets
+assay_names <- names(srats.list[[datasets[1]]]@assays)
 
 ```
 
@@ -70,18 +69,23 @@ names(srats.list) <-datasets
 
 ```{r Seurat, error=TRUE, include=TRUE, error=TRUE, echo=params$show_code, warning=params$show_warning, message=params$show_message, fig.pos='H', fig.align='center', out.width='100%', fig.height=5, fig.width=9, results='asis'}
 if("SEURAT" %in% methods) {
+  options(future.globals.maxSize = 50 * 1024^3)
+  for (i in 1:length(inputs)) {
+    if(params$default_assay == 'RNA') srats.list[[datasets[i]]] <- SCTransform(srats.list[[datasets[i]]], verbose = F)
+    srats.list[[datasets[i]]] <- FindVariableFeatures(srats.list[[datasets[i]]], selection.method = "vst", nfeatures = 2000, verbose = F) 
+  }
   tryCatch({
     RedisInfo(unique_id, "Start Seurat integration ...")
     srats.integrated <- NULL
-    if(params$default_assay == 'SCT' && !is.null(params$reference)) {
+    if('SCT' %in% assay_names && !is.null(params$reference)) {
       if(!params$reference %in% datasets) stop(paste(params$reference, "does not exist."))
-      srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
+      srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 2000) 
       srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
       reference_dataset <- which(names(srats.list) == params$reference)
       srats.anchors <- FindIntegrationAnchors(object.list = srats.list, normalization.method = "SCT", anchor.features = srats.features, reference = reference_dataset)
       srats.integrated <- IntegrateData(anchorset = srats.anchors, normalization.method = "SCT")
-    } else if (params$default_assay == 'SCT'){
-      srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 3000) 
+    } else if ('SCT' %in% assay_names ){
+      srats.features <- SelectIntegrationFeatures(object.list = srats.list, nfeatures = 2000) 
       srats.list <- PrepSCTIntegration(object.list = srats.list, anchor.features = srats.features, verbose = FALSE) 
       srats.anchors <- FindIntegrationAnchors(object.list = srats.list, normalization.method = "SCT", anchor.features = srats.features)
       srats.integrated <- IntegrateData(anchorset = srats.anchors, normalization.method = "SCT")
@@ -94,33 +98,35 @@ if("SEURAT" %in% methods) {
 
     # Visulization
     # Before integration
-    DefaultAssay(srats.integrated) <- "RNA"
-    srats.integrated <- NormalizeData(srats.integrated, verbose = F)
-    srats.integrated <- FindVariableFeatures(srats.integrated, selection.method = "vst", nfeatures = 2000, verbose = F)
-    srats.integrated <- ScaleData(srats.integrated, verbose = F)
-    srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
-    srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
+    # DefaultAssay(srats.integrated) <- "RNA"
+    # srats.integrated <- NormalizeData(srats.integrated, verbose = F)
+    # srats.integrated <- FindVariableFeatures(srats.integrated, selection.method = "vst", nfeatures = 2000, verbose = F)
+    # srats.integrated <- ScaleData(srats.integrated, verbose = F)
+    # srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
+    # srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
 
-    DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " before integration")
+    # DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " before integration")
 
     # After integration
     DefaultAssay(srats.integrated) <- "integrated"
     srats.integrated <- ScaleData(srats.integrated, verbose = F)
     srats.integrated <- RunPCA(object = srats.integrated, verbose = FALSE) 
-    srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
+    # srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
 
-    DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
-    DimPlot(srats.integrated, reduction = "umap", split.by = batch_key) + NoLegend()
+    # DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
+    # DimPlot(srats.integrated, reduction = "umap", split.by = batch_key) + NoLegend()
 
     srats.integrated <- FindNeighbors(srats.integrated, dims = 1:dims, k.param = 10, verbose = F)
     srats.integrated <- FindClusters(srats.integrated, verbose = F, resolution = params$resolution)
-    DimPlot(srats.integrated, label = T) + NoLegend()
+    # DimPlot(srats.integrated, label = T) + NoLegend()
 
-    PlotIntegratedClusters(srats.integrated) 
+    # PlotIntegratedClusters(srats.integrated) 
 
-    SaveSeurat(srats.integrated, params$output_folder)
-    RedisInfo(unique_id, "Seurat object for Seurat integration is saved successfully.")
-    adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, main_layer="data", assay="integrated")
+    # SaveSeurat(srats.integrated, params$output_folder)
+    # RedisInfo(unique_id, "Seurat object for Seurat integration is saved successfully.")
+    srats.integrated <- subset(srats.integrated, features = VariableFeatures(srats.integrated)) # Keep only HVGs to make the dimensions match accross counts, data and scale.data
+    adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, main_layer="scale.data", transfer_layers="data", assay="integrated", transfer_assay="RNA", transfer_assay_layer="counts")
+    # adata <- SeuratToAnndata(srats.integrated, out_file=params$adata_path, main_layer="scale.data", transfer_layers="data", assay="integrated")
     RedisInfo(unique_id, "AnnData object for Seurat integration is saved successfully.")
     rm(adata)
     rm(srats.integrated)
@@ -143,6 +149,7 @@ if("HARMONY" %in% methods) {
     library(harmony)
     library(cowplot)
     srat.harmony <- Reduce(merge, srats.list)
+    # counts <- t(GetAssayData(srat.liger, assay = params$default_assay, slot = "counts"))
     srat.harmony <- NormalizeData(srat.harmony, verbose = F)
     srat.harmony <- FindVariableFeatures(srat.harmony, selection.method = "vst", nfeatures = 2000, verbose = F)
     srat.harmony <- ScaleData(srat.harmony, verbose = F)
@@ -163,19 +170,24 @@ if("HARMONY" %in% methods) {
     FindClusters(resolution = params$resolution) %>% 
     identity()
 
-    srat.harmony <- SetIdent(srat.harmony, value = batch_key)
-    DimPlot(srat.harmony, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Harmony integration")
+    # srat.harmony <- SetIdent(srat.harmony, value = batch_key)
+    # DimPlot(srat.harmony, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Harmony integration")
 
-    DimPlot(srat.harmony, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    # DimPlot(srat.harmony, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
 
-    srat.harmony <- SetIdent(srat.harmony, value = "seurat_clusters")
-    DimPlot(srat.harmony, label = T) + NoLegend()
+    # srat.harmony <- SetIdent(srat.harmony, value = "seurat_clusters")
+    # DimPlot(srat.harmony, label = T) + NoLegend()
 
-    PlotIntegratedClusters(srat.harmony)
+    # PlotIntegratedClusters(srat.harmony)
 
-    SaveSeurat(srat.harmony, params$output_folder)
-    RedisInfo(unique_id, "Seurat object for Harmony integration is saved successfully.")
-    adata <- SeuratToAnndata(srat.harmony, out_file=params$adata_path)
+    # SaveSeurat(srat.harmony, params$output_folder)
+    # RedisInfo(unique_id, "Seurat object for Harmony integration is saved successfully.")
+    srat.harmony <- subset(srat.harmony, features = VariableFeatures(srat.harmony)) # Keep only HVGs to make the dimensions match accross counts, data and scale.data
+    adata <- SeuratToAnndata(srat.harmony, out_file=params$adata_path, main_layer="scale.data", transfer_layers="counts")
+    # RedisWarning(unique_id, paste0("dim(counts): ", dim(counts)))
+    # RedisWarning(unique_id, paste0("dim(adata$X): ", dim(adata$X)))
+    # if (all(dim(counts) == dim(adata$X))) adata$layers['counts'] <- Matrix::counts
+    # write_h5ad(adata, out_file=params$adata_path, compression = "gzip")
     RedisInfo(unique_id, "AnnData object for Harmony integration is saved successfully.")
     rm(adata)
     rm(srat.harmony)
@@ -197,6 +209,7 @@ if("LIGER" %in% methods) {
     RedisInfo(unique_id, "Start LIGER integration ...")
     library(rliger)
     srat.liger <- Reduce(merge, srats.list)
+    # counts <- t(GetAssayData(srat.liger, assay = params$default_assay, slot = "counts"))
     srat.liger <- NormalizeData(srat.liger)
     srat.liger <- FindVariableFeatures(srat.liger)
     srat.liger <- ScaleData(srat.liger, split.by = batch_key, do.center = F)
@@ -207,19 +220,24 @@ if("LIGER" %in% methods) {
 
     RedisInfo(unique_id, "LIGER integration is done.")
 
-    srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["inmf"]]), reduction = "inmf", verbose = F)
-    srat.liger <- SetIdent(srat.liger,value = batch_key)
-    DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
-    DimPlot(srat.liger, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    # srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["inmf"]]), reduction = "inmf", verbose = F)
+    # srat.liger <- SetIdent(srat.liger,value = batch_key)
+    # DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
+    # DimPlot(srat.liger, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
 
-    srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
-    DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
+    # srat.liger <- SetIdent(srat.liger, value = "seurat_clusters")
+    # DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()
 
-    PlotIntegratedClusters(srat.liger)
+    # PlotIntegratedClusters(srat.liger)
 
-    SaveSeurat(srat.liger, params$output_folder)
-    RedisInfo(unique_id, "Seurat object for LIGER integration is saved successfully.")
-    adata <- SeuratToAnndata(srat.liger, out_file=params$adata_path)
+    # SaveSeurat(srat.liger, params$output_folder)
+    # RedisInfo(unique_id, "Seurat object for LIGER integration is saved successfully.")
+    srat.liger <- subset(srat.liger, features = VariableFeatures(srat.liger)) # Keep only HVGs to make the dimensions match accross counts, data and scale.data
+    adata <- SeuratToAnndata(srat.liger, out_file=params$adata_path, main_layer="scale.data", transfer_layers="counts")
+    # RedisWarning(unique_id, paste0("dim(counts): ", dim(counts)))
+    # RedisWarning(unique_id, paste0("dim(adata$X): ", dim(adata$X)))
+    # if (all(dim(counts) == dim(adata$X))) adata$layers['counts'] <- Matrix::t(counts)
+    # write_h5ad(adata, out_file=params$adata_path, compression = "gzip")
     RedisInfo(unique_id, "AnnData object for LIGER integration is saved successfully.")
     rm(adata)
     rm(srat.liger)

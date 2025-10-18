@@ -7,6 +7,7 @@ import scipy.io
 import scib
 import muon as mu
 from muon import MuData
+from tools.utils.formating import has_cell_cyle_genes
 
 
 def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_type'):
@@ -18,7 +19,9 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
     scib_anndata = scib_anndata[~scib_anndata.obs[f"{mod1}:{label_key}"].isna()] # Remove NaN in cell type label
     scib_anndata.obs[f"{mod1}:{batch}"] = scib_anndata.obs[f"{mod1}:{batch}"].astype("category")
     scib_anndata.obs[f"{mod1}:{label_key}"] = scib_anndata.obs[f"{mod1}:{label_key}"].astype("category")
-    
+
+    do_cell_cycle = has_cell_cyle_genes(scib_anndata, species=species)
+
     metrics = scib.metrics.metrics(
         scib_anndata,
         scib_anndata,
@@ -29,10 +32,14 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
         nmi_=True,
         silhouette_=True,
         graph_conn_=True,
+        cell_cycle_=do_cell_cycle,
         isolated_labels_asw_=True,
     )
 
     biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
+    if not do_cell_cycle:
+        biological_conservation_metrics.remove('cell_cycle_conservation')
+
     metrics = metrics.fillna(0).to_dict()[0]
 
     for key, value in metrics.items():

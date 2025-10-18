@@ -316,6 +316,53 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                       />
                   </Box>
                 )}
+
+            <Box sx={{ m: 2 }}>
+              <div>
+                <label htmlFor="material-switch">
+                  <p>{`Skip 3D UMAP/t-SNE: ${values.skip_3d ? 'Yes' : 'No'}`}</p>
+                  <Switch
+                    checked={values.skip_3d}
+                    onChange={handleSwitchChange("skip_3d")}
+                    onColor="#86d3ff"
+                    onHandleColor="#2693e6"
+                    handleDiameter={30}
+                    uncheckedIcon={false}
+                    checkedIcon={false}
+                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                    height={20}
+                    width={48}
+                    className="react-switch"
+                    id="skip_3d"
+                  />
+                </label>
+              </div>
+            </Box>
+
+            <Box sx={{ m: 2 }}>
+              <div>
+                <label htmlFor="material-switch">
+                  <p>{`Skip t-SNE: ${values.skip_tsne ? 'Yes' : 'No'}`}</p>
+                  <Switch
+                    checked={values.skip_tsne}
+                    onChange={handleSwitchChange("skip_tsne")}
+                    onColor="#86d3ff"
+                    onHandleColor="#2693e6"
+                    handleDiameter={30}
+                    uncheckedIcon={false}
+                    checkedIcon={false}
+                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                    height={20}
+                    width={48}
+                    className="react-switch"
+                    id="skip_tsne"
+                  />
+                </label>
+              </div>
+            </Box>
+
             </FormGroup>
         </ExpansionPanelDetails>
       </ExpansionPanel> 

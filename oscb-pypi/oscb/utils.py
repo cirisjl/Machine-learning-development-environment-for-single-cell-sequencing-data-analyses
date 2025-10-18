@@ -1,6 +1,9 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import scanpy as sc
+import pandas as pd
+from scib.preprocessing import get_cell_cycle_genes
 
 
 server_endpoint = "http://clgpu018.clemson.cloudlab.us:5005/api/"
@@ -101,3 +104,22 @@ def plot_lines(results):
     # Displaying the plot
     plt.show()
 
+
+def has_cell_cyle_genes(adata: sc.AnnData, df: pd.DataFrame, columns: list = None):
+    if columns is None:
+        columns = ["gene_name", "gene_id"]
+    elif isinstance(columns, str):
+        columns = [columns]
+
+    n_genes = 0
+    for col in columns:
+        _genes = [g for g in df[col] if g in adata.var_names]
+        if len(_genes) > n_genes:  # pick largest overlapping set
+            n_genes = len(_genes)
+            genes = _genes
+
+    if n_genes == 0:
+        # pick random genes for error message
+        rand_genes = np.random.choice(adata.var_names, 10)
+        return False
+    return True

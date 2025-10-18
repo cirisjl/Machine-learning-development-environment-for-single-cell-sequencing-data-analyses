@@ -128,7 +128,9 @@ class Dataset(BaseModel):
     annotation_params: annotationParameters = Field(default_factory=annotationParameters)
     reduction_params: reductionParameters = Field(default_factory=reductionParameters)
     do_umap: Optional[bool] = True
-    do_cluster: Optional[bool] = True   
+    do_cluster: Optional[bool] = True
+    skip_3d: Optional[bool] = False
+    skip_tsne: Optional[bool] = False
 
 
 

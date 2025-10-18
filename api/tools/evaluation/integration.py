@@ -1,4 +1,8 @@
+import scanpy as sc
+import pandas as pd
+import numpy as np
 from scib.metrics import metrics
+from tools.utils.formating import has_cell_cyle_genes
 
 # https://github.com/theislab/scib/blob/main/scib/metrics/metrics.py
 # https://scib.readthedocs.io/en/latest/api/scib.metrics.metrics_all.html
@@ -41,9 +45,11 @@ def integration_metrics(adata, adata_int, batch_key='batch', label_key='cell_typ
             + ``subsample``
             + ``type_``
     """
-
-    metrics_all = metrics(adata, adata_int, batch_key=batch_key, label_key=label_key, cluster_nmi=None, ari_=True, nmi_=True, nmi_method='arithmetic', nmi_dir=None, silhouette_=True, si_metric='euclidean', pcr_=True, cell_cycle_=True, organism=species, hvg_score_=True, isolated_labels_=True, isolated_labels_f1_=True, isolated_labels_asw_=True, n_isolated=True, graph_conn_=True, trajectory_=False, kBET_=True)
+    do_cell_cycle = has_cell_cyle_genes(adata_int, species=species)
+    metrics_all = metrics(adata, adata_int, batch_key=batch_key, label_key=label_key, cluster_nmi=None, ari_=True, nmi_=True, nmi_method='arithmetic', nmi_dir=None, silhouette_=True, si_metric='euclidean', pcr_=True, cell_cycle_=do_cell_cycle, organism=species, hvg_score_=True, isolated_labels_=True, isolated_labels_f1_=True, isolated_labels_asw_=True, n_isolated=True, graph_conn_=True, trajectory_=False, kBET_=True)
     biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
+    if not do_cell_cycle:
+        biological_conservation_metrics.remove('cell_cycle_conservation')
     # metrics_dict = metrics_all.dropna().to_dict()[0]
     metrics_dict = metrics_all.fillna(0).to_dict()[0]
 

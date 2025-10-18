@@ -114,6 +114,12 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
             for key in mdata.mod.keys():
                 if "rna" in key or "RNA" in key:
                     adata = mdata[key]
+
+    # If adata.X is empty, then try to use adata.layers['counts'] or adata.layers['raw_counts']
+    if adata.X is None and "counts" in adata.layers.keys():
+        adata.X = adata.layers['counts'].copy()
+    elif adata.X is None and "raw_counts" in adata.layers.keys():
+        adata.X = adata.layers['raw_counts'].copy()
         
     if adata is not None: 
         adata.obs = rename_col(adata.obs, 'n_counts')

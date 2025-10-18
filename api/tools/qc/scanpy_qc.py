@@ -26,6 +26,10 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
                 redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy adata.X to layer 'normalized_X'.")
                 adata.layers["normalized_X"] = adata.X.copy()
                 adata.X = adata.layers['raw_counts'].copy()
+            if "counts" in adata.layers.keys():
+                redislogger.info(unique_id, "Use layer 'counts' instead. Copy adata.X to layer 'normalized_X'.")
+                adata.layers["normalized_X"] = adata.X.copy()
+                adata.X = adata.layers['counts'].copy()
             elif adata.raw is not None:
                 redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
                 adata.layers["normalized_X"] = adata.X.copy()

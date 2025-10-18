@@ -31,6 +31,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
     do_umap = ds['do_umap']
     do_cluster = ds['do_cluster']
     species = ds['species'].lower()
+    skip_3d = ds['skip_3d']
+    skip_tsne = ds['skip_tsne']
     adata_path = change_file_extension(input_path, 'h5ad')
     assay_names = []
     md5 = get_md5(input_path)
@@ -100,7 +102,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
         else:
             if do_umap:
                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=False)
+                adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=False, skip_3d=skip_3d, skip_tsne=skip_tsne)
                 if msg is not None: redislogger.warning(job_id, msg)
             if do_cluster:
                 redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -177,7 +179,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         scanpy_results = load_anndata(output_path)
                         if do_umap:
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                            scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                            scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_3d=skip_3d, skip_tsne=skip_tsne)
                             if msg is not None: redislogger.warning(job_id, msg)                   
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -207,7 +209,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
 
                             if do_umap:
                                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                                scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                                scanpy_results, msg = run_dimension_reduction(scanpy_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_3d=skip_3d, skip_tsne=skip_tsne)
                                 if msg is not None: redislogger.warning(job_id, msg)
                             if do_cluster:
                                 redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -263,7 +265,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         if do_umap:
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                             dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
-                            dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                            dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_3d=skip_3d, skip_tsne=skip_tsne)
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -293,7 +295,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                             if do_umap:
                                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                                 dropkick_results.X = dropkick_results.layers["arcsinh_norm"].copy()
-                                dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                                dropkick_results, msg = run_dimension_reduction(dropkick_results, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_3d=skip_3d, skip_tsne=skip_tsne)
                                 if msg is not None: redislogger.warning(job_id, msg)
                             if do_cluster:
                                 redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -368,7 +370,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         if do_umap:
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
                             adata.X = adata.layers["scale.data"].copy()
-                            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state)
+                            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_3d=skip_3d, skip_tsne=skip_tsne)
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
@@ -447,7 +449,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         sc.pp.log1p(adata)
                         if do_umap:
                             redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=True)
+                            adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=True, skip_3d=skip_3d, skip_tsne=skip_tsne)
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")

@@ -7,6 +7,8 @@ import scipy.io
 import scib
 import muon as mu
 from muon import MuData
+from typing import Literal
+from scib.preprocessing import get_cell_cycle_genes
 
 
 def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_type'):
@@ -18,7 +20,8 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
     scib_anndata = scib_anndata[~scib_anndata.obs[f"{mod1}:{label_key}"].isna()] # Remove NaN in cell type label
     scib_anndata.obs[f"{mod1}:{batch}"] = scib_anndata.obs[f"{mod1}:{batch}"].astype("category")
     scib_anndata.obs[f"{mod1}:{label_key}"] = scib_anndata.obs[f"{mod1}:{label_key}"].astype("category")
-    
+    do_cell_cycle = has_cell_cyle_genes(scib_anndata, species=species)
+
     metrics = scib.metrics.metrics(
         scib_anndata,
         scib_anndata,
@@ -28,13 +31,16 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
         ari_=True,
         nmi_=True,
         silhouette_=True,
+        cell_cycle_=do_cell_cycle,
         graph_conn_=True,
         isolated_labels_asw_=True,
     )
 
     biological_conservation_metrics = ['NMI_cluster/label', 'ARI_cluster/label', 'ASW_label', 'cell_cycle_conservation','isolated_label_F1', 'isolated_label_silhouette', 'hvg_overlap']
     metrics = metrics.fillna(0).to_dict()[0]
-
+    if not do_cell_cycle:
+        biological_conservation_metrics.remove('cell_cycle_conservation')
+        
     for key, value in metrics.items():
         metrics[key] = float('{:.4f}'.format(value))
 
@@ -47,3 +53,48 @@ def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_
     scib_anndata = None
 
     return metrics
+
+
+def has_cell_cyle_genes(
+    adata: sc.AnnData, 
+    species: Literal[
+        "mouse",
+        "mus musculus",
+        "mus_musculus",
+        "human",
+        "homo sapiens",
+        "homo_sapiens",
+        "c_elegans",
+        "c elegans",
+        "caenorhabditis elegans",
+        "caenorhabditis_elegans",
+        "zebrafish",
+        "danio rerio",
+        "danio_rerio",
+    ]):
+    columns = ["gene_name", "gene_id"]
+    gene_map = get_cell_cycle_genes(species)
+    df_s = gene_map.query("phase == 'S'")
+    df_g = gene_map.query("phase == 'G2/M'")
+    
+    n_genes_s = 0
+    for col in columns:
+        _genes = [g for g in df_s[col] if g in adata.var_names]
+        if len(_genes) > n_genes_s:  # pick largest overlapping set
+            n_genes_s = len(_genes)
+            genes_s = _genes
+            
+    if n_genes_s == 0:
+        return False
+
+    n_genes_g = 0
+    for col in columns:
+        _genes = [g for g in df_g[col] if g in adata.var_names]
+        if len(_genes) > n_genes_g:  # pick largest overlapping set
+            n_genes_g = len(_genes)
+            genes_g = _genes
+            
+    if n_genes_g == 0:
+        return False
+        
+    return True

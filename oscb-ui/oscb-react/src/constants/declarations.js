@@ -31,6 +31,8 @@ export const defaultValues = {
   n_pcs: 20, // None
   resolution: 0.5,
   regress_cell_cycle: false,
+  skip_3d: false,
+  skip_tsne: false,
   use_default: true,
   doublet_rate: 0.08
 };
@@ -45,7 +47,9 @@ export const defaultQcParams = {
   n_pcs: 20,
   resolution: 0.5,
   doublet_rate: 0.08,
-  regress_cell_cycle: false
+  regress_cell_cycle: false,
+  skip_3d: false,
+  skip_tsne: false
 };
 
 export const defaultNormalizationParams = {

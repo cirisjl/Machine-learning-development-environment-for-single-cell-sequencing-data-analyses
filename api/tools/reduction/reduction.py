@@ -45,7 +45,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             tsne = TSNE(n_components=2, perplexity=perplexity, random_state=random_state)
             adata.obsm[layer+'_tsne'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
 
-        if not (skip_tsne or (skip_if_exist and layer+'_tsne_3D' in adata.obsm.keys())):
+        if not (skip_tsne or skip_3d or (skip_if_exist and layer+'_tsne_3D' in adata.obsm.keys())):
             tsne = TSNE(n_components=3, perplexity=perplexity, random_state=random_state)
             adata.obsm[layer+'_tsne_3D'] = tsne.fit_transform(adata.obsm[layer+'_pca'])
         
@@ -87,7 +87,7 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
             adata.obsm['X_tsne'] = tsne.fit_transform(adata.obsm['X_pca'])
 
         # 3D tSNE
-        if not (skip_tsne or (skip_if_exist and 'X_tsne_3D' in adata.obsm.keys())):
+        if not (skip_tsne or skip_3d or (skip_if_exist and 'X_tsne_3D' in adata.obsm.keys())):
             tsne = TSNE(n_components=3, perplexity=perplexity, random_state=random_state)
             adata.obsm['X_tsne_3D'] = tsne.fit_transform(adata.obsm['X_pca'])
 
