@@ -102,11 +102,11 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
         else:
             if do_umap:
                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=False, skip_3d=skip_3d, skip_tsne=skip_tsne)
+                adata, msg = run_dimension_reduction(adata, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], random_state=random_state, skip_if_exist=True, skip_3d=skip_3d, skip_tsne=skip_tsne)
                 if msg is not None: redislogger.warning(job_id, msg)
             if do_cluster:
                 redislogger.info(job_id, "Clustering the neighborhood graph.")
-                adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state, skip_if_exist=False)
+                adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state, skip_if_exist=True)
             
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path)

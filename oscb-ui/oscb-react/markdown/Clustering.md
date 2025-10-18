@@ -21,7 +21,7 @@ We use cell-type as clustering ground truth, and compare it with the predicted c
 
 <hr/>
 
-## Python package
+## Python API
 
 **Open Single-Cell Benchmarks (OSCB)** is a Python package with a collection of benchmark datasets, data loaders, and evaluators for single-cell machine learning.
 To install OSCB, please use Python's package manager pip:

@@ -6,6 +6,7 @@ from boltons.iterutils import remap
 from tools.utils.gzip_str import *
 from tools.formating.formating import regularise_df
 import json_numpy
+import math
 
 
 mongo_url = "mongodb://mongodb:65530"
@@ -20,6 +21,10 @@ jobs_collection = db.get_collection("jobs")
 benchmarks_collection = db.get_collection("benchmarks")
 bm_results_collection = db.get_collection("bm_results")
 workflows_collection = db.get_collection("workflows")
+large_collection = db.get_collection("large_documents")
+
+# Chunk size (e.g., 4MB per chunk)
+CHUNK_SIZE = 4 * 1024 * 1024  # 4 MB
 
 pp_results_collection.create_index({'process_id': 1}, unique=True, background=True)
 bm_results_collection.create_index({'process_id': 1}, unique=True, background=True)
@@ -50,6 +55,13 @@ def create_pp_results(process_id, pp_results):
     if "obs" in pp_results.keys():
         pp_results.pop("obs")  # Remove obs key if it exists, as it is not needed in the database
 
+    # Chunk large data fields
+    for key in pp_results.keys():
+        if len(str(pp_results[key])) > CHUNK_SIZE:  # If the string representation of the value is larger than 4 MB, store it in chunks
+            document_id = f"{process_id}_{key}"
+            chunk_string(document_id, str(pp_results[key]))
+            pp_results[key] = f"chunked_data::{document_id}"
+
     try:
         pp_results_collection.update_one({'process_id': process_id}, {'$set': pp_results}, upsert=True)
     except DuplicateKeyError:
@@ -68,6 +80,14 @@ def get_pp_results(process_ids, umap=False, record_type=None):
             pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1,"layers" : 1, "layer" : 1, "embeddings" : 1, "uns": 1, "obsp": 1, "varm": 1, "mod_keys": 1})
     else:
         pp_results = pp_results_collection.find({'process_id': {"$in": process_ids }}, { "_id": 0, "tsne": 0, "process_id": 0, "description": 0, "stage": 0, "process": 0, "method": 0, "nCells": 0, "adata_path": 0, "md5": 0, "info": 0, "default_assay": 0, "assay_names": 0, "highest_expr_genes": 0, "evaluation_results": 0 })
+    
+    # Reconstruct large data fields
+    for key in pp_results.keys():
+        if isinstance(pp_results[key], str) and pp_results[key].startswith("chunked_data::"):
+            document_id = pp_results[key].split("chunked_data::")[1]
+            large_data = retrieve_string(document_id)
+            pp_results[key] = large_data
+
     pp_results = list(pp_results)
     results = []
 
@@ -254,4 +274,28 @@ def removeNullNoneEmpty(ob):
             l[k] = v
     return l
 
+
+def chunk_string(document_id, large_data):
+    """Yield successive chunks from large_data."""
+    # Split and insert chunks
+    num_chunks = math.ceil(len(large_data) / CHUNK_SIZE)
+    for i in range(num_chunks):
+        chunk_data = large_data[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
+        large_collection.insert_one({
+            "document_id": document_id,
+            "chunk_index": i,
+            "data": chunk_data
+        })
+
+    print(f"Inserted {num_chunks} chunks.")
+
+
+def retrieve_string(document_id):
+    """Retrieve and concatenate chunks for the given document_id."""
+    # Fetch and sort the chunks
+    chunks = large_collection.find({"document_id": document_id}).sort("chunk_index", 1)
+    # Reassemble
+    large_data = ''.join(chunk['data'] for chunk in chunks)
+
+    return large_data
 
