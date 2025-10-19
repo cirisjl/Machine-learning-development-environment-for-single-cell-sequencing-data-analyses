@@ -80,19 +80,19 @@ def get_pp_results(process_ids, umap=False, record_type=None):
             pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1,"layers" : 1, "layer" : 1, "embeddings" : 1, "uns": 1, "obsp": 1, "varm": 1, "mod_keys": 1})
     else:
         pp_results = pp_results_collection.find({'process_id': {"$in": process_ids }}, { "_id": 0, "tsne": 0, "process_id": 0, "description": 0, "stage": 0, "process": 0, "method": 0, "nCells": 0, "adata_path": 0, "md5": 0, "info": 0, "default_assay": 0, "assay_names": 0, "highest_expr_genes": 0, "evaluation_results": 0 })
-    
-    # Reconstruct large data fields
-    for key in pp_results.keys():
-        if isinstance(pp_results[key], str) and pp_results[key].startswith("chunked_data::"):
-            document_id = pp_results[key].split("chunked_data::")[1]
-            large_data = retrieve_string(document_id)
-            pp_results[key] = large_data
 
     pp_results = list(pp_results)
     results = []
 
     if len(pp_results) != 0:
         for pp_result in pp_results:
+            # Reconstruct large data fields
+            for key in pp_result.keys():
+                if isinstance(pp_result[key], str) and pp_result[key].startswith("chunked_data::"):
+                    document_id = pp_result[key].split("chunked_data::")[1]
+                    large_data = retrieve_string(document_id)
+                    pp_result[key] = large_data
+
             if 'cell_metadata' in pp_result.keys():
                 pp_result['obs'] = pp_result['cell_metadata']
                 obs_dict = gunzip_dict(pp_result['cell_metadata'])
