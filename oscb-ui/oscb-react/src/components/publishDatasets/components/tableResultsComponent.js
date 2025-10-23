@@ -180,7 +180,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         }
     
         try {
-            const response = await axios.post(CELERY_BACKEND_API + '/getPreProcessResults', { process_ids: process_ids, record_type: "table" });
+            const response = await axios.post(CELERY_BACKEND_API + '/getPreProcessResultsMain', { process_ids: process_ids, record_type: "table" });
             setSubItemsData(prevData => ({
                 ...prevData,
                 [process_ids_key]: response.data // Store the result with concatenated process_ids as key

@@ -47,7 +47,7 @@ except ImportError:
     )
 
 
-def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard = False): # assay is optional and only for Seurat object
+def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_error=True, replace_invalid=False, isDashboard=False, raw=False): # assay is optional and only for Seurat object
     # path = os.path.abspath(path)
     adata = None
     # print(path)
@@ -123,6 +123,19 @@ def load_anndata(path, annotation_path=None, dataset=None, assay='RNA', show_err
         
     if adata is not None: 
         adata.obs = rename_col(adata.obs, 'n_counts')
+
+    if raw and is_normalized(adata.X, 200) and not check_nonnegative_integers(adata.X):
+        if "raw_counts" in adata.layers.keys():
+            adata.layers["X_normalized"] = adata.X.copy()
+            adata.X = adata.layers['raw_counts'].copy()
+        elif "counts" in adata.layers.keys():
+            adata.layers["X_normalized"] = adata.X.copy()
+            adata.X = adata.layers['counts'].copy()
+        elif adata.raw is not None:
+            adata.layers["X_normalized"] = adata.X.copy()
+            adata.X = adata.raw.X.copy()
+        else:
+            raise ValueError("No raw counts is found.")
 
     # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
     #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
@@ -721,9 +734,9 @@ def get_report_path(dataset, output, method):
 
 def get_scvi_path(adata_path, task = None):
     if task is None:
-        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), 'scvi_model')
+        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), '/scvi_model')
     else:
-        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), task + '_model')
+        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), '/' + task + '_model')
 
 
 def list_py_to_r(list):
@@ -887,7 +900,7 @@ def get_file_md5(path: str, split_num=256, get_byte=8):
 def get_md5(path:str):
     md5 = []
     if not os.path.exists(path):
-        raise TypeError("%s does not exist!" % path)
+        raise TypeError(f"{path} does not exist!")
     if os.path.isdir(path):
         for file in os.listdir(path):
             md5.append(get_file_md5(path+file))

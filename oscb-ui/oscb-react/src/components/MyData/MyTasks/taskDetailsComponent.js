@@ -19,7 +19,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
 import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
 //GitImports
-import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
 import TaskImageGallery from './taskImageGallery';
 
@@ -106,9 +106,9 @@ function TaskDetailsComponent() {
   const [uName, setUName] = useState(null);
   const [uIat, setUIat] = useState(null);
   const [taskResult, setTaskResult] = useState("");
-  const [ message, setMessage ] = useState('');
+  const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [ isError, setIsError ] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [plotDimension, setPlotDimension] = useState('2D');
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
@@ -126,6 +126,7 @@ function TaskDetailsComponent() {
   const [clusteringPlotType, setClusteringPlotType] = useState('');
   const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
+  const [ppJobId, setppJobId] = useState(null);
 
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
@@ -189,18 +190,56 @@ function TaskDetailsComponent() {
   
       try {
         const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: processIds });
-        console.log('Process Results:', response.data);
-        setToolResultsFromMongo(response.data);
-        setLoading(false);
+        // console.log('Process Results:', response.data);
+        const taskInfo = response.data;
+        const jobId = taskInfo.job_id;
+        setppJobId(jobId);
+        // setToolResultsFromMongo(response.data);
+        // setLoading(false);
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
         setLoading(false);
         setHasMessage(true);
-        setMessage("Failed to retrieve pre processed results from MongoDB");
+        setMessage("Failed to retrieve pre-processed results from MongoDB");
         setIsError(true);
       }
     };
-    
+  
+  // WebSocket listener
+    useEffect(() => {
+      if (!ppJobId) return;
+  
+      const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
+      // console.log("Connecting to WebSocket for pre-process results:", statusUrl);
+      const ws = new WebSocket(statusUrl);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.task_status) {
+          if (data.task_status === "SUCCESS") {
+            setToolResultsFromMongo(data.task_result);
+            setLoading(false);
+            setppJobId(null); // Reset ppJobId after handling
+          } else if(data.task_status === "FAILURE"){
+            setMessage("Loading pre-process results is Failed");
+            setHasMessage(true);
+            setIsError(true);
+            setLoading(false);
+            setppJobId(null); // Reset ppJobId after handling
+          }
+        }
+      };
+      ws.onerror = (err) => {
+        setMessage("Loading pre-process results is Failed");
+        setHasMessage(true);
+        setIsError(true);
+        setLoading(false);
+        console.error("WebSocket error:", err);
+        setppJobId(null); // Reset ppJobId after handling
+      }
+      ws.onclose = () => console.log("WebSocket closed.");
+  
+      return () => ws.close();
+    }, [ppJobId]);
 
   const handleStatusMessage = (event) => {
     try {
@@ -359,8 +398,8 @@ function TaskDetailsComponent() {
     await createGitHubIssue();
   };
 
-    // Use the WebSocket hook
-    useWebSocket(job_id, handleStatusMessage, handleLogMessage);
+  // Use the WebSocket hook
+  useWebSocket(job_id, handleStatusMessage, handleLogMessage);
 
   return (
 

@@ -14,7 +14,7 @@ omp_set_num_threads(1)
 
 RunSeuratQC <- function(input, output, adata_path=NULL, assay='RNA', min_genes=200, max_genes=0, min_UMI_count=0, max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=0.5, dims=10, n_pcs=30, doublet_rate=0.075, regress_cell_cycle=FALSE) {
     srat <- tryCatch(
-        LoadSeurat(input),
+        LoadSeurat(input, raw=TRUE),
         error = function(e) {
             # stop("The file format is not supported.")
             # print(e)

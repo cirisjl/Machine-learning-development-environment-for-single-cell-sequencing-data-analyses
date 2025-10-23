@@ -141,14 +141,17 @@ export function ClusteringWorkFlowComponent(props) {
             if(Object.keys(selectedDatasets).length > 0) {
               const dataset = Object.values(selectedDatasets)[0]; // Assuming single dataset
               formData.dataset = dataset.Title;
-              if (dataset.inputFiles.length > 1) {
-                formData.input = extractDir(dataset.inputFiles[0]);
-                formData.output = formData.input + "/clustering";
-              } else if (dataset.inputFiles.length === 1) {
-                formData.input = dataset.inputFiles[0];
-                const directory = extractDir(formData.input);
-                formData.output = directory + "/clustering";
-              }
+              formData.input = dataset.adata_path;
+              const directory = extractDir(formData.input);
+              formData.output = directory + "/clustering";
+              // if (dataset.adata_path.length > 1) {
+              //   formData.input = extractDir(dataset.adata_path[0]);
+              //   formData.output = formData.input + "/clustering";
+              // } else if (dataset.adata_path.length === 1) {
+              //   formData.input = dataset.adata_path[0];
+              //   const directory = extractDir(formData.input);
+              //   formData.output = directory + "/clustering";
+              // }
             }
 
             let methodMap = {};

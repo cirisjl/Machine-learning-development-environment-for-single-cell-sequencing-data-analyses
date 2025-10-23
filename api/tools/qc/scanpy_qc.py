@@ -20,22 +20,22 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         # AnnData information
         redislogger.info(unique_id, adata.__str__())
 
-        if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
-            redislogger.info(unique_id, "adata.X is not raw counts.")
-            if "raw_counts" in adata.layers.keys():
-                redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy adata.X to layer 'normalized_X'.")
-                adata.layers["normalized_X"] = adata.X.copy()
-                adata.X = adata.layers['raw_counts'].copy()
-            if "counts" in adata.layers.keys():
-                redislogger.info(unique_id, "Use layer 'counts' instead. Copy adata.X to layer 'normalized_X'.")
-                adata.layers["normalized_X"] = adata.X.copy()
-                adata.X = adata.layers['counts'].copy()
-            elif adata.raw is not None:
-                redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
-                adata.layers["normalized_X"] = adata.X.copy()
-                adata.X = adata.raw.X.copy()
-            else:
-                raise ValueError("Scanpy QC only take raw counts, not normalized data.")
+        # if is_normalized(adata.X, min_genes) and not check_nonnegative_integers(adata.X):
+        #     redislogger.info(unique_id, "adata.X is not raw counts.")
+        #     if "raw_counts" in adata.layers.keys():
+        #         redislogger.info(unique_id, "Use layer 'raw_counts' instead. Copy adata.X to layer 'normalized_X'.")
+        #         adata.layers["X_normalized"] = adata.X.copy()
+        #         adata.X = adata.layers['raw_counts'].copy()
+        #     elif "counts" in adata.layers.keys():
+        #         redislogger.info(unique_id, "Use layer 'counts' instead. Copy adata.X to layer 'normalized_X'.")
+        #         adata.layers["X_normalized"] = adata.X.copy()
+        #         adata.X = adata.layers['counts'].copy()
+        #     elif adata.raw is not None:
+        #         redislogger.info(unique_id, "Use adata.raw.X instead. Copy adata.X to layer 'normalized_X'.")
+        #         adata.layers["X_normalized"] = adata.X.copy()
+        #         adata.X = adata.raw.X.copy()
+        #     else:
+        #         raise ValueError("Scanpy QC only take raw counts, not normalized data.")
 
         redislogger.info(unique_id, "Check if adata.var.index is gene symbols.")
         if is_ensembl(adata.var_names[0]):

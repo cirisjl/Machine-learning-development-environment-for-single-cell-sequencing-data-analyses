@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { CELERY_BACKEND_API, NODE_API_URL } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL } from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
 import { Card, CardContent, Typography, List, ListItem, ListItemText } from '@mui/material';
@@ -12,7 +12,6 @@ import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
 
 import { styled } from '@mui/material/styles';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
@@ -44,7 +43,9 @@ const DatasetInfoComponent = () => {
   const [expanded, setExpanded] = useState(false);
   const [details, setDetails] = useState({}); // Store fetched details
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
+  const [ppJobId, setppJobId] = useState(null);
 
+  
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
   
@@ -173,66 +174,92 @@ const DatasetInfoComponent = () => {
     if (isExpanded && !details[processId]) {
       // Set loading state for the specific accordion
       setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: true }));
+      // setLoading(true);
 
       try {
-        // Make the API call to fetch the pre-process result for the given process ID
-        const response = await fetch(`${CELERY_BACKEND_API}/getPreProcessResults`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            process_ids: [processId], // Pass the processId dynamically
-          }),
-        });
-
-        // Check if the response is OK (status code 200-299)
-        if (!response.ok) {
-          const errorMessage = await response.json();
-          console.error('Error:', errorMessage.error);
-          alert(`Error: ${errorMessage.error}`);
-          return;
-        }
-
-        // Parse the response data
-        const data = await response.json();
-
-        const preProcessResult = data[0];
-
-        // Only set plotData if at least one plot exists
-        if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
-          setPlotData({umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d})
-        } else {
-          setPlotData(null);
-        }
-
-        if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
-          setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
-        } else {
-          setAtacPlotData(null);
-        }
-
-        // Only set plotData if at least one plot exists
-        if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
-          setTsnePlotData({tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d})
-        } else {
-          setTsnePlotData(null);
-        }
-
-        // Store the fetched data for the current process_id
-        setDetails((prevDetails) => ({
-          ...prevDetails,
-          [processId]: preProcessResult, // Store fetched data for the corresponding process_id
-        }));
+        const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: [processId] });
+        // console.log('Process Results:', response.data);
+        const taskInfo = response.data;
+        const jobId = taskInfo.job_id;
+        setppJobId(jobId);
       } catch (error) {
-        console.error('Error fetching details:', error);
-      } finally {
-        // Remove loading state after the fetch completes (success or failure)
-        setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
+        console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
+        setLoading(false);
+        setHasMessage(true);
+        setMessage("Failed to retrieve pre-processed results from MongoDB.");
+        setIsError(true);
       }
     }
   };
 
+  // WebSocket listener
+  useEffect(() => {
+    if (!ppJobId) return;
+
+    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
+    // console.log("Connecting to WebSocket for pre-process results:", statusUrl);
+    const ws = new WebSocket(statusUrl);
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.task_status) {
+        if (data.task_status === "SUCCESS") {
+          const preProcessResult = data.task_result[0];
+          // console.log(preProcessResult);
+          const processId = preProcessResult.process_id;
+
+          // Only set plotData if at least one plot exists
+          if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+            setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
+          } else {
+            setPlotData(null);
+          }
+
+          if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
+            setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
+          } else {
+            setAtacPlotData(null);
+          }
+
+          // Only set plotData if at least one plot exists
+          if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+            setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
+          } else {
+            setTsnePlotData(null);
+          }
+
+          // Store the fetched data for the current process_id
+          setDetails((prevDetails) => ({
+            ...prevDetails,
+            [processId]: preProcessResult, // Store fetched data for the corresponding process_id
+          }));
+
+          setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
+          // setLoading(false);
+          setppJobId(null); // Reset ppJobId after handling
+
+        } else if(data.task_status === "FAILURE"){
+          setMessage("Loading pre-process results is Failed");
+          setHasMessage(true);
+          setIsError(true);
+          setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+          // setLoading(false);
+          setppJobId(null); // Reset ppJobId after handling
+        }
+      }
+    };
+    ws.onerror = (err) => {
+      setMessage("Loading pre-process results is Failed");
+      setHasMessage(true);
+      setIsError(true);
+      setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+      setLoading(false);
+      console.error("WebSocket error:", err);
+      setppJobId(null); // Reset ppJobId after handling
+    }
+    ws.onclose = () => console.log("WebSocket closed.");
+
+    return () => ws.close();
+  }, [ppJobId]);
 
   const [sectionsVisibility, setSectionsVisibility] = useState({
     metadataInfo: true,

@@ -23,8 +23,8 @@ bm_results_collection = db.get_collection("bm_results")
 workflows_collection = db.get_collection("workflows")
 large_collection = db.get_collection("large_documents")
 
-# Chunk size (e.g., 4MB per chunk)
-CHUNK_SIZE = 4 * 1024 * 1024  # 4 MB
+# Chunk size (e.g., 2MB per chunk)
+CHUNK_SIZE = 2 * 1024 * 1024  # 2 MB
 
 pp_results_collection.create_index({'process_id': 1}, unique=True, background=True)
 bm_results_collection.create_index({'process_id': 1}, unique=True, background=True)
@@ -299,3 +299,37 @@ def retrieve_string(document_id):
 
     return large_data
 
+
+# Query and reconstruct large fields in pp_results_collection
+def query_large_field(field_name):
+    """Query and reconstruct a large field (split into 4MB chunks)."""
+    pipeline = [
+        {
+            # Only keep docs where the field exists and is not null
+            "$match": {
+                field_name: {"$exists": True, "$ne": None}
+            }
+        },
+        {
+            "$project": {
+                "process_id": 1,
+                field_name: 1,
+                "fieldSize": { "$strLenBytes": f"${field_name}" },
+                "document_content": "$$ROOT"
+            },
+        },
+        {"$sort": {"fieldSize": -1}},
+        {"$limit": 1},
+        {
+            "$match": {
+                "fieldSize": { "$gt": CHUNK_SIZE }
+            }
+        }
+    ]
+    
+    cursor = pp_results_collection.aggregate(pipeline)
+    for doc in cursor:
+        document_id = f"{doc['process_id']}_{field_name}"
+        chunk_string(document_id, doc[field_name])
+        pp_results_collection.update_one({'process_id': doc["process_id"]}, {'$set': {field_name: f"chunked_data::{document_id}"}})
+    return len(list(cursor))

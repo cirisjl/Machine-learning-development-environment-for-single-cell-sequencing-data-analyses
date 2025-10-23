@@ -8,16 +8,16 @@ from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
 
 from config.celery_utils import create_celery
-from routers import tools, benchmarks, workflows, pypi
+from routers import tools, benchmarks, workflows, pypi, web
 from config.celery_utils import get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 # from dash_app.dashboard import app as dashboard
 from utils.redislogger import *
-from utils.mongodb import get_pp_results
-from tools.formating.formating import df_to_dict
-from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
-from schemas.schemas import ProcessResultsRequest
+# from utils.mongodb import get_pp_results
+# from tools.formating.formating import df_to_dict
+# from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
+# from schemas.schemas import ProcessResultsRequest
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
 
 
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
     current_app.include_router(benchmarks.router)
     current_app.include_router(workflows.router)
     current_app.include_router(pypi.router)
+    current_app.include_router(web.router)
 
     return current_app
 
@@ -88,7 +89,7 @@ async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str
         # Remove the entry from the dictionary when the connection is closed
         if request_type == 'log' and job_id in last_read_indices:
             del last_read_indices[job_id]
-        await websocket.close()
+        # await websocket.close()
 
         
 # @app.websocket("/{request_type}/{job_idsCommaSeparated}")
@@ -192,99 +193,99 @@ async def revoke_task(job_id: str) -> dict:
     return result
 
 
-@app.post("/api/getPreProcessResults/")
-async def getPreProcessResults(req: ProcessResultsRequest) -> list:
-    """
-    Get details of pp_results
-    """
-    req_dict = req.model_dump() 
-    process_ids = req_dict['process_ids']
-    record_type = req_dict['record_type']
-    if len(process_ids) == 0:
-        raise HTTPException(status_code=400, detail="No process ID is provided.")
+# @app.post("/api/getPreProcessResults/")
+# async def getPreProcessResults(req: ProcessResultsRequest) -> list:
+#     """
+#     Get details of pp_results
+#     """
+#     req_dict = req.model_dump() 
+#     process_ids = req_dict['process_ids']
+#     record_type = req_dict['record_type']
+#     if len(process_ids) == 0:
+#         raise HTTPException(status_code=400, detail="No process ID is provided.")
 
-    pp_results = get_pp_results(process_ids, record_type=record_type)
-    results = []
+#     pp_results = get_pp_results(process_ids, record_type=record_type)
+#     results = []
 
-    if len(pp_results) == 0:
-        raise HTTPException(status_code=404, detail="No pp_result is found.")
+#     if len(pp_results) == 0:
+#         raise HTTPException(status_code=404, detail="No pp_result is found.")
     
-    for pp_result in pp_results:
-        obs = pp_result['cell_metadata']
-        pp_result['cell_metadata'] = df_to_dict(obs)
-        # pp_result['obs'] = pp_result['obs']
+#     for pp_result in pp_results:
+#         obs = pp_result['cell_metadata']
+#         pp_result['cell_metadata'] = df_to_dict(obs)
+#         # pp_result['obs'] = pp_result['obs']
         
-        if 'atac_cell_metadata' in pp_result.keys():
-            atac_obs = pp_result['atac_cell_metadata']
-            pp_result['atac_cell_metadata'] = df_to_dict(atac_obs)
-            # pp_result['atac_obs'] = pp_result['atac_obs']
+#         if 'atac_cell_metadata' in pp_result.keys():
+#             atac_obs = pp_result['atac_cell_metadata']
+#             pp_result['atac_cell_metadata'] = df_to_dict(atac_obs)
+#             # pp_result['atac_obs'] = pp_result['atac_obs']
 
-        if record_type == None:
-            pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
-            if 'umap' in pp_result.keys():
-                pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
-                pp_result['umap'] = pp_result['umap'].tolist()
+#         if record_type == None:
+#             pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
+#             if 'umap' in pp_result.keys():
+#                 pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
+#                 pp_result['umap'] = pp_result['umap'].tolist()
 
-            if 'umap_3d' in pp_result.keys():
-                pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
-                pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
+#             if 'umap_3d' in pp_result.keys():
+#                 pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
+#                 pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
-            if 'tsne' in pp_result.keys():
-                pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
-                pp_result['tsne'] = pp_result['tsne'].tolist()
+#             if 'tsne' in pp_result.keys():
+#                 pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
+#                 pp_result['tsne'] = pp_result['tsne'].tolist()
 
-            if 'tsne_3d' in pp_result.keys():
-                pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
-                pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
+#             if 'tsne_3d' in pp_result.keys():
+#                 pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
+#                 pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
 
-            if 'atac_umap' in pp_result.keys():
-                pp_result['atac_umap_plot'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap'], layer=pp_result['layer'])
-                pp_result['atac_umap'] = pp_result['atac_umap'].tolist()
+#             if 'atac_umap' in pp_result.keys():
+#                 pp_result['atac_umap_plot'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap'], layer=pp_result['layer'])
+#                 pp_result['atac_umap'] = pp_result['atac_umap'].tolist()
 
-            if 'atac_umap_3d' in pp_result.keys():
-                pp_result['atac_umap_plot_3d'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap_3d'], layer=pp_result['layer'], n_dim=3)
-                pp_result['atac_umap_3d'] = pp_result['atac_umap_3d'].tolist()
+#             if 'atac_umap_3d' in pp_result.keys():
+#                 pp_result['atac_umap_plot_3d'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap_3d'], layer=pp_result['layer'], n_dim=3)
+#                 pp_result['atac_umap_3d'] = pp_result['atac_umap_3d'].tolist()
 
-            if pp_result['process'] == 'QC':
-                pp_result['violin_plot'] = plot_violin(obs)
-                pp_result['scatter_plot'] = plot_scatter(obs)
-                if 'highest_expr_genes' in pp_result.keys():
-                    pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
-                    pp_result.pop('highest_expr_genes')
+#             if pp_result['process'] == 'QC':
+#                 pp_result['violin_plot'] = plot_violin(obs)
+#                 pp_result['scatter_plot'] = plot_scatter(obs)
+#                 if 'highest_expr_genes' in pp_result.keys():
+#                     pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
+#                     pp_result.pop('highest_expr_genes')
 
-        results.append(pp_result)
+#         results.append(pp_result)
 
-    return results
+#     return results
 
 
-@app.post("/api/plotumap/")
-async def umapplot(req: ProcessResultsRequest) -> list:
-    """
-    Get details of pp_results
-    """
-    req_dict = req.model_dump() 
-    process_ids = req_dict['process_ids']
-    clustering_plot_type = req_dict['clustering_plot_type']
-    annotation = req_dict['annotation']
+# @app.post("/api/plotumap/")
+# async def umapplot(req: ProcessResultsRequest) -> list:
+#     """
+#     Get details of pp_results
+#     """
+#     req_dict = req.model_dump() 
+#     process_ids = req_dict['process_ids']
+#     clustering_plot_type = req_dict['clustering_plot_type']
+#     annotation = req_dict['annotation']
 
-    umap_plots = []
-    if len(process_ids) == 0:
-        raise HTTPException(status_code=400, detail="No process ID is provided.")
+#     umap_plots = []
+#     if len(process_ids) == 0:
+#         raise HTTPException(status_code=400, detail="No process ID is provided.")
 
-    pp_results = get_pp_results(process_ids, umap=True)
+#     pp_results = get_pp_results(process_ids, umap=True)
 
-    if len(pp_results) == 0:
-        raise HTTPException(status_code=404, detail="No UMAP is found.")
+#     if len(pp_results) == 0:
+#         raise HTTPException(status_code=404, detail="No UMAP is found.")
     
-    for pp_result in pp_results:
-        umap_plot = {}
-        if 'umap' in pp_result.keys():
-            umap_plot['umap_plot'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap'], clustering_plot_type=clustering_plot_type, annotation=annotation)
-        if 'umap_3d' in pp_result.keys():
-            umap_plot['umap_plot_3d'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap_3d'], clustering_plot_type=clustering_plot_type, n_dim=3, annotation=annotation)
-        umap_plots.append(umap_plot)
+#     for pp_result in pp_results:
+#         umap_plot = {}
+#         if 'umap' in pp_result.keys():
+#             umap_plot['umap_plot'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap'], clustering_plot_type=clustering_plot_type, annotation=annotation)
+#         if 'umap_3d' in pp_result.keys():
+#             umap_plot['umap_plot_3d'] = plot_UMAP_obs(pp_result['cell_metadata'], pp_result['umap_3d'], clustering_plot_type=clustering_plot_type, n_dim=3, annotation=annotation)
+#         umap_plots.append(umap_plot)
     
-    return umap_plots
+#     return umap_plots
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host='0.0.0.0', port=5005, reload=True)

@@ -201,7 +201,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     else:
                         # Run Scanpy QC 
                         try:
-                            adata = load_anndata(input_path)
+                            adata = load_anndata(input_path, raw=True)
                             redislogger.info(job_id, "Start scanpy QC...")
                             scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'], species=species)
                             # scanpy_results.write_h5ad(output_path, compression='gzip')
@@ -287,7 +287,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     else:
                         try:
                             redislogger.info(job_id, "Start Dropkick QC...")
-                            adata = load_anndata(input_path)
+                            adata = load_anndata(input_path, raw=True)
                             dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], n_hvg=parameters['n_top_genes'], random_state=random_state)
                             # dropkick_results.write_h5ad(output_path, compression='gzip')
                             save_anndata(dropkick_results, output_path)

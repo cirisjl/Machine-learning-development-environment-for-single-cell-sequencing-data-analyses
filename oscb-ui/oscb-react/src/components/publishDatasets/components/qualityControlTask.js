@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
-import { CELERY_BACKEND_API, STORAGE, defaultValues} from '../../../constants/declarations';
+import { CELERY_BACKEND_API, WEB_SOCKET_URL, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
 import {isUserAuth, getCookie, plotUmapObs} from '../../../utils/utilFunctions';
@@ -10,13 +10,13 @@ import { Button, makeStyles } from '@material-ui/core';
 import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
-import FormControl from '@mui/material/FormControl';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
+// import FormControl from '@mui/material/FormControl';
+// import Radio from '@mui/material/Radio';
+// import RadioGroup from '@mui/material/RadioGroup';
+// import FormControlLabel from '@mui/material/FormControlLabel';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
 import LogComponent from '../../common_components/liveLogs';
-import {Select, MenuItem, InputLabel } from '@mui/material';
+// import {Select, MenuItem, InputLabel } from '@mui/material';
 
 
 function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
@@ -34,9 +34,9 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
     },
   }));
 
-  const [ message, setMessage ] = useState('');
+  const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [ isError, setIsError ] = useState(false);
+  const [isError, setIsError] = useState(false);
   const classes = useStyles(); // Use the custom styles
   const [loading, setLoading] = useState(false);
   const [values, setValues] = useState(taskData.quality_control.qc_params);
@@ -54,6 +54,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
   const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+  const [ppJobId, setppJobId] = useState(null);
 
 
 const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
@@ -140,15 +141,11 @@ const handleLogMessage = (event) => {
 
     try {
       const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: processIds });
-      console.log('Process Results:', response.data);
-      setTaskData((prevTaskData) => ({
-        ...prevTaskData,
-        quality_control: {
-          ...prevTaskData.quality_control,
-          qc_results: response.data,
-        },
-      }));
-      setLoading(false);
+      // console.log('Process Results:', response.data);
+
+      const taskInfo = response.data;
+      const jobId = taskInfo.job_id;
+      setppJobId(jobId);
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
       setLoading(false);
@@ -157,6 +154,48 @@ const handleLogMessage = (event) => {
       setIsError(true);
     }
   };
+
+  // WebSocket listener
+      useEffect(() => {
+        if (!ppJobId) return;
+    
+        const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
+        // console.log("Connecting to WebSocket for pre-process results:", statusUrl);
+        const ws = new WebSocket(statusUrl);
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.task_status) {
+            if (data.task_status === "SUCCESS") {
+              setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                quality_control: {
+                  ...prevTaskData.quality_control,
+                  qc_results: data.task_result,
+                },
+              }));
+              setLoading(false);
+              setppJobId(null); // Reset ppJobId after handling    
+            } else if(data.task_status === "FAILURE"){
+              setMessage("Loading pre-process results is Failed");
+              setHasMessage(true);
+              setIsError(true);
+              setLoading(false);
+              setppJobId(null); // Reset ppJobId after handling
+            }
+          }
+        };
+        ws.onerror = (err) => {
+          setMessage("Loading pre-process results is Failed");
+          setHasMessage(true);
+          setIsError(true);
+          setLoading(false);
+          console.error("WebSocket error:", err);
+          setppJobId(null); // Reset ppJobId after handling
+        }
+        ws.onclose = () => console.log("WebSocket closed.");
+    
+        return () => ws.close();
+      }, [ppJobId]);
 
   const runQualityControl = async(skipQualityControl) => {
     setLoading(true);

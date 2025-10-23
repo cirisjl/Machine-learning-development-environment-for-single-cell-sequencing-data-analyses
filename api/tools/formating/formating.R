@@ -102,7 +102,7 @@ LoadExpressionMatrix <- function(path) {
 }
 
 
-LoadSeurat <- function(path, project = NULL) {
+LoadSeurat <- function(path, project = NULL, raw = FALSE) {
     srat <- NULL
     suffix <- tolower(GetSuffix(path))
 
@@ -116,12 +116,12 @@ LoadSeurat <- function(path, project = NULL) {
         adata <- LoadAnndata(path)
         # srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
         tryCatch({
-            srat <- AnndataToSeurat(adata, project_name = project_name)
+            srat <- AnndataToSeurat(adata, project_name = project_name, raw = raw)
         }, error = function(e) {
             print(paste0("An error happened when converting AnnData to Seurat, try loading a simple one: ", e$message))
         }, finally = {
           # Finally block: executed regardless of errors/warnings
-          srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE)
+          srat <- AnndataToSeurat(adata, project_name = project_name, complete = FALSE, raw = raw)
           rm(adata)
           gc()
           return(srat)
@@ -342,7 +342,7 @@ ConvertToAnndata <- function(path, assay = 'RNA') {
 }
 
 
-SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="scale.data", transfer_layers="counts", transfer_assay=NULL, transfer_assay_obsm=NULL, transfer_assay_layer=NULL, drop_single_values=FALSE, drop_na_values=TRUE) {
+SeuratToAnndata <- function(obj, out_file=NULL, assay="RNA", main_layer="counts", transfer_layers="scale.data", transfer_assay=NULL, transfer_assay_obsm=NULL, transfer_assay_layer=NULL, drop_single_values=FALSE, drop_na_values=TRUE) {
     # print("inside s to a")
     # print(out_file)
     main_layer <- match.arg(main_layer, c("data", "counts", "scale.data"))
@@ -699,7 +699,7 @@ IsNormalized <- function(Expression_Matrix, min_genes=200){
 #'
 #' @import reticulate
 #' @import Matrix
-AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay = "RNA", project_name = "Seurat Project", target_uns_keys = list(), complete = TRUE) {
+AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay = "RNA", project_name = "Seurat Project", target_uns_keys = list(), complete = TRUE, raw = FALSE) {
   main_layer <- match.arg(main_layer, c("counts", "data", "scale.data"))
   sp <- reticulate::import("scipy.sparse", convert = FALSE)
   
@@ -709,6 +709,15 @@ AnndataToSeurat <- function(adata, outFile = NULL, main_layer = "counts", assay 
     adata$X <- as.matrix(adata$X)
   }
   X <- t(adata$X)
+  if (IsNormalized(X) && raw){
+    if('raw_counts' %in% names(adata$layers)){
+      X <- t(adata$layers['raw_counts'])
+    } else if ('counts' %in% names(adata$layers)){
+      X <- t(adata$layers['counts'])
+    } else {
+      warning("The expression matrix seems to be normalized, no raw counts is found.")
+    }
+  }
   colnames(X) <- rownames(obs_df)
   rownames(X) <- rownames(var_df)
 

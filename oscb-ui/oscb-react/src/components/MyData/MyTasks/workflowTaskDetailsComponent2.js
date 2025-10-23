@@ -143,6 +143,8 @@ function WorkflowTaskDetailsComponent() {
   const { job_id, methodMap, datasetURL, description, process, output, results, status } = location.state || {};
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [taskOutput, setTaskOutput] = useState(null); // Set to null initially
+  const [taskPPStatus, setTaskPPStatus] = useState(null); // Set to null initially
+  const [taskPPOutput, setTaskPPOutput] = useState(null); // Set to null initially
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
@@ -245,7 +247,6 @@ function WorkflowTaskDetailsComponent() {
 
   const fetchProcessResults = async (processIds, record_type) => {
     if (!processIds.length) return;
-
     // closeWebSockets(); // Close existing WebSocket connections before fetching new data
 
     try {
@@ -307,68 +308,69 @@ function WorkflowTaskDetailsComponent() {
 
   // WebSocket listener
   useEffect(() => {
-    if (!ppJobId) return;
+    if (taskPPStatus === "SUCCESS") {
+      const preProcessResult = taskPPOutput[0]
+      // console.log(preProcessResult);
+      const processId = preProcessResult.process_id;
 
-    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
-    const ws = new WebSocket(statusUrl);
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.task_status) {
-        if (data.task_status === "SUCCESS") {
-          const preProcessResult = data.task_result[0];
-          const processId = preProcessResult.process_id;
-
-          // Only set plotData if at least one plot exists
-          if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
-            setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
-          } else {
-            setPlotData(null);
-          }
-          
-          if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
-            setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
-          } else {
-            setAtacPlotData(null);
-          }
-          
-          // Only set plotData if at least one plot exists
-          if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
-            setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
-          } else {
-            setTsnePlotData(null);
-          }
-          
-          // Store the fetched data for the current process_id
-          setDetails((prevDetails) => ({
-            ...prevDetails,
-            [processId]: preProcessResult, // Store fetched data for the corresponding process_id
-          }));
-          setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
-          setppJobId(null); // Reset ppJobId after handling
-
-        } else if (data.task_status === "FAILURE") {
-          setMessage("Loading pre-process results is Failed");
-          setHasMessage(true);
-          setIsError(true);
-          setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
-          // setLoading(false);
-          setppJobId(null); // Reset ppJobId after handling
-        }
+      // Only set plotData if at least one plot exists
+      if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+        setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
+      } else {
+        setPlotData(null);
       }
-    };
-    ws.onerror = (err) => {
+
+      if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
+        setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
+      } else {
+        setAtacPlotData(null);
+      }
+
+      // Only set plotData if at least one plot exists
+      if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+        setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
+      } else {
+        setTsnePlotData(null);
+      }
+
+      // Store the fetched data for the current process_id
+      setDetails((prevDetails) => ({
+        ...prevDetails,
+        [processId]: preProcessResult, // Store fetched data for the corresponding process_id
+      }));
+
+      setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
+      closeWebSockets();
+    }
+    else if (taskPPStatus === "FAILURE") {
       setMessage("Loading pre-process results is Failed");
       setHasMessage(true);
       setIsError(true);
       setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
-      setLoading(false);
-      console.error("WebSocket error:", err);
-      setppJobId(null); // Reset ppJobId after handling
+      closeWebSockets();
     }
-    ws.onclose = () => console.log("WebSocket closed.");
+  }, [taskPPStatus]);
 
-    return () => ws.close();
-  }, [ppJobId]);
+  const handlePPStatusMessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.task_status) {
+        setTaskPPStatus(data.task_status);
+        if (data.task_status?.toLowerCase() === "success" || data.task_status?.toLowerCase() === "failure") {
+          if (data.task_status?.toLowerCase() === "success") {
+            if (data.task_result) {
+              setTaskPPOutput(data.task_result);
+            }
+          } else {
+            setLoading(false);
+          }
+        }
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Error parsing status message:", error);
+    }
+  };
 
   const handleStatusMessage = (event) => {
     try {
@@ -530,7 +532,10 @@ function WorkflowTaskDetailsComponent() {
   };
 
   // Use the WebSocket hook
+  // const { closeWebSockets } = useWebSocket(job_id, handleStatusMessage, handleLogMessage);
   useWebSocket(job_id, handleStatusMessage, handleLogMessage);
+
+  const { closeWebSockets } = useWebSocket(ppJobId, handlePPStatusMessage);
 
   return (
 

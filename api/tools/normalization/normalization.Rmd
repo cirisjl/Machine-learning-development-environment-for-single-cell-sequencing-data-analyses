@@ -33,10 +33,11 @@ source("../formating/formating.R")
 source("../visualization/visualization.R")
 srat <- NULL
 adata <- NULL
+unique_id <- params$unique_id
 # Check if output file already exists
 if(file.exists(params$output)){
   srat <- tryCatch(
-    LoadSeurat(params$output),
+    LoadSeurat(params$output, raw=TRUE),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -44,7 +45,7 @@ if(file.exists(params$output)){
   )
 }else{
   srat <- tryCatch(
-    LoadSeurat(params$input),
+    LoadSeurat(params$input, raw=TRUE),
     error = function(e) {
         stop("The file format is not supported.")
         if(params$show_error) print(e)
@@ -57,7 +58,7 @@ DefaultAssay(object = srat) <- params$default_assay
 print(paste("Seurat object is loaded and default assay is set to", params$default_assay, "."))
 
 adata_path <- params$adata_path
-if (file.exists("adata_path")){
+if (file.exists(adata_path)){
   adata <- LoadAnndata(adata_path)
 } else{
   adata <- SeuratToAnndata(srat, assay=params$default_assay)
@@ -73,7 +74,6 @@ adata$layers["raw_counts"] <- adata$X
 print(srat)
 # methods <- eval(parse(text = params$methods))
 methods <- strsplit(toupper(params$methods), ",")[[1]]
-unique_id <- params$unique_id
 ```
 ## logCP10K
 Scale data to account for sequencing depth by 10,000 (as if all cells have 10k UMIs overall), and log2-transform the obtained values.
