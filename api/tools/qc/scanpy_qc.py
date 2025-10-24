@@ -40,7 +40,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         redislogger.info(unique_id, "Check if adata.var.index is gene symbols.")
         if is_ensembl(adata.var_names[0]):
             redislogger.info(unique_id, "Convert Ensembl IDs to gene symbols.")
-            if 'species' is not None:
+            if species is not None:
                 try:
                     ensembl_ids = adata.var.index.tolist()
                     symbol_ids = ensembl_to_symbol(ensembl_ids, species=species)

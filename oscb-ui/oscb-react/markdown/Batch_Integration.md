@@ -11,7 +11,7 @@ Single-cell RNA sequencing (scRNA-seq) experiments often face a pervasive challe
 
 This task evaluates batch integration methods by assessing their success in removing technical batch effects while preserving true biological variation (including ARI, ASW label, Cell Cycle Conservation, cLISI, HVG overlap, Isolated label F1 score, Isolated label ASW, and NMI) within single-cell data. Methods are provided with multi-batch, consistently labeled data (either normalized or unnormalized) and produce either a feature matrix, low-dimensional embedding, or neighborhood graph as integrated output. This output is subsequently evaluated using specific metrics that quantify both batch effect removal and biological variance conservation, with the task framework drawing from the most recent and comprehensive single-cell data integration benchmark.
 
-A workflow for creating imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where training data is stored in `adata.obsm["train"]` and test data in `adata.obsm["test"]`.
+A workflow for creating imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where cell type label and batch key is stored in `adata.obs`.
 
 * **ARI:** The Adjusted Rand Index [^1] quantifies the congruence between a derived clustering solution and a predefined ground truth (e.g., cell types), factoring in chance agreement. It delivers a score between 0 (random assignment) and 1 (perfect concordance), reflecting both accurate inclusions and exclusions across partitions.
 

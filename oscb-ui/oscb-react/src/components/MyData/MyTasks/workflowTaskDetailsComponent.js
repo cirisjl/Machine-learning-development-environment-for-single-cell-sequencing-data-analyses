@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 import {
-  Container, Typography, Chip, Box, CircularProgress, Paper, Grid, TextField, Button,
-  Card, CardContent, Link, CardHeader
+  Container, Typography, Chip, Box, Grid, TextField, Button,
+  Card, CardContent, CardHeader
 } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
 import RightRail from '../../RightNavigation/rightRail';
@@ -17,7 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, plotUmapObs, gunzipDict } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Descriptions } from 'antd';

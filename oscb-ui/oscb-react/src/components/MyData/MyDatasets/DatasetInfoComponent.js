@@ -4,10 +4,10 @@ import axios from 'axios';
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL } from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
-import { Card, CardContent, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { downloadFile, getFileNameFromURL, getCookie, decompressData, plotUmapObs } from '../../../utils/utilFunctions';
+import { downloadFile, getFileNameFromURL, getCookie, plotUmapObs } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
@@ -48,49 +48,69 @@ const DatasetInfoComponent = () => {
   
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
-  
+      // const worker = new Worker(new URL("./../../utils/worker.js", import.meta.url));
       // Access the first element of the datasetDetails array
       const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
       if (!selectedCellType || !selectedCellType.label) {
         throw new Error("Selected Cell Type or label is missing");
       }
   
-        try {
+      try {
+        let plot = null;
+        let plot_3d = null;
 
-          let plot = null;
-          let plot_3d = null;
-
-          if (twoDArray) {
-            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
-          }
-          if (threeDArray) {
-            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType.label, 3, plotName);
-          }
-
-          // If the plotName is 'tsne', we can handle it here if needed
-          if (plotName === 'tsne') {
-            if (plot || plot_3d) {
-              // If tsne plots are available, we can set them in the plotData state
-              setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
-            }
-          } else if (plotName === 'umap') {
-            if (plot || plot_3d) {
-              // If umap plots are available, we can set them in the plotData state
-              setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
-            }
-          } else if (plotName === 'atac_umap') {
-            if (plot || plot_3d) {
-              // If ATAC umap plots are available, we can set them in the plotData state
-              setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
-            }
-          }
-
-        } catch (error) {
-          console.error('Error fetching plot data:', error);
-          alert(`Error fetching plot data: ${error}`);
-        } finally {
-          setLoadingPlot(false);
+        if (twoDArray) {
+          plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
+          // worker.postMessage({ obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
+          // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
         }
+        if (threeDArray) {
+          // worker.postMessage({ obs: cell_metadata, umap: threeDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
+          // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
+          plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType.label, 3, plotName);
+        }
+
+        // worker.onmessage = (event) => {
+        //   console.log("event.data from worker:", event.data);
+        //   if (twoDArray) {
+        //     plot = event.data;
+        //     console.log("从 Worker 收到2D的结果:", event.data);
+        //   }
+        //   if (threeDArray) {
+        //     plot_3d = event.data;
+        //     console.log("从 Worker 收到3D的结果:", event.data);
+        //   }
+        // };
+
+        // If the plotName is 'tsne', we can handle it here if needed
+        if (plotName === 'tsne') {
+          if (plot || plot_3d) {
+            // If tsne plots are available, we can set them in the plotData state
+            setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+          }
+        } else if (plotName === 'umap') {
+          if (plot || plot_3d) {
+            // If umap plots are available, we can set them in the plotData state
+            setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+          }
+        } else if (plotName === 'atac_umap') {
+          if (plot || plot_3d) {
+            // If ATAC umap plots are available, we can set them in the plotData state
+            setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
+          }
+        }
+
+      } catch (error) {
+        console.error('Error fetching plot data:', error);
+        alert(`Error fetching plot data: ${error}`);
+      } finally {
+        setLoadingPlot(false);
+      }
+
+      // return () => {
+      //   worker.terminate();
+      // };
+
     };
     
 
