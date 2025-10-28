@@ -316,10 +316,19 @@ services:
     image: stormgod/oscb-cuda126-r45-seurat440:1.2.1
     container_name: jupyter
     working_dir: /ps
-    command: jupyter notebook --ip="0.0.0.0" --allow-root --ServerApp.iopub_data_rate_limit=10000000000
+    command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root --ServerApp.iopub_data_rate_limit=10000000000
     restart: always
     ports:
       - "8888:8888"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
+        # limits:
+        #   cpus: "50"
     networks:
       - oscb-network
     volumes:

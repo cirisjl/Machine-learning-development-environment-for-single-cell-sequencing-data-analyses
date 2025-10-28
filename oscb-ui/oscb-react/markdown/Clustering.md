@@ -92,7 +92,7 @@ OSCB further offers a computational assessment unit that, by encapsulating your 
 ```python
 from oscb.utilization import Monitor
 
-monitor = Monitor(1)
+monitor = Monitor(1) # 1 second, time between calls to GPUtil
 # Your code
 monitor.stop()
 ```

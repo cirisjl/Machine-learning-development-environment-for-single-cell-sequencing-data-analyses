@@ -10,7 +10,7 @@ from muon import MuData
 from tools.utils.formating import has_cell_cyle_genes
 
 
-def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_type'):
+def multimodal_metrics(mdata, embed, mod1='rna', batch='group', label_key='cell_type', species="mouse"):
     scib_anndata = sc.AnnData(mdata.obsm[embed]).copy()
     scib_anndata.obs = mdata.obs.copy()
     scib_anndata.obsp["connectivities"] = mdata.obsp["connectivities"].copy()

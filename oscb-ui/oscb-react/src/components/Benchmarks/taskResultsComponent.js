@@ -36,7 +36,7 @@ export default function TaskResultsComponent(task_type) {
     useEffect(() => {
             async function fetchFileData() {
             try {
-                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(" ", "_"));
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
                 const data = response.data.data;
                 
                 if(data.length === 1) {

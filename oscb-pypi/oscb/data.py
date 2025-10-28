@@ -135,7 +135,7 @@ def DataLoader(benchmarks_id, data_folder='downloads/', server_endpoint=server_e
 
     if os.path.isfile(adata_path):
         if str(adata_path).endswith(".h5mu"):
-            mdata = muon.read_h5mu(adata_path)
+            mdata = mu.read_h5mu(adata_path)
             return mdata
         else:
             adata = sc.read_h5ad(adata_path)

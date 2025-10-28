@@ -12,9 +12,12 @@ import requests
 import json
 
 
-def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, batch_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
-    if adata is None:
-        raise ValueError("adata is required.")
+def eval(adata=None, adata_int=None, mdata=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, batch_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
+    if adata is None and mdata is None:
+        if adata is None:
+            raise ValueError("adata is required.")
+        else:
+            raise ValueError("mdata is required.")
     
     benchmarks = None
     current_date_and_time = datetime.now()
@@ -64,6 +67,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
                         mod2_key = benchmarks['mod2']
                         label_key = benchmarks['label']
                         batch_key = benchmarks['batch_key']
+                        species = benchmarks['species']
 
                     case "Cell Type Annotation" | "CT":
                         label_key = benchmarks['label']
@@ -179,7 +183,7 @@ def eval(adata, adata_int=None, benchmarks_id=None, task=None, cluster_key=None,
 
             case "Multimodal Data Integration" | "MI":
                 if embedding_key is not None and mod1_key is not None and batch_key is not None and label_key is not None:
-                    metrics_dict = multimodal_metrics(mdata, embed=embedding_key, mod1=mod1_key, batch=batch_key, label_key=label_key)
+                    metrics_dict = multimodal_metrics(mdata, embed=embedding_key, mod1=mod1_key, batch=batch_key, label_key=label_key, species=species)
                     results = {**task_info, **metrics_dict}
                     if benchmarks_data is not None:
                         labels, y_labels, data = get_bar_plot_data(benchmarks_data, user_results=results)

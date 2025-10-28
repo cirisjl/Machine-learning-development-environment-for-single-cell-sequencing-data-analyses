@@ -11,7 +11,7 @@ Single-cell RNA sequencing (scRNA-seq) offers unprecedented insights into indivi
 
 Evaluating single-cell RNA sequencing denoising is challenging due to the lack of ground truth, as existing benchmark methods have limitations that prevent a unified accuracy measure. To address this, molecular cross-validation (MCV) is utilized, a method specifically designed to quantify denoising accuracy by comparing a denoised training set against a partitioned test set, with demonstrated reliability in representing ground truth accuracy [^1].
 
-A workflow for creating imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where training data is stored in `adata.obsm["train"]` and test data in `adata.obsm["test"]`.
+A workflow for creating Imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where training data is stored in `adata.obsm["train"]` and test data in `adata.obsm["test"]`.
 
 * **MSE:** The metric measures the reweighted Mean Squared Error (MSE) [^1] between the denoised gene expression counts from the training dataset and the actual gene expression counts from the test dataset, where the reweighting factor is based on the train/test ratio.
 
@@ -90,7 +90,7 @@ OSCB further offers a computational assessment unit that, by encapsulating your 
 ```python
 from oscb.utilization import Monitor
 
-monitor = Monitor(1)
+monitor = Monitor(1) # 1 second, time between calls to GPUtil
 # Your code
 monitor.stop()
 ```
