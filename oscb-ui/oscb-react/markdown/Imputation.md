@@ -70,13 +70,13 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", denoised=adata.layer['
 > </div>
 
 #### User's datasets
-To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Imputation"`  or `"IM"` for short), and an `denoised` (e.g., `adata.layer['denosied']` or `adata.obsm['denosied']`); the method name can be customized via the `method` parameter.
+To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Imputation"`  or `"IM"` for short), and `denoised` (e.g., `adata.layer['denosied']` or `adata.obsm['denosied']`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
-> The input types of `task` is `string`, while the input type of `denoised` is `{array-like, sparse matrix} of shape (n_samples, n_features)`.
+> The input types of `task` and `method` are `string`, while the input type of `denoised` is `{array-like, sparse matrix} of shape (n_samples, n_features)`.
 ```python
 from oscb.evaluator import eval, write_json
 
-results_dict = eval(task='Imputation', denoised=adata.layer['denosied'], method="Your method")
+results_dict = eval(adata, task='Imputation', denoised=adata.layer['denosied'], method="Your method")
 ```
 #### Save results
 To save your results to JSON format file, please run:

@@ -2,6 +2,7 @@ import random
 import numpy as np
 import networkx as nx
 import zss
+import pandas as pd
 from math import inf
 from grakel import GraphKernel, Graph
 
@@ -77,6 +78,10 @@ def trajectory_metrics(traj, bm_traj, root_node):
 
 
 def traj_to_dict(df):
+    # Check and convert numpy.ndarray to pandas.dataframe
+    if type(df) == np.ndarray:
+        df = pd.DataFrame(df, columns=['from', 'to', 'length'])
+        
     graph = {}
     for i, row in df.iterrows():
         graph[row['to']] = row['from']
