@@ -13,7 +13,7 @@ import json
 
 
 def eval(adata=None, adata_int=None, mdata=None, benchmarks_id=None, task=None, cluster_key=None, label_key=None, batch_key=None, labels=None, labels_pred=None, embedding=None, embedding_key=None, ccc_pred=None, ccc_target=None, score="score", denoised=None, train='train', test='test', mod1_key='rna', mod2_key='atac', traj=None, bm_traj=None, root_node=None, species=None, server_endpoint=server_endpoint+'benchmarks/', method="Your method"):
-    if adata is None and mdata is None:
+    if adata is None and mdata is None and (task != "Cell Type Annotation" or task != "CT"):
         if adata is None:
             raise ValueError("adata is required.")
         else:

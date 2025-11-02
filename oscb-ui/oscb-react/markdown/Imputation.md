@@ -3,13 +3,13 @@
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Imputation.png">
 </div>
 
-Single-cell RNA sequencing (scRNA-seq) offers unprecedented insights into individual cells, but its data is often marked by "dropouts"—missing gene expression values due to technical limitations, which can obscure true biological signals. Single-cell imputation addresses this by computationally estimating these missing values, effectively "filling in the blanks" in the raw data. By inferring likely gene expression based on similar cells and genes, imputation transforms sparse and noisy datasets into more complete and accurate representations, thereby enhancing the reliability of downstream analyses like clustering and differential expression and allowing for a fuller understanding of cellular biology.
+Single-cell RNA sequencing (scRNA-seq) offers unprecedented insights into individual cells, but its data is often marked by "dropouts"—missing gene expression values due to technical limitations, which can obscure true biological signals. Single-cell Imputation addresses this by computationally estimating these missing values, effectively "filling in the blanks" in the raw data. By inferring likely gene expression based on similar cells and genes, Imputation transforms sparse and noisy datasets into more complete and accurate representations, thereby enhancing the reliability of downstream analyses like clustering and differential expression and allowing for a fuller understanding of cellular biology.
 
 <hr/>
 
 ## Metrics
 
-Evaluating single-cell RNA sequencing denoising is challenging due to the lack of ground truth, as existing benchmark methods have limitations that prevent a unified accuracy measure. To address this, molecular cross-validation (MCV) is utilized, a method specifically designed to quantify denoising accuracy by comparing a denoised training set against a partitioned test set, with demonstrated reliability in representing ground truth accuracy [^1].
+Evaluating single-cell RNA sequencing Imputation is challenging due to the lack of ground truth, as existing benchmark methods have limitations that prevent a unified accuracy measure. To address this, molecular cross-validation (MCV) is utilized, a method specifically designed to quantify Imputation accuracy by comparing a denoised training set against a partitioned test set, with demonstrated reliability in representing ground truth accuracy [^1].
 
 A workflow for creating Imputation benchmarks is available on [single-cell.ai](https://www.single-cell.ai/), where training data is stored in `adata.obsm["train"]` and test data in `adata.obsm["test"]`.
 
@@ -40,7 +40,7 @@ You may update the version by running:
 pip install -U oscb
 ```
 
-OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across imputation methods.
+OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across Imputation methods.
 
 ### Data loaders
 To load a dataset, please replace `Benchmarks_ID/Dataset_ID` with the Benchmarks ID or Dataset ID (e.g., `"IM-h-10x_PBMC-1087-10x-2017"`). The default download folder is `./datasets`. You can change the data folder by passing a new value to the parameter `data_folder`.

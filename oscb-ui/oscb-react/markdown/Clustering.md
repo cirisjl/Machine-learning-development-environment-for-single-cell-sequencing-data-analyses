@@ -3,21 +3,21 @@
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Clustering.png">
 </div>
 
-In single-cell analysis, clustering is a critical step to identify distinct cell types or states within a heterogeneous sample. The process begins with a gene expression matrix (**step 1**), detailing expression levels for thousands of genes across individual cells. To manage this high-dimensional data, dimensionality reduction techniques like PCA, UMAP or t-SNE (**step 2**) are applied, projecting cells into a 2D or 3D space while preserving transcriptional similarities. Finally, clustering algorithms (**step 3**) group these projected cells into distinct clusters, where each cluster represents a population of cells with similar gene expression profiles, allowing for the identification and annotation of unique cell types (e.g., T Cells, B Cells, Macrophages, Neurons) from the original sample.
+In single-cell analysis, Clustering is a critical step to identify distinct cell types or states within a heterogeneous sample. The process begins with a gene expression matrix (**step 1**), detailing expression levels for thousands of genes across individual cells. To manage this high-dimensional data, dimensionality reduction techniques like PCA, UMAP or t-SNE (**step 2**) are applied, projecting cells into a 2D or 3D space while preserving transcriptional similarities. Finally, Clustering algorithms (**step 3**) group these projected cells into distinct clusters, where each cluster represents a population of cells with similar gene expression profiles, allowing for the identification and annotation of unique cell types (e.g., T Cells, B Cells, Macrophages, Neurons) from the original sample.
 
 <hr/>
 
 ## Metrics
 
-We use cell-type as clustering ground truth, and compare it with the predicted clustering.
+We use cell-type as Clustering ground truth, and compare it with the predicted Clustering.
 
-* **ARI:** The Adjusted Rand Index [^1] quantifies the congruence between a derived clustering solution and a predefined ground truth (e.g., cell types), factoring in chance agreement. It delivers a score between 0 (random assignment) and 1 (perfect concordance), reflecting both accurate inclusions and exclusions across partitions.
+* **ARI:** The Adjusted Rand Index [^1] quantifies the congruence between a derived Clustering solution and a predefined ground truth (e.g., cell types), factoring in chance agreement. It delivers a score between 0 (random assignment) and 1 (perfect concordance), reflecting both accurate inclusions and exclusions across partitions.
 
-* **FMI:** The Fowlkes-Mallows Index [^2] assesses the fidelity of a clustering result against a reference classification, e.g., cell type. Defined as the geometric mean of precision and recall, it evaluates how effectively a predicted clustering identifies relevant cells (precision) and captures all pertinent instances (recall). Its values span from 0 to 1.
+* **FMI:** The Fowlkes-Mallows Index [^2] assesses the fidelity of a Clustering result against a reference classification, e.g., cell type. Defined as the geometric mean of precision and recall, it evaluates how effectively a predicted Clustering identifies relevant cells (precision) and captures all pertinent instances (recall). Its values span from 0 to 1.
 
-* **Silhouette:** The Silhouette Score [^3] provides an intrinsic evaluation of clustering quality, independent of external labels. It measures the degree of similarity within clusters versus dissimilarity between clusters, with values ranging from -1 (indicating poor cluster separation) to +1 (denoting highly cohesive and distinct clusters).
+* **Silhouette:** The Silhouette Score [^3] provides an intrinsic evaluation of Clustering quality, independent of external labels. It measures the degree of similarity within clusters versus dissimilarity between clusters, with values ranging from -1 (indicating poor cluster separation) to +1 (denoting highly cohesive and distinct clusters).
 
-* **NMI:** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
+* **NMI:** Normalized Mutual Information [^4] gauges the statistical dependence between a predicted Clustering and a known categorical variable, normalizing by the average entropy of both distributions. This metric ranges from 0 (statistical independence) to 1 (perfect correlation), indicating the shared information content between the two partitions.
 
 <hr/>
 
@@ -42,7 +42,7 @@ You may update the version by running:
 pip install -U oscb
 ```
 
-OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across clustering methods.
+OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across Clustering methods.
 
 ### Data loaders
 To load a dataset, please replace `Benchmarks_ID/Dataset_ID` with the Benchmarks ID or Dataset ID (e.g., `"CL-m-FACS_Bladder-1268-Tabula-2018"`). The default download folder is `./datasets`. You can change the data folder by passing a new value to the parameter `data_folder`.
@@ -63,7 +63,7 @@ For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please
 ```python
 from oscb.evaluator import eval, write_json
 
-results_dict = eval(adata, benchmarks_id="Benchmarks_ID", cluster_key="leiden", embedding_key="X_umap", method="Your method")
+results_dict = eval(adata, benchmarks_id="Benchmarks_ID", cluster_key=cluster_key, embedding_key=embedding_key, method="Your method")
 ```
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
@@ -72,13 +72,13 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", cluster_key="leiden", 
 > </div>
 
 #### User's datasets
-To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Clustering"` or `"CL"` for short), true `labels`(e.g., `adata.obs['cell_type']`), `labels_pred` from your clustering (e.g., `adata.obs['leiden']`), and an `embedding` (e.g., `adata.obsm["X_umap"]`); the method name can be customized via the `method` parameter.
+To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Clustering"` or `"CL"` for short), true `labels`(e.g., `adata.obs['cell_type']`), `labels_pred` from your Clustering (e.g., `adata.obs['leiden']`), and an `embedding` (e.g., `adata.obsm["X_umap"]`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
-> The input types of `task`, `labels` and `labels_pred` are `array-like of shape (n_samples,)`, while `embedding` is `{array-like, sparse matrix} of shape (n_samples_a, n_samples_a) or (n_samples_a, n_features)`.
+> The input types of `task` is `string`, `labels` and `labels_pred` are `array-like of shape (n_samples,)`, and `embedding` is `{array-like, sparse matrix} of shape (n_samples_a, n_samples_a) or (n_samples_a, n_features)`.
 ```python
 from oscb.evaluator import eval, write_json
 
-results_dict = eval(task='Clustering', labels=adata.obs['cell_type'], labels_pred=adata.obs['leiden'], embedding=adata.obsm["X_umap"], method="Your method")
+results_dict = eval(task='Clustering', labels=labels, labels_pred=labels_pred, embedding=embedding, method="Your method")
 ```
 #### Save results
 To save your results to JSON format file, please run:

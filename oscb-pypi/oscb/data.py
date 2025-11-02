@@ -127,7 +127,7 @@ def DataLoader(benchmarks_id, data_folder='downloads/', server_endpoint=server_e
     }
 
     downloader = FileDownloader()
-    adata_path, metadata = downloader.download(server_endpoint, data_dict, data_folder="downloads")
+    adata_path, metadata = downloader.download(server_endpoint, data_dict, data_folder=data_folder)
     if metadata is not None:
         print("Benchmarks metadata:")
         for key, value in metadata.items():

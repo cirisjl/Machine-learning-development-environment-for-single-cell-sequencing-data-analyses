@@ -61,8 +61,8 @@ adata = DataLoader("Benchmarks_ID/Dataset_ID", data_folder="./datasets/")
 #### OSCB Benchmarks
 For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please replace `Benchmarks_ID` with the Benchmarks ID (e.g., `"TJ-Planaria-Droplet_Planarian-18837-Mireya-2018"`), and `traj` with your trajectory inference (e.g., `adata.uns['trajectory']`). To modify the method name, adjust the `method` parameter.
 > [!IMPORTANT]
-> The input types of `benchmarks_id` and `method` are `string`, while the input type of `traj` is `pandas.dataframe` with columns "from", "to", and "length" as shown below:
-> <div align="center">
+> The input types of `benchmarks_id` and `method` are `string`, while the input type of `traj` is `pandas.core.frame.DataFrame` with columns "from", "to", and "length" as shown below:
+> <div align="center" style="display: flex">
 > <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/traj_format.png">
 > </div>
 ```python
@@ -79,8 +79,8 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", traj=traj, method="You
 #### User's datasets
 To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Trajectory"`  or `"TJ"` for short), `traj` with your trajectory inference (e.g., `adata.uns['trajectory']`), `bm_traj` with your trajectory ground truth (e.g., `adata.uns['benchmark_traj']`), and `root_node` with your origin group (e.g., `adata.uns['origin_group']`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
-> The input types of `task`, `root_node` and `method` are `string`, while the input type of `traj` and `bm_traj` are `pandas.dataframe` with columns "from", "to", and "length" as shown below:
-> <div align="center">
+> The input types of `task`, `root_node` and `method` are `string`, while the input type of `traj` and `bm_traj` are `pandas.core.frame.DataFrame` with columns "from", "to", and "length" as shown below:
+> <div align="center" style="display: flex">
 > <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/traj_format.png">
 > </div>
 ```python
