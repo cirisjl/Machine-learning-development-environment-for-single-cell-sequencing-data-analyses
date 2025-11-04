@@ -6,9 +6,21 @@ function LeftNavComponent(props) {
     const [categories, setCategories] = useState([
         {
           category_id: 1,
-          category_name: 'Workflow',
+          category_name: 'Analyses',
           expanded: true,
-          filters: ['Clustering', 'Integration', 'Annotation'],
+          filters: ['Upload Data', 'My Datasets', 'Tools', 'Workflows', 'My Jobs'],
+        },
+        {
+          category_id: 2,
+          category_name: 'Benchmarks',
+          expanded: true,
+          filters: ['Create New Benchmarks', 'Benchmarks'],
+        },
+        {
+          category_id: 3,
+          category_name: 'Python API',
+          expanded: true,
+          filters: ['Data Loader', 'Evaluators'],
         }
       ]);
 
@@ -44,7 +56,7 @@ function LeftNavComponent(props) {
             }`}
           >
             {category.filters.map(filter => (
-              <li key={filter} className='filter-level-li' onClick={() => handleFilterSelection(category.category_name.toLowerCase().replace(/\s/g, '_'), filter.toLowerCase())}>{filter}</li>
+              <li key={filter} className='filter-level-li' onClick={() => handleFilterSelection(filter.toLowerCase())}>{filter}</li>
             ))}
           </ul>
             )}

@@ -5,9 +5,10 @@ import 'github-markdown-css';
 // import rehypeRaw from 'rehype-raw'
 // import rehypeSanitize from 'rehype-sanitize'
 // import LeftNav from "../components/LeftNavigation/leftNav";
-import gfm from "remark-gfm";
-import remarkImgToJsx from "remark-unwrap-images";
-import RightRail from "../components/RightNavigation/rightRail";
+// import gfm from "remark-gfm";
+// import remarkImgToJsx from "remark-unwrap-images";
+import LeftNav from "../components/LeftNavigation/leftnavTutorial";
+// import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -16,11 +17,20 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw'
 import rehypeGithubAlerts from 'rehype-github-alert'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import MarkdownNavbar from 'markdown-navbar';
+// The default style of markdown-navbar should be imported additionally
+import './navbar.css';
 
 
 export default function Tutorial() {
     const [markdownText,setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
+    const [uniqueFilter, setUniqueFilter] = useState("");
+    
+    const handleFilterSelection = (filter) => {
+        setUniqueFilter(filter);
+        console.log(filter);
+    };
 
     const handleCopy = (index) => {
         setCopiedIndex(index);
@@ -33,7 +43,7 @@ export default function Tutorial() {
     useEffect(() => {
         async function fetchFileData() {
         try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=tutorial");
+            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + uniqueFilter.replace(/ /g, "_"));
             const data = response.data.data;
             
             if(data.length === 1) {
@@ -53,14 +63,14 @@ export default function Tutorial() {
         }
         
         fetchFileData();
-      }, []);
+    }, [uniqueFilter]);
     
     return(
         <div className="tutorial-container">
             <div className="left-nav">
-                {/* <LeftNav /> */}
+                <LeftNav uniqueFilter={uniqueFilter} setUniqueFilter={setUniqueFilter} handleFilterSelection={handleFilterSelection} />
             </div>
-            <div className={(jwtToken === undefined || jwtToken === '') ? 'main-content-no-scroll' : 'main-content'}>
+            <div className='main-content'>
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
@@ -112,8 +122,8 @@ export default function Tutorial() {
                     }}
                 />
             </div>
-            <div className="right-rail">
-                <RightRail />
+            <div className="right-rail navigation">
+                <MarkdownNavbar source={markdownText} />
             </div>
         </div>
     )

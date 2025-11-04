@@ -37,13 +37,13 @@ import FlowControl from './publishDatasets/flowControl';
 import TaskResultsComponent from './Benchmarks/taskResultsComponent';
 import UploadDataset from './MyData/UploadData/uploadDataset';
 import SessionReminder from './Session/sessionManager';
-import { SessionProvider } from './Session/context/sessionContext'; 
+// import { SessionProvider } from './Session/context/sessionContext'; 
 import ForgotPasswordPage from '../pages/login/ForgotPasswordPage'
 import ResetPasswordPage from '../pages/login/ResetPasswordPage';
-import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
+// import QualityControlParameters from './publishDatasets/components/qualityControlParameters';
 import TaskDetailsComponent from './MyData/MyTasks/taskDetailsComponent';
 import WorkflowTaskDetailsComponent from './MyData/MyTasks/workflowTaskDetailsComponent';
-import HandleVisualize from './publishDatasets/components/handleVisualize';
+// import HandleVisualize from './publishDatasets/components/handleVisualize';
 import TreeTableComponent from './common_components/treeTableComponent';
 import BenchmarksViewDetailsComponent from './Benchmarks/components/benchmarksViewDetailsComponent';
 import DatasetInfoComponent from './MyData/MyDatasets/DatasetInfoComponent';

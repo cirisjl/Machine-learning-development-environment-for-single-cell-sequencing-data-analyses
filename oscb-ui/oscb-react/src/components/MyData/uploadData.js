@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import './ModalWindow.css';
 import { getCookie, isUserAuth, copyFilesToPrivateStorage, fetchUserProjectsList } from '../../utils/utilFunctions';
-import Form from "@rjsf/core";
+// import Form from "@rjsf/core";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import React from "react";
@@ -26,9 +26,9 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { FormControl, InputLabel } from '@mui/material';
 import { NODE_API_URL, FLASK_BACKEND_API } from '../../constants/declarations'
-import schema from "../../schema/react-json-schema/uploadDataSchema.json";
-import RightRail from "../RightNavigation/rightRail";
-import updateSchema from "./../updateDataSchema.json";
+// import schema from "../../schema/react-json-schema/uploadDataSchema.json";
+// import RightRail from "../RightNavigation/rightRail";
+// import updateSchema from "./../updateDataSchema.json";
 import FilePreviewModal from "./filePreviewModal";
 import FileManagerModal from "./fileManagerModal";
 import useWebSocketToCheckStatus from "../common_components/webSocketForStatus";
@@ -83,6 +83,19 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const handleProjectChange = (project_name) => {
         setSelectedUserProject(project_name);    
     };
+
+    const handleProjectFocus = () => {
+        isUserAuth(jwtToken)
+            .then(async (authData) => {
+                try {
+                    const userProjects = await fetchUserProjectsList(authData.username);
+                    setUserProjectsList(userProjects);
+                } catch (fetchErr) {
+                    console.error("Error fetching user projects:", fetchErr);
+                }
+            })
+            .catch((error) => console.error(error)); 
+    }
 
     const handleStatusMessage = (event) => {
         try {
@@ -156,7 +169,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             .then(async (authData) => {
                 console.log(authData)
                 if (authData.isAuth) {
-                    setIsAdminUser(authData.isAdmin);
+                    // setIsAdminUser(authData.isAdmin);
                     
                     try {
                         const userProjects =await fetchUserProjectsList(authData.username);
@@ -996,10 +1009,10 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 <TextField id="root_sample" fullWidth label="Sample (Optional)" variant="outlined" value={sampleValue} onChange={handleSampleChange} helperText="Please add your sample name here if needed. This field will also be used for batch integration." />
 
                                 <br />
-                                <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} selectedUserProject={selectedUserProject} />
+                                <UserProjectsDropdown userProjectsList={userProjectsList} onProjectChange={handleProjectChange} handleFocus={handleProjectFocus} selectedUserProject={selectedUserProject} />
                                 <br />
                                 <Link to="/projectAdminPanel" target="_blank">
-                                    <Button variant="outline" size="medium">Manage Projects</Button>
+                                    <Button variant="outlined" size="medium">Manage Projects</Button>
                                 </Link>
                                 <br />
                             </Box>

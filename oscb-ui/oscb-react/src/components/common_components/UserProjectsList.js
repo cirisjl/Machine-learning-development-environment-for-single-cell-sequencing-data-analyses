@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
 
-function UserProjectsDropdown({ userProjectsList, onProjectChange, selectedUserProject }) {
+function UserProjectsDropdown({ userProjectsList, onProjectChange, handleFocus, selectedUserProject }) {
   const [selectedProject, setSelectedProject] = useState(selectedUserProject || '');
   const [error, setError] = useState(false);
 
@@ -20,6 +20,8 @@ function UserProjectsDropdown({ userProjectsList, onProjectChange, selectedUserP
         value={selectedProject}
         label="Select Project (Optional)"
         onChange={handleChange}
+        // onClick={handleClick}
+        onFocus={handleFocus}
       >
         <MenuItem value="">
           <em>None</em>
@@ -30,7 +32,7 @@ function UserProjectsDropdown({ userProjectsList, onProjectChange, selectedUserP
           </MenuItem>
         ))}
       </Select>
-      <FormHelperText>By creating a project and adding member to your project, you may share your dataset within your project. You can create projects and manage the members through the 'MANAGE PROJECT' button below.</FormHelperText>
+      <FormHelperText>Create a project and add members to share datasets. Use the 'MANAGE PROJECT' button to create projects and manage members.</FormHelperText>
       {error && <FormHelperText>Project selection is required</FormHelperText>}
     </FormControl>
   );

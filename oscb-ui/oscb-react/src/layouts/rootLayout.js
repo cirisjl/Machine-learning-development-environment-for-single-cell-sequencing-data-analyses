@@ -106,8 +106,28 @@ export default function RootLayout() {
                                         Competition
                                     </NavLink>
                                  </li> */}
-                                 <li data-index="1" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                                    <NavLink to="benchmarks" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                <li data-index="1" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                    <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                        <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                            <path className="uim-tertiary" d="M15.273 18.728A6.728 6.728 0 1 1 22 11.999V12a6.735 6.735 0 0 1-6.727 6.728z" opacity=".5" fill="currentColor"></path>
+                                            <path className="uim-primary" d="M8.727 18.728A6.728 6.728 0 1 1 15.455 12a6.735 6.735 0 0 1-6.728 6.728z" fill="currentColor"></path>
+                                        </svg>
+                                        Analyses
+                                    </NavLink>
+                                    <div className={hoveredChildIndex === 1 ? "suboptions-container" : "suboptions-container hide"}>
+                                        <div className="rounded-xl border-gray-100 border styles-for-dropdown">
+                                            <ul className="ul-suboptions">
+                                                <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
+                                                <li><NavLink to="mydata">My Datasets</NavLink></li>
+                                                <li><NavLink to="myTasks">My Jobs</NavLink></li>
+                                                <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
+                                                <li><NavLink to="mydata/tools">Tools</NavLink></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                                 <li data-index="2" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                    <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" className="mr-1 text-gray-400 group-hover:text-yellow-500" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path opacity="0.5" d="M20.9022 5.10334L10.8012 10.8791L7.76318 9.11193C8.07741 8.56791 8.5256 8.11332 9.06512 7.7914L15.9336 3.73907C17.0868 3.08811 18.5002 3.26422 19.6534 3.91519L19.3859 3.73911C19.9253 4.06087 20.5879 4.56025 20.9022 5.10334Z" fill="currentColor"></path>
                                             <path d="M10.7999 10.8792V28.5483C10.2136 28.5475 9.63494 28.4139 9.10745 28.1578C8.5429 27.8312 8.074 27.3621 7.74761 26.7975C7.42122 26.2327 7.24878 25.5923 7.24756 24.9402V10.9908C7.25062 10.3319 7.42358 9.68487 7.74973 9.1123L10.7999 10.8792Z" fill="currentColor" fillOpacity="0.75"></path>
@@ -116,21 +136,20 @@ export default function RootLayout() {
                                         </svg>
                                         Benchmarks
                                     </NavLink>
-                                    <div className={hoveredChildIndex === 1 ? "suboptions-container" : "suboptions-container hide"}>
+                                    <div className={hoveredChildIndex === 2 ? "suboptions-container" : "suboptions-container hide"}>
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
-
-                                        <ul className="ul-suboptions">
-                                            { /* <li><NavLink to="benchmarks">Overview</NavLink></li> */}
-                                            <li><Link reloadDocument  to="benchmarks/clustering">Clustering</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/imputation">Imputation</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/batch-integration">Batch Integration</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/multimodal-data-integration">Multimodal Data Integration</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/trajectory">Trajectory</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/cell-cell-communication">Cell-Cell Communication</Link></li>
-                                            <li><Link reloadDocument  to="benchmarks/cell-type-annotation">Cell Type Annotation</Link></li>
-                                            <li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>
-                                        </ul>
-                                    </div>
+                                            <ul className="ul-suboptions">
+                                                { /* <li><NavLink to="benchmarks">Overview</NavLink></li> */}
+                                                <li><Link reloadDocument  to="benchmarks/clustering">Clustering</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/imputation">Imputation</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/batch-integration">Batch Integration</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/multimodal-data-integration">Multimodal Data Integration</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/trajectory">Trajectory</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/cell-cell-communication">Cell-Cell Communication</Link></li>
+                                                <li><Link reloadDocument  to="benchmarks/cell-type-annotation">Cell Type Annotation</Link></li>
+                                                <li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>
+                                            </ul>
+                                        </div>
                                     </div>
                                  </li>
                                  { /* <li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
@@ -143,26 +162,6 @@ export default function RootLayout() {
                                         Leaderboards
                                     </NavLink>
                                 </li> */ }
-                                 <li data-index="2" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                                    <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
-                                        <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                                            <path className="uim-tertiary" d="M15.273 18.728A6.728 6.728 0 1 1 22 11.999V12a6.735 6.735 0 0 1-6.727 6.728z" opacity=".5" fill="currentColor"></path>
-                                            <path className="uim-primary" d="M8.727 18.728A6.728 6.728 0 1 1 15.455 12a6.735 6.735 0 0 1-6.728 6.728z" fill="currentColor"></path>
-                                        </svg>
-                                        Analyses
-                                    </NavLink>
-                                    <div className={hoveredChildIndex === 2 ? "suboptions-container" : "suboptions-container hide"}>
-                                    <div className="rounded-xl border-gray-100 border styles-for-dropdown">
-                                        <ul className="ul-suboptions">
-                                            <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
-                                            <li><NavLink to="mydata">My Datasets</NavLink></li>
-                                            <li><NavLink to="myTasks">My Jobs</NavLink></li>
-                                            <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
-                                            <li><NavLink to="mydata/tools">Tools</NavLink></li>
-                                        </ul>
-                                    </div>
-                                    </div>
-                                 </li>
                                 <li data-index="3">
                                     <NavLink to="updates" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
