@@ -119,6 +119,7 @@ export default function RootLayout() {
                                             <ul className="ul-suboptions">
                                                 <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
                                                 <li><NavLink to="mydata">My Datasets</NavLink></li>
+                                                <li><NavLink to="projectAdminPanel">My Projects</NavLink></li>
                                                 <li><NavLink to="myTasks">My Jobs</NavLink></li>
                                                 <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
                                                 <li><NavLink to="mydata/tools">Tools</NavLink></li>
@@ -181,7 +182,7 @@ export default function RootLayout() {
                                             <path d="M12.5 7C16.6421 7 20 6.10457 20 5V11.5C20 12.6046 16.6421 13.5 12.5 13.5C8.35786 13.5 5 12.6046 5 11.5V5C5 6.10457 8.35786 7 12.5 7Z" fill="currentColor" opacity="0.5"></path>
                                             <path d="M5.23628 12C5.08204 12.1598 5 12.8273 5 13C5 14.1046 8.35786 15 12.5 15C16.6421 15 20 14.1046 20 13C20 12.8273 19.918 12.1598 19.7637 12C18.9311 12.8626 15.9947 13.5 12.5 13.5C9.0053 13.5 6.06886 12.8626 5.23628 12Z" fill="currentColor"></path>
                                         </svg>
-                                        Tutorial
+                                        Docs
                                     </NavLink>
                                  </li>
                                  <li data-index="5">
@@ -214,8 +215,6 @@ export default function RootLayout() {
                                             ) : (
                                                 <li><NavLink to="login">Log In</NavLink></li>
                                             )}
-                                            <li><NavLink to="projectAdminPanel">Projects Management</NavLink></li>
-
                                         </ul>
                                     </div>
                                     </div>

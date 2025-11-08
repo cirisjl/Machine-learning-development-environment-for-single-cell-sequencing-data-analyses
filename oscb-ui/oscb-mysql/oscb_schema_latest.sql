@@ -917,7 +917,9 @@ CREATE TABLE `filters` (
 
 LOCK TABLES `filters` WRITE;
 /*!40000 ALTER TABLE `filters` DISABLE KEYS */;
-INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,2,'scGNN'),(8,3,'LogCPM'),(9,3,'LogCP10K'),(10,3,'sctransform'),(11,3,'DEseq2'),(12,3,'scran'),(13,3,'TMM'),(14,3,'RLE'),(15,3,'UpperQuartile'),(16,3,'TPM'),(17,3,'FPKM'),(18,3,'PEARSON_RESIDUALS'),(19,4,'Seurat'),(20,4,'Harmony'),(21,4,'Liger'),(22,4,'scVI'),(23,5,'CellTypist'),(24,5,'scANVI'),(25,5,'SingleR'),(26, 6, 'Convert'), (27, 7, 'UMAP'), (28, 7, 't-SNE');
+/* INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,2,'scGNN'),(8,3,'LogCPM'),(9,3,'LogCP10K'),(10,3,'sctransform'),(11,3,'DEseq2'),(12,3,'scran'),(13,3,'TMM'),(14,3,'RLE'),(15,3,'UpperQuartile'),(16,3,'TPM'),(17,3,'FPKM'),(18,3,'PEARSON_RESIDUALS'),(19,4,'Seurat'),(20,4,'Harmony'),(21,4,'Liger'),(22,4,'scVI'),(23,5,'CellTypist'),(24,5,'scANVI'),(25,5,'SingleR'),(26, 6, 'Convert'), (27, 7, 'UMAP'), (28, 7, 't-SNE'); */
+INSERT INTO `filters` VALUES (1,1,'Bioconductor'),(2,1,'Scanpy'),(3,1,'Seurat'),(4,1,'Dropkick'),(5,2,'MAGIC'),(6,2,'SAVER'),(7,3,'LogCPM'),(8,3,'LogCP10K'),(9,3,'sctransform'),(10,3,'DEseq2'),(11,3,'scran'),(12,3,'TMM'),(13,3,'RLE'),(14,3,'UpperQuartile'),(15,3,'TPM'),(16,3,'FPKM'),(17,3,'PEARSON_RESIDUALS'),(18,4,'Seurat'),(19,4,'Harmony'),(20,4,'Liger'),(21,4,'scVI'),(22,5,'CellTypist'),(23,5,'scANVI'),(24,5,'SingleR'),(25, 6, 'Convert'), (26, 7, 'UMAP'), (27, 7, 't-SNE');
+
 /*!40000 ALTER TABLE `filters` ENABLE KEYS */;
 UNLOCK TABLES;
 

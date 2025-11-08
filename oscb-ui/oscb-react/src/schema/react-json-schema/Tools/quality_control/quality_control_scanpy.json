@@ -77,7 +77,7 @@
             "n_top_genes": {
               "type": "integer",
               "title": "Highly Variable Genes (n_top_genes):",
-              "default": 2000
+              "default": 3000
             },
             "n_neighbors": {
               "type": "integer",

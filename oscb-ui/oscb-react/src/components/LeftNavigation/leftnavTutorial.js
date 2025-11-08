@@ -8,7 +8,7 @@ function LeftNavComponent(props) {
           category_id: 1,
           category_name: 'Analyses',
           expanded: true,
-          filters: ['Upload Data', 'My Datasets', 'Tools', 'Workflows', 'My Jobs'],
+        filters: ['Data Management', 'Tools', 'Workflows', 'Job Management'],
         },
         {
           category_id: 2,

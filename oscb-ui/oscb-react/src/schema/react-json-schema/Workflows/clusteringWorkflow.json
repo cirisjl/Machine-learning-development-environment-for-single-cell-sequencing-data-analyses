@@ -176,8 +176,7 @@
                       "type": "string",
                       "enum": [
                         "Magic",
-                        "Saver",
-                        "scGNN"
+                        "Saver"
                       ]
                     },
                     "default": [

@@ -128,7 +128,7 @@ const ProjectAdminPanel = () => {
   return (
     <Box p={4} maxWidth={900} mx="auto">
       <Typography variant="h4" gutterBottom>
-        Project Admin Panel
+        My Projects
       </Typography>
 
       <Box display="flex" mb={4} gap={8} alignItems="center">
