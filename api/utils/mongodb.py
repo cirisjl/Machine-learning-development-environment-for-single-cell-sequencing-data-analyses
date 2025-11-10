@@ -238,10 +238,11 @@ def get_file_by_id(id):
             collection = user_datasets_collection
         
         # Query MongoDB for the document with the given dataset_id
-        document = collection.find_one({"Id": id}, {"adata_path": 1})
+        document = collection.find_one({"Id": id}, {"adata_path": 1, "Title":1})
         
         if not document:
             raise ValueError(f"No document found for datasetId: {id}")
+    document.pop("_id", None)  # Remove the MongoDB internal ID field
     
     return document
 

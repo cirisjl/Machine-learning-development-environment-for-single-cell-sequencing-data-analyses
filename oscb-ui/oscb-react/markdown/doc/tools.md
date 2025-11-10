@@ -38,14 +38,14 @@ We also evaluated and selected tools based on their performance in trusted publi
 
 ## Dataset(s)
 
-To start using the tools, first upload your datasets (see **Data Management → Upload Data**). Then, select data through the dataset browser.
+To start using the tools, first upload your datasets (see **Doc → Data Management → Upload Data**). Then, select data through the dataset browser.
 
 A dataset may include multiple processed results—use the **“+”** icon to expand it and choose a processed file from another tool or workflow.
 
 By default, you can select one dataset at a time, except for **Integration** (which allows multiple datasets) and **Annotation** (which allows selecting a reference dataset).
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/select_dataset.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/select_dataset.png" width="80%">
 </div>
 
 <hr/>
@@ -75,7 +75,7 @@ The Quality Control (QC) parameters include `min genes`, `max genes`, `min cells
 > + **Impact**: Improves the purity of single-cell populations for analysis.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/qc_param.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/qc_param.png" width="80%">
 </div>
 
 ### Integration
@@ -90,7 +90,7 @@ For Batch Integration, specify a `Batch Key` (e.g., "sample", "batch"). If sampl
 > **Risk of Overfitting**: If not used carefully, creating too many highly similar `pseudo-replicates` might lead the integration algorithm to overfit to the technical variation of that specific pooled sample.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/integration_param.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/integration_param.png" width="80%">
 </div>
 
 ### Annotation
@@ -110,10 +110,10 @@ Additionally, provide:
 > To improve annotation accuracy, use filters to select a reference dataset with similar organs or cell types. Closer cell type matches yield better results.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/annotation_param.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/annotation_param.png" width="80%">
 </div>
 
-### Clustering and visualization
+### Clustering and Visualization
 
 For visualization:
 + **Specify Representation**: Indicate the desired representation from AnnData.obsm or a specific layer.
@@ -133,12 +133,12 @@ For visualization:
 > You can either use the indicated **representation** in `AnnData.obsm` or specify a **layer** in `AnnData.layers` to override the default `AnnData.X`.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/visualization_param.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/visualization_param.png" width="80%">
 </div>
 
 <hr/>
 
-## Job tracking
+## Job Tracking
 
 Once job is submitted, it will be queued and processed on backend. You can leave your current page and track your job status and retrieve the results on **"My Jobs"** page (see **"Job Management"**).
 

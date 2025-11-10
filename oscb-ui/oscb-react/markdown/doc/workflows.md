@@ -8,14 +8,14 @@ Currently, we provide Clustering, Integration, and Annotation workflows, with mo
 
 ## Dataset(s)
 
-To start using the tools, first upload your datasets (see **Data Management → Upload Data**). Then, select data through the dataset browser.
+To start using the tools, first upload your datasets (see **Doc → Data Management → Upload Data**). Then, select data through the dataset browser.
 
 A dataset may include multiple processed results—use the **“+”** icon to expand it and choose a processed file from another tool or workflow.
 
 By default, you can select one dataset at a time, except for **Integration** (which allows multiple datasets) and **Annotation** (which allows selecting a reference dataset).
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/select_dataset.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/select_dataset.png" width="80%">
 </div>
 
 <hr/>
@@ -47,7 +47,7 @@ All workflows begin with **Quality Control (QC)**. QC methods include `Bioconduc
 
 <hr/>
 
-## Clustering
+## Normalization/Imputation
 After QC, Clustering is followed by **Normalization** or **Imputation**.
 
 **Normalization** methods include `LogCPM`, `LogCP10K`, `sctransform` [^5], `DEseq2` [^6], `scran`, `TMM`, `RLE`, `UpperQuartile` [^7], `TPM`, `FPKM` [^8], and `Pearson_Residuals` [^2].
@@ -79,7 +79,7 @@ After QC, Clustering is followed by **Normalization** or **Imputation**.
 > You may select multiple Imputation methods at the same time.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/workflow_normalization.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_normalization.png" width="80%">
 </div>
 
 **Clustering and Visualization**:
@@ -96,7 +96,7 @@ After QC, Clustering is followed by **Normalization** or **Imputation**.
 > The "default" value of `resolution` is often **0.5 or 1.0**, but it's a parameter that needs to be tuned based on the biological question and the expected heterogeneity of the dataset.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/workflow_clustering.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_clustering.png" width="80%">
 </div>
 
 <hr/>
@@ -114,7 +114,7 @@ Integration workflow begin with QC, followed by Integration. Methods include `Se
 > **Risk of Overfitting**: If not used carefully, creating too many highly similar `pseudo-replicates` might lead the integration algorithm to overfit to the technical variation of that specific pooled sample.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/workflow_integration.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_integration.png" width="80%">
 </div>
 
 <hr/>
@@ -132,12 +132,12 @@ Annotation workflow begin with QC, followed by Integration and then Annotation. 
 > To improve annotation accuracy, use filters to select a reference dataset with similar organs or cell types. Closer cell type matches yield better results.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/tutorial/workflow_annotation.png" width="80%">
+<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_annotation.png" width="80%">
 </div>
 
 <hr/>
 
-## Job tracking
+## Job Tracking
 
 Once job is submitted, it will be queued and processed on backend. You can leave your current page and track your job status and retrieve the results on **"My Jobs"** page (see **"Job Management"**).
 

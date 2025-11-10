@@ -175,7 +175,7 @@ export default function RootLayout() {
                                     </NavLink>
                                 </li>
                                  <li data-index="4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                                    <NavLink to="tutorial" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                    <NavLink to="doc" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
                                             <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
                                             <path d="M12.5 15C16.6421 15 20 14.1046 20 13V20C20 21.1046 16.6421 22 12.5 22C8.35786 22 5 21.1046 5 20V13C5 14.1046 8.35786 15 12.5 15Z" fill="currentColor" opacity="0.5"></path>

@@ -17,7 +17,7 @@ import Benchmarks from './../pages/benchmarks'
 import Leaderboards from './../pages/leaderboards'
 import MyData from '../pages/MyData/mydata'
 import Team from './../pages/team'
-import Tutorial from './../pages/tutorial'
+import Doc from './../pages/doc'
 import PreviewDatasets from '../pages/MyData/previewDatasets'
 import UploadData from './MyData/uploadData';
 import Login from '../pages/login/login';
@@ -85,7 +85,7 @@ function App() {
           <Route path="mydata/tools" element={<ToolsComponentPage/>}></Route>
           <Route path="team"         element={<Team/>}/>
           <Route path="dashboard"         element={<FlaskDashboard/>}/>
-          <Route path="tutorial" element={<Tutorial/>}/>
+          <Route path="doc" element={<Doc/>}/>
           <Route path="login"         element={<Login/>}/>
           <Route path="signup"         element={<SignUp/>}/>
           <Route path="routing"         element={<RoutingTemplate/>}/>

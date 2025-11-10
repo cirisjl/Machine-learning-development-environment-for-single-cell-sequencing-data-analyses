@@ -7,7 +7,7 @@ import 'github-markdown-css';
 // import LeftNav from "../components/LeftNavigation/leftNav";
 // import gfm from "remark-gfm";
 // import remarkImgToJsx from "remark-unwrap-images";
-import LeftNav from "../components/LeftNavigation/leftnavTutorial";
+import LeftNav from "../components/LeftNavigation/leftnavDoc";
 // import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
@@ -22,7 +22,7 @@ import MarkdownNavbar from 'markdown-navbar';
 import './navbar.css';
 
 
-export default function Tutorial() {
+export default function Doc() {
     const [markdownText,setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
     const [uniqueFilter, setUniqueFilter] = useState("");
@@ -66,7 +66,7 @@ export default function Tutorial() {
     }, [uniqueFilter]);
     
     return(
-        <div className="tutorial-container">
+        <div className="doc-container">
             <div className="left-nav">
                 <LeftNav uniqueFilter={uniqueFilter} setUniqueFilter={setUniqueFilter} handleFilterSelection={handleFilterSelection} />
             </div>

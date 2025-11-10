@@ -416,7 +416,7 @@ Styles for Benchmarks page
   width: 100%;
 }
 
-.tutorial-container, 
+.doc-container, 
 .page-container {
   display: grid;
   grid-template-columns: 15% 65% 20%;

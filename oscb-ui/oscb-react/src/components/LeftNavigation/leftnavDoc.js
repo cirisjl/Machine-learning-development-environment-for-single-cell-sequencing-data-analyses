@@ -20,7 +20,7 @@ function LeftNavComponent(props) {
           category_id: 3,
           category_name: 'Python API',
           expanded: true,
-          filters: ['Data Loader', 'Evaluators'],
+          filters: ['Installation', 'Data Loader', 'Evaluators'],
         }
       ]);
 

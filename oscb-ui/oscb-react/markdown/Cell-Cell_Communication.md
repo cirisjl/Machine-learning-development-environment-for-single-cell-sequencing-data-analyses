@@ -1,4 +1,4 @@
-## Task info
+## Task Info
 <div align="center">
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Cell-Cell_Communication.png">
 </div>
@@ -42,7 +42,7 @@ pip install -U oscb
 
 OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across cell-cell_communication methods.
 
-### Data loaders
+### Data Loader
 To load a dataset, please replace `Benchmarks_ID/Dataset_ID` with the Benchmarks ID or Dataset ID (e.g., `"CCC-m-10x_Brain-14249-Tasic-2016"`). The default download folder is `./datasets`. You can change the data folder by passing a new value to the parameter `data_folder`.
 
 For public Benchmarks and datasets, the downloaded file is in [AnnData](https://github.com/scverse/anndata) or [MuData](https://github.com/scverse/mudata) format. The raw counts are kept in `adata.X`. The processed data (normalized, imputed, ...) are stored in `adata.layers`.
@@ -57,7 +57,7 @@ adata = DataLoader("Benchmarks_ID/Dataset_ID", data_folder="./datasets/")
 #### OSCB Benchmarks
 For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please replace `Benchmarks_ID` with the Benchmarks ID (e.g., `"CCC-m-10x_Brain-14249-Tasic-2016"`), and `ccc_pred` with your CCC prediction (e.g., `adata.uns['Your method']`). To modify the method name, adjust the `method` parameter.
 > [!IMPORTANT]
-> The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` is `pandas.core.frame.DataFrame` with columns "source", "target", and "score" for source-target prediction or "ligand", "target", and "score" for ligand-target predictionas shown below:
+> The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` is `pandas.core.frame.DataFrame` with columns "**source**", "**target**", and "**score**" for **source-target** prediction or "**ligand**", "**target**", and "**score**" for **ligand-target** prediction as shown below:
 > <div align="center" style="display: flex">
 > <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
 > <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
@@ -73,10 +73,10 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", ccc_pred=ccc_pred, met
 > <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell-cell_communication_evaluation.png">
 > </div>
 
-#### User's datasets
+#### User's Datasets
 To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Cell-Cell Communication"`  or `"CCC"` for short), your CCC prediction `ccc_pred` (e.g.,  `adata.uns['Your method']`), and ground truth `ccc_target` (e.g.,  `adata.uns['ccc_target']`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
-> The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` and `ccc_target`are `pandas.core.frame.DataFrame` with columns "source", "target", and "score" for source-target prediction or "ligand", "target", and "score" for ligand-target predictionas shown below:
+> The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` and `ccc_target`are `pandas.core.frame.DataFrame` "**source**", "**target**", and "**score**" for **source-target** prediction or "**ligand**", "**target**", and "**score**" for **ligand-target** prediction as shown below:
 > <div align="center" style="display: flex">
 > <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
 > <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
@@ -86,14 +86,14 @@ from oscb.evaluator import eval, write_json
 
 results_dict = eval(adata, task='Cell-Cell Communication', ccc_pred=ccc_pred, ccc_target=ccc_target, method="Your method")
 ```
-#### Save results
+#### Save Results
 To save your results to JSON format file, please run:
 ```python
 from oscb.evaluator import write_json
 
 write_json(results, file_path="./output.json") # The default file path is ./output.json
 ```
-#### Computing assessment
+#### Computing Assessment
 OSCB further offers a computational assessment unit that, by encapsulating your code within a `monitor` instance, tracks CPU, memory, GPU, and GPU memory usage.
 ```python
 from oscb.utilization import Monitor

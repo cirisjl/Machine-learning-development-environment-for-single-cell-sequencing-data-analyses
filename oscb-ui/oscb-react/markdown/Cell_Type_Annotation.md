@@ -1,4 +1,4 @@
-## Task info
+## Task Info
 <div align="center">
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Cell_Type_Annotation.png">
 </div>
@@ -44,7 +44,7 @@ pip install -U oscb
 
 OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across Cell Type Annotation methods.
 
-### Data loaders
+### Data Loader
 To load a dataset, please replace `Benchmarks_ID/Dataset_ID` with the Benchmarks ID or Dataset ID (e.g., `"CT-h-PBMC-11989-Adam-2022"`). The default download folder is `./datasets`. You can change the data folder by passing a new value to the parameter `data_folder`.
 
 For public Benchmarks and datasets, the downloaded file is in [AnnData](https://github.com/scverse/anndata) or [MuData](https://github.com/scverse/mudata) format. The raw counts are kept in `adata.X`. The processed data (normalized, imputed, ...) are stored in `adata.layers`.
@@ -71,7 +71,7 @@ results_dict = eval(benchmarks_id="Benchmarks_ID", labels_pred=labels_pred, meth
 > <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell_type_annotation_evaluation.png">
 > </div>
 
-#### User's datasets
+#### User's Datasets
 To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the `task` type (e.g., `"Cell Type Annotation"` or `"CT"` for short), true `labels`(e.g., `adata.obs['cell_type']`), `labels_pred` from your Cell Type Annotation (e.g., `adata.obs['scANVI_predicted']`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
 > The input types of `task` is `string`, while `labels` and `labels_pred` are `array-like of shape (n_samples,)`.
@@ -80,14 +80,14 @@ from oscb.evaluator import eval, write_json
 
 results_dict = eval(task='Cell Type Annotation', labels=labels, labels_pred=labels_pred, method="Your method")
 ```
-#### Save results
+#### Save Results
 To save your results to JSON format file, please run:
 ```python
 from oscb.evaluator import write_json
 
 write_json(results, file_path="./output.json") # The default file path is ./output.json
 ```
-#### Computing assessment
+#### Computing Assessment
 OSCB further offers a computational assessment unit that, by encapsulating your code within a `monitor` instance, tracks CPU, memory, GPU, and GPU memory usage.
 ```python
 from oscb.utilization import Monitor

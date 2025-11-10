@@ -298,12 +298,12 @@ export function AnnotationWorkFlowComponent(props) {
       console.log("Failed to submit the form");
     } 
 
-    if (formData['annotation_params'].methods.includes("CellTypist") && formData['annotation_params'].celltypist_model.trim().length === 0) {
+    if (formData['annotation_params'].methods.includes("CellTypist") && Object.keys(selectedRefDatasets).length < 1 && formData['annotation_params'].celltypist_model && formData['annotation_params'].celltypist_model.trim().length === 0) {
       setFormErrors("Please select a CellTypist model before submitting the form");
       console.log("Failed to submit the form");
     } 
     
-    if (formData['annotation_params'].methods.includes("SingleR") && formData['annotation_params'].SingleR_ref.length === 0) {
+    if (formData['annotation_params'].methods.includes("SingleR") && Object.keys(selectedRefDatasets).length < 1 && formData['annotation_params'].SingleR_ref && formData['annotation_params'].SingleR_ref.length === 0) {
       setFormErrors("Please select a SingleR reference before submitting the form");
       console.log("Failed to submit the form");
     }

@@ -1,4 +1,4 @@
-## Task info
+## Task Info
 <div align="center">
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Multimodal_Data_Integration.png">
 </div>
@@ -60,7 +60,7 @@ pip install -U oscb
 
 OSCB's primary advantages are its intuitive **data loaders**, designed for seamless dataset ingestion, and its standardized **evaluators**, which enable consistent and objective performance assessment across imputation methods.
 
-### Data loaders
+### Data Loader
 To load a dataset, please replace `Benchmarks_ID/Dataset_ID` with the Benchmarks ID or Dataset ID (e.g., `"MI-h-sci_CAR_Cell_Line-4739-Cao-2018"`). The default download folder is `./datasets`. You can change the data folder by passing a new value to the parameter `data_folder`.
 
 For public Benchmarks and datasets, the downloaded file is in [AnnData](https://github.com/scverse/anndata) or [MuData](https://github.com/scverse/mudata) format. The raw counts are kept in `adata.X`. The processed data (normalized, imputed, ...) are stored in `adata.layers`.
@@ -87,7 +87,7 @@ results_dict = eval(mdata=mdata, embedding_key="X_multivi", benchmarks_id="Bench
 > <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/multimodal_data_integration_evaluation.png">
 > </div>
 
-#### User's datasets
+#### User's Datasets
 To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://www.single-cell.ai/) via its ID or using your own, you must supply the integtared `mdata`, `task` type (e.g., `"Multimodal Data Integration"`  or `"MI"` for short), `mod1_key` in `mdata.mod` for scRNA-seq (e.g., `rna`), `batch_key` in `mdata.obs` (e.g., `batch`), `label_key` in `mdata.obs` (e.g., `cell_type`), and `species` (e.g., `human` or `mouse`); the method name can be customized via the `method` parameter.
 > [!IMPORTANT]
 > The input types of `mdata` and is `MuData`. The input types of `task`, `mod1_key`, `batch_key`, `label_key`, `species` and `method` are `string`.
@@ -96,14 +96,14 @@ from oscb.evaluator import eval, write_json
 
 results_dict = eval(mdata=mdata, task="Multimodal Data Integration", embedding_key="X_multivi", mod1_key="rna", batch_key="batch", label_key="cell_type", species="human", method="Your method")
 ```
-#### Save results
+#### Save Results
 To save your results to JSON format file, please run:
 ```python
 from oscb.evaluator import write_json
 
 write_json(results, file_path="./output.json") # The default file path is ./output.json
 ```
-#### Computing assessment
+#### Computing Assessment
 OSCB further offers a computational assessment unit that, by encapsulating your code within a `monitor` instance, tracks CPU, memory, GPU, and GPU memory usage.
 ```python
 from oscb.utilization import Monitor
