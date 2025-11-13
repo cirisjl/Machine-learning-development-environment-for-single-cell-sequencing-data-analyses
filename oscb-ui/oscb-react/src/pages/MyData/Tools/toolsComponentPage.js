@@ -29,9 +29,9 @@ export default function ToolsComponentPage() {
               </div>
             )}
             {!selectedFilter && (
-                  <div className="tool-message">
-                  <p>Please select a tool to run</p>
-                  </div>
+              <div className="tool-message">
+                <p>Please select a <strong>Tool</strong> from left to start.</p>
+              </div>
             )}
             <div className="right-rail">
                 <RightRail/>

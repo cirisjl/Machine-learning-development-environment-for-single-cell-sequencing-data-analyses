@@ -10,7 +10,7 @@ import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } 
 import { ScaleLoader } from 'react-spinners';
 import { getCookie } from '../../utils/utilFunctions';
 
-const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, onSelectSubItem }) => {
+const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, onSelectSubItem, showCheckbox = true, showEdit = true, showDelete = true, enableClick = true }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -56,9 +56,10 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
       let url = "";
       try {
         if (fromToolsPage) {
-            url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
+          url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
         } else {
-        url = `${NODE_API_URL}/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+          // url = `${NODE_API_URL}/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+          url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${false}&public=${true}&shared=${true}`;
         }
     
         const response = await fetch(url, {
@@ -70,6 +71,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
           body: JSON.stringify({ filters: currentFilters }),
         });
         const data = await response.json();
+        console.log(data);
         setFilters(data.facets);
         setResults(data.results);
         setPagination(data.pagination);
@@ -270,7 +272,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
                         </div>                
                         
                         <div className='table-results'>
-                            <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem}/>
+                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem} enableClick={enableClick} showCheckbox={showCheckbox} showEdit={showEdit} showDelete={showDelete}/>
                         </div>
                         
                     </div>

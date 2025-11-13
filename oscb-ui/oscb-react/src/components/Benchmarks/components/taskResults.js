@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import FilterComponent from '../../publishDatasets/components/filtersComponent';
 // import Pagination from '../../publishDatasets/components/tablePaginationComponent';
-import ResultsTable from '../../publishDatasets/components/tableResultsComponent';
+// import ResultsTable from '../../publishDatasets/components/tableResultsComponent';
 import TreeTable from '../../common_components/treeTableComponent';
 
 function SearchTasks({taskType}) {

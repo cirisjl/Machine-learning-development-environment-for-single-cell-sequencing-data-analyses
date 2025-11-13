@@ -62,7 +62,9 @@ export default function Doc() {
           }
         }
         
-        fetchFileData();
+        if (uniqueFilter !== "") {
+            fetchFileData();
+        }
     }, [uniqueFilter]);
     
     return(
@@ -71,56 +73,65 @@ export default function Doc() {
                 <LeftNav uniqueFilter={uniqueFilter} setUniqueFilter={setUniqueFilter} handleFilterSelection={handleFilterSelection} />
             </div>
             <div className='main-content'>
-                <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
-                    children={markdownText}
-                    components={{
-                        code(props) {
-                            const { children, inline, className, node, ...rest } = props;
-                            const match = /language-(\w+)/.exec(className || '');
-                            const codeText = String(children).replace(/\n$/, '');
-                            if (!inline && match) {
-                                codeBlockIndex++;
-
-                                const currentIndex = codeBlockIndex;
+                {/* Render the selected filter details in the middle of the page */}
+                {markdownText!=="" && (
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
+                        children={markdownText}
+                        components={{
+                            code(props) {
+                                const { children, inline, className, node, ...rest } = props;
+                                const match = /language-(\w+)/.exec(className || '');
                                 const codeText = String(children).replace(/\n$/, '');
+                                if (!inline && match) {
+                                    codeBlockIndex++;
 
+                                    const currentIndex = codeBlockIndex;
+                                    const codeText = String(children).replace(/\n$/, '');
+
+                                    return (
+                                        <div style={{ position: 'relative' }}>
+                                            <SyntaxHighlighter
+                                                {...rest}
+                                                PreTag="div"
+                                                children={codeText}
+                                                language={match[1]}
+                                                style={dark}
+                                            />
+                                            <CopyToClipboard text={codeText} onCopy={() => handleCopy(currentIndex)}>
+                                                <button style={{
+                                                    position: 'absolute',
+                                                    top: '5px',
+                                                    right: '5px',
+                                                    background: '#333',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    padding: '5px 10px',
+                                                }}>{copiedIndex === currentIndex ? 'Copied!' : 'Copy'}</button>
+                                            </CopyToClipboard>
+                                        </div>
+                                    );
+                                }
+
+                                // Fallback for inline code or unknown language
                                 return (
-                                    <div style={{ position: 'relative' }}>
-                                        <SyntaxHighlighter
-                                            {...rest}
-                                            PreTag="div"
-                                            children={codeText}
-                                            language={match[1]}
-                                            style={dark}
-                                        />
-                                        <CopyToClipboard text={codeText} onCopy={() => handleCopy(currentIndex)}>
-                                            <button style={{
-                                                position: 'absolute',
-                                                top: '5px',
-                                                right: '5px',
-                                                background: '#333',
-                                                color: '#fff',
-                                                border: 'none',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                padding: '5px 10px',
-                                            }}>{copiedIndex === currentIndex ? 'Copied!' : 'Copy'}</button>
-                                        </CopyToClipboard>
-                                    </div>
+                                    <code {...rest} className={className}>
+                                        {children}
+                                    </code>
                                 );
                             }
-
-                            // Fallback for inline code or unknown language
-                            return (
-                                <code {...rest} className={className}>
-                                    {children}
-                                </code>
-                            );
-                        }
-                    }}
-                />
+                        }}
+                    />
+                )}
+                {markdownText === "" && (
+                    <div className="tool-message">
+                        <p>Please select a <strong>Topic</strong> from left.</p>
+                    </div>
+                )}
+                
             </div>
             <div className="right-rail navigation">
                 <MarkdownNavbar source={markdownText} />

@@ -95,3 +95,9 @@ Each dataset may include multiple data stages—expand them to view processed da
 <div align="center">
 <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/data_details.png" width="80%">
 </div>
+
+> [!TIP]  
+> Click the **title** of **pre-process results** to view details and download results. 
+> <div align="center">
+> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/pp_results.png">
+> </div>

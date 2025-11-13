@@ -94,7 +94,20 @@ oscb.evaluator.**eval**(**adata**=None, **adata_int**=None, **mdata**=None, **be
 
 ### Examples
 
-See [Benchmarks](https://www.single-cell.ai/benchmarks).
+> **Clustering**: See [Benchmarks](https://www.single-cell.ai/benchmarks/clustering).
+
+> **Imputation**: See [Benchmarks](https://www.single-cell.ai/benchmarks/imputation).
+
+> **Batch Integration**: See [Benchmarks](https://www.single-cell.ai/benchmarks/batch-integration).
+
+> **Multimodal Data Integration**: See [Benchmarks](https://www.single-cell.ai/benchmarks/multimodal-data-integration).
+
+> **Trajectory**: See [Benchmarks](https://www.single-cell.ai/benchmarks/trajectory).
+
+> **Cell-Cell Communication**: See [Benchmarks](https://www.single-cell.ai/benchmarks/cell-cell-communication).
+
+> **Cell Type Annotation**: See [Benchmarks](https://www.single-cell.ai/benchmarks/cell-type-annotation).
+
 
 ---
 

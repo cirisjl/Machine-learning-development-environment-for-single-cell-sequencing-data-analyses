@@ -23,9 +23,17 @@ export default function WorkflowsPageComponent() {
             <div className="left-nav">
                 <LeftNavComponent selectedWorkflow={selectedWorkflow} setSelectedWorkflow={setSelectedWorkflow} handleFilterSelection={handleFilterSelection}/>
             </div>
-            <div className="main-content">
-                <WorkflowsComponent selectedWorkflow={selectedWorkflow} uniqueFilter={uniqueFilter}/>
-            </div>
+            {/* Render the selected filter details in the middle of the page */}
+            {selectedWorkflow && (
+                <div className="filter-details-tools main-content">
+                    <WorkflowsComponent selectedWorkflow={selectedWorkflow} uniqueFilter={uniqueFilter} />
+                </div>
+            )}
+            {!selectedWorkflow && (
+                <div className="tool-message">
+                    <p>Please select a <strong>Workflow</strong> from left to start.</p>
+                </div>
+            )}
             <div className="right-rail">
                 <RightRail />
             </div>

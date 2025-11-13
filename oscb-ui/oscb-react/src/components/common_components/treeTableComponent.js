@@ -124,11 +124,11 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
             render: item => {
                 return (
                     <div className="action-buttons">
-                        <Checkbox
+                        { /* <Checkbox
                             style={{ cursor: 'pointer' }}
                             onChange={() => onSelectDataset(item)}
                             checked={!!selectedDatasets[item["Benchmarks ID"]]}
-                        />
+                        /> */}
                         <Button
                             onClick={() => handleVisualize(item["Benchmarks ID"])}
                             className="action-button"
@@ -200,6 +200,13 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                 rowKey="Id"
                 pagination={paginationState}
                 onChange={handleTableChange}
+                onRow={(record,) => {
+                    return {
+                        onDoubleClick: () => { 
+                            window.open(`/benchmarks/viewDetails?benchmarksId=${record['Benchmarks ID']}`, '_blank');
+                        }
+                    };
+                }}
             />
         </div>
     );

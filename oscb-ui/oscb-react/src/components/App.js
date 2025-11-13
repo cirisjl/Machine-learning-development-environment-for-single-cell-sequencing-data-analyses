@@ -12,6 +12,7 @@ import RootLayout from './../layouts/rootLayout'
 // import Pages
 import GetStarted from './../pages/getStarted'
 import Competitions from './../pages/competitions'
+import Datasets from './../pages/datasets'
 import Updates from './../pages/updates'
 import Benchmarks from './../pages/benchmarks'
 import Leaderboards from './../pages/leaderboards'
@@ -62,6 +63,7 @@ function App() {
           <Route path='getStarted'   element={<GetStarted/>} />
           <Route path="updates"      element={<Updates/>} />
           <Route path="competitions" element={<Competitions/>}/>
+          <Route path="datasets" element={<Datasets/>} />
           <Route path="benchmarks"   element={<Benchmarks/>}/>
           <Route path="benchmarks/uploads"   element={<FlowControl/>}/>
           <Route path="benchmarks/clustering"   element={<TaskResultsComponent task_type="Clustering"/>}/>

@@ -1,7 +1,7 @@
 import { faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {useState} from 'react';
-import { useTable, useRowSelect } from 'react-table';
+// import { useTable, useRowSelect } from 'react-table';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -14,7 +14,7 @@ import axios from 'axios';
 import { CELERY_BACKEND_API } from '../../../constants/declarations'
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, showEdit=false, showDelete=false }) => {
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
@@ -139,24 +139,26 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
             render: item => {
                 return(
                 <div className="action-buttons">
-                    <input
+                    {showCheckbox && ( <input
                         type="checkbox"
                         style={{ cursor:'pointer' }}
                         onChange={() => onSelectDataset(item)}
                         checked={!!selectedDatasets[item["Id"]]}
+                        // disabled={showCheckbox}
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
-                    />
-                    <button
+                    /> )}
+                    {showEdit && ( <button
                         onClick={() => handleEdit(item["Id"])}
+                        // disabled={showEdit}
                         className="action-button">
                         <FontAwesomeIcon icon={faEdit} />
-                    </button>
+                    </button> )}
 
-                    <button
+                    {/* showDelete && ( <button
                         onClick={() => handleDelete(item["Id"], item)}
                         className="action-button">
                         <FontAwesomeIcon icon={faTrash} />
-                    </button>
+                    </button> )} */}
 
                     <button
                         onClick={() => handleVisualize(item["Id"])}
@@ -167,7 +169,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 );
             }
         };
-          
         return [actionColumn, ...baseColumns];
     }, [data, selectedDatasets, visibleColumns]);
 
@@ -229,8 +230,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 title: 'Action',
                 key: 'operation',
                 render: (text, subRecord) => (
-                    <Checkbox 
+                    showCheckbox && <Checkbox 
                     onChange={() => onSelectSubItem(record, subRecord)} 
+                    // disabled={showCheckbox}
                     checked={selectedDatasets[record.Id]?.selectedSubItem?.process_id === subRecord.process_id}
                     />
                 ),
@@ -299,6 +301,15 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 rowKey="Id"
                 pagination={paginationState}
                 onChange={handleTableChange}
+                onRow={(record) => {
+                    return {
+                        onDoubleClick: () => {
+                            if(enableClick){
+                                window.open(`/mydata/view-dataset-info?datasetId=${record['Id']}`, '_blank');
+                            }
+                        }
+                    };
+                }}
                 expandable={{
                     expandedRowRender: (record) => {
                         fetchSubItems(record.process_ids); // Pass process_ids array

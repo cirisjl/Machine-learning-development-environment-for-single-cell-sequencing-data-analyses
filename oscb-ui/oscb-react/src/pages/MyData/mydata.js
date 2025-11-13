@@ -88,7 +88,11 @@ export default function MyData() {
                         isVisible={true}
                         selectedDatasets={selectedDatasets}
                         fromToolsPage={true}
-                        onSelectSubItem = {onSelectSubItem}
+                        onSelectSubItem={onSelectSubItem}
+                        enableClick={true}
+                        showCheckbox={false}
+                        showEdit={true}
+                        showDelete={true}
                     />
                 </div>
             </div>

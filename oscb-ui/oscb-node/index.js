@@ -2254,59 +2254,59 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         { $unwind: '$Selected Cell Types.value' },
         { $unwind: '$Disease Status (Donor)' },
         { $facet: {
-          'Species': [
-                { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                }, 
-                { $sort: { count: -1 } } 
-          ],
-          'Author': [
-                { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-          ],
-        //   'Anatomical Entity': [
-        //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
-        //   ],
-          'Organ Part': [
-                { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-          ],
-          'Selected Cell Types': [
-                { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-          ],
-          'Disease Status (Donor)': [
-                { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
-                {
-                    $project: {
-                        _id: '$_id',
-                        count: { $size: "$uniqueValues" }
-                    }
-                },
-                { $sort: { count: -1 } }
-          ],
+            'Species': [
+                    { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            count: { $size: "$uniqueValues" }
+                        }
+                    }, 
+                    { $sort: { count: -1 } } 
+            ],
+            'Author': [
+                    { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            count: { $size: "$uniqueValues" }
+                        }
+                    },
+                    { $sort: { count: -1 } }
+            ],
+            //   'Anatomical Entity': [
+            //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
+            //   ],
+            'Organ Part': [
+                    { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            count: { $size: "$uniqueValues" }
+                        }
+                    },
+                    { $sort: { count: -1 } }
+            ],
+            'Selected Cell Types': [
+                    { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            count: { $size: "$uniqueValues" }
+                        }
+                    },
+                    { $sort: { count: -1 } }
+            ],
+            'Disease Status (Donor)': [
+                    { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
+                    {
+                        $project: {
+                            _id: '$_id',
+                            count: { $size: "$uniqueValues" }
+                        }
+                    },
+                    { $sort: { count: -1 } }
+            ],
         //   'Disease Status (Donor)': [
         //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
         //   ],
@@ -2323,7 +2323,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       // Build the pipeline for search results with pagination
       const searchResultsPipeline = [
         { $match: matchStage },
-        // { $project: { Cells: 0, Genes: 0, QC_Plots: 0, cell_metadata_head:0, gene_metadata:0, layers:0, inputFiles:0, adata_path:0 } }, // Excluding fields
+          {
+              $project: { Id: 1, Title: 1, 'Species': 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1 } }, // Excluding fields
         // { $skip: (page - 1) * pageSize },
         // { $limit: pageSize },
       ];
