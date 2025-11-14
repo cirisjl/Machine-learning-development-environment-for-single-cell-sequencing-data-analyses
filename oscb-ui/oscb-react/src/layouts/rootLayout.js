@@ -2,7 +2,7 @@ import {Outlet, Link, NavLink} from "react-router-dom"
 import Authentication from "../components/Authentication/AuthForm";
 // import SearchBox from "../components/Header/searchBar"
 import React, { useState, useEffect } from "react";
-import { deleteCookie, getCookie } from "../utils/utilFunctions";
+import { deleteCookie, getCookie, isUserAuth } from "../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 
 
@@ -49,8 +49,8 @@ export default function RootLayout() {
             navigate('/routing');
         } else {
             // If the token exists, verify authenticity
-            setIsUserLoggedIn(true);
             isUserAuth(jwtToken).then((authData) => {
+                setIsUserLoggedIn(true);
                 setUsername(authData.username);
                 setIsAdmin(authData.isAdmin);
             })
