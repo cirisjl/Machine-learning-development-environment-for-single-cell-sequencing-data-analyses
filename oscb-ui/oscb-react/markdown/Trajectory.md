@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Trajectory.png">
+<img src="/images/evaluator/Trajectory.png">
 </div>
 
 Single-cell trajectory inference is a powerful computational approach used in bioinformatics to reconstruct the continuous biological processes undergone by individual cells, such as differentiation, development, or response to stimuli. Beginning with seemingly scattered individual cell data points, as depicted in the "Raw Data: Scattered Chapters" where cells appear as disordered snapshots, algorithms act as a "scribe," weaving together a coherent narrative by ordering cells along their latent biological progression. This "Trajectory Magic" transforms a static collection of cells into a dynamic "Inferred Trajectory," a roadmap that reveals developmental paths, transient cell states, and the underlying biological storyline, providing crucial insights into cellular differentiation and disease mechanisms.
@@ -63,7 +63,7 @@ For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please
 > [!IMPORTANT]
 > The input types of `benchmarks_id` and `method` are `string`, while the input type of `traj` is `pandas.core.frame.DataFrame` with columns "**from**", "**to**", and "**length**" as shown below:
 > <div align="center" style="display: flex">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/traj_format.png">
+> <img src="/images/evaluator/traj_format.png">
 > </div>
 ```python
 from oscb.evaluator import eval, write_json
@@ -73,7 +73,7 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", traj=traj, method="You
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/trajectory_evaluation.png">
+> <img src="/images/evaluator/trajectory_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -81,7 +81,7 @@ To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://w
 > [!IMPORTANT]
 > The input types of `task`, `root_node` and `method` are `string`, while the input type of `traj` and `bm_traj` are `pandas.core.frame.DataFrame` with columns "**from**", "**to**", and "**length**" as shown below:
 > <div align="center" style="display: flex">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/traj_format.png">
+> <img src="/images/evaluator/traj_format.png">
 > </div>
 ```python
 from oscb.evaluator import eval, write_json
@@ -105,7 +105,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/trajectory_utilization.png">
+<img src="/images/evaluator/trajectory_utilization.png">
 </div>
 
 <hr/>

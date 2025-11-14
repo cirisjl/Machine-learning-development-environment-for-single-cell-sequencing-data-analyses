@@ -1,4 +1,4 @@
-import { faEdit, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faClipboard } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState, useMemo } from 'react';
 import { Table } from 'antd';
@@ -9,9 +9,16 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {
     const [anchorEl, setAnchorEl] = useState(null);
+    const [copiedState, setCopiedState] = useState(false);
+
+    const handleCopy = () => {
+        setCopiedState(true);
+        setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
+    };
 
     // Destructure the pagination object for easier access to its properties
     // const { page, pageSize, totalCount } = pagination;
@@ -129,6 +136,13 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                             onChange={() => onSelectDataset(item)}
                             checked={!!selectedDatasets[item["Benchmarks ID"]]}
                         /> */}
+
+                        <CopyToClipboard text={item["Benchmarks ID"]} onCopy={() => handleCopy()}>
+                            <button className="action-button">
+                                <FontAwesomeIcon icon={faClipboard} />
+                            </button>
+                        </CopyToClipboard>
+
                         <Button
                             onClick={() => handleVisualize(item["Benchmarks ID"])}
                             className="action-button"
@@ -145,6 +159,13 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
 
     return (
         <div>
+            {copiedState && (
+                <div className='message-box success' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <p>Benchmarks ID is copied!</p>
+                    </div>
+                </div>
+            )}
             {/* Dropdown for editing columns */}
             <div className="dropdown">
                 <div className='total-results-count'>
@@ -208,6 +229,12 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                     };
                 }}
             />
+            <div className="pagination-info">
+                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Benchmarks ID</strong>.</span><br/>
+                <span>
+                    * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view details
+                </span>
+            </div>
         </div>
     );
 };

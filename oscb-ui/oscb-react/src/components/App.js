@@ -26,7 +26,7 @@ import SignUp from '../pages/login/signup';
 import RoutingTemplate from '../pages/login/loginRouting';
 import WorkflowsPageComponent from '../pages/MyData/Workflows/workflowsPageComponent';
 import ToolsComponentPage from '../pages/MyData/Tools/toolsComponentPage';
-import MyTasks from '../pages/myTasks';
+import MyJobs from '../pages/myJobs';
 import ResultFiles from '../pages/ResultFiles';
 import FlaskDashboard from './MyData/dashboard';
 import NewApp from './Form/Components/component2';
@@ -91,7 +91,7 @@ function App() {
           <Route path="login"         element={<Login/>}/>
           <Route path="signup"         element={<SignUp/>}/>
           <Route path="routing"         element={<RoutingTemplate/>}/>
-          <Route path="myTasks"         element={<MyTasks/>}/>
+          <Route path="myJobs"         element={<MyJobs/>}/>
           <Route path="resultfiles"         element={<ResultFiles/>}/>
           <Route path="new"         element={<NewApp/>}/>
           <Route path="custom"         element={<MyForm/>}/>

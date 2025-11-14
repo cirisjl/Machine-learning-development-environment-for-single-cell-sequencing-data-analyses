@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Multimodal_Data_Integration.png">
+<img src="/images/evaluator/Multimodal_Data_Integration.png">
 </div>
 
 Single-Cell Multimodal Data Integration, illustrated by combining scRNA-seq and scATAC-seq data, is a vital bioinformatics process that addresses the limitations of single-assay views. While individual assays provide partial insights—like gene expression (scRNA-seq) or chromatin accessibility (scATAC-seq)—they often present as disconnected datasets ("Raw Data: Separate Views"). Through "Integration Magic: The Alchemist's Synthesis" advanced algorithms align and connect these disparate modalities, identifying shared biological patterns to create a "Unified Landscape" of "Integrated Data." This comprehensive map reveals a more complete biological identity for each cell, enabling holistic downstream analysis by linking gene expression to its underlying regulatory chromatin state.
@@ -84,7 +84,7 @@ results_dict = eval(mdata=mdata, embedding_key="X_multivi", benchmarks_id="Bench
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/multimodal_data_integration_evaluation.png">
+> <img src="/images/evaluator/multimodal_data_integration_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -113,7 +113,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/multimodal_data_integration_utilization.png">
+<img src="/images/evaluator/multimodal_data_integration_utilization.png">
 </div>
 
 <hr/>

@@ -7,7 +7,7 @@
 Steps to create a new dataset is shown as below:
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/upload_dataset.png" width="80%">
+<img src="/images/doc/upload_dataset.png" width="80%">
 </div>
 
 **Step 1: Upload file**
@@ -15,7 +15,7 @@ Steps to create a new dataset is shown as below:
 Upload files → Select files → Confirm selection. Use the toolbar to organize, delete, or download files.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/file_upload.png" width="80%">
+<img src="/images/doc/file_upload.png" width="80%">
 </div>
 
 > [!IMPORTANT]
@@ -49,7 +49,7 @@ Select a project to link your dataset. If no project is selected, the dataset wi
 Fill out the dataset metadata form. For fields like “Organ Part,” you can search existing options or create new ones. This searchable, creatable field reduces duplication and simplifies data entry.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/metadata.png" width="80%">
+<img src="/images/doc/metadata.png" width="80%">
 </div>
 
 <hr/>
@@ -67,7 +67,7 @@ Projects let you share datasets with a small group:
 Use the **“MANAGE PROJECT”** button on **"Upload Data"** page or the **“My Projects”** option under the **“Analyses”** menu to access the project management page.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/project.png" width="80%">
+<img src="/images/doc/project.png" width="80%">
 </div>
 
 <hr/>
@@ -81,7 +81,7 @@ Each user has **5 GB** of private storage for their own datasets. Public user da
 Users can search datasets using filters such as species, category, author, organ part, cell type, and disease status. They can also view, edit, and delete their own datasets.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/my_data.png" width="80%">
+<img src="/images/doc/my_data.png" width="80%">
 </div>
 
 <hr/>
@@ -93,11 +93,11 @@ The dataset details page displays metadata and pre-processing results.
 Each dataset may include multiple data stages—expand them to view processed data and detailed parameters.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/data_details.png" width="80%">
+<img src="/images/doc/data_details.png" width="80%">
 </div>
 
 > [!TIP]  
 > Click the **title** of **pre-process results** to view details and download results. 
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/pp_results.png">
+> <img src="/images/doc/pp_results.png">
 > </div>

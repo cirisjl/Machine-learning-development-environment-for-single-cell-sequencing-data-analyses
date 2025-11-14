@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Cell-Cell_Communication.png">
+<img src="/images/evaluator/Cell-Cell_Communication.png">
 </div>
 
 Cell-cell communication is a fundamental biological process that enables cells to interact, coordinate, and orchestrate complex functions within tissues and organs. In the context of single-cell analysis, understanding these intricate dialogues has become paramount. By analyzing the diverse molecular signals exchanged between individual cells, bioinformatics approaches can decipher the "biological symphony" — identifying which cell types are the "orchestra sections," what "molecular instruments" (ligand-receptor pairs) they "play," and how their "musical scores" (signaling pathways) lead to a harmonious or sometimes discordant biological outcome. This allows researchers to construct an "inferred network" or "grand score" of interactions, revealing the dynamic social landscape of cells and providing crucial insights into developmental processes, disease progression, and therapeutic interventions.
@@ -59,8 +59,8 @@ For Benchmarks procided by [single-cell.ai](https://www.single-cell.ai/), please
 > [!IMPORTANT]
 > The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` is `pandas.core.frame.DataFrame` with columns "**source**", "**target**", and "**score**" for **source-target** prediction or "**ligand**", "**target**", and "**score**" for **ligand-target** prediction as shown below:
 > <div align="center" style="display: flex">
-> <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
-> <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
+> <figure><img src="/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
+> <figure><img src="/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
 > </div>
 ```python
 from oscb.evaluator import eval, write_json
@@ -70,7 +70,7 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", ccc_pred=ccc_pred, met
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell-cell_communication_evaluation.png">
+> <img src="/images/evaluator/cell-cell_communication_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -78,8 +78,8 @@ To utilize `eval()`, whether loading a dataset within [single-cell.ai](https://w
 > [!IMPORTANT]
 > The input types of `benchmarks_id` and `method` are `string`, while the input type of `ccc_pred` and `ccc_target`are `pandas.core.frame.DataFrame` "**source**", "**target**", and "**score**" for **source-target** prediction or "**ligand**", "**target**", and "**score**" for **ligand-target** prediction as shown below:
 > <div align="center" style="display: flex">
-> <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
-> <figure><img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
+> <figure><img src="/images/evaluator/ccc_st_format.png"><figcaption>Source-Target</figcaption></figure>
+> <figure><img src="/images/evaluator/ccc_lt_format.png"><figcaption>Ligand-Target</figcaption></figure>
 > </div>
 ```python
 from oscb.evaluator import eval, write_json
@@ -103,7 +103,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell-cell_communication_utilization.png">
+<img src="/images/evaluator/cell-cell_communication_utilization.png">
 </div>
 
 <hr/>

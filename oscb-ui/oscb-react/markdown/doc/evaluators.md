@@ -94,19 +94,19 @@ oscb.evaluator.**eval**(**adata**=None, **adata_int**=None, **mdata**=None, **be
 
 ### Examples
 
-> **Clustering**: See [Benchmarks](https://www.single-cell.ai/benchmarks/clustering).
+> **Clustering**: See [Benchmarks](/benchmarks/clustering).
 
-> **Imputation**: See [Benchmarks](https://www.single-cell.ai/benchmarks/imputation).
+> **Imputation**: See [Benchmarks](/benchmarks/imputation).
 
-> **Batch Integration**: See [Benchmarks](https://www.single-cell.ai/benchmarks/batch-integration).
+> **Batch Integration**: See [Benchmarks](/benchmarks/batch-integration).
 
-> **Multimodal Data Integration**: See [Benchmarks](https://www.single-cell.ai/benchmarks/multimodal-data-integration).
+> **Multimodal Data Integration**: See [Benchmarks](/benchmarks/multimodal-data-integration).
 
-> **Trajectory**: See [Benchmarks](https://www.single-cell.ai/benchmarks/trajectory).
+> **Trajectory**: See [Benchmarks](/benchmarks/trajectory).
 
-> **Cell-Cell Communication**: See [Benchmarks](https://www.single-cell.ai/benchmarks/cell-cell-communication).
+> **Cell-Cell Communication**: See [Benchmarks](/benchmarks/cell-cell-communication).
 
-> **Cell Type Annotation**: See [Benchmarks](https://www.single-cell.ai/benchmarks/cell-type-annotation).
+> **Cell Type Annotation**: See [Benchmarks](/benchmarks/cell-type-annotation).
 
 
 ---
@@ -151,7 +151,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell_type_annotation_utilization.png">
+<img src="/images/evaluator/cell_type_annotation_utilization.png">
 </div>
 
 ---

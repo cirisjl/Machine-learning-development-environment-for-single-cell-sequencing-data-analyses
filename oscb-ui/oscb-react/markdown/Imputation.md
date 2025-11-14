@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Imputation.png">
+<img src="/images/evaluator/Imputation.png">
 </div>
 
 Single-cell RNA sequencing (scRNA-seq) offers unprecedented insights into individual cells, but its data is often marked by "dropouts"—missing gene expression values due to technical limitations, which can obscure true biological signals. Single-cell Imputation addresses this by computationally estimating these missing values, effectively "filling in the blanks" in the raw data. By inferring likely gene expression based on similar cells and genes, Imputation transforms sparse and noisy datasets into more complete and accurate representations, thereby enhancing the reliability of downstream analyses like clustering and differential expression and allowing for a fuller understanding of cellular biology.
@@ -66,7 +66,7 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", denoised=adata.layer['
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/imputation_evaluation.png">
+> <img src="/images/evaluator/imputation_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -95,7 +95,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/imputation_utilization.png">
+<img src="/images/evaluator/imputation_utilization.png">
 </div>
 
 <hr/>

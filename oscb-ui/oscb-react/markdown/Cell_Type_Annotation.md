@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Cell_Type_Annotation.png">
+<img src="/images/evaluator/Cell_Type_Annotation.png">
 </div>
 
 In the intricate world of single-cell analysis, identifying the distinct types of cells present in a biological sample is a foundational step, often likened to a "Cellular Detective" or "Librarian" at work. Initially, computational methods like clustering group cells into distinct populations based on their gene expression profiles, but these clusters remain anonymous "mystery books" or "unsorted books" without assigned biological identities. Cell type annotation is the critical process of assigning meaningful labels—such as T cells, B cells, or macrophages—to these anonymous clusters. This "Annotation Magic" is achieved by comparing the molecular fingerprints of each cluster, often specific marker genes, against known biological references. By carefully sorting and cataloging these cellular identities, we transform raw, uncharacterized data into a rich, interpretable map of the cellular landscape, unlocking profound insights into biological processes, disease mechanisms, and therapeutic targets.
@@ -68,7 +68,7 @@ results_dict = eval(benchmarks_id="Benchmarks_ID", labels_pred=labels_pred, meth
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell_type_annotation_evaluation.png">
+> <img src="/images/evaluator/cell_type_annotation_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -97,7 +97,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/cell_type_annotation_utilization.png">
+<img src="/images/evaluator/cell_type_annotation_utilization.png">
 </div>
 
 <hr/>

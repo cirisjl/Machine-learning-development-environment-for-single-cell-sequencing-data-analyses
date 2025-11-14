@@ -2,9 +2,10 @@
 import DatasetTable from "../../components/MyData/datasetTable";
 import RightRail from "../../components/RightNavigation/rightRail";
 import StorageChart from "../../components/MyData/storageChart";
-import { getCookie } from "../../utils/utilFunctions";
+import { getCookie, isUserAuth} from "../../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+
 
 export default function MyData() {
 
@@ -12,10 +13,20 @@ export default function MyData() {
     const filterCategory = null;
     const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
     const [selectedDatasets, setSelectedDatasets] = useState({});
+    const [username, setUsername] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
-        if (getCookie('jwtToken') === undefined || getCookie('jwtToken') === '') {
+        let jwtToken = getCookie('jwtToken');
+        if (!jwtToken) {
+            // Navigate to the login page using window.location.href
             navigate('/routing');
+        } else {
+            // If the token exists, verify authenticity
+            isUserAuth(jwtToken).then((authData) => {
+                setUsername(authData.username);
+                setIsAdmin(authData.isAdmin);
+            })
         }
     }, []);
 
@@ -89,6 +100,8 @@ export default function MyData() {
                         selectedDatasets={selectedDatasets}
                         fromToolsPage={true}
                         onSelectSubItem={onSelectSubItem}
+                        username={username}
+                        isAdmin={isAdmin}
                         enableClick={true}
                         showCheckbox={false}
                         showEdit={true}

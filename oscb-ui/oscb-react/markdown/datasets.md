@@ -48,7 +48,7 @@ results_dict = eval(adata, benchmarks_id="Benchmarks_ID", cluster_key=cluster_ke
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/clustering_evaluation.png">
+> <img src="/images/evaluator/clustering_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -77,5 +77,5 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/clustering_utilization.png">
+<img src="/images/evaluator/clustering_utilization.png">
 </div>

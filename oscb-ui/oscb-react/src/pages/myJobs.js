@@ -6,7 +6,7 @@ import { getCookie } from "../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 
 
-export default function MyTasks() {
+export default function MyJobs() {
     const navigate = useNavigate();
     useEffect(() => {
         let jwtToken = getCookie('jwtToken');

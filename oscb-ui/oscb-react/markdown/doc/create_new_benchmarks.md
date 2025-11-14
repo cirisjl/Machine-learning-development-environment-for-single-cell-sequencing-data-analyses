@@ -19,7 +19,7 @@ Then, provide a `title` and specify the `species` for the dataset.
 >* Barcodes(Alias name: cells, extension:tsv.gz) + Features(Alias name: features, extension:tsv.gz) + Matrix(mtx.gz)
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_upload.png" width="80%">
+<img src="/images/doc/benchmark_upload.png" width="80%">
 </div>
 
 <hr/>
@@ -51,7 +51,7 @@ Then, provide a `title` and specify the `species` for the dataset.
 > + **Impact**: Improves the purity of single-cell populations for analysis.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_qc.png" width="80%">
+<img src="/images/doc/benchmark_qc.png" width="80%">
 </div>
 
 <hr/>
@@ -66,7 +66,7 @@ Then, provide a `title` and specify the `species` for the dataset.
 > The "default" value of `resolution` is often **0.5 or 1.0**, but it's a parameter that needs to be tuned based on the biological question and the expected heterogeneity of the dataset.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_clustering.png" width="80%">
+<img src="/images/doc/benchmark_clustering.png" width="80%">
 </div>
 
 <hr/>
@@ -78,7 +78,7 @@ A **live log** will be provided during execution.
 For result evaluation, the system generates **2D/3D UMAP**, **t-SNE**, **violin plots**, **scatter plots**, and **highest-expression gene plots**.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_qc_results.png" width="80%">
+<img src="/images/doc/benchmark_qc_results.png" width="80%">
 </div>
 
 <hr/>
@@ -90,7 +90,7 @@ Fill out the dataset metadata form. For fields like “Organ Part,” you can se
 Once submitted, the dataset can be found on **"[My Datasets](https://single-cell.ai//mydata)"** page (see **Doc → Data Management** for details).
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/metadata.png" width="80%">
+<img src="/images/doc/metadata.png" width="80%">
 </div>
 
 <hr/>
@@ -104,7 +104,7 @@ Select data through the dataset browser. You can select one dataset at a time
 A dataset may include multiple processed results—use the **“+”** icon to expand it and choose a processed file from another tool or workflow.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_dataset.png" width="80%">
+<img src="/images/doc/benchmark_dataset.png" width="80%">
 </div>
 
 <hr/>
@@ -119,7 +119,7 @@ A dataset may include multiple processed results—use the **“+”** icon to e
 Most single-cell tasks use **self-supervised learning** for embeddings, where the **training data** also serves as the **test data**.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_taskbuilder.png" width="80%">
+<img src="/images/doc/benchmark_taskbuilder.png" width="80%">
 </div>
 
 <hr/>
@@ -130,7 +130,7 @@ The next step is to **run benchmarks** on the selected methods.
 After completion, the system will generate a **bar chart** for performance evaluation and a **line chart** for computational assessments.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/benchmark_results.png" width="80%">
+<img src="/images/doc/benchmark_results.png" width="80%">
 </div>
 
 <hr/>

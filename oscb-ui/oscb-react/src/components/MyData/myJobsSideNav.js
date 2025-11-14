@@ -16,7 +16,7 @@ import {
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 
-const MyTasksSideNav = () => {
+const MyJobsSideNav = () => {
     const [expanded, setExpanded] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [changesFound, setChangesFound] = useState(false);
@@ -126,7 +126,7 @@ const MyTasksSideNav = () => {
                     <FontAwesomeIcon
                         icon={faArrowUpRightFromSquare}
                         className="hoverable-icon"
-                        onClick={() => { navigate('/myTasks') }}
+                        onClick={() => { navigate('/myJobs') }}
                         style={{ textAlign: 'right' }}
                     />
                 </div>
@@ -239,4 +239,4 @@ const MyTasksSideNav = () => {
         );
 };
 
-export default MyTasksSideNav;
+export default MyJobsSideNav;

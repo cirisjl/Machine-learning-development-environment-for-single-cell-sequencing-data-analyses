@@ -11,8 +11,11 @@ import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/util
 import BenchmarksPlots from '../../publishDatasets/components/benchmarksPlots';
 import DatasetDetailsTable from './DatasetDetailsTable';
 import TaskInfoTable
- from './TaskInfoTable';
+from './TaskInfoTable';
 import RightRail from '../../RightNavigation/rightRail';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+
+
 const BenchmarksViewDetailsComponent = () => {
   const location = useLocation();
   const [benchmarksId, setBenchmarksId] = useState(null);
@@ -21,6 +24,12 @@ const BenchmarksViewDetailsComponent = () => {
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [copiedState, setCopiedState] = useState(false);
+      
+  const handleCopy = () => {
+    setCopiedState(true);
+    setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
+  };
 
   const [sectionsVisibility, setSectionsVisibility] = useState({
     metadataInfo: true,
@@ -76,7 +85,19 @@ const BenchmarksViewDetailsComponent = () => {
       {hasMessage && (
         <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />
       )}
-      <h1>Details for BenchmarksId - {benchmarksId}</h1>
+      <h1>Details for BenchmarksId: {benchmarksId}&nbsp;&nbsp;
+        <CopyToClipboard text={benchmarksId} onCopy={() => handleCopy()}>
+          <button style={{
+            //position: 'absolute',
+            background: 'lightgrey',
+            color: 'black',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            // padding: '5px 10px',
+          }}>{copiedState ? 'Copied!' : 'Copy'}</button>
+        </CopyToClipboard>
+      </h1>
       {benchmarksDetails.length > 0 ? (
         benchmarksDetails.map((detail, index) => (
           <div key={index}>

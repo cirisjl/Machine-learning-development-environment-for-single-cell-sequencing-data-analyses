@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {getCookie } from "../../utils/utilFunctions";
 import { getStorageDetails } from '../../utils/utilFunctions';
 import {faArrowRightArrowLeft , faPlus, faCaretDown, faPen, faDatabase, faLocationDot, faArrowsRotate, faSquareCheck, faCompress, faGear, faChevronDown, faCross, faXmark, faAngleDoubleDown, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
-import MyTasksSideNav from "../MyData/myTasksSideNav";
+import MyJobsSideNav from "../MyData/myJobsSideNav";
 
 function RightRail() {
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -70,7 +70,7 @@ function RightRail() {
                 </div>
         </div>
         <div className="results-window">
-        <MyTasksSideNav/>
+        <MyJobsSideNav/>
 
         </div>
         </div>

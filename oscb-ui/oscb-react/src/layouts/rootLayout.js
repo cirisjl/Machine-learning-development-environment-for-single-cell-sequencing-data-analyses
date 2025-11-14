@@ -5,13 +5,15 @@ import React, { useState, useEffect } from "react";
 import { deleteCookie, getCookie } from "../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 
+
 export default function RootLayout() {
 
     const navigate = useNavigate();
 
     const [isLoginReq, setIsLoginReq] = useState(false);
-
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const handleAuth = (event) => {
         event.preventDefault();
@@ -41,12 +43,18 @@ export default function RootLayout() {
     }
 
     useEffect(() => {
-        const userCookie = getCookie('jwtToken');
-
-        if(userCookie!== '') {
+        const jwtToken = getCookie('jwtToken');
+        if (!jwtToken) {
+            // Navigate to the login page using window.location.href
+            navigate('/routing');
+        } else {
+            // If the token exists, verify authenticity
             setIsUserLoggedIn(true);
+            isUserAuth(jwtToken).then((authData) => {
+                setUsername(authData.username);
+                setIsAdmin(authData.isAdmin);
+            })
         }
-        
       }, [isUserLoggedIn]);
 
     // useEffect(() => {
@@ -106,7 +114,29 @@ export default function RootLayout() {
                                         Competition
                                     </NavLink>
                                  </li> */}
-                                <li data-index="1">
+                                <li data-index="1" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+                                    <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
+                                        <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                            <path className="uim-tertiary" d="M15.273 18.728A6.728 6.728 0 1 1 22 11.999V12a6.735 6.735 0 0 1-6.727 6.728z" opacity=".5" fill="currentColor"></path>
+                                            <path className="uim-primary" d="M8.727 18.728A6.728 6.728 0 1 1 15.455 12a6.735 6.735 0 0 1-6.728 6.728z" fill="currentColor"></path>
+                                        </svg>
+                                        Analyses
+                                    </NavLink>
+                                    <div className={hoveredChildIndex === 1 ? "suboptions-container" : "suboptions-container hide"}>
+                                        <div className="rounded-xl border-gray-100 border styles-for-dropdown">
+                                            <ul className="ul-suboptions">
+                                                {isAdmin && (<li><NavLink to="manageOptions">Manage Options</NavLink></li>)}
+                                                <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
+                                                <li><NavLink to="mydata">My Datasets</NavLink></li>
+                                                <li><NavLink to="projectAdminPanel">My Projects</NavLink></li>
+                                                <li><NavLink to="myJobs">My Jobs</NavLink></li>
+                                                <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
+                                                <li><NavLink to="mydata/tools">Tools</NavLink></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li data-index="2">
                                     <NavLink to="datasets" className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
                                         <svg className="mr-1 text-gray-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 25 25">
                                             <ellipse cx="12.5" cy="5" fill="currentColor" fillOpacity="0.25" rx="7.5" ry="2"></ellipse>
@@ -116,27 +146,6 @@ export default function RootLayout() {
                                         </svg>
                                         Datasets
                                     </NavLink>
-                                </li>
-                                <li data-index="2" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                                    <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
-                                        <svg className="text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                                            <path className="uim-tertiary" d="M15.273 18.728A6.728 6.728 0 1 1 22 11.999V12a6.735 6.735 0 0 1-6.727 6.728z" opacity=".5" fill="currentColor"></path>
-                                            <path className="uim-primary" d="M8.727 18.728A6.728 6.728 0 1 1 15.455 12a6.735 6.735 0 0 1-6.728 6.728z" fill="currentColor"></path>
-                                        </svg>
-                                        Analyses
-                                    </NavLink>
-                                    <div className={hoveredChildIndex === 2 ? "suboptions-container" : "suboptions-container hide"}>
-                                        <div className="rounded-xl border-gray-100 border styles-for-dropdown">
-                                            <ul className="ul-suboptions">
-                                                <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
-                                                <li><NavLink to="mydata">My Datasets</NavLink></li>
-                                                <li><NavLink to="projectAdminPanel">My Projects</NavLink></li>
-                                                <li><NavLink to="myTasks">My Jobs</NavLink></li>
-                                                <li><NavLink to="mydata/workflows">Workflows</NavLink></li>
-                                                <li><NavLink to="mydata/tools">Tools</NavLink></li>
-                                            </ul>
-                                        </div>
-                                    </div>
                                 </li>
                                  <li data-index="3" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
                                     <NavLink className="group flex items-center py-0.5 dark:hover:text-gray-400 hover:text-indigo-700">
@@ -158,7 +167,7 @@ export default function RootLayout() {
                                                 <li><Link reloadDocument  to="benchmarks/trajectory">Trajectory</Link></li>
                                                 <li><Link reloadDocument  to="benchmarks/cell-cell-communication">Cell-Cell Communication</Link></li>
                                                 <li><Link reloadDocument  to="benchmarks/cell-type-annotation">Cell Type Annotation</Link></li>
-                                                <li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>
+                                                {isAdmin && (<li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>)}
                                             </ul>
                                         </div>
                                     </div>
@@ -202,12 +211,14 @@ export default function RootLayout() {
                                         <svg className="w-[24px] h-[24px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="lightgrey" viewBox="0 0 24 24">
                                             <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd" />
                                         </svg>
-                                        Login/Sign Up
+                                        {isUserLoggedIn ? (<span>Hi, <strong>{username}</strong>!</span>) : (<span>Login/Sign Up</span>)}
                                     </NavLink>
                                     <div className={hoveredChildIndex === 7 ? "suboptions-container" : "suboptions-container hide"}>
                                     <div className="rounded-xl border-gray-100 border styles-for-dropdown">
                                         <ul className="ul-suboptions">
-                                            <li><NavLink to="SignUp">Sign Up</NavLink></li>
+                                            {!isUserLoggedIn && (<li><NavLink to="SignUp">Sign Up</NavLink></li>)}
+                                            {!isUserLoggedIn && (<li><NavLink to="forgot-password">Forgot Password</NavLink></li>)}
+                                            {isUserLoggedIn && (<li><NavLink to="reset/:token">Reset Password</NavLink></li>)}
                                             {isUserLoggedIn ? (
                                                 <li><span style={{ cursor: 'pointer'}} onClick={handleLogoutClick}>Log Out</span></li>
                                             ) : (

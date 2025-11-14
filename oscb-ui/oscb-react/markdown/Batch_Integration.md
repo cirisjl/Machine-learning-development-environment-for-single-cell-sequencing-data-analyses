@@ -1,6 +1,6 @@
 ## Task Info
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/Batch_Integration.png">
+<img src="/images/evaluator/Batch_Integration.png">
 </div>
 
 Single-cell RNA sequencing (scRNA-seq) experiments often face a pervasive challenge known as the "batch effect," where technical variations introduced during sample collection, preparation, or sequencing can create artificial differences between datasets (batches), even when the underlying biological samples are similar. As depicted in the figure's "Unintegrated Data" (Panel 1), cells of the same biological type (e.g., T Cells, represented by circles) from different batches (e.g., Batch 1 in blue, Batch 2 in red) appear as distinct, non-overlapping groups, while different cell types from the same batch might erroneously appear closer than they truly are. This technical noise complicates direct comparisons and downstream analyses, hindering the identification of true biological cell types and states. Single-cell batch integration methods, therefore, are critical computational techniques (illustrated as "Integration Magic" in Panel 2) designed to harmonize these diverse datasets. These methods work by identifying and aligning shared biological signals across different batches, effectively removing technical biases while preserving genuine biological distinctions. The outcome is "Integrated Data" (Panel 3), where cells of the same biological type (e.g., all T Cells, regardless of original batch) are correctly grouped together, allowing for accurate identification of cell populations and robust comparative analyses across multiple experiments.
@@ -84,7 +84,7 @@ results_dict = eval(adata, adata_int, benchmarks_id="Benchmarks_ID", method="You
 > [!TIP]  
 > If a `benchmarks_id` is specified, OSCB will automatically generate a bar chart to visually compare the performance of the user's method against established benchmark approaches.
 > <div align="center">
-> <img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/batch_integration_evaluation.png">
+> <img src="/images/evaluator/batch_integration_evaluation.png">
 > </div>
 
 #### User's Datasets
@@ -113,7 +113,7 @@ monitor = Monitor(1) # 1 second, time between calls to GPUtil
 monitor.stop()
 ```
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/evaluator/batch_integration_utilization.png">
+<img src="/images/evaluator/batch_integration_utilization.png">
 </div>
 
 <hr/>

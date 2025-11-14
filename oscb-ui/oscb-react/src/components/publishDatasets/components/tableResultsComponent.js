@@ -1,4 +1,4 @@
-import { faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faTrash, faClipboard } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {useState} from 'react';
 // import { useTable, useRowSelect } from 'react-table';
@@ -12,12 +12,18 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { Table } from 'antd';
 import axios from 'axios';
 import { CELERY_BACKEND_API } from '../../../constants/declarations'
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
-
+const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, username = null, isAdmin = false, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
+    const [copiedState, setCopiedState] = useState(false);
+    
+    const handleCopy = () => {
+        setCopiedState(true);
+        setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
+    };
 
     const [paginationState, setPagination] = useState({
         current: 1,
@@ -41,9 +47,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
     // const endResult = Math.min(page * pageSize, totalCount); // Ensure not to exceed totalCount
 
     const [visibleColumns, setVisibleColumns] = useState({
-        'Benchmarks ID': true,
+        // 'Benchmarks ID': true,
         'Dataset ID': true,
-        'Task': true,
+        // 'Task': true,
         'Title': true,
         'Category': true,
         'Species': true,
@@ -73,9 +79,9 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
     const resetColumnVisibility = () => {
         setVisibleColumns({
-            'Benchmarks ID': true,
+            // 'Benchmarks ID': true,
             'Dataset ID': true,
-            'Task': true,
+            // 'Task': true,
             'Title': true,
             'Species': true,
             'Cell Count Estimate': true,
@@ -147,24 +153,32 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                         // disabled={showCheckbox}
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
                     /> )}
-                    {showEdit && ( <button
+                    {username && username === item["Owner"] && showEdit && ( <button
                         onClick={() => handleEdit(item["Id"])}
                         // disabled={showEdit}
                         className="action-button">
                         <FontAwesomeIcon icon={faEdit} />
                     </button> )}
 
-                    {/* showDelete && ( <button
+                    {username && (isAdmin || username === item["Owner"]) && showEdit && showDelete && ( <button
                         onClick={() => handleDelete(item["Id"], item)}
                         className="action-button">
                         <FontAwesomeIcon icon={faTrash} />
-                    </button> )} */}
+                    </button> )}
 
+                    <CopyToClipboard text={item["Id"]} onCopy={() => handleCopy()}>
+                        <button className="action-button">
+                            <FontAwesomeIcon icon={faClipboard} />
+                        </button>
+                    </CopyToClipboard>
+                    
                     <button
                         onClick={() => handleVisualize(item["Id"])}
                         className="action-button">
                         <FontAwesomeIcon icon={faEye} />
                     </button>
+
+                    
                 </div>
                 );
             }
@@ -245,6 +259,13 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
 
     return (
         <div>
+            {copiedState && (
+                <div className='message-box success' id="tooltip" style={{ backgroundColor: '#bdf0c0' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <p>Dataset ID is copied!</p>
+                    </div>
+                </div>
+            )}
             {/* Dropdown for editing columns */}
             <div className="dropdown">
                 <div className='total-results-count'>
@@ -318,7 +339,15 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                     rowExpandable: (record) => Array.isArray(record.process_ids) && record.process_ids.length > 0,
                 }}
             />
-
+            { <div className="pagination-info">
+                <span>* Click <strong>+</strong> to expand a row and view the detailed outputs of each processed result.</span><br/>
+                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Dataset ID</strong>.</span><br/>
+                <span>* Click <FontAwesomeIcon icon={faEye} /> </span>
+                {enableClick && (
+                    <span> or <strong>double-click</strong> the row </span>
+                )}
+                <span>to view details.</span>
+            </div> }
         </div>
     );
 };

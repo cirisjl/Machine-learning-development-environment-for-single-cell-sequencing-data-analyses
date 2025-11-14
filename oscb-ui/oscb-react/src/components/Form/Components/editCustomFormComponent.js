@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {NODE_API_URL} from '../../../constants/declarations'
 import RightRail from '../../RightNavigation/rightRail';
@@ -85,6 +85,7 @@ const EditCustomForm = () => {
           const authData = await isUserAuth(getCookie('jwtToken'));
           if (authData.isAuth) {
             setUsername(authData.username);
+            setIsAdmin(authData.isAdmin);
             fetchDefaultOptions();
           } else {
             console.warn("Token expired! Please login again");
@@ -144,6 +145,11 @@ const EditCustomForm = () => {
       axios.post(`${NODE_API_URL}/editDatasetMetadata`, { datasetId: id })
         .then(response => {
           const data = response.data;
+
+          if(!isAdmin || data.Owner !== username){
+            console.warn("Unauthorized - you must be an admin or owner of the dataset to access this page");
+            window.location.href = '/accessDenied';
+          }
   
           // Update formData state with the response data
           setFormData({

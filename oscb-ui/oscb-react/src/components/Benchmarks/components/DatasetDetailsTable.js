@@ -1,12 +1,34 @@
 // DatasetDetailsTable.js
-import React from 'react';
+import React, { useState } from 'react';
 import { Descriptions } from 'antd';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Link } from 'react-router-dom';
+
 
 const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL }) => {
+  const [copiedState, setCopiedState] = useState(false);
+  
+  const handleCopy = () => {
+    setCopiedState(true);
+    setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
+  };
+
   return (
     <Descriptions title="Dataset Details" bordered column={1}>
-      <Descriptions.Item label="Dataset ID"><strong>{datasetDetails.Id}</strong></Descriptions.Item>
-      <Descriptions.Item label="Title">{datasetDetails.Title}</Descriptions.Item>
+      <Descriptions.Item label="Dataset ID"><Link to={"/mydata/view-dataset-info?datasetId=" + datasetDetails.Id} target="_blank"><strong>{datasetDetails.Id}</strong></Link>&nbsp;&nbsp;
+      <CopyToClipboard text={datasetDetails.Id} onCopy={() => handleCopy()}>
+          <button style={{
+            // position: 'absolute',
+            background: 'lightgrey',
+            color: 'black',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            // padding: '5px 10px',
+          }}>{copiedState ? 'Copied!' : 'Copy'}</button>
+      </CopyToClipboard>
+      </Descriptions.Item>
+      <Descriptions.Item label="Title"><Link to={"/mydata/view-dataset-info?datasetId=" + datasetDetails.Id} target="_blank"><strong>{datasetDetails.Title}</strong></Link></Descriptions.Item>
       <Descriptions.Item label="Author">{datasetDetails.Author}</Descriptions.Item>
       <Descriptions.Item label="Reference (paper)">{datasetDetails["Reference (paper)"]}</Descriptions.Item>
       <Descriptions.Item label="DOI"><a href={datasetDetails.DOI}>{datasetDetails.DOI}</a></Descriptions.Item>

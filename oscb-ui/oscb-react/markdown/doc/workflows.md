@@ -15,7 +15,7 @@ A dataset may include multiple processed results—use the **“+”** icon to e
 By default, you can select one dataset at a time, except for **Integration** (which allows multiple datasets) and **Annotation** (which allows selecting a reference dataset).
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/select_dataset.png" width="80%">
+<img src="/images/doc/select_dataset.png" width="80%">
 </div>
 
 <hr/>
@@ -79,7 +79,7 @@ After QC, Clustering is followed by **Normalization** or **Imputation**.
 > You may select multiple Imputation methods at the same time.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_normalization.png" width="80%">
+<img src="/images/doc/workflow_normalization.png" width="80%">
 </div>
 
 **Clustering and Visualization**:
@@ -96,7 +96,7 @@ After QC, Clustering is followed by **Normalization** or **Imputation**.
 > The "default" value of `resolution` is often **0.5 or 1.0**, but it's a parameter that needs to be tuned based on the biological question and the expected heterogeneity of the dataset.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_clustering.png" width="80%">
+<img src="/images/doc/workflow_clustering.png" width="80%">
 </div>
 
 <hr/>
@@ -114,7 +114,7 @@ Integration workflow begin with QC, followed by Integration. Methods include `Se
 > **Risk of Overfitting**: If not used carefully, creating too many highly similar `pseudo-replicates` might lead the integration algorithm to overfit to the technical variation of that specific pooled sample.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_integration.png" width="80%">
+<img src="/images/doc/workflow_integration.png" width="80%">
 </div>
 
 <hr/>
@@ -132,7 +132,7 @@ Annotation workflow begin with QC, followed by Integration and then Annotation. 
 > To improve annotation accuracy, use filters to select a reference dataset with similar organs or cell types. Closer cell type matches yield better results.
 
 <div align="center">
-<img src="http://c240g5-110215.wisc.cloudlab.us:3000/images/doc/workflow_annotation.png" width="80%">
+<img src="/images/doc/workflow_annotation.png" width="80%">
 </div>
 
 <hr/>

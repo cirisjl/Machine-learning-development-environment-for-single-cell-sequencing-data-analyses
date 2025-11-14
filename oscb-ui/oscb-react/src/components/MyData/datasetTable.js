@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import FilterComponent from '../publishDatasets/components/filtersComponent';
 import { NODE_API_URL } from '../../constants/declarations';
 import ResultsTable from '../publishDatasets/components/tableResultsComponent';
-import Pagination from '../publishDatasets/components/tablePaginationComponent';
+// import Pagination from '../publishDatasets/components/tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { Typography, FormGroup, FormControlLabel, Checkbox, Button, Grid, Box } 
 import { ScaleLoader } from 'react-spinners';
 import { getCookie } from '../../utils/utilFunctions';
 
-const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, onSelectSubItem, showCheckbox = true, showEdit = true, showDelete = true, enableClick = true }) => {
+const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, onSelectSubItem, username = null, isAdmin = false, showCheckbox = true, showEdit = true, showDelete = true, enableClick = true }) => {
 
     const dialogStyle = {
         display: isVisible ? 'block' : 'none',
@@ -51,15 +51,14 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
 
     // Function to fetch data from the API
     const fetchData = async (currentPage, currentFilters, searchQuery) => {
-
       setLoading(true);
       let url = "";
       try {
         if (fromToolsPage) {
           url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${checkedState.private}&public=${checkedState.public}&shared=${checkedState.shared}`;
         } else {
-          // url = `${NODE_API_URL}/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
-          url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${false}&public=${true}&shared=${true}`;
+          url = `${NODE_API_URL}/benchmarks/datasets/search?q=${searchQuery}&page=${currentPage}`;
+          // url = `${NODE_API_URL}/tools/allDatasets/search?q=${searchQuery}&page=${currentPage}&private=${false}&public=${true}&shared=${true}`;
         }
     
         const response = await fetch(url, {
@@ -71,7 +70,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
           body: JSON.stringify({ filters: currentFilters }),
         });
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
         setFilters(data.facets);
         setResults(data.results);
         setPagination(data.pagination);
@@ -211,7 +210,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
                     <div className="spinner-container">
                       <ScaleLoader color="#36d7b7" loading={loading} />
                     </div>
-                  ) : results.length > 0 ? ( // Corrected the placement of curly braces around the ternary expression
+                  ) : results && results.length > 0 ? ( // Corrected the placement of curly braces around the ternary expression
                     <div>       
                         <div className='filters-and-search-container'>
                           <div className='metadata-search-wrap filters-container'>
@@ -272,7 +271,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
                         </div>                
                         
                         <div className='table-results'>
-                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem} enableClick={enableClick} showCheckbox={showCheckbox} showEdit={showEdit} showDelete={showDelete}/>
+                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem} username={username} isAdmin={isAdmin} enableClick={enableClick} showCheckbox={showCheckbox} showEdit={showEdit} showDelete={showDelete}/>
                         </div>
                         
                     </div>

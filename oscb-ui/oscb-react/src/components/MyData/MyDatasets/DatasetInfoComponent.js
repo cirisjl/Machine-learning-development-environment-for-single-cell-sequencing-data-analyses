@@ -12,7 +12,7 @@ import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { styled } from '@mui/material/styles';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordion from '@mui/material/Accordion';
@@ -44,8 +44,13 @@ const DatasetInfoComponent = () => {
   const [details, setDetails] = useState({}); // Store fetched details
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
   const [ppJobId, setppJobId] = useState(null);
+  const [copiedState, setCopiedState] = useState(false);
+    
+  const handleCopy = () => {
+    setCopiedState(true);
+    setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
+  };
 
-  
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
       // const worker = new Worker(new URL("./../../utils/worker.js", import.meta.url));
@@ -334,7 +339,20 @@ const DatasetInfoComponent = () => {
         {hasMessage && (
           <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />
         )}
-        <h1>Details for dataset Id: {datasetId}</h1>
+        <h1>Details for dataset Id: {datasetId}&nbsp;&nbsp;
+          <CopyToClipboard text={datasetId} onCopy={() => handleCopy()}>
+            <button style={{
+              // position: 'absolute',
+              // top: '50%',
+              background: 'lightgrey',
+              color: 'black',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              // padding: '5px 10px',
+            }}>{copiedState ? 'Copied!' : 'Copy'}</button>
+          </CopyToClipboard>
+        </h1>
         {datasetDetails.length > 0 ? (
           datasetDetails.map((detail, index) => (
             <div key={index}>

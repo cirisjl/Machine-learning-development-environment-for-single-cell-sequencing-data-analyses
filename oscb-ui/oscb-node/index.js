@@ -2324,7 +2324,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const searchResultsPipeline = [
         { $match: matchStage },
           {
-              $project: { Id: 1, Title: 1, 'Species': 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1 } }, // Excluding fields
+              $project: { Id: 1, Title: 1, 'Species': 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", Owner: 1, 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1 } }, // Excluding fields
         // { $skip: (page - 1) * pageSize },
         // { $limit: pageSize },
       ];
