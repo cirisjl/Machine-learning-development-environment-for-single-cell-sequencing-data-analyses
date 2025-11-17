@@ -1,5 +1,8 @@
 # Create New Benchmarks
 
+> [!CAUTION]
+> Only **Admin Users** can create new benchmarks.
+
 <hr/>
 
 ## Upload a New Dataset

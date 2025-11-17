@@ -79,15 +79,15 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
         {
             "job_id": job_id, 
             "created_by": userID,
-            "description": description,
-            # "method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
-            "method": methodMap,
+            "Description": description,
+            # "Method": str(methodMap).replace("'", "").replace("{", "").replace("}", ""),
+            "Method": methodMap,
             "datasetURL": inputs,
             "datasetId": datasetIds,
-            "process": "Integration",
-            "category": 'workflow',
-            "created_on": datetime.now(),
-            "status": "Processing"
+            "Process": "Integration",
+            "Category": 'workflow',
+            "Created on": datetime.now(),
+            "Status": "Processing"
         }
     )
 
@@ -142,8 +142,8 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
             # "workflow_id": workflow_id,
             "results": results,
             # "figures": fig_path, 
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 

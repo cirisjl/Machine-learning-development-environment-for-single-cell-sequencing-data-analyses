@@ -33,8 +33,9 @@ def run_subset_data(job_id, data_dict:dict):
     upsert_jobs(
         {
             "job_id": job_id, 
+            "Category": "Benchmarks",
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -70,8 +71,8 @@ def run_subset_data(job_id, data_dict:dict):
                 "benchmarksId": benchmarksId,
                 "output": archive_path,
                 "results": results,
-                "completed_on": datetime.now(),
-                "status": "Success"
+                "Completed on": datetime.now(),
+                "Status": "Success"
             }
         )
 
@@ -84,8 +85,8 @@ def run_subset_data(job_id, data_dict:dict):
             {
                 "job_id": job_id, 
                 "results": detail,
-                "completed_on": datetime.now(),
-                "status": "Failure"
+                "Completed on": datetime.now(),
+                "Status": "Failure"
             }
         )
         raise CeleryTaskException(detail)

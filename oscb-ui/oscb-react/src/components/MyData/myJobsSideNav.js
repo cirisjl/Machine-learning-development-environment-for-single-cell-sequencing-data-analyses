@@ -35,18 +35,25 @@ const MyJobsSideNav = () => {
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
-                const response = await fetch(`${NODE_API_URL}/getTasks?authToken=${jwtToken}&top=5`);
+                const response = await fetch(`${NODE_API_URL}/getJobs?top=5`,
+                    { method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwtToken}`,
+                        }
+                    }
+                );
                 const data = await response.json();
                 console.log(data);
-                data.sort((a, b) => b.created_on - a.created_on);
-                setTasks(data);
+                data.results.sort((a, b) => b['Created on'] - a['Created on']);
+                setTasks(data.results);
 
                 // Create a list to store incomplete tasks
                 const incompleteTasks = [];
 
                 // Iterate over each task and check if its status is null
-                data.forEach(task => {
-                    if (task.status === null) {
+                data.results.forEach(task => {
+                    if (task.Status === null) {
                         incompleteTasks.push(task.job_id);
                     }
                 });
@@ -154,16 +161,16 @@ const MyJobsSideNav = () => {
                                         <div className="panel-summary">
                                             <div className='task-summary'>
                                                 <div className='display-flex'>
-                                                    {task.status === 'Success' ? (
+                                                    {task.Status === 'Success' ? (
                                                         <CheckCircleIcon style={{ color: 'green' }} />
-                                                    ) : task.status === 'Failure' ? (
+                                                    ) : task.Status === 'Failure' ? (
                                                         <CancelIcon style={{ color: 'red' }} />
                                                     ) : (
                                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
                                                     )}
-                                                    <p><TextWithEllipsis text={task.description} maxLength={23} /></p>
+                                                    <p><TextWithEllipsis text={task.Description} maxLength={23} /></p>
                                                 </div>
-                                                    <span className='time-stamp-display'>- {moment.utc(task.created_on).local().format("YYYY-MM-DD HH:mm:ss")}</span>
+                                                    <span className='time-stamp-display'>- {moment.utc(task['Created on']).local().format("YYYY-MM-DD HH:mm:ss")}</span>
                                             </div>
                                         {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
@@ -177,9 +184,9 @@ const MyJobsSideNav = () => {
                                         href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                     > 
-                                        {task.status === 'Success' ? (
+                                        {task.Status === 'Success' ? (
                                         <CheckCircleIcon style={{ color: 'green' }} />
-                                    ) : task.status === 'Failed' ? (
+                                    ) : task.Status === 'Failed' ? (
                                         <CancelIcon style={{ color: 'red' }} />
                                     ) : (
                                         <HourglassEmptyIcon style={{ color: 'gray' }} />
@@ -192,30 +199,30 @@ const MyJobsSideNav = () => {
                                       <AccordionDetails>
                                       <a
                                         onClick={() => {
-                                            if (task.category && task.category.toLowerCase() === 'workflow') {
+                                            if (task.Category && task.Category.toLowerCase() === 'workflow') {
                                                 navigate("/mydata/workflowTaskDetails", {
                                                     state: {
                                                         job_id: task.job_id,
-                                                        methodMap: task.method,
+                                                        methodMap: task.Method,
                                                         datasetURL: task.datasetURL,
-                                                        description: task.description,
-                                                        process: task.process,
+                                                        description: task.Description,
+                                                        process: task.Process,
                                                         output: task.output,
                                                         results: task.results,
-                                                        status: task.status
+                                                        Status: task.Status
                                                     }
                                                 });
                                             } else {
                                                 navigate("/mydata/taskDetails", {
                                                     state: {
                                                         job_id: task.job_id,
-                                                        method: task.method,
+                                                        method: task.Method,
                                                         datasetURL: task.datasetURL,
-                                                        description: task.description,
-                                                        process: task.process,
+                                                        description: task.Description,
+                                                        process: task.Process,
                                                         output: task.output,
                                                         results: task.results,
-                                                        status: task.status
+                                                        Status: task.Status
                                                     }
                                                 });
                                             }

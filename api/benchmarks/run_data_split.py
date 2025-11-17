@@ -35,7 +35,7 @@ def run_data_split(job_id, data_dict:dict):
         {
             "job_id": job_id, 
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -66,8 +66,8 @@ def run_data_split(job_id, data_dict:dict):
                 {
                     "job_id": job_id,
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -95,9 +95,9 @@ def run_data_split(job_id, data_dict:dict):
             "benchmarksId": benchmarksId,
             "output": adata_path,
             "adata_path": adata_path,
-            "completed_on": datetime.now(),
+            "Completed on": datetime.now(),
             "results": results,
-            "status": "Success"
+            "Status": "Success"
         }
     ) 
     return results

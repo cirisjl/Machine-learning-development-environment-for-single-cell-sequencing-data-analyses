@@ -9,7 +9,7 @@ from schemas.schemas import Dataset, Datasets, PathRequest, UMAPRequest, UploadR
 from datetime import datetime
 from utils.mongodb import upsert_jobs
 
-router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"description": "API Not found"}})
+router = APIRouter(prefix='/api/tools', tags=['tools'], responses={404: {"Description": "API Not found"}})
 
 
 # @router.post("/ConvertToAnndata")
@@ -43,14 +43,14 @@ def create_job(job_id, ds_dict: dict):
     upsert_jobs(
         {
             "job_id": job_id, 
-            "description": ds_dict['description'],
+            "Description": ds_dict['description'],
             "datasetId": ds_dict['datasetId'],
-            "method": ds_dict['method'],
+            "Method": ds_dict['method'],
             "datasetURL": ds_dict['input'],
-            "process": ds_dict['process'],
-            "category": 'tools',
-            "created_on": datetime.now(), 
-            "status": "Queued"
+            "Process": ds_dict['process'],
+            "Category": 'tools',
+            "Created on": datetime.now(), 
+            "Status": "Queued"
         }
     )
 
@@ -64,7 +64,7 @@ async def create_qc_task_async(ds: Dataset):
     task = create_qc_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Quality Control task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Quality Control task submitted successfully"})
 
 
 @router.post("/normalize")
@@ -76,7 +76,7 @@ async def create_normalization_task_async(ds: Dataset):
     task = create_normalization_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Normalization task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Normalization task submitted successfully"})
 
 
 @router.post("/impute")
@@ -88,7 +88,7 @@ async def create_imputation_task_async(ds: Dataset):
     task = create_imputation_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Imputation task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Imputation task submitted successfully"})
 
 
 @router.post("/reduce")
@@ -100,7 +100,7 @@ async def create_reduction_task_async(ds: Dataset):
     task = create_reduction_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Dimension reduction task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Dimension reduction task submitted successfully"})
 
 
 @router.post("/convert")
@@ -112,7 +112,7 @@ async def create_conversion_task_async(ds: Dataset):
     task = create_conversion_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Conversion task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Conversion task submitted successfully"})
 
 
 @router.post("/integrate")
@@ -126,14 +126,14 @@ async def create_integration_task_async(ids: Datasets):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": ids_dict['description'],
+            "Description": ids_dict['description'],
             "datasetIds": ids_dict['datasetIds'],
-            "method": ids_dict['method'],
+            "Method": ids_dict['method'],
             "datasetURL": ids_dict['input'],
-            "process": ids_dict['process'],
+            "Process": ids_dict['process'],
             "class": 'tools',
-            "created_on": datetime.now(), 
-            "status": "Queued"
+            "Created on": datetime.now(), 
+            "Status": "Queued"
         }
     )
 
@@ -149,7 +149,7 @@ async def create_annotation_task_async(ds: Dataset):
     task = create_annotation_task.apply_async(args=[ds_dict])
     create_job(task.id, ds_dict)
 
-    return JSONResponse({"job_id": task.id, "status": "Annotation task submitted successfully"})
+    return JSONResponse({"job_id": task.id, "Status": "Annotation task submitted successfully"})
 
 
 @router.post("/evaluate")

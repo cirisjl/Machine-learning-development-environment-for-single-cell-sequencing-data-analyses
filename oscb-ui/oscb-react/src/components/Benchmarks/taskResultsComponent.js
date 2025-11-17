@@ -34,29 +34,29 @@ export default function TaskResultsComponent(task_type) {
     //     }
     // },[]);
     useEffect(() => {
-            async function fetchFileData() {
-            try {
-                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
-                const data = response.data.data;
-                
-                if(data.length === 1) {
-                    const fileMappingObject = data[0];
-                    const fileID = fileMappingObject.fileID;
-                    if(fileID !== null) {
-                        fetch(DIRECTUS_URL + "/assets/" + fileID)
-                        .then(response => response.text())
-                        .then(data => setMarkdownText(data))
-                        .catch(error => console.error('Error retrieving markdown:', error));
-                    }
+        async function fetchFileData() {
+        try {
+            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
+            const data = response.data.data;
+            
+            if(data.length === 1) {
+                const fileMappingObject = data[0];
+                const fileID = fileMappingObject.fileID;
+                if(fileID !== null) {
+                    fetch(DIRECTUS_URL + "/assets/" + fileID)
+                    .then(response => response.text())
+                    .then(data => setMarkdownText(data))
+                    .catch(error => console.error('Error retrieving markdown:', error));
                 }
-                
-              } catch (error) {
-                console.error('Error retrieving data:', error);
-              }
             }
             
-            fetchFileData();
-          }, []);
+            } catch (error) {
+            console.error('Error retrieving data:', error);
+            }
+        }
+        
+        fetchFileData();
+        }, []);
 
     return (
         <div className="task-results-container eighty-twenty-grid">

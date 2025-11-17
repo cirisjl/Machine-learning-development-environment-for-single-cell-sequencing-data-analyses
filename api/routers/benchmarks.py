@@ -19,7 +19,7 @@ from utils.mongodb import upsert_jobs
 from datetime import datetime
 
 
-router = APIRouter(prefix='/api/benchmarks', tags=['benchmarks'], responses={404: {"description": "API Not found"}})
+router = APIRouter(prefix='/api/benchmarks', tags=['benchmarks'], responses={404: {"Description": "API Not found"}})
 
 
 # @router.post('/api/convert_to_anndata', response_model=ConversionResponse)
@@ -385,16 +385,17 @@ async def create_benchmarks_task_async(benchmarks_task: BenchmarksRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": f"Run Benchmarks for {task_dict['datasetId']}",
+            "Category": "Benchmarks",
+            "Description": f"Run Benchmarks for {task_dict['datasetId']}",
             "datasetId": task_dict['datasetId'],
-            "method": task_dict['task_type'],
+            "Method": task_dict['task_type'],
             "datasetURL": task_dict['adata_path'],
-            "process": task_dict['task_type'],
-            "created_on": datetime.now(), 
-            "status": "Queued"
+            "Process": task_dict['task_type'],
+            "Created on": datetime.now(), 
+            "Status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Benchmarks task submitted successfully."})
+    return JSONResponse({"job_id": task.id, "Status": "Benchmarks task submitted successfully."})
 
 
 @router.post("/data-split")
@@ -407,16 +408,17 @@ async def create_data_split_task_async(data_split_task: DataSplitRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": f"Run Data Split for {data_dict['datasetId']}",
+            "Category": "Benchmarks",
+            "Description": f"Run Data Split for {data_dict['datasetId']}",
             "datasetId": data_dict['datasetId'],
-            "method": "Data Split",
+            "Method": "Data Split",
             "datasetURL": data_dict['adata_path'],
-            "process": "Data Split",
-            "created_on": datetime.now(), 
-            "status": "Queued"
+            "Process": "Data Split",
+            "Created on": datetime.now(), 
+            "Status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Data split task submitted successfully."})
+    return JSONResponse({"job_id": task.id, "Status": "Data split task submitted successfully."})
 
 
 @router.post("/subset")
@@ -429,16 +431,17 @@ async def create_subset_data_task_async(subset_task: SubsetDataRequest):
     upsert_jobs(
         {
             "job_id": task.id, 
-            "description": f"Run Subset Data for {data_dict['datasetId']}",
+            "Category": "Benchmarks",
+            "Description": f"Run Subset Data for {data_dict['datasetId']}",
             "datasetId": data_dict['datasetId'],
-            "method": f"{data_dict['obskey']}: {data_dict['values']}",
+            "Method": f"{data_dict['obskey']}: {data_dict['values']}",
             "datasetURL": data_dict['adata_path'],
-            "process": "Subset Data",
-            "created_on": datetime.now(),
-            "status": "Queued"
+            "Process": "Subset Data",
+            "Created on": datetime.now(),
+            "Status": "Queued"
         }
     )
-    return JSONResponse({"job_id": task.id, "status": "Data subset task submitted successfully."})
+    return JSONResponse({"job_id": task.id, "Status": "Data subset task submitted successfully."})
 
 
 # @router.post("/api/getTablePlot")

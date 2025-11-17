@@ -44,10 +44,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         const jwtToken = getCookie('jwtToken');
-        if (!jwtToken) {
-            // Navigate to the login page using window.location.href
-            navigate('/routing');
-        } else {
+        if (jwtToken) {
             // If the token exists, verify authenticity
             isUserAuth(jwtToken).then((authData) => {
                 setIsUserLoggedIn(true);
@@ -125,7 +122,7 @@ export default function RootLayout() {
                                     <div className={hoveredChildIndex === 1 ? "suboptions-container" : "suboptions-container hide"}>
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
                                             <ul className="ul-suboptions">
-                                                {isAdmin && (<li><NavLink to="manageOptions">Manage Options</NavLink></li>)}
+                                                {isAdmin && (<li><NavLink to="manageOptions">Manage Form Options</NavLink></li>)}
                                                 <li><NavLink to="mydata/upload-data">Upload Data</NavLink></li>
                                                 <li><NavLink to="mydata">My Datasets</NavLink></li>
                                                 <li><NavLink to="projectAdminPanel">My Projects</NavLink></li>

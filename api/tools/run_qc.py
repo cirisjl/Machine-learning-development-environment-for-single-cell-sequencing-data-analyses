@@ -132,11 +132,12 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
         upsert_jobs(
             {
                 "job_id": job_id, 
-                "description": description,
-                "method": methods[0],
-                "process": "Quality Control",
+                "Category": "Benchmarks",
+                "Description": description,
+                "Method": methods[0],
+                "Process": "Quality Control",
                 "created_by": userID,
-                "status": "Processing"
+                "Status": "Processing"
             }
         )
         output = benchmarks_output_path(input_path)
@@ -145,7 +146,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
             {
                 "job_id": job_id, 
                 "created_by": userID,
-                "status": "Processing"
+                "Status": "Processing"
             }
         )
     
@@ -235,8 +236,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                                 {
                                     "job_id": job_id, 
                                     "results": detail,
-                                    "completed_on": datetime.now(),
-                                    "status": "Failure"
+                                    "Completed on": datetime.now(),
+                                    "Status": "Failure"
                                 }
                             )
                             redislogger.error(job_id, detail)
@@ -323,8 +324,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                                 {
                                     "job_id": job_id, 
                                     "results": detail,
-                                    "completed_on": datetime.now(),
-                                    "status": "Failure"
+                                    "Completed on": datetime.now(),
+                                    "Status": "Failure"
                                 }
                             )
                             os.remove(output_path)
@@ -395,8 +396,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         {
                             "job_id": job_id, 
                             "results": detail,
-                            "completed_on": datetime.now(),
-                            "status": "Failure"
+                            "Completed on": datetime.now(),
+                            "Status": "Failure"
                         }
                     )
                     os.remove(output_path)
@@ -485,8 +486,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         {
                             "job_id": job_id, 
                             "results": detail,
-                            "completed_on": datetime.now(),
-                            "status": "Failure"
+                            "Completed on": datetime.now(),
+                            "Status": "Failure"
                         }
                     )
                     os.remove(output_path)
@@ -533,8 +534,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         {
                             "job_id": job_id, 
                             "results": detail,
-                            "completed_on": datetime.now(),
-                            "status": "Failure"
+                            "Completed on": datetime.now(),
+                            "Status": "Failure"
                         }
                     )
                     redislogger.error(job_id, detail)
@@ -566,8 +567,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
             "default_assay": assay,
             "assay_names": assay_names,
             "results": results,
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 

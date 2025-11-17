@@ -33,9 +33,10 @@ def run_benchmarks(job_id, task_dict:dict):
 
     upsert_jobs(
         {
-            "job_id": job_id, 
+            "job_id": job_id,
+            "Category": "Benchmarks",
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -57,8 +58,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": clustering_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -76,8 +77,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -98,8 +99,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": annotation_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -117,8 +118,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -139,8 +140,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": ccc_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -158,8 +159,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -181,8 +182,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": imputation_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -200,8 +201,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -222,8 +223,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": integration_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -241,8 +242,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -263,8 +264,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": multimodal_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -282,8 +283,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)
@@ -304,8 +305,8 @@ def run_benchmarks(job_id, task_dict:dict):
                         "datasetId": datasetId,
                         "benchmarksId": benchmarksId,
                         "results": trajectory_results,
-                        "completed_on": datetime.now(),
-                        "status": "Success"
+                        "Completed on": datetime.now(),
+                        "Status": "Success"
                     }
                 )
 
@@ -323,8 +324,8 @@ def run_benchmarks(job_id, task_dict:dict):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             raise CeleryTaskException(detail)

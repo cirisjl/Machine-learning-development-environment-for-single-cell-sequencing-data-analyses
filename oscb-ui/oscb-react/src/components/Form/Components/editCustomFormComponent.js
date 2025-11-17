@@ -65,8 +65,9 @@ const EditCustomForm = () => {
   const [newOptions, setNewOptions] = useState([]);
 
   const [datasetId, setDatasetId] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [username, setUsername] = useState('');
+  const [isAdmin, setIsAdmin] = useState(null);
+  const [username, setUsername] = useState(null);
+  const [owner, setOwner] = useState(null);
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -132,10 +133,7 @@ const EditCustomForm = () => {
 
     // Call the authentication check function
     checkAuthentication();
-  }, []);
 
-
-  useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const id = queryParams.get('datasetId');
     setDatasetId(id);
@@ -145,11 +143,9 @@ const EditCustomForm = () => {
       axios.post(`${NODE_API_URL}/editDatasetMetadata`, { datasetId: id })
         .then(response => {
           const data = response.data;
+          setOwner(data.Owner);
 
-          if(!isAdmin || data.Owner !== username){
-            console.warn("Unauthorized - you must be an admin or owner of the dataset to access this page");
-            window.location.href = '/accessDenied';
-          }
+          
   
           // Update formData state with the response data
           setFormData({
@@ -194,6 +190,15 @@ const EditCustomForm = () => {
         });
     }
   }, [location.search]);  
+
+  useEffect(() => { 
+    if (username && owner && isAdmin) {
+      if (!isAdmin && owner !== username) {
+        console.warn("Unauthorized - you must be an admin or owner of the dataset to access this page");
+        window.location.href = '/accessDenied';
+      }
+    }
+  }, [username, isAdmin, owner]);
 
 
   // Handle input changes

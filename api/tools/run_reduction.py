@@ -32,7 +32,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
         {
             "job_id": job_id, 
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -74,8 +74,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
                 {
                     "job_id": job_id, 
                     "results": detail,
-                    "completed_on": datetime.now(),
-                    "status": "Failure"
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
                 }
             )
             os.remove(output)
@@ -99,8 +99,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             "process_ids": [process_id],
             "layers": layers,
             "results": results,
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 

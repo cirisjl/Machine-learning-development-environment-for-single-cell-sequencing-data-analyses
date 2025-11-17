@@ -46,7 +46,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
         {
             "job_id": job_id, 
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -192,8 +192,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                     {
                         "job_id": job_id, 
                         "results": detail,
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 raise CeleryTaskException(detail)
@@ -215,8 +215,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
             "process_ids": process_ids,
             "output": normalization_output,
             "results": results,
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 

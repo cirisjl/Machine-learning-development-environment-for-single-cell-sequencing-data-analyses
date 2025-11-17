@@ -48,7 +48,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
         {
             "job_id": job_id, 
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
 
@@ -256,8 +256,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             {
                                 "job_id": job_id, 
                                 "results": "AnnData file does not exist due to the failure of Integration.",
-                                "completed_on": datetime.now(),
-                                "status": "Failure"
+                                "Completed on": datetime.now(),
+                                "Status": "Failure"
                             }
                         )
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
@@ -281,8 +281,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     {
                         "job_id": job_id, 
                         "results": f"Integration is failed: {e}",
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 redislogger.error(job_id, f"{method} integration is failed: {e}")
@@ -303,8 +303,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
             "datasetIds": datasetIds,
             "process_ids": process_ids,
             "results": results,
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 

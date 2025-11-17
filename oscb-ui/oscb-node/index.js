@@ -1449,7 +1449,7 @@ app.post('/node/job/create', async (req, res) => {
         const date = new Date();
         const timestamp = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
         const formData = req.body;
-        formData.created_on = timestamp;
+        formData['Created on'] = timestamp;
         
         // Connect to the MongoDB server
         await client.connect();
@@ -1472,53 +1472,176 @@ app.post('/node/job/create', async (req, res) => {
 });
 
 // Route to retrieve documents from task_results collection
-app.get('/node/getTasks', async (req, res) => {
+app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
     const client = new MongoClient(mongoUrl);
-    const authToken = req.query.authToken;
-    const top = parseInt(req.query.top) || 0;
-    const username = getUserFromToken(authToken);
-    const page = parseInt(req.query.page, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
     try {
-      // Connect to the MongoDB server
-      await client.connect();
-      const db = client.db(dbName);
-  
-      // Get reference to the task_results collection
-      const collection = db.collection(jobsCollection);
-  
-      // Query documents from the collection
-      if (top === 0) {
-        const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray();
-        // Respond with the tasks data
-        const totalCount = await collection.countDocuments({ created_by: username });
-        res.status(200).json(
+        const top = parseInt(req.query.top) || 0;
+        const username = req.user.username;
+        const page = parseInt(req.query.page, 10) || 1;
+        const pageSize = parseInt(req.query.pageSize, 10) || 10;
+        let globalSearchQuery = req.query.q;
+        const filters = req.body.filters || null;
+
+        // const fieldsWithLabel = ['Process', 'Method', 'Category', 'Status', 'Created on', 'Completed on'];
+
+        let matchConditions = [];
+
+        // Global search query
+        if (globalSearchQuery) {
+            matchConditions.push({
+                $or: [
+                    { 'job_id': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Method': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Process': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Created on': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Completed on': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Description': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Status': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'process_ids': {
+                            $elemMatch: {
+                                value: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                ],
+            });
+        }
+
+        // Apply additional filters
+        if (filters) {
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    let condition = {};
+                    // Directly use the filter category for other fields
+                    condition[filterCategory] = { $in: filterValue };
+                    // Add this condition to the matchConditions array
+                    matchConditions.push(condition);
+                }
+            });
+        }
+
+        let userConditions = [];
+        userConditions.push({ 'created_by': username });
+        matchConditions.push({ $or: userConditions });
+
+        let matchStage = {};
+        if (matchConditions.length > 0) {
+            matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+        }
+
+        // Connect to the MongoDB server
+        await client.connect();
+        const db = client.db(dbName);
+    
+        // Get reference to the task_results collection
+        const collection = db.collection(jobsCollection);
+
+        // Define the pipeline for facets
+        const facetsPipeline = [
+            { $match: matchStage },
             {
-                results: tasks,
-                pagination: {
-                    page,
-                    pageSize,
-                    pageCount: Math.ceil(totalCount / pageSize),
-                    totalCount
+                $facet: {
+                    // Each facet is directly within $facet and maps to its pipeline
+                    'Description': [
+                        { $group: { _id: '$Description', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Category': [
+                        { $group: { _id: '$Category', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Process': [
+                        { $group: { _id: '$Process', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Method': [
+                        { $group: { _id: '$Method', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    // More facets as per your requirement
+                    'Status': [
+                        { $group: { _id: '$Status', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Created on': [
+                        { $group: { _id: '$Created on', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Completed on': [
+                        { $group: { _id: '$Completed on', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    'job_id': [
+                        { $group: { _id: '$job_id', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } }
+                    ],
+                    documents: [
+                        {
+                            $project:
+                            {
+                                job_id: "$job_id",
+                                Description: "$Description",
+                                Category: "$Category",
+                                Process: "$Process",
+                                Method: "$Method",
+                                Status: "$Status",
+                                'Created on': "$Created on",
+                                'Completed on': "$Completed on",
+                            }
+                        }
+                    ]
                 }
             }
-        );
-      }
-        else {
-          const tasks = await collection.find({ created_by: username }).sort({ created_on: -1 }).limit(top).toArray();
-        // Respond with the tasks data
-        res.status(200).json(tasks);
-      }
-      
+        ];
+
+        // Get the facets
+        const facetsResult = await collection.aggregate(facetsPipeline).toArray();
+
+        // Pagination: Get total count for the query
+        const totalCount = await collection.countDocuments(matchStage);
+
+        // Build the pipeline for search results with pagination
+        const searchResultsPipeline = [
+            { $match: matchStage },
+            {
+                $project: { job_id: 1, 'Job ID': "$job_id", Description: 1, Category: 1, Process: 1, Method: 1, Status: 1, 'Created on': 1, 'Completed on': 1, process_ids: 1, datasetURL: 1, results: 1, output: 1 }
+            }, // Excluding fields
+            { $sort: { 'Created on': -1 } },
+            // { $skip: (page - 1) * pageSize },
+            // { $limit: pageSize },
+        ];
+
+        if (top > 0) {
+            searchResultsPipeline.push({ $limit: top });
+        }
+
+        // Get the paginated search results
+        const searchResults = await collection.aggregate(searchResultsPipeline).toArray();
+
+        res.status(200).json({
+            facets: facetsResult[0],
+            results: searchResults,
+            pagination: {
+                page,
+                pageSize,
+                pageCount: Math.ceil(totalCount / pageSize),
+                totalCount
+            }
+        });
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'An error occurred while fetching jobs' });
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while fetching jobs.');
     } finally {
-      // Ensure the client will close when you finish/error
-      await client.close();
+        // Ensure the MongoDB client is always closed, even if an error occurs
+        if (client) {
+            await client.close();
+        }
     }
-  });
+});
 
 
 app.delete('/node/deleteJob', async (req, res) => {
@@ -1599,7 +1722,7 @@ app.put('/node/updateTaskStatus', (req, res) => {
 });
 
 
-// app.get('/getTasks', (req, res) => {
+// app.get('/getJobs', (req, res) => {
 //     const { authToken } = req.query;
 //     const username = getUserFromToken(authToken);
 
@@ -2867,6 +2990,330 @@ app.post('/node/tasks/search', async (req, res) => {
 //     };
 
 // }
+
+
+app.post('/node/datasets/search', async (req, res) => {
+    let client;
+    try {
+        client = new MongoClient(mongoUrl);
+        await client.connect();
+        const db = client.db(dbName);
+
+        const {
+            q: globalSearchQuery,
+            page: queryPage = 1,
+            pageSize: queryPageSize = 10,
+            public: isPublic,
+            shared: isShared
+        } = req.query;
+
+        const page = parseInt(queryPage, 10);
+        const pageSize = parseInt(queryPageSize, 10);
+        const filters = req.body.filters;
+
+        //Update this field accordingly whenever you add a new facet 
+        // const fieldsWithLabel = ['Species', 'Anatomical Entity', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)', 'Disease Status (Donor)'];
+        const fieldsWithLabel = ['Species', 'Organ Part', 'Selected Cell Types', 'Disease Status (Donor)'];
+
+
+        // If no flags are provided, do not query any collection.
+        if (isPublic === 'false' && isShared === 'false') {
+            res.json({ message: "No action performed.", results: [], facets: {}, pagination: {} });
+            return;
+        }
+        let matchConditions = [];
+
+        if (globalSearchQuery) {
+            matchConditions.push({
+                $or: [
+                    { 'Species.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Title': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Author': { $regex: globalSearchQuery, $options: 'i' } },
+                    // { 'Anatomical Entity.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    { 'Organ Part.label': { $regex: globalSearchQuery, $options: 'i' } },
+                    {
+                        'Selected Cell Types': {
+                            $elemMatch: {
+                                value: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    {
+                        'Disease Status (Donor)': {
+                            $elemMatch: {
+                                label: { $regex: globalSearchQuery, $options: 'i' }
+                            }
+                        }
+                    },
+                    // { 'Disease Status (Donor)': { 
+                    //     $elemMatch: { 
+                    //         label: { $regex: globalSearchQuery, $options: 'i' } 
+                    //     } 
+                    // }},
+                    { 'Category': { $regex: globalSearchQuery, $options: 'i' } },
+                ],
+            });
+        }
+
+        // Apply additional filters
+        if (filters) {
+            Object.keys(filters).forEach((filterCategory) => {
+                const filterValue = filters[filterCategory];
+                if (Array.isArray(filterValue) && filterValue.length > 0) {
+                    let condition = {};
+
+                    if (filterCategory === 'Selected Cell Types') {
+                        // Handle filtering for the 'Selected Cell Types' array
+                        condition['Selected Cell Types.value'] = {
+                            $in: filterValue
+                        };
+                    }
+                    // Check if the filter category should use the 'label' property for array of objects
+                    else if (fieldsWithLabel.includes(filterCategory)) {
+                        condition[`${filterCategory}.label`] = { $in: filterValue };
+
+                    } else {
+                        // Directly use the filter category for other fields
+                        condition[filterCategory] = { $in: filterValue };
+                    }
+
+                    // Add this condition to the matchConditions array
+                    matchConditions.push(condition);
+                }
+            });
+        }
+
+        let categoryConditions = [];
+
+        if (isPublic === 'true') {
+            categoryConditions.push({ 'Category': 'Public' });
+        }
+
+        if (isShared === 'true') {
+            categoryConditions.push({ 'Category': 'Shared' });
+        }
+
+        // Now, use $or to apply these category conditions if more than one flag is true
+        if (categoryConditions.length > 0) {
+            matchConditions.push({ $or: categoryConditions });
+        }
+
+        // Determine the initial collection based on flags
+        let initialCollectionName;
+
+        if (isPublic === 'true') {
+            initialCollectionName = datasetCollection;
+        } else if (isShared === 'true') {
+            initialCollectionName = userDatasetsCollection;
+        }
+
+
+        let matchStage = {};
+        if (matchConditions.length > 0) {
+            matchStage = matchConditions.length > 1 ? { $and: matchConditions } : matchConditions[0];
+        }
+        // Initial aggregation pipeline
+        let pipeline = [
+            { $match: matchStage },
+            { $unwind: '$Selected Cell Types.value' },
+            { $unwind: '$Disease Status (Donor)' },
+            {
+                $facet: {
+                    // totalCount: [{ $count: "total" }],
+                    documents: [
+                        {
+                            $group: {
+                                _id: {
+                                    Title: "$Title",
+                                    Id: "$Id",
+                                    'Dataset ID': "$Id",
+                                    Category: "$Category",
+                                    Owner: "$Owner",
+                                    Species: "$Species.label",
+                                    'Organ Part': "$Organ Part.label",
+                                    'Cell Count Estimate': "$Cell Count Estimate",
+                                    'Development Stage': "$Development Stage",
+                                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
+                                    // 'Anatomical Entity': "$Anatomical Entity.label",
+                                    // 'Disease Status (Donor)': "$Disease Status (Donor).label",
+                                    Author: "$Author",
+                                    'Source': "$Source",
+                                    'Submission Date': "$Submission Date",
+                                    'inputFiles': "$inputFiles",// We want inputFiles to read data from tools page
+                                    'adata_path': "$adata_path",
+                                    'process_ids': "$process_ids",
+                                    "layers": "$layers",
+                                    "mod_keys": "$mod_keys",
+                                    "obs_names": "$obs_names",
+                                    "embeddings": "$embeddings",
+                                    "uns": "$uns",
+                                    "obsp": "$obsp",
+                                    "varm": "$varm",
+                                },
+                                uniqueValues: { $addToSet: '$Id' }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: "$_id.Id",
+                                Title: "$_id.Title",
+                                Id: "$_id.Id",
+                                'Dataset ID': "$_id.Id",
+                                Category: "$_id.Category",
+                                Owner: "$_id.Owner",
+                                Species: "$_id.Species",
+                                'Organ Part': "$_id.Organ Part",
+                                'Cell Count Estimate': "$_id.Cell Count Estimate",
+                                'Development Stage': "$_id.Development Stage",
+                                // 'Disease Status (Donor)': "$_id.Disease Status (Donor)",
+                                // 'Anatomical Entity': "$Anatomical Entity",
+                                // 'Disease Status (Donor)': "$Disease Status (Donor).",
+                                Author: "$_id.Author",
+                                'Source': "$_id.Source",
+                                'Submission Date': "$_id.Submission Date",
+                                'inputFiles': "$_id.inputFiles",// We want inputFiles to read data from tools page
+                                'adata_path': "$_id.adata_path",
+                                'process_ids': "$_id.process_ids",
+                                'layers': "$_id.layers",
+                                "obs_names": "$_id.obs_names",
+                                "mod_keys": "$_id.mod_keys",
+                                "embeddings": "$_id.embeddings",
+                                "uns": "$_id.uns",
+                                "obsp": "$_id.obsp",
+                                "varm": "$_id.varm",
+                                totalCount: { $size: "$uniqueValues" }
+                            }
+                        }
+                    ],
+                    // Each facet is directly within $facet and maps to its pipeline
+                    'Species': [
+                        { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Category': [
+                        { $group: { _id: '$Category', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Author': [
+                        { $group: { _id: '$Author', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Anatomical Entity': [
+                    //     { $group: { _id: '$Anatomical Entity.label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                    // More facets as per your requirement
+                    'Organ Part': [
+                        { $group: { _id: '$Organ Part.label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Selected Cell Types': [
+                        { $group: { _id: '$Selected Cell Types.value', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    'Disease Status (Donor)': [
+                        { $group: { _id: '$Disease Status (Donor).label', uniqueValues: { $addToSet: '$Id' } } },
+                        {
+                            $project: {
+                                _id: '$_id',
+                                count: { $size: "$uniqueValues" }
+                            }
+                        },
+                        { $sort: { count: -1 } }
+                    ],
+                    // 'Disease Status (Donor)': [
+                    //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } },
+                    //     { $sort: { count: -1 } }
+                    // ],
+                }
+            }
+        ];
+
+
+        // If both flags are true, use $unionWith to combine collections
+        if (isPublic === 'true' && (isShared === 'true')) {
+            pipeline.unshift({
+                $unionWith: {
+                    coll: userDatasetsCollection,
+                }
+            });
+            // pipeline.push({ $group: { _id: "$Id" }});
+            initialCollectionName = datasetCollection; // Start with the "public" datasets collection
+        }
+
+        const collection = db.collection(initialCollectionName);
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        // Assuming the first element contains the desired structure
+        const data = result[0];
+        // const totalCount = data.documents[0].totalCount ? data.documents[0].totalCount.total : 0;
+
+        // Extract and transform facets, excluding facets that would result in an empty array
+        const facets = Object.keys(data)
+            .filter(key => key !== 'documents' && key !== 'totalCount') // Exclude the 'documents' key to process only facets
+            .reduce((acc, key) => {
+                // Check if data[key] exists, is an array, and has length before mapping
+                if (Array.isArray(data[key]) && data[key].length > 0) {
+                    acc[key] = data[key].map(facet => ({
+                        _id: facet._id, // Assuming each object has an _id field
+                        count: facet.count // Assuming each object has a count field
+                    }));
+                }
+                // If data[key] doesn't exist, isn't an array, or is empty, it's not included
+                return acc;
+            }, {});
+
+
+        res.json({
+            results: data.documents,
+            facets: facets,
+            pagination: {
+                // totalCount: totalCount,
+                page,
+                pageSize,
+                // pageCount: Math.ceil(totalCount / pageSize),
+            }
+        });
+    } catch (error) {
+        console.error('Search failed:', error);
+        res.status(500).send('An error occurred while searching.');
+    } finally {
+        if (client) {
+            await client.close();
+        }
+    }
+});
 
 
 app.post('/node/tools/allDatasets/search', verifyJWTToken, async (req, res) => {

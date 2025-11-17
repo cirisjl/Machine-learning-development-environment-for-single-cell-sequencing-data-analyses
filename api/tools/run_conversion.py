@@ -23,7 +23,7 @@ def run_conversion(job_id, ds:dict, show_error=True):
         {
             "job_id": job_id, 
             "created_by": userID,
-            "status": "Processing"
+            "Status": "Processing"
         }
     )
     
@@ -55,8 +55,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
                     {
                         "job_id": job_id, 
                         "results": detail,
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 os.remove(adata_path)
@@ -77,8 +77,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
                     {
                         "job_id": job_id, 
                         "results": detail,
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 os.remove(seurat_path)
@@ -99,8 +99,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
                     {
                         "job_id": job_id, 
                         "results": detail,
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 os.remove(sce_path)
@@ -123,8 +123,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
                     {
                         "job_id": job_id, 
                         "results": detail,
-                        "completed_on": datetime.now(),
-                        "status": "Failure"
+                        "Completed on": datetime.now(),
+                        "Status": "Failure"
                     }
                 )
                 os.remove(csv_path)
@@ -140,8 +140,8 @@ def run_conversion(job_id, ds:dict, show_error=True):
             "job_id": job_id, 
             "output": outputs,
             "results": results,
-            "completed_on": datetime.now(),
-            "status": "Success"
+            "Completed on": datetime.now(),
+            "Status": "Success"
         }
     )
 
