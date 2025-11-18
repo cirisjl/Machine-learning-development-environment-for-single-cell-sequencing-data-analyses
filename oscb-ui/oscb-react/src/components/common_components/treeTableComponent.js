@@ -42,6 +42,46 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
         });
     };
 
+    const sortColumn = (a, b, dateField) => {
+        if (!a[dateField]) return 1;
+        if (!b[dateField]) return -1;
+        if (a[dateField] === b[dateField]) return 0;
+
+        if (dateField === 'Submission Date') {
+            if ((a === null || a === 'N/A') && (b === null || b === 'N/A')) {
+                return 0; // Both are null, considered equal for sorting purposes
+            }
+            if (a === 'N/A' || a === null) {
+                return 1; // 'a' is null, move it to the end
+            }
+            if (b === 'N/A' || b === null) {
+                return -1; // 'b' is null, move it to the end
+            }
+
+            const dateA = a[dateField] ? new Date(a[dateField]) : null;
+            const dateB = b[dateField] ? new Date(b[dateField]) : null;
+
+            return dateA.getTime() - dateB.getTime();
+        }
+        else if (typeof a[dateField] === 'number' && typeof b[dateField] === 'number') {
+            return a[dateField] - b[dateField];
+        }
+        else if (typeof a[dateField] === 'string' && typeof b[dateField] === 'string') {
+            return a[dateField].localeCompare(b[dateField]);
+        }
+        else if (typeof a[dateField] === 'object' || typeof b[dateField] === 'object') {
+            // Handle null values:
+            if (typeof a[dateField] === "object") {
+                a[dateField] = JSON.stringify(a[dateField]);
+            }
+            if (typeof b[dateField] === "object") {
+                b[dateField] = JSON.stringify(b[dateField]);
+            }
+            return a[dateField].localeCompare(b[dateField]);
+        }
+        return 0;
+    };
+
     const [visibleColumns, setVisibleColumns] = useState({
         'Benchmarks ID': true,
         'Dataset ID': true,
@@ -106,6 +146,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                 title: key,
                 dataIndex: key,
                 key: key,
+                sorter: (a, b) => sortColumn(a, b, key),
                 render: value => {
                     let res = '';
                     if (value && typeof value === 'object' && value.label) {

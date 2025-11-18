@@ -74,6 +74,21 @@ const TaskTable = () => {
         return dateA.getTime() - dateB.getTime();
     };
 
+    const objectToString = (input) => {
+        if (typeof input === "object") {
+            input = JSON.stringify(input).replaceAll('{', '').replaceAll('}', '').replaceAll('[', '').replaceAll(']', '').replaceAll('"', '');
+        }
+        return input;
+    }
+
+    const stringToDate = (input) => {
+        if (input && input !== 'N/A') {
+            return new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(input).local()));
+        } else {
+            return 'N/A';
+        }
+    }
+
     const sortByObject = (a, b, dateField) => {
         // Handle null values:
         if (typeof a[dateField] === "object") {
@@ -105,11 +120,20 @@ const TaskTable = () => {
                     },
                 }
             );
-            const data = await response.json();
+            let data = await response.json();
             data.results.sort((a, b) => a['Created on'] - b['Created on']);
             console.log(data);
+            const jobResults = data.results.map(item => ({
+                ...item,
+                Method: objectToString(item.Method),
+                methodMap: item.Method // Copying the 'Method' column to 'methodMap'
+            }));
+            setJobs(jobResults);
+            data.facets.Method = data.facets.Method.map(item => ({
+                ...item,
+                _id: objectToString(item._id),
+            }));
             setColFilters(data.facets);
-            setJobs(data.results);
             // setPagination(data.pagination);
             setPagination({
                 ...pagination,
@@ -290,7 +314,7 @@ const TaskTable = () => {
                 key: 'Method',
                 showSorterTooltip: { target: 'full-header' },
                 filterSearch: true,
-                filters: colFilters['Method'].map(filter => ({ text: typeof filter._id === "object" ? JSON.stringify(filter._id) + " (" + filter.count + ")" : filter._id + " (" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Method'].map(filter => ({ text: objectToString(filter._id) + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.Method || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
@@ -303,7 +327,7 @@ const TaskTable = () => {
                 ellipsis: true,
                 render: value => (
                     <div>
-                        {typeof value === "object" ? JSON.stringify(value) : value}
+                        {objectToString(value)}
                     </div>
                 )
             },
@@ -331,7 +355,7 @@ const TaskTable = () => {
                 key: 'Created on',
                 defaultSortOrder: 'descend',
                 filterSearch: true,
-                filters: colFilters['Created on'].map(filter => ({ text: filter._id && filter._id !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + " (" + filter.count + ")" : "N/A", value: filter._id })),
+                filters: colFilters['Created on'].map(filter => ({ text: stringToDate(filter._id) + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo['Created on'] || null,
                 // onFilter: (value, record) => record['Created on'].includes(value),
                 onFilter: (value, record) => record['Created on'].includes(value),
@@ -342,7 +366,7 @@ const TaskTable = () => {
                 ellipsis: true,
                 render: value => (
                     <div>
-                        {value && value !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
+                        {stringToDate(value)}
                     </div>
                 )
             },
@@ -352,7 +376,7 @@ const TaskTable = () => {
                 key: 'Completed on',
                 defaultSortOrder: 'descend',
                 filterSearch: true,
-                filters: colFilters['Completed on'].map(filter => ({ text: filter._id && filter._id !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + " (" + filter.count + ")" : "N/A", value: filter._id })),
+                filters: colFilters['Completed on'].map(filter => ({ text: stringToDate(filter._id) + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo['Completed on'] || null,
                 // onFilter: (value, record) => record['Completed on'].includes(value),
                 onFilter: (value, record) => record['Completed on'].includes(value),
@@ -362,7 +386,7 @@ const TaskTable = () => {
                 ellipsis: true,
                 render: value => (
                     <div>
-                        {value && value !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
+                        {stringToDate(value)}
                     </div>
                 )
             },  
@@ -415,7 +439,7 @@ const TaskTable = () => {
                                     navigate("/mydata/workflowTaskDetails", {
                                         state: {
                                             job_id: item["job_id"],
-                                            methodMap: item["Method"],
+                                            methodMap: item["methodMap"],
                                             datasetURL: item["datasetURL"],
                                             description: item["Description"],
                                             process: item["Process"],
@@ -428,7 +452,7 @@ const TaskTable = () => {
                                     navigate("/mydata/taskDetails", {
                                         state: {
                                             job_id: item["job_id"],
-                                            method: item["Method"],
+                                            method: item["methodMap"],
                                             datasetURL: item["datasetURL"],
                                             description: item["Description"],
                                             process: item["Process"],

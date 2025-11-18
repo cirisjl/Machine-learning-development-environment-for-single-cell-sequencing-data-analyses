@@ -76,6 +76,42 @@
             }
           }
         },
+        "integration_params": {
+          "type": "object",
+          "title": "Integration Parameters",
+          "required": [
+            "methods",
+            "batch_key"
+          ],
+          "properties": {
+            "methods": {
+              "type": "array",
+              "title": "Method",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Liger",
+                  "Harmony",
+                  "Seurat",
+                  "scVI"
+                ]
+              },
+              "uniqueItems": true,
+              "minItems": 1
+            },
+            "batch_key": {
+              "type": "string",
+              "title": "Batch Key",
+              "description": "Please specify the Batch Key."
+            },
+            "pseudo_replicates": {
+              "type": "integer",
+              "title": "Pseudo Replicates",
+              "description": "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
+              "default": 0
+            }
+          }
+        },
         "annotation_params": {
           "type": "object",
           "title": "Annotation Parameters",
@@ -127,38 +163,6 @@
               "type": "string",
               "title": "User's Reference Labels",
               "description": "Specify the labels"
-            }
-          }
-        },
-        "integration_params": {
-          "type": "object",
-          "title": "Integration Parameters",
-          "properties": {
-            "methods": {
-              "type": "array",
-              "title": "Method",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "Liger",
-                  "Harmony",
-                  "Seurat",
-                  "scVI"
-                ]
-              },
-              "uniqueItems": true,
-              "minItems": 1
-            },
-            "batch_key": {
-              "type": "string",
-              "title": "Batch Key",
-              "description": "Please specify the Batch Key."
-            },
-            "pseudo_replicates": {
-              "type": "integer",
-              "title": "Pseudo Replicates",
-              "description": "Please specify the number of samples for each batch if you use pooled samples for sc-RNA sequencing.",
-              "default": 0
             }
           }
         },
