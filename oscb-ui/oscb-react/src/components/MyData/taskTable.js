@@ -21,7 +21,7 @@ const TaskTable = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [changesFound, setChangesFound] = useState(false);
-    const [filters, setFilters] = useState({});
+    const [colFilters, setColFilters] = useState({});
     const [globalSearchTerm, setGlobalSearchTerm] = useState('');
     const [filteredInfo, setFilteredInfo] = useState({});
     const [sortedInfo, setSortedInfo] = useState({});
@@ -33,13 +33,17 @@ const TaskTable = () => {
         setFilteredInfo(filters);
         setSortedInfo(sorter);
     };
-    const clearFilters = () => {
-        setFilteredInfo({});
-    };
-    const clearAll = () => {
-        setFilteredInfo({});
-        setSortedInfo({});
-    };
+
+    // const clearFilters = () => {
+    //     setFilteredInfo({});
+    //     console.log('Cleared filters', filteredInfo);
+    // };
+    
+    // const clearAll = () => {
+    //     setFilteredInfo({});
+    //     setSortedInfo({});
+    //     console.log('Cleared all', sortedInfo);
+    // };
 
     let jwtToken = getCookie('jwtToken');
     const navigate = useNavigate();
@@ -52,9 +56,39 @@ const TaskTable = () => {
         hour12: true
     };
 
+    const sortByDateWithNulls = (a, b, dateField) => {
+        // Handle null values:
+        if ((a === null || a === 'N/A') && (b === null || b === 'N/A')) {
+            return 0; // Both are null, considered equal for sorting purposes
+        }
+        if (a === 'N/A' || a === null) {
+            return 1; // 'a' is null, move it to the end
+        }
+        if (b === 'N/A' || b === null) {
+            return -1; // 'b' is null, move it to the end
+        }
+
+        const dateA = a[dateField] ? new Date(a[dateField]) : null;
+        const dateB = b[dateField] ? new Date(b[dateField]) : null;
+
+        return dateA.getTime() - dateB.getTime();
+    };
+
+    const sortByObject = (a, b, dateField) => {
+        // Handle null values:
+        if (typeof a[dateField] === "object") {
+            a[dateField] = JSON.stringify(a[dateField]);
+        }
+        if (typeof b[dateField] === "object") {
+            b[dateField] = JSON.stringify(b[dateField]);
+        }
+
+        return a[dateField].localeCompare(b[dateField]);
+    };
+
     const [pagination, setPagination] = useState({
         current: 1,
-        position: ["topCenter"],
+        // position: ["topCenter"],
         pageSize: 10, // default number of rows per page
         pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
         showSizeChanger: true, // show the dropdown to select page size
@@ -74,9 +108,12 @@ const TaskTable = () => {
             const data = await response.json();
             data.results.sort((a, b) => a['Created on'] - b['Created on']);
             console.log(data);
-            setFilters(data.facets);
+            setColFilters(data.facets);
             setJobs(data.results);
-            setPagination(data.pagination);
+            // setPagination(data.pagination);
+            setPagination({
+                ...pagination,
+            });
             setLoading(false)
             console.log('Fetched jobs:', data);
 
@@ -129,7 +166,7 @@ const TaskTable = () => {
     };
 
     useEffect(() => {   
-        fetchJobs(pagination.page, globalSearchTerm);
+        fetchJobs(pagination.current, globalSearchTerm);
     }, []); 
 
     const handleSearchSubmit = (event) => {
@@ -138,7 +175,7 @@ const TaskTable = () => {
         console.log("Search Handled");
     };
 
-    const handleDelete = (jobID) => {
+    const handleDelete = (jobID, pagination) => {
         console.log("Delete job: ", jobID);
         const confirmDelete = window.confirm("Are you sure to delete this job?");
         if (!confirmDelete) {
@@ -148,7 +185,7 @@ const TaskTable = () => {
             .then(response => {
                 axios.post(`${CELERY_BACKEND_API}/task/revoke/${jobID}`).then(response => {
                     console.log('Job is deleted successfully');
-                    fetchJobs(pagination.page, globalSearchTerm);
+                    fetchJobs(pagination.current, globalSearchTerm);
                 })
                     .catch(error => {
                         console.error('Error deleting job:', error);
@@ -157,39 +194,6 @@ const TaskTable = () => {
             .catch(error => {
                 console.error('Error deleting job:', error);
             });
-    };
-
-    const customSort = (a, b, sortField, sortOrder) => {
-        const valueA = a[sortField];
-        const valueB = b[sortField];
-
-        // Handle null values
-        if (valueA === null && valueB === null) {
-            return 0; // Both are null, consider them equal
-        }
-        if (valueA === null) {
-            return 1; // 'a' is null, push it to the end
-        }
-        if (valueB === null) {
-            return -1; // 'b' is null, push it to the end
-        }
-
-        // Compare non-null values based on sortOrder
-        if (sortOrder === 'ascend') {
-            // For numbers
-            if (typeof valueA === 'number' && typeof valueB === 'number') {
-                return valueA - valueB;
-            }
-            // For strings
-            return valueA.toString().localeCompare(valueB.toString(), 'en', { numeric: true });
-        } else { // Descending
-            // For numbers
-            if (typeof valueA === 'number' && typeof valueB === 'number') {
-                return valueB - valueA;
-            }
-            // For strings
-            return valueB.toString().localeCompare(valueA.toString(), 'en', { numeric: true });
-        }
     };
 
     const columns = useMemo(() => {
@@ -226,14 +230,18 @@ const TaskTable = () => {
             {
                 title: 'Description',
                 dataIndex: 'Description',
+                key: 'Description',
+                width: 200,
+                fixed: 'left',
                 showSorterTooltip: { target: 'full-header' },
-                filters: filters['Description'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Description'].map(filter => ({ text: filter._id + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.Description || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
                 // onFilter: (value, record) => record.Description.indexOf(value) === 0,
                 onFilter: (value, record) => record.Description.includes(value),
-                sorter: (a, b) => a.Description.length - b.Description.length,
+                // sorter: (a, b) => a.Description.length - b.Description.length,
+                sorter: (a, b) => a.Description.localeCompare(b.Description),
                 sortOrder: sortedInfo.columnKey === 'Description' ? sortedInfo.order : null,
                 // sortDirections: ['descend'],
                 ellipsis: true,
@@ -241,31 +249,37 @@ const TaskTable = () => {
             {
                 title: 'Category',
                 dataIndex: 'Category',
+                key: 'Category',
                 showSorterTooltip: { target: 'full-header' },
-                filters: filters['Category'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Category'].map(filter => ({ text: filter._id + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.Category || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
                 filterSearch: true,
                 // onFilter: (value, record) => record.Category.indexOf(value) === 0,
                 onFilter: (value, record) => record.Category.includes(value),
-                sorter: (a, b) => customSort(a, b, 'Category', sortedInfo.order),
+                // sorter: (a, b) => a.Category.length - b.Category.length,
+                sorter: (a, b) => a.Category.localeCompare(b.Category),
+                // sorter: (a, b) => customSorter(a, b, 'Category', sortedInfo.order),
                 sortOrder: sortedInfo.columnKey === 'Category' ? sortedInfo.order : null,
+                // sortDirections: ['ascend', 'descend'],
                 // sortDirections: ['descend'],
                 ellipsis: true,
             },
             {
                 title: 'Process',
                 dataIndex: 'Process',
+                key: 'Process',
                 showSorterTooltip: { target: 'full-header' },
                 filterSearch: true,
-                filters: filters['Process'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Process'].map(filter => ({ text: filter._id + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.Process || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
                 // onFilter: (value, record) => record.Process.indexOf(value) === 0,
                 onFilter: (value, record) => record.Process.includes(value),
-                sorter: (a, b) => a.Process.length - b.Process.length,
+                // sorter: (a, b) => a.Process.length - b.Process.length,
+                sorter: (a, b) => a.Process.localeCompare(b.Process),
                 sortOrder: sortedInfo.columnKey === 'Process' ? sortedInfo.order : null,
                 // sortDirections: ['descend'],
                 ellipsis: true,
@@ -273,31 +287,40 @@ const TaskTable = () => {
             {
                 title: 'Method',
                 dataIndex: 'Method',
+                key: 'Method',
                 showSorterTooltip: { target: 'full-header' },
                 filterSearch: true,
-                filters: filters['Method'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Method'].map(filter => ({ text: typeof filter._id === "object" ? JSON.stringify(filter._id) + " (" + filter.count + ")" : filter._id + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.Method || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
                 // onFilter: (value, record) => record.Method.indexOf(value) === 0,
                 onFilter: (value, record) => record.Method.includes(value),
-                sorter: (a, b) => a.Method.length - b.Method.length,
+                // sorter: (a, b) => a.Method.length - b.Method.length,
+                sorter: (a, b) => sortByObject(a, b, 'Method'),
                 sortOrder: sortedInfo.columnKey === 'Method' ? sortedInfo.order : null,
                 // sortDirections: ['descend'],
                 ellipsis: true,
+                render: value => (
+                    <div>
+                        {typeof value === "object" ? JSON.stringify(value) : value}
+                    </div>
+                )
             },
             {
                 title: 'job_id',
                 dataIndex: 'job_id',
+                key: 'job_id',
                 showSorterTooltip: { target: 'full-header' },
                 filterSearch: true,
-                filters: filters['job_id'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['job_id'].map(filter => ({ text: filter._id + " (" + filter.count + ")", value: filter._id })),
                 filteredValue: filteredInfo.job_id || null,
                 // specify the condition of filtering result
                 // here is that finding the name started with `value`
                 // onFilter: (value, record) => record.job_id.indexOf(value) === 0,
                 onFilter: (value, record) => record.job_id.includes(value),
-                sorter: (a, b) => a.job_id.length - b.job_id.length,
+                sorter: (a, b) => a.job_id.localeCompare(b.job_id),
+                // sorter: (a, b) => a.job_id.length - b.job_id.length,
                 sortOrder: sortedInfo.columnKey === 'job_id' ? sortedInfo.order : null,
                 // sortDirections: ['descend'],
                 ellipsis: true,
@@ -305,80 +328,83 @@ const TaskTable = () => {
             {
                 title: 'Created on',
                 dataIndex: 'Created on',
+                key: 'Created on',
                 defaultSortOrder: 'descend',
                 filterSearch: true,
-                filters: filters['Created on'].map(filter => ({ text: new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Created on'].map(filter => ({ text: filter._id && filter._id !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + " (" + filter.count + ")" : "N/A", value: filter._id })),
                 filteredValue: filteredInfo['Created on'] || null,
                 // onFilter: (value, record) => record['Created on'].includes(value),
                 onFilter: (value, record) => record['Created on'].includes(value),
-                sorter: (a, b) => a['Created on'] - b['Created on'],
+                // sorter: (a, b) => new Date(a['Created on']).getTime() - new Date(b['Created on']).getTime(),
+                // sorter: (a, b) => a['Created on'] - b['Created on'],
+                sorter: (a, b) => sortByDateWithNulls(a, b, 'Created on'),
                 sortOrder: sortedInfo.columnKey === 'Created on' ? sortedInfo.order : null,
                 ellipsis: true,
                 render: value => (
                     <div>
-                        {value ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
+                        {value && value !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
                     </div>
                 )
             },
             {
                 title: 'Completed on',
                 dataIndex: 'Completed on',
+                key: 'Completed on',
                 defaultSortOrder: 'descend',
                 filterSearch: true,
-                filters: filters['Completed on'].map(filter => ({ text: new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + "(" + filter.count + ")", value: filter._id })),
+                filters: colFilters['Completed on'].map(filter => ({ text: filter._id && filter._id !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(filter._id).local())) + " (" + filter.count + ")" : "N/A", value: filter._id })),
                 filteredValue: filteredInfo['Completed on'] || null,
                 // onFilter: (value, record) => record['Completed on'].includes(value),
                 onFilter: (value, record) => record['Completed on'].includes(value),
-                sorter: (a, b) => a['Completed on'] - b['Completed on'],
+                // sorter: (a, b) => new Date(a['Completed on']).getTime() - new Date(b['Completed on']).getTime(),
+                sorter: (a, b) => sortByDateWithNulls(a, b, 'Completed on'),
                 sortOrder: sortedInfo.columnKey === 'Completed on' ? sortedInfo.order : null,
                 ellipsis: true,
                 render: value => (
                     <div>
-                        {value ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
+                        {value && value !== 'N/A' ? new Intl.DateTimeFormat('en-US', timestampScheme).format(new Date(moment.utc(value).local())) : 'N/A'}
                     </div>
                 )
-            },   
-        ];
-
-        const statusColumn = {
-            title: 'Status',
-            key: 'Status',
-            showSorterTooltip: { target: 'full-header' },
-            filterSearch: true,
-            filters: filters['Status'].map(filter => ({ text: filter._id + "(" + filter.count + ")", value: filter._id })),
-            filteredValue: filteredInfo.Status || null,
-            // specify the condition of filtering result
-            // here is that finding the name started with `value`
-            onFilter: (value, record) => record.Status.includes(value),
-            // onFilter: (value, record) => record.Status.indexOf(value) === 0,
-            sorter: (a, b) => a.Status.length - b.Status.length,
-            sortOrder: sortedInfo.columnKey === 'Status' ? sortedInfo.order : null,
-            // sortDirections: ['descend'],
-            render: item => {
-                return (
+            },  
+            {
+                title: 'Status',
+                key: 'Status',
+                showSorterTooltip: { target: 'full-header' },
+                filterSearch: true,
+                filters: colFilters['Status'].map(filter => ({ text: filter._id + " (" + filter.count + ")", value: filter._id })),
+                filteredValue: filteredInfo.Status || null,
+                // specify the condition of filtering result
+                // here is that finding the name started with `value`
+                onFilter: (value, record) => record.Status.includes(value),
+                // onFilter: (value, record) => record.Status.indexOf(value) === 0,
+                // sorter: (a, b) => a.Status.length - b.Status.length,
+                sorter: (a, b) => a.Status.localeCompare(b.Status),
+                sortOrder: sortedInfo.columnKey === 'Status' ? sortedInfo.order : null,
+                // sortDirections: ['descend'],
+                render: record => (
                     <div style={{ textAlign: 'center' }}>
-                        {item["Status"] === 'Success' ? (
+                        {record.Status === 'Success' ? (
                             <CheckCircleIcon style={{ color: 'green' }} />
-                        ) : item["Status"] === 'Failure' ? (
+                        ) : record.Status === 'Failure' ? (
                             <CancelIcon style={{ color: 'red' }} />
                         ) : (
                             <HourglassEmptyIcon style={{ color: 'gray' }} />
                         )}
                     </div>
-                );
-            }
-        };
+                )
+            },    
+        ];
 
         const actionColumn = {
             title: 'Actions',
             key: 'actions',
             fixed: 'right',
-            width: 120,
+            width: 150,
             render: item => {
                 return (
-                    <div className="action-buttons">
+                    <div className="action-buttons" style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
                         <Button
-                            onClick={() => handleDelete(item["Job ID"])}
+                            onClick={() => handleDelete(item["Job ID"], pagination)}
                             className="action-button">
                             <FontAwesomeIcon icon={faTrash} />
                         </Button>
@@ -421,7 +447,7 @@ const TaskTable = () => {
             }
         };
 
-        return [...baseColumns, statusColumn, actionColumn];
+        return [...baseColumns, actionColumn];
     }, [jobs, pagination]);
 
     useEffect(() => {
@@ -461,29 +487,28 @@ const TaskTable = () => {
             <div className='study-keyword-search'>
                 <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
                 <div>
-                    <form onSubmit={handleSearchSubmit}>
-                    <input
-                        type="text"
-                        autoComplete="off"
-                        className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
-                        placeholder="Search..."
-                        value={globalSearchTerm}
-                        onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                    />
-                    
-                    {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
-                        <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
-                    </svg>     */}
-
-                    </form>
+                    <p><form onSubmit={handleSearchSubmit}>
+                        <input
+                            type="text"
+                            autoComplete="off"
+                            className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
+                            placeholder="Search..."
+                            value={globalSearchTerm}
+                            onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                        />  
+                        <button type="submit">Search</button>
+                        { /* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                            <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
+                        </svg> */}
+                    </form></p>
                 </div>
             </div>
 
             <div className='table-results'>
-                <Space style={{ marginBottom: 16 }}>
-                    <Button onClick={clearFilters}>Clear filters</Button>
+                {/* <Space style={{ marginBottom: 16 }}>
+                    <Button onClick={clearFilters}>Clear filters</Button>  
                     <Button onClick={clearAll}>Clear filters and sorters</Button>
-                </Space>
+                </Space> */}
 
                 {loading ? ( 
                     <div className="spinner-container">
@@ -533,10 +558,11 @@ const TaskTable = () => {
                         }}
                     />) : (
                         <div>
-                            <p>No jobs found.</p>
+                            <p>No job found.</p>
                         </div>
                     )}
                 <div className="pagination-info">
+                    <span>* Click <strong>Header</strong> to <strong>sort</strong> or <strong>filter</strong> jobs.</span><br />
                     <span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>remove</strong> jobs.</span><br/>
                     <span>
                         * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view job details

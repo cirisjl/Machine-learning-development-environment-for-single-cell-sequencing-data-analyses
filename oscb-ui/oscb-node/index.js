@@ -1478,7 +1478,7 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
     try {
         const top = parseInt(req.query.top) || 0;
         const username = req.user.username;
-        const page = parseInt(req.query.page, 10) || 1;
+        const curent = parseInt(req.query.page, 10) || 1;
         const pageSize = parseInt(req.query.pageSize, 10) || 10;
         let globalSearchQuery = req.query.q;
         const filters = req.body.filters || null;
@@ -1551,7 +1551,7 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
                         { $sort: { count: -1 } }
                     ],
                     'Category': [
-                        { $group: { _id: '$Category', count: { $sum: 1 } } },
+                        { $group: { _id: { $ifNull: ["$Category", "N/A"] }, count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Process': [
@@ -1564,15 +1564,17 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
                     ],
                     // More facets as per your requirement
                     'Status': [
-                        { $group: { _id: '$Status', count: { $sum: 1 } } },
+                        { $group: { _id: { $ifNull: ["$Status", "N/A"] }, count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Created on': [
-                        { $group: { _id: '$Created on', count: { $sum: 1 } } },
+                        // { $group: { _id: { $ifNull: ["$Created on", ""] }, count: { $sum: 1 } } },
+                        { $group: { _id: { $ifNull: ["$Created on", "N/A"] }, count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'Completed on': [
-                        { $group: { _id: '$Completed on', count: { $sum: 1 } } },
+                        // { $group: { _id: { $ifNull: ["$Completed on", ""] }, count: { $sum: 1 } } },
+                        { $group: { _id: { $ifNull: ["$Completed on", "N/A"] }, count: { $sum: 1 } } },
                         { $sort: { count: -1 } }
                     ],
                     'job_id': [
@@ -1585,12 +1587,12 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
                             {
                                 job_id: "$job_id",
                                 Description: "$Description",
-                                Category: "$Category",
+                                Category: { $ifNull: ["$Category", "N/A"] },
                                 Process: "$Process",
                                 Method: "$Method",
-                                Status: "$Status",
-                                'Created on': "$Created on",
-                                'Completed on': "$Completed on",
+                                Status: { $ifNull: ["$Status", "N/A"] },
+                                'Created on': { $ifNull: ["$Created on", "N/A"] },
+                                'Completed on': { $ifNull: ["$Completed on", "N/A"] },
                             }
                         }
                     ]
@@ -1608,7 +1610,7 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
         const searchResultsPipeline = [
             { $match: matchStage },
             {
-                $project: { job_id: 1, 'Job ID': "$job_id", Description: 1, Category: 1, Process: 1, Method: 1, Status: 1, 'Created on': 1, 'Completed on': 1, process_ids: 1, datasetURL: 1, results: 1, output: 1 }
+                $project: { job_id: 1, 'Job ID': "$job_id", Description: 1, Category: { $ifNull: ["$Category", "N/A"] }, Process: 1, Method: 1, Status: { $ifNull: ["$Status", "N/A"] }, 'Created on': { $ifNull: ["$Created on", "N/A"] }, 'Completed on': { $ifNull: ["$Completed on", "N/A"] }, process_ids: 1, datasetURL: 1, results: 1, output: 1 }
             }, // Excluding fields
             { $sort: { 'Created on': -1 } },
             // { $skip: (page - 1) * pageSize },
@@ -1626,10 +1628,10 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
             facets: facetsResult[0],
             results: searchResults,
             pagination: {
-                page,
-                pageSize,
+                curent: curent,
+                pageSize: pageSize,
                 pageCount: Math.ceil(totalCount / pageSize),
-                totalCount
+                totalCount: totalCount
             }
         });
     } catch (error) {
