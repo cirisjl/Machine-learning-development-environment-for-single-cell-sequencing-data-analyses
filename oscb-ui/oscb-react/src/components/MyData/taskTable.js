@@ -205,19 +205,19 @@ const TaskTable = () => {
         if (!confirmDelete) {
             return; // If user clicks cancel, do nothing
         }
-        axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`)
-            .then(response => {
-                axios.post(`${CELERY_BACKEND_API}/task/revoke/${jobID}`).then(response => {
-                    console.log('Job is deleted successfully');
-                    fetchJobs(pagination.current, globalSearchTerm);
-                })
-                    .catch(error => {
-                        console.error('Error deleting job:', error);
-                    });
+        axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobID}`)
+        .then(response => {
+            axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`).then(response => {
+                console.log('Job is deleted successfully');
+                fetchJobs(pagination.current, globalSearchTerm);
             })
-            .catch(error => {
-                console.error('Error deleting job:', error);
-            });
+                .catch(error => {
+                    console.error('Error deleting job:', error);
+                });
+        })
+        .catch(error => {
+            console.error('Error deleting job:', error);
+        });
     };
 
     const columns = useMemo(() => {

@@ -312,19 +312,19 @@ function WorkflowTaskDetailsComponent() {
     if (!confirmDelete) {
       return; // If user clicks cancel, do nothing
     }
-    axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`)
-      .then(response => {
-        axios.post(`${CELERY_BACKEND_API}/task/revoke/${job_id}`).then(response => {
-          console.log('Job is deleted successfully');
-          navigate('/myJobs');
-        })
-          .catch(error => {
-            console.error('Error deleting job:', error);
-          });
+    axios.post(`${CELERY_BACKEND_API}/job/revoke/${job_id}`)
+    .then(response => {
+      axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`).then(response => {
+        console.log('Job is deleted successfully');
+        navigate('/myJobs');
       })
-      .catch(error => {
-        console.error('Error deleting job:', error);
-      });
+        .catch(error => {
+          console.error('Error deleting job:', error);
+        });
+    })
+    .catch(error => {
+      console.error('Error deleting job:', error);
+    });
   };
 
   // WebSocket listener
@@ -625,12 +625,12 @@ function WorkflowTaskDetailsComponent() {
                       <Typography variant="subtitle1" gutterBottom><strong>Action:</strong></Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button
-                          variant="outlined"
+                          variant="contained"
                           color="error"
                           onClick={handleDelete}
                           // sx={{ mt: 2 }}
                         >
-                          {(taskStatus && taskStatus.toLowerCase() !== "success" && taskStatus.toLowerCase() !== "failure") ? 'Terminate' : 'Delete'}
+                          {(status && (status.toLowerCase() === "success" || status.toLowerCase() === "failure")) ? 'Delete' : 'Terminate'}
                         </Button>
                       </Box>
                     </Grid>

@@ -177,7 +177,7 @@ async def get_cli_task_status(job_id: str) -> dict:
 
 
 
-@app.post("/api/task/revoke/{job_id}")
+@app.post("/api/job/revoke/{job_id}")
 async def revoke_task(job_id: str) -> dict:
     """
     Revoke a submitted Task
