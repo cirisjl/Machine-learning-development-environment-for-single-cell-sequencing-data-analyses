@@ -84,6 +84,9 @@ Users can search datasets using filters such as species, category, author, organ
 <img src="/images/doc/my_data.png" width="80%">
 </div>
 
+> [!TIP]  
+> Click the **column headers** to **sort** the table. 
+
 <hr/>
 
 ## Dataset Details

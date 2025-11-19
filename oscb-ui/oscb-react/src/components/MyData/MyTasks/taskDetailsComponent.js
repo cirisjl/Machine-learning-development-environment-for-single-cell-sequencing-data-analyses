@@ -326,6 +326,26 @@ function TaskDetailsComponent() {
     fetchFiles();
   }, [job_id]);
 
+  const handleDelete = () => {
+      console.log("Delete job: ", job_id);
+      const confirmDelete = window.confirm("Are you sure to delete this job?");
+      if (!confirmDelete) {
+        return; // If user clicks cancel, do nothing
+      }
+      axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`)
+        .then(response => {
+          axios.post(`${CELERY_BACKEND_API}/task/revoke/${job_id}`).then(response => {
+            console.log('Job is deleted successfully');
+            navigate('/myJobs');
+          })
+            .catch(error => {
+              console.error('Error deleting job:', error);
+            });
+        })
+        .catch(error => {
+          console.error('Error deleting job:', error);
+        });
+    };
 
   const handleLogMessage = (event) => {
     setLiveLogs((prevLogs) => prevLogs + event.data);
@@ -461,10 +481,23 @@ function TaskDetailsComponent() {
                           : (<Typography variant="body1">{method}</Typography>))
                       }
                     </Grid>
-                    <Grid item xs={12}> 
+                    <Grid item xs={6}> 
                       <Typography variant="subtitle1" gutterBottom><strong>Status:</strong></Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <StatusChip status={taskStatus} />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1" gutterBottom><strong>Action:</strong></Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={handleDelete}
+                          // sx={{ mt: 2 }}
+                        >
+                          {(taskStatus && taskStatus.toLowerCase() !== "success" && taskStatus.toLowerCase() !== "failure") ? 'Terminate' : 'Delete'}
+                        </Button>
                       </Box>
                     </Grid>
                 </Grid>

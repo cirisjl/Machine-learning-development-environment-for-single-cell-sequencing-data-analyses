@@ -8,11 +8,14 @@ We implemented an asynchronous job management system. After submitting a job, it
 
 You can monitor status, view results, or delete jobs on the **“My Jobs”** page.
 
-The top 5 jobs are displayed in the right sidebar.
+The top **5 jobs** are displayed in the **right sidebar**.
 
 <div align="center">
 <img src="/images/doc/my_jobs.png" width="80%">
 </div>
+
+> [!TIP]  
+> Click the **column headers** to apply **filters** or **sort** the table. 
 
 <hr/>
 

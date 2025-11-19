@@ -382,6 +382,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                 }}
             />
             { <div className="pagination-info">
+                <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
                 <span>* Click <strong>+</strong> to expand a row and view the detailed outputs of each processed result.</span><br/>
                 {showEdit && (<span>* Click <FontAwesomeIcon icon={faEdit} /> to <strong>Edit</strong> dataset.<br /></span>)}
                 {showDelete && (<span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>Delete</strong> dataset.<br /></span>)}

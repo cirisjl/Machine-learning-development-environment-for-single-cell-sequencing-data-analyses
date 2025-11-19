@@ -15,6 +15,9 @@ You can:
 <img src="/images/doc/view_benchmarks.png" width="80%">
 </div>
 
+> [!TIP]  
+> Click the **column headers** to **sort** the table. 
+
 On the **Benchmark Details** page, you can view:
 
 * **Dataset metadata** — information about the dataset used in the benchmark.

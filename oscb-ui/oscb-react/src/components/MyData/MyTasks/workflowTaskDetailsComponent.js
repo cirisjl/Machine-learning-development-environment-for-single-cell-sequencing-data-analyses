@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 import {
   Container, Typography, Chip, Box, Grid, TextField, Button,
@@ -140,6 +140,7 @@ function downloadFile(fileUrl) {
 
 function WorkflowTaskDetailsComponent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { job_id, methodMap, datasetURL, description, process, output, results, status } = location.state || {};
   const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
   const [taskOutput, setTaskOutput] = useState(null); // Set to null initially
@@ -303,6 +304,27 @@ function WorkflowTaskDetailsComponent() {
         setIsError(true);
       }
     }
+  };
+
+  const handleDelete = () => {
+    console.log("Delete job: ", job_id);
+    const confirmDelete = window.confirm("Are you sure to delete this job?");
+    if (!confirmDelete) {
+      return; // If user clicks cancel, do nothing
+    }
+    axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`)
+      .then(response => {
+        axios.post(`${CELERY_BACKEND_API}/task/revoke/${job_id}`).then(response => {
+          console.log('Job is deleted successfully');
+          navigate('/myJobs');
+        })
+          .catch(error => {
+            console.error('Error deleting job:', error);
+          });
+      })
+      .catch(error => {
+        console.error('Error deleting job:', error);
+      });
   };
 
   // WebSocket listener
@@ -593,10 +615,23 @@ function WorkflowTaskDetailsComponent() {
                         <Typography variant="body2" color="textSecondary">Not available</Typography>
                       )}
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid item xs={6}>
                       <Typography variant="subtitle1" gutterBottom><strong>Status:</strong></Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <StatusChip status={taskStatus} />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1" gutterBottom><strong>Action:</strong></Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={handleDelete}
+                          // sx={{ mt: 2 }}
+                        >
+                          {(taskStatus && taskStatus.toLowerCase() !== "success" && taskStatus.toLowerCase() !== "failure") ? 'Terminate' : 'Delete'}
+                        </Button>
                       </Box>
                     </Grid>
                   </Grid>

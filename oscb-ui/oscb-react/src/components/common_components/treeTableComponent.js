@@ -271,6 +271,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                 }}
             />
             <div className="pagination-info">
+                <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
                 <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Benchmarks ID</strong>.</span><br/>
                 <span>
                     * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view details

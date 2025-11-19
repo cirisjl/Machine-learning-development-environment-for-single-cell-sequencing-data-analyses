@@ -586,7 +586,7 @@ const TaskTable = () => {
                         </div>
                     )}
                 <div className="pagination-info">
-                    <span>* Click <strong>Header</strong> to <strong>sort</strong> or <strong>filter</strong> jobs.</span><br />
+                    <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
                     <span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>remove</strong> jobs.</span><br/>
                     <span>
                         * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view job details
