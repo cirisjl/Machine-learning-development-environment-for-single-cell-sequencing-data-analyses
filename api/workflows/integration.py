@@ -91,60 +91,75 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
         }
     )
 
-    integration_inputs = []
-    qc_process_ids = []
-    for i in range(len(abs_inputList)):
-        ds = {}
-        ds['userID'] = userID
-        ds['input'] = abs_inputList[i]
-        ds['output'] = dss['output']
-        ds['datasetId'] = datasetIds[i]
-        ds['dataset'] = datasets[i]
-        ds['do_umap'] = do_umap
-        ds['do_cluster'] = do_cluster
-        ds['qc_params'] = qc_params
-        
-        qc_results = run_qc(job_id, ds, fig_path=fig_path)
-        if qc_results is not None:
-            integration_inputs.append(qc_results['adata_path'])
-            process_ids.extend(qc_results["process_ids"])
-            qc_process_ids.extend(qc_results["process_ids"])
+    try:
+        integration_inputs = []
+        qc_process_ids = []
+        for i in range(len(abs_inputList)):
+            ds = {}
+            ds['userID'] = userID
+            ds['input'] = abs_inputList[i]
+            ds['output'] = dss['output']
+            ds['datasetId'] = datasetIds[i]
+            ds['dataset'] = datasets[i]
+            ds['do_umap'] = do_umap
+            ds['do_cluster'] = do_cluster
+            ds['qc_params'] = qc_params
+            ds['species'] = dss['species']
+            ds['skip_3d'] = dss['skip_3d']
+            ds['skip_tsne'] = dss['skip_tsne']
+            
+            qc_results = run_qc(job_id, ds, fig_path=fig_path)
+            if qc_results is not None:
+                integration_inputs.append(qc_results['adata_path'])
+                process_ids.extend(qc_results["process_ids"])
+                qc_process_ids.extend(qc_results["process_ids"])
 
-    wf_results['QC'] = qc_process_ids
-    wf_results['QC_output'] = integration_inputs
+        wf_results['QC'] = qc_process_ids
+        wf_results['QC_output'] = integration_inputs
 
-    if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
-        dss['input'] = integration_inputs
-        integration_results = run_integration(job_id, dss, fig_path=fig_path)
-        wf_results['integration'] = integration_results["process_ids"]
-        process_ids.extend(integration_results["process_ids"])
-        wf_results['integration_output'] = integration_results['output']
-        output = integration_results['output']
-        adata_outputs = integration_results['adata_path']
-    else:
-        raise CeleryTaskException("No integration input file is found.")
+        if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
+            dss['input'] = integration_inputs
+            integration_results = run_integration(job_id, dss, fig_path=fig_path)
+            wf_results['integration'] = integration_results["process_ids"]
+            process_ids.extend(integration_results["process_ids"])
+            wf_results['integration_output'] = integration_results['output']
+            output = integration_results['output']
+            adata_outputs = integration_results['adata_path']
+        else:
+            raise CeleryTaskException("No integration input file is found.")
 
-    results = {
-        "output": output,
-        # "workflow_id": workflow_id,
-        "md5": md5,
-        "adata_path": adata_outputs,
-        "wf_results": wf_results,
-        # "figures":fig_path, 
-        "process_ids": process_ids
-    }
-    
-    upsert_jobs(
-        {
-            "job_id": job_id, 
+        results = {
             "output": output,
-            "process_ids": process_ids,
             # "workflow_id": workflow_id,
-            "results": results,
-            # "figures": fig_path, 
-            "Completed on": datetime.now(),
-            "Status": "Success"
+            "md5": md5,
+            "adata_path": adata_outputs,
+            "wf_results": wf_results,
+            # "figures":fig_path, 
+            "process_ids": process_ids
         }
-    )
+        
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "output": output,
+                "process_ids": process_ids,
+                # "workflow_id": workflow_id,
+                "results": results,
+                # "figures": fig_path, 
+                "Completed on": datetime.now(),
+                "Status": "Success"
+            }
+        )
+    except Exception as e:
+        detail = f"Integration workflow is failed: {e}"
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "results": {"error": detail},
+                "Completed on": datetime.now(),
+                "Status": "Failure"
+            }
+        )
+        raise CeleryTaskException(detail)
 
     return results

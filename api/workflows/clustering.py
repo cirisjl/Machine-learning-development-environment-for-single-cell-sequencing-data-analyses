@@ -71,47 +71,59 @@ def run_clustering(job_id, ds:dict, random_state=0):
         }
     )
 
-    qc_results = run_qc(job_id, ds, fig_path=fig_path)
-    if qc_results is not None:
-        ds['input'] = qc_results['adata_path']
-        print(qc_results['adata_path'])        
-        process_ids.extend(qc_results["process_ids"])
-        wf_results['QC'] = qc_results["process_ids"]
-        wf_results['QC_output'] = qc_results['output']
-        if normalization_params["methods"] is not None:
-            normalization_results = run_normalization(job_id, ds, fig_path=fig_path)
-            wf_results['normalization'] = normalization_results["process_ids"]
-            process_ids.extend(normalization_results["process_ids"])
-            wf_results['normalization_output'] = normalization_results['output']
-            output = normalization_results['output']
-        elif imputation_params["methods"] is not None:
-            imputation_results = run_imputation(job_id, ds, fig_path=fig_path)
-            wf_results['imputation'] = imputation_results["process_ids"]
-            process_ids.extend(imputation_results["process_ids"])
-            wf_results['imputation_output'] = imputation_results['output']
-            output = imputation_results['output']
-        # upsert_workflows(workflow_id, wf_results)
+    try:
+        qc_results = run_qc(job_id, ds, fig_path=fig_path)
+        if qc_results is not None:
+            ds['input'] = qc_results['adata_path']
+            print(qc_results['adata_path'])        
+            process_ids.extend(qc_results["process_ids"])
+            wf_results['QC'] = qc_results["process_ids"]
+            wf_results['QC_output'] = qc_results['output']
+            if normalization_params["methods"] is not None:
+                normalization_results = run_normalization(job_id, ds, fig_path=fig_path)
+                wf_results['normalization'] = normalization_results["process_ids"]
+                process_ids.extend(normalization_results["process_ids"])
+                wf_results['normalization_output'] = normalization_results['output']
+                output = normalization_results['output']
+            elif imputation_params["methods"] is not None:
+                imputation_results = run_imputation(job_id, ds, fig_path=fig_path)
+                wf_results['imputation'] = imputation_results["process_ids"]
+                process_ids.extend(imputation_results["process_ids"])
+                wf_results['imputation_output'] = imputation_results['output']
+                output = imputation_results['output']
+            # upsert_workflows(workflow_id, wf_results)
 
-    results = {
-        "output": output,
-        # "workflow_id": workflow_id,
-        "md5": md5,
-        "wf_results": wf_results,
-        # "figures":fig_path, 
-        "process_ids": process_ids
-    }
-    
-    upsert_jobs(
-        {
-            "job_id": job_id, 
+        results = {
             "output": output,
-            "process_ids": process_ids,
             # "workflow_id": workflow_id,
-            "results": results,
-            # "figures": fig_path, 
-            "Completed on": datetime.now(),
-            "Status": "Success"
+            "md5": md5,
+            "wf_results": wf_results,
+            # "figures":fig_path, 
+            "process_ids": process_ids
         }
-    )
+        
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "output": output,
+                "process_ids": process_ids,
+                # "workflow_id": workflow_id,
+                "results": results,
+                # "figures": fig_path, 
+                "Completed on": datetime.now(),
+                "Status": "Success"
+            }
+        )
+    except Exception as e:
+        detail = f"Clustering workflow is failed: {e}"
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "results": {"error": detail},
+                "Completed on": datetime.now(),
+                "Status": "Failure"
+            }
+        )
+        raise CeleryTaskException(detail)
 
     return results 

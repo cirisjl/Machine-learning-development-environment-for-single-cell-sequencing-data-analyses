@@ -98,90 +98,105 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         }
     )
 
-    # Run QC
-    qc_outputs = []
-    qc_process_ids = []
-    for i in range(len(abs_inputList)):
-        ds = {}
-        ds['userID'] = userID
-        ds['input'] = abs_inputList[i]
-        ds['output'] = dss['output']
-        ds['datasetId'] = datasetIds[i]
-        ds['dataset'] = datasets[i]
-        ds['do_umap'] = do_umap
-        ds['do_cluster'] = do_cluster
-        ds['qc_params'] = qc_params
-        
-        qc_results = run_qc(job_id, ds, fig_path=fig_path)
-        if qc_results is not None:
-            qc_outputs.append(qc_results['adata_path'])
-            process_ids.extend(qc_results["process_ids"])
-            qc_process_ids.extend(qc_results["process_ids"])
-
-    wf_results['QC'] = qc_process_ids
-    wf_results['QC_output'] = qc_outputs
-    
-    # Run Annotation
-    ann_process_ids = []
-    integration_inputs = []
-    annotation_outputs = []
-    if len(qc_outputs) > 0 and len(annotation_params["methods"]) > 0:
-        for i in range(len(qc_outputs)):
+    try:
+        # Run QC
+        qc_outputs = []
+        qc_process_ids = []
+        for i in range(len(abs_inputList)):
             ds = {}
             ds['userID'] = userID
-            ds['input'] = qc_outputs[i]
+            ds['input'] = abs_inputList[i]
             ds['output'] = dss['output']
             ds['datasetId'] = datasetIds[i]
             ds['dataset'] = datasets[i]
+            ds['do_umap'] = do_umap
+            ds['do_cluster'] = do_cluster
+            ds['qc_params'] = qc_params
             ds['species'] = dss['species']
-            ds['user_refs'] = user_refs
-            ds['do_umap'] = False
-            ds['do_cluster'] = False
-            ds['annotation_params'] = annotation_params
+            ds['skip_3d'] = dss['skip_3d']
+            ds['skip_tsne'] = dss['skip_tsne']
+            
+            qc_results = run_qc(job_id, ds, fig_path=fig_path)
+            if qc_results is not None:
+                qc_outputs.append(qc_results['adata_path'])
+                process_ids.extend(qc_results["process_ids"])
+                qc_process_ids.extend(qc_results["process_ids"])
 
-            annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
-            ann_process_ids.extend(annotation_results["process_ids"])
-            process_ids.extend(annotation_results["process_ids"])
-            annotation_outputs.append(annotation_results['output'])
-            integration_inputs.append(annotation_results['adata_path'])
-    wf_results['annotation'] = ann_process_ids
-    wf_results['annotation_output'] = annotation_outputs
+        wf_results['QC'] = qc_process_ids
+        wf_results['QC_output'] = qc_outputs
+        
+        # Run Annotation
+        ann_process_ids = []
+        integration_inputs = []
+        annotation_outputs = []
+        if len(qc_outputs) > 0 and len(annotation_params["methods"]) > 0:
+            for i in range(len(qc_outputs)):
+                ds = {}
+                ds['userID'] = userID
+                ds['input'] = qc_outputs[i]
+                ds['output'] = dss['output']
+                ds['datasetId'] = datasetIds[i]
+                ds['dataset'] = datasets[i]
+                ds['species'] = dss['species']
+                ds['user_refs'] = user_refs
+                ds['do_umap'] = False
+                ds['do_cluster'] = False
+                ds['annotation_params'] = annotation_params
 
-    # Run Integration
-    integration_process_ids = []
-    integration_outputs = []
-    if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
-        dss['input'] = integration_inputs
-        integration_results = run_integration(job_id, dss, fig_path=fig_path)
-        wf_results['integration'] = integration_results["process_ids"]
-        process_ids.extend(integration_results["process_ids"])
-        wf_results['integration_output'] = integration_results['output']
-        output = integration_results['output']
-        adata_outputs = integration_results['adata_path']
-    else:
-        output = annotation_outputs
+                annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
+                ann_process_ids.extend(annotation_results["process_ids"])
+                process_ids.extend(annotation_results["process_ids"])
+                annotation_outputs.append(annotation_results['output'])
+                integration_inputs.append(annotation_results['adata_path'])
+        wf_results['annotation'] = ann_process_ids
+        wf_results['annotation_output'] = annotation_outputs
 
-    results = {
-        "output": output,
-        # "workflow_id": workflow_id,
-        "md5": md5,
-        "adata_path": adata_outputs,
-        "wf_results": wf_results,
-        # "figures":fig_path, 
-        "process_ids": process_ids
-    }
-    
-    upsert_jobs(
-        {
-            "job_id": job_id, 
+        # Run Integration
+        integration_process_ids = []
+        integration_outputs = []
+        if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
+            dss['input'] = integration_inputs
+            integration_results = run_integration(job_id, dss, fig_path=fig_path)
+            wf_results['integration'] = integration_results["process_ids"]
+            process_ids.extend(integration_results["process_ids"])
+            wf_results['integration_output'] = integration_results['output']
+            output = integration_results['output']
+            adata_outputs = integration_results['adata_path']
+        else:
+            output = annotation_outputs
+
+        results = {
             "output": output,
-            "process_ids": process_ids,
             # "workflow_id": workflow_id,
-            "results": results,
-            # "figures": fig_path, 
-            "Completed on": datetime.now(),
-            "Status": "Success"
+            "md5": md5,
+            "adata_path": adata_outputs,
+            "wf_results": wf_results,
+            # "figures":fig_path, 
+            "process_ids": process_ids
         }
-    )
+        
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "output": output,
+                "process_ids": process_ids,
+                # "workflow_id": workflow_id,
+                "results": results,
+                # "figures": fig_path, 
+                "Completed on": datetime.now(),
+                "Status": "Success"
+            }
+        )
+    except Exception as e:
+        detail = f"Annotation workflow is failed: {e}"
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "results": {"error": detail},
+                "Completed on": datetime.now(),
+                "Status": "Failure"
+            }
+        )
+        raise CeleryTaskException(detail)
 
     return results

@@ -153,6 +153,8 @@ class Datasets(BaseModel):
     description: Optional[str] = None
     do_umap: Optional[bool] = True
     do_cluster: Optional[bool] = True
+    skip_3d: Optional[bool] = False
+    skip_tsne: Optional[bool] = False
     qc_params: QCParameters = Field(default_factory=QCParameters)
     integration_params: integrationParameters = Field(default_factory=integrationParameters)
     annotation_params: annotationParameters = Field(default_factory=annotationParameters)
