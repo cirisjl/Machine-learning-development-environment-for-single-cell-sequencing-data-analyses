@@ -257,6 +257,7 @@ function WorkflowTaskDetailsComponent() {
     } catch (error) {
       console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
       setLoading(false);
+      setLoadingPlot(false);
       setHasMessage(true);
       setMessage("Failed to retrieve pre processed results from MongoDB");
       setIsError(true);
@@ -299,6 +300,7 @@ function WorkflowTaskDetailsComponent() {
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
         setLoading(false);
+        setLoadingPlot(false);
         setHasMessage(true);
         setMessage("Failed to retrieve pre-processed results from MongoDB.");
         setIsError(true);
@@ -373,9 +375,10 @@ function WorkflowTaskDetailsComponent() {
           setHasMessage(true);
           setIsError(true);
           setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
-          // setLoading(false);
+          setLoading(false);
+          setLoadingPlot(false);
           setppJobId(null); // Reset ppJobId after handling
-        }
+        } 
       }
     };
     ws.onerror = (err) => {
@@ -384,6 +387,7 @@ function WorkflowTaskDetailsComponent() {
       setIsError(true);
       setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
       setLoading(false);
+      setLoadingPlot(false);
       console.error("WebSocket error:", err);
       setppJobId(null); // Reset ppJobId after handling
     }
@@ -406,7 +410,10 @@ function WorkflowTaskDetailsComponent() {
             plotLoaded = true;
           } else {
             setLoading(false);
+            setLoadingPlot(false);
           }
+        } else {
+          setLoading(false);
         }
       } else if (data.task_status) {
         setTaskStatus(data.task_status);
@@ -418,6 +425,7 @@ function WorkflowTaskDetailsComponent() {
               plotLoaded = true;
             } else {
               setLoading(false);
+              setLoadingPlot(false);
             }
 
             if (data.task_result.output) {
@@ -426,11 +434,13 @@ function WorkflowTaskDetailsComponent() {
             }
           } else {
             setLoading(false);
+            setLoadingPlot(false);
           }
         }
       }
     } catch (error) {
       setLoading(false);
+      setLoadingPlot(false);
       console.error("Error parsing status message:", error);
     }
   };

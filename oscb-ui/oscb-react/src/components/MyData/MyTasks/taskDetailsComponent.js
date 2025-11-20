@@ -199,6 +199,7 @@ function TaskDetailsComponent() {
       } catch (error) {
         console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
         setLoading(false);
+        setLoadingPlot(false);
         setHasMessage(true);
         setMessage("Failed to retrieve pre-processed results from MongoDB");
         setIsError(true);
@@ -224,6 +225,7 @@ function TaskDetailsComponent() {
             setHasMessage(true);
             setIsError(true);
             setLoading(false);
+            setLoadingPlot(false);
             setppJobId(null); // Reset ppJobId after handling
           }
         }
@@ -233,6 +235,7 @@ function TaskDetailsComponent() {
         setHasMessage(true);
         setIsError(true);
         setLoading(false);
+        setLoadingPlot(false);
         console.error("WebSocket error:", err);
         setppJobId(null); // Reset ppJobId after handling
       }
@@ -255,8 +258,11 @@ function TaskDetailsComponent() {
             plotLoaded = true;
           } else {
             setLoading(false);
+            setLoadingPlot(false);
           }
-        }       
+        } else {
+          setLoading(false);
+        }     
       } else if (data.task_status) {
         setTaskStatus(data.task_status);
         if (data.task_status?.toLowerCase() === "success" || data.task_status?.toLowerCase() === "failure"){
@@ -267,6 +273,7 @@ function TaskDetailsComponent() {
               plotLoaded = true;
             } else {
               setLoading(false);
+              setLoadingPlot(false);
             }
 
             if(data.task_result.output){
@@ -274,11 +281,13 @@ function TaskDetailsComponent() {
             }
           } else {
             setLoading(false);
+            setLoadingPlot(false);
           } 
         }
       }
     } catch (error) {
       setLoading(false);
+      setLoadingPlot(false);
       console.error("Error parsing status message:", error);
     }
   };
