@@ -12,8 +12,8 @@ import {
   IconButton,
   TextField,
   Typography,
-} from "@material-ui/core";
-import { Close as CloseIcon, PersonAdd, Delete } from "@material-ui/icons";
+} from "@mui/material";
+import { Close as CloseIcon, PersonAdd, Delete } from "@mui/icons-material";
 import {NODE_API_URL} from '../../constants/declarations'; 
 import { isUserAuth, getCookie } from "../../utils/utilFunctions";
 import { useNavigate } from "react-router-dom";

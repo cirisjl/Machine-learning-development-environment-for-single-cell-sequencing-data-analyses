@@ -5,13 +5,13 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails
-} from '@material-ui/core';
+} from '@mui/material';
 import { getCookie, isUserAuth } from '../../utils/utilFunctions';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {NavLink} from "react-router-dom";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';

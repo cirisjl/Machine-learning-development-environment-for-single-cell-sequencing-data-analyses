@@ -2,13 +2,13 @@ import { faEye, faClipboard } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState, useMemo } from 'react';
 import { Table } from 'antd';
-import Checkbox from '@material-ui/core/Checkbox';
-import Menu from '@material-ui/core/Menu';
-import Button from '@material-ui/core/Button';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Menu from '@mui/material/Menu';
+import Button from '@mui/material/Button';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemText from '@mui/material/ListItemText';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination }) => {

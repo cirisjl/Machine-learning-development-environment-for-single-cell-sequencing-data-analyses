@@ -3,17 +3,17 @@ import moment from 'moment';
 import { faArrowUpRightFromSquare, faAngleRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getCookie } from '../../utils/utilFunctions';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CancelIcon from '@material-ui/icons/Cancel';
-import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { useNavigate } from 'react-router-dom';
 import TextWithEllipsis from '../RightNavigation/textWithEllipsis';
 import {
     Accordion,
     AccordionSummary,
     AccordionDetails
-  } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+  } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 
 const MyJobsSideNav = () => {
@@ -58,7 +58,7 @@ const MyJobsSideNav = () => {
                     }
                 });
 
-                if (incompleteTasks.length > 0) {
+                if (incompleteTasks && incompleteTasks.length > 0) {
                     let webSocketParam = incompleteTasks.join(',');
                     const socket = new WebSocket(`${WEB_SOCKET_URL}/taskStatus/${webSocketParam}`);
                     socket.onopen = () => {
@@ -141,7 +141,7 @@ const MyJobsSideNav = () => {
                     <div className="content">
                         <div style={{ maxHeight: '360px', overflow: 'auto' }}>
 
-                        {tasks.length === 0 ? (
+                        {tasks && tasks.length === 0 ? (
                             <div>
                                 <div>
                                     <div role="alert" aria-live="polite" aria-atomic="true" className="alert m-2 alert-info">

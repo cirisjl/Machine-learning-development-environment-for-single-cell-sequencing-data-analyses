@@ -5,16 +5,16 @@ import { Button, Space, Table } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import { getCookie } from '../../utils/utilFunctions';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CancelIcon from '@material-ui/icons/Cancel';
-import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import Intl from 'intl';
 import 'intl/locale-data/jsonp/en-US';
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL, WEB_SOCKET_URL, CELERY_BACKEND_API } from '../../constants/declarations'
 import { ScaleLoader } from 'react-spinners';
-// import Button from '@material-ui/core/Button';
+// import Button from '@mui/material/Button';
 
 
 const TaskTable = () => {

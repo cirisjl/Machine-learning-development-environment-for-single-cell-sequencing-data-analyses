@@ -4,7 +4,7 @@ import axios from 'axios';
 import { NODE_API_URL } from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
-import { Card, CardContent, Typography } from '@material-ui/core';
+import { Card, CardContent, Typography } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { downloadFile, getFileNameFromURL, getCookie } from '../../../utils/utilFunctions';

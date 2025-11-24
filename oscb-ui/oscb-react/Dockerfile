@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:18.6
 # FROM stormgod/oscb_react
 
 # Create app directory
@@ -6,9 +6,14 @@ WORKDIR /opt/src/app
 # Install app dependencies
 COPY package*.json ./
 
+# RUN npm config set legacy-peer-deps true
 RUN npm install
 # RUN npm install @octokit/rest
 # RUN npm install @rjsf/core @rjsf/utils @rjsf/validator-ajv8 --save
+
+# RUN npm install @mui/icons-material
+# RUN npm install @mui/material @emotion/react @emotion/styled
+
 
 # Copy app source code
 COPY . .

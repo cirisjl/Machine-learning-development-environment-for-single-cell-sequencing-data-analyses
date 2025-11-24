@@ -5,7 +5,7 @@ import BenchmarksPlots from './benchmarksPlots';
 import axios from 'axios';
 import { NODE_API_URL } from '../../../constants/declarations';
 import AlertMessageComponent from './alertMessageComponent';
-import { Card, CardContent, Typography} from '@material-ui/core';
+import { Card, CardContent, Typography} from '@mui/material';
 
 
 function ReviewTaskComponent({setTaskStatus, taskData, setTaskData, setActiveTask, activeTask}) {

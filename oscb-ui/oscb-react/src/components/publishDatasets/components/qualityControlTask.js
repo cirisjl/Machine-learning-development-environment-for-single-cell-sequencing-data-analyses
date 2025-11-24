@@ -6,7 +6,7 @@ import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
 import {isUserAuth, getCookie, plotUmapObs} from '../../../utils/utilFunctions';
 import QualityControlParameters from './qualityControlParameters';
-import { Button, makeStyles } from '@material-ui/core';
+import { Button, makeStyles } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';

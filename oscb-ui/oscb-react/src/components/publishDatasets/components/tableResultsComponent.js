@@ -2,13 +2,13 @@ import { faEdit, faEye, faTrash, faClipboard } from '@fortawesome/free-solid-svg
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {useState} from 'react';
 // import { useTable, useRowSelect } from 'react-table';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import ListItemText from '@material-ui/core/ListItemText';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import ListItemText from '@mui/material/ListItemText';
 import { Table } from 'antd';
 import axios from 'axios';
 import { CELERY_BACKEND_API } from '../../../constants/declarations'

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import {ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Button } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles } from '@material-ui/core/styles';
+import FormGroup from '@mui/material/FormGroup';
+// import FormControlLabel from '@mui/material/FormControlLabel';
+import {Accordion, AccordionSummary, AccordionDetails, Button } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { makeStyles } from '@mui/material/styles';
 import Switch from "react-switch";
 
 const QualityControlParameters = ({values, setValues, defaultValues, shouldHideForSeurat}) => {
@@ -100,12 +100,12 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
         Advanced Quality Control Parameters
       </Typography>
       
-      <ExpansionPanel className={classes.root}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <Accordion className={classes.root}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
             {/* QC Parameters */}
             <Typography variant="h6" gutterBottom>QC Parameters</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
+        </AccordionSummary>
+        <AccordionDetails className={classes.panelDetails}>
              <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -253,17 +253,17 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                     </div>
                 </Box>
             </FormGroup>
-            </ExpansionPanelDetails>
-      </ExpansionPanel>
+            </AccordionDetails>
+      </Accordion>
 
 
-      <ExpansionPanel className={classes.root}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <Accordion className={classes.root}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
             {/* Projection Parameters */}
             <Typography variant="h6" gutterBottom>Projection Parameters</Typography>
-        </ExpansionPanelSummary>
+        </AccordionSummary>
         
-        <ExpansionPanelDetails className={classes.panelDetails}>
+        <AccordionDetails className={classes.panelDetails}>
             <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -364,16 +364,16 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
             </Box>
 
             </FormGroup>
-        </ExpansionPanelDetails>
-      </ExpansionPanel> 
+        </AccordionDetails>
+      </Accordion> 
 
 
-      <ExpansionPanel className={classes.root}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <Accordion className={classes.root}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
           <Typography variant="h6" gutterBottom>Clustering Parameters</Typography>
-        </ExpansionPanelSummary>
+        </AccordionSummary>
 
-        <ExpansionPanelDetails className={classes.panelDetails}>
+        <AccordionDetails className={classes.panelDetails}>
             <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -402,8 +402,8 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                     />
                 </Box>
             </FormGroup>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+        </AccordionDetails>
+      </Accordion>
 
       <div style={{ marginTop: '10px' }}>
         <div>
