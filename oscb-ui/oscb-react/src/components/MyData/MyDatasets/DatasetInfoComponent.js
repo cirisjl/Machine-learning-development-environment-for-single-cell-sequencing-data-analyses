@@ -7,7 +7,7 @@ import AlertMessageComponent from '../../publishDatasets/components/alertMessage
 import { Card, CardContent, Typography } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { downloadFile, getFileNameFromURL, getCookie, plotUmapObs } from '../../../utils/utilFunctions';
+import { downloadFile, getFileNameFromURL, getCookie, plotUmapObs, gunzipDict, showVitessce } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
@@ -64,6 +64,8 @@ const DatasetInfoComponent = () => {
         let plot = null;
         let plot_3d = null;
 
+        cell_metadata = gunzipDict(cell_metadata);
+
         if (twoDArray) {
           plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
           // worker.postMessage({ obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
@@ -104,7 +106,6 @@ const DatasetInfoComponent = () => {
             setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
           }
         }
-
       } catch (error) {
         console.error('Error fetching plot data:', error);
         alert(`Error fetching plot data: ${error}`);
@@ -508,7 +509,7 @@ const DatasetInfoComponent = () => {
 
                                         </Descriptions>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                          <p>Plots:</p>
+                                          {/* <p>Plots:</p> */}
                                           <React.Fragment key="plots">
                                             {(details[preProcessResult.process_id].umap_plot || details[preProcessResult.process_id].umap_plot_3d) && (
                                               <>
@@ -735,6 +736,13 @@ const DatasetInfoComponent = () => {
                                                 </div>
                                               </>
                                             )}
+                                          </React.Fragment>
+
+                                          <React.Fragment key="gene-expression-plots">
+                                            <h2>Gene Expression</h2>
+                                              <div id="vitessce-container" style={{ display: 'flex', justifyContent: 'center', height: '800px', width: '100%' }}>
+                                                {showVitessce()}
+                                              </div>
                                           </React.Fragment>
                                         </div>
 

@@ -1,4 +1,4 @@
-FROM node:18.6
+FROM node:22.21.1
 # FROM stormgod/oscb_react
 
 # Create app directory

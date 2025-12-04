@@ -17,7 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs, gunzipDict, showVitessce } from '../../../utils/utilFunctions';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Descriptions } from 'antd';
@@ -195,6 +195,7 @@ function WorkflowTaskDetailsComponent() {
     try {
       let plot = null;
       let plot_3d = null;
+      cell_metadata = gunzipDict(cell_metadata);
 
       if (twoDArray) {
         plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);
@@ -1057,6 +1058,15 @@ function WorkflowTaskDetailsComponent() {
                                               </div>
                                             </>
                                           )}
+                                        </React.Fragment>
+
+                                        <React.Fragment key="gene-expression-plots">
+                                          <h2>Gene Expression</h2>
+                                          <div style={{ display: 'flex', justifyContent: 'center', height: '820px', minWidth: '1200px', width: '100%' }}>
+                                            <div id="gene-expression" style={{ display: 'flex', justifyContent: 'left', height: '820px', minWidth: '1200px', width: '100%' }}>
+                                              {showVitessce()}
+                                            </div>
+                                          </div>
                                         </React.Fragment>
                                       </div>
 

@@ -2,6 +2,8 @@ import { NODE_API_URL } from '../constants/declarations'
 import axios from 'axios';
 import LZString from 'lz-string';
 import pako from 'pako'; // Import pako, a zlib-compatible library for browsers
+import { Vitessce } from 'vitessce';
+import { myViewConfig } from './my-view-config.js';
 
 
 // Function to compress data
@@ -243,7 +245,7 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
     umap = JSON.parse(umap);
   }
 
-  obs = gunzipDict(obs);
+  // obs = gunzipDict(obs);
 
   // Check if obs is an object and has the required properties
 
@@ -344,6 +346,7 @@ uniqueClusters.forEach((val, i) => {
 
   return JSON.stringify({ data: traces, layout });
 }
+
 // Keep this function to unzip the compressed data (from python)
 export const gunzipDict = (gzippedBase64) => {
   try {
@@ -392,3 +395,15 @@ const discrete_colors_3 = [
   "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f", "#ffff99", "#c4e1ff", 
   "#eb8d2b", "#d7d7d7", "#ff94b5", "#a6a6a6", "#c5b0b0", "#8d9b9e"
 ];
+
+
+// Initialize Vitessce with custom view config
+export function showVitessce() {
+  return (
+    <Vitessce
+      config={myViewConfig}
+      height={800}
+      theme="light"
+    />
+  );
+}

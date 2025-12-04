@@ -4,7 +4,7 @@ import axios from 'axios';
 import { CELERY_BACKEND_API, WEB_SOCKET_URL, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
-import {isUserAuth, getCookie, plotUmapObs} from '../../../utils/utilFunctions';
+import { isUserAuth, getCookie, plotUmapObs, gunzipDict } from '../../../utils/utilFunctions';
 import QualityControlParameters from './qualityControlParameters';
 import { Button, makeStyles } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -65,6 +65,7 @@ const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, pl
        try {
           let plot = null;
           let plot_3d = null;
+          cell_metadata = gunzipDict(cell_metadata);
   
           if (twoDArray) {
             plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);

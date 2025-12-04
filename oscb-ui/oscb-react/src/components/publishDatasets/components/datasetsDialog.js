@@ -2,7 +2,7 @@ import React, { useState,useEffect, useMemo } from 'react';
 import FilterComponent from './filtersComponent';
 import {NODE_API_URL} from '../../../constants/declarations';
 import ResultsTable from './tableResultsComponent';
-import Pagination from './tablePaginationComponent';
+// import Pagination from './tablePaginationComponent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faQuestionCircle, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';

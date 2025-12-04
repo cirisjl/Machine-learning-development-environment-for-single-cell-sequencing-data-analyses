@@ -17,7 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, plotUmapObs } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs, gunzipDict } from '../../../utils/utilFunctions';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
@@ -136,6 +136,7 @@ function TaskDetailsComponent() {
         try {
           let plot = null;
           let plot_3d = null;
+          cell_metadata = gunzipDict(cell_metadata);
 
           if (twoDArray) {
             plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);

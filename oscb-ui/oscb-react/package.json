@@ -74,19 +74,13 @@
     "@octokit/rest": "*",
     "ajv": "^7.0.3",
     "moment": "*",
-     "antd": "5.19.1",
-     "@ant-design/icons": "5.3.7",
-     "lz-string":"1.5.0",
-     "pako": "2.1.0",
-     "react-syntax-highlighter": "15.6.6",
-     "markdown-navbar": "1.4.0",
+     "antd": "^5.19.1",
+     "@ant-design/icons": "^5.3.7",
+     "lz-string":"^1.5.0",
+     "pako": "^2.1.0",
+     "react-syntax-highlighter": "^15.6.6",
+     "markdown-navbar": "^1.4.0",
      "vitessce": "*"
-  },
-  "overrides": {
-    "oscb-react": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    }
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",

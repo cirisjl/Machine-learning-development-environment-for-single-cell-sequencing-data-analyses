@@ -32,40 +32,40 @@ On the **Benchmark Details** page, you can view:
 
 ## Clustering
 
-See [Benchmarks](/benchmarks/clustering).
+See [benchmarks/clustering](/benchmarks/clustering).
 
 <hr/>
 
 ## Imputation
 
-See [Benchmarks](/benchmarks/imputation).
+See [benchmarks/imputation](/benchmarks/imputation).
 
 <hr/>
 
 ## Batch Integration
 
-See [Benchmarks](/benchmarks/batch-integration).
+See [benchmarks/batch-integration](/benchmarks/batch-integration).
 
 <hr/>
 
 ## Multimodal Data Integration
 
-See [Benchmarks](/benchmarks/multimodal-data-integration).
+See [benchmarks/multimodal-data-integration](/benchmarks/multimodal-data-integration).
 
 <hr/>
 
 ## Trajectory
 
-See [Benchmarks](/benchmarks/trajectory).
+See [benchmarks/trajectory](/benchmarks/trajectory).
 
 <hr/>
 
 ## Cell-Cell Communication
 
-See [Benchmarks](/benchmarks/cell-cell-communication).
+See [benchmarks/cell-cell-communication](/benchmarks/cell-cell-communication).
 
 <hr/>
 
 ## Cell Type Annotation
 
-See [Benchmarks](/benchmarks/cell-type-annotation).
+See [benchmarks/cell-type-annotation](/benchmarks/cell-type-annotation).
