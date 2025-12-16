@@ -1,0 +1,77 @@
+{
+    "type": "object",
+    "properties": {
+      "parameters": {
+        "type":"object",
+        "title": "Parameters for Dimension Reduction Process",  
+        "properties": {
+           "cluster_label": {
+            "type": "string",
+            "title": "Cluster Label",
+            "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
+          },
+          "reduction_params": {
+            "type": "object",
+            "title": "Dimension Reduction Parameters",
+            "required": [
+              "methods"
+            ],
+            "properties": {
+              "methods": {
+                "type": "array",
+                "title": "Method",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "UMAP",
+                    "t-SNE"
+                  ]
+                },
+                "default": [
+                  "t-SNE"
+                ],
+                "uniqueItems": true,
+                "minItems": 1
+              },
+              "assay": {
+                "type": "string",
+                "title": "Default Assay (If applicable)",
+                "default": "RNA"
+              },
+              "use_rep": {
+                "type": "string",
+                "title": "Use Representation",
+                "description": "Use the indicated representation",
+                "default": ""
+              },
+              "layer": { 
+                "type": "string" ,
+                "title": "Layer",
+                "description": "Specify the layer",
+                "default": ""
+              },
+              "n_neighbors": {
+                "type": "integer",
+                "default": 15
+              },
+              "n_pcs": {
+                "type": "integer",
+                "default": 20
+              },
+              "resolution": {
+                "type": "number",
+                "title": "Resolution:",
+                "default": 0.5
+              },
+              "use_default": {
+                "type": "boolean",
+                "title": "Use Default",
+                "default": true,
+                "format": "switch"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
