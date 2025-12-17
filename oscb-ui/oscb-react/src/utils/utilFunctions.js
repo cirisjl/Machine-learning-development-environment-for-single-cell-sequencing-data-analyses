@@ -403,6 +403,8 @@ export function showVitessce() {
     <Vitessce
       config={myViewConfig}
       height={800}
+      left={'10%'}
+      width={'80%'}
       theme="light"
     />
   );

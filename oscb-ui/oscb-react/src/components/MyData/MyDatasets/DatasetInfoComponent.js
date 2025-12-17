@@ -740,7 +740,7 @@ const DatasetInfoComponent = () => {
 
                                           <React.Fragment key="gene-expression-plots">
                                             <h2>Gene Expression</h2>
-                                              <div id="vitessce-container" style={{ display: 'flex', justifyContent: 'center', height: '800px', width: '100%' }}>
+                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '800px' }}>
                                                 {showVitessce()}
                                               </div>
                                           </React.Fragment>

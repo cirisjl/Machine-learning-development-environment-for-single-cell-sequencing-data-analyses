@@ -1916,3 +1916,9 @@ width
   border-color: #4B5563; 
   color: #F9FAFB; 
 } */
+
+
+.vitessce-container {
+  height: max(100%, 100vh);
+  width: 100%;
+}
