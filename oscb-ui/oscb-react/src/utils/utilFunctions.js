@@ -4,6 +4,7 @@ import LZString from 'lz-string';
 import pako from 'pako'; // Import pako, a zlib-compatible library for browsers
 import { Vitessce } from 'vitessce';
 import { myViewConfig } from './my-view-config.js';
+import "./vitessce.css";
 
 
 // Function to compress data
@@ -402,7 +403,7 @@ export function showVitessce() {
   return (
     <Vitessce
       config={myViewConfig}
-      height={800}
+      height={900}
       left={'10%'}
       width={'80%'}
       theme="light"
