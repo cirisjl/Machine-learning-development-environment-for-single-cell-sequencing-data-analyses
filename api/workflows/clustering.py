@@ -19,6 +19,21 @@ def run_clustering(job_id, ds:dict, random_state=0):
     normalization_params = ds['normalization_params']
     imputation_params = ds['imputation_params']
     fig_path = None
+    reduction_params = ds['reduction_params']
+    n_neighbors = reduction_params['n_neighbors']
+    n_pcs = reduction_params['n_pcs']
+    resolution = reduction_params['resolution']
+    n_hvg = reduction_params['n_hvg']
+    qc_params['n_neighbors'] = n_neighbors
+    qc_params['n_pcs'] = n_pcs
+    qc_params['resolution'] = resolution
+    normalization_params['n_neighbors'] = n_neighbors
+    normalization_params['n_pcs'] = n_pcs
+    normalization_params['resolution'] = resolution
+    imputation_params['n_neighbors'] = n_neighbors
+    imputation_params['n_pcs'] = n_pcs
+    imputation_params['resolution'] = resolution
+    ds['n_hvg'] = n_hvg
 
     # Initialize methodMap
     methodMap = {}

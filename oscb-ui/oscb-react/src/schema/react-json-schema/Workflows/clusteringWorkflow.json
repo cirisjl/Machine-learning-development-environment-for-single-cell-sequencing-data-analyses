@@ -52,7 +52,7 @@
             "max_genes": {
               "type": "integer",
               "title": "Max Genes",
-              "default": 20000
+              "default": 50000
             },
             "min_cells": {
               "type": "integer",
@@ -69,6 +69,23 @@
               "title": "Highly Variable Genes (n_top_genes):",
               "default": 2000
             },
+            "doublet_rate": {
+              "type": "number",
+              "title": "Expected Doublet Rate: ",
+              "default": 0.08
+            },
+            "regress_cell_cycle": {
+              "type": "boolean",
+              "title": "Regress Cell Cycle",
+              "default": false,
+              "format": "switch"
+            }
+          }
+        },
+        "reduction_params": {
+          "type": "object",
+          "title": "Visualization Parameters",
+          "properties": {
             "n_neighbors": {
               "type": "integer",
               "default": 15
@@ -82,16 +99,10 @@
               "title": "Resolution:",
               "default": 0.5
             },
-            "doublet_rate": {
-              "type": "number",
-              "title": "Expected Doublet Rate: ",
-              "default": 0.08
-            },
-            "regress_cell_cycle": {
-              "type": "boolean",
-              "title": "Regress Cell Cycle",
-              "default": false,
-              "format": "switch"
+            "n_hvg": {
+              "type": "integer",
+              "title": "Number of Highly Variable Genes for Heatmap",
+              "default": 50
             }
           }
         },

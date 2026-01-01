@@ -30,6 +30,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
     output = ids['output']
     do_umap = ids['do_umap']
     do_cluster = ids['do_cluster']
+    n_hvg = ids['n_hvg']
     
     # output_format = ids['output_format']
     parameters = ids['integration_params']
@@ -43,6 +44,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
     resolution = parameters['resolution']
     integration_output = []
     adata_outputs = []
+    zarr_output = None
 
     upsert_jobs(
         {
@@ -166,10 +168,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0, fig_path=fig_path)
 
-                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        save_anndata(adata, adata_path)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output)
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -196,10 +199,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0, fig_path=fig_path)
 
-                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        save_anndata(adata, adata_path)
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output)
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -249,7 +252,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata.X = csr_matrix(adata.X)
 
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        save_anndata(adata, adata_path)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                         adata_3D = None
                     else:
                         upsert_jobs(
@@ -263,7 +266,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key)
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key, zarr_path=zarr_output)
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                     integration_output.append({f"{method}_AnnDate": adata_path})
                     integration_output.append({f"{method}_Seurat": output})

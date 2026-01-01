@@ -17,7 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, plotUmapObs, gunzipDict, showVitessce } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Descriptions } from 'antd';
@@ -1058,15 +1058,21 @@ function WorkflowTaskDetailsComponent() {
                                               </div>
                                             </>
                                           )}
-                                        </React.Fragment>
-
-                                        <React.Fragment key="gene-expression-plots">
-                                          <h2>Gene Expression</h2>
-                                          <div style={{ display: 'flex', justifyContent: 'center', height: '820px', minWidth: '1200px', width: '100%' }}>
-                                            <div id="gene-expression" style={{ display: 'flex', justifyContent: 'left', height: '820px', minWidth: '1200px', width: '100%' }}>
-                                              {showVitessce()}
-                                            </div>
-                                          </div>
+                                          {details[preProcessResult.process_id].zarr_path && (
+                                            <>
+                                              <h2>Gene Expression</h2>
+                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
+                                                  <ShowVitessce 
+                                                    processId={details[preProcessResult.process_id].process_id}
+                                                    description={details[preProcessResult.process_id].description}
+                                                    zarrPath={details[preProcessResult.process_id].zarr_path}
+                                                    initialFeatureFilterPath={details[preProcessResult.process_id].initialFeatureFilterPath}
+                                                    obsEmbedding={details[preProcessResult.process_id].obsEmbedding}
+                                                    obsSets={details[preProcessResult.process_id].obsSets} 
+                                                  />
+                                              </div>
+                                            </>
+                                          )}
                                         </React.Fragment>
                                       </div>
 

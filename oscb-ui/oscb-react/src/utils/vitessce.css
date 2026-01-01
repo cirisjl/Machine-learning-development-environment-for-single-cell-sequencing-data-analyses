@@ -1,6 +1,6 @@
 .vitessce-container {
     height: 900px;
-    width: 90%;
+    width: 100%;
 }
 
 .vitessce-container button[type="submit"] {

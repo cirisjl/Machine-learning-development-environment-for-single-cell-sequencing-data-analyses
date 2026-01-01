@@ -37,7 +37,7 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
     varm = None
 
     if max_genes == None:
-        max_genes = 20000
+        max_genes = 50000
     
     mdata = mu.read(input_path)
 

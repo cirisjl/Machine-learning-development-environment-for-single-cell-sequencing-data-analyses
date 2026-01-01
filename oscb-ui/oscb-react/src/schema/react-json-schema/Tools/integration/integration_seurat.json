@@ -5,6 +5,11 @@
       "type":"object",
       "title": "Parameters for Integration Process",  
       "properties": {
+        "n_hvg": {
+          "type": "integer",
+          "title": "Number of Highly Variable Genes for Heatmap",
+          "default": 50
+        },
         "do_umap": {
           "type": "boolean",
           "title": "Do you want to perform UMAP after processing?",

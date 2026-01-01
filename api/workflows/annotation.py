@@ -26,6 +26,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
     n_neighbors = reduction_params['n_neighbors']
     n_pcs = reduction_params['n_pcs']
     resolution = reduction_params['resolution']
+    n_hvg = reduction_params['n_hvg']
     qc_params['n_neighbors'] = n_neighbors
     qc_params['n_pcs'] = n_pcs
     qc_params['resolution'] = resolution
@@ -115,6 +116,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             ds['species'] = dss['species']
             ds['skip_3d'] = dss['skip_3d']
             ds['skip_tsne'] = dss['skip_tsne']
+            ds['n_hvg'] = n_hvg
             
             qc_results = run_qc(job_id, ds, fig_path=fig_path)
             if qc_results is not None:
@@ -141,6 +143,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
                 ds['user_refs'] = user_refs
                 ds['do_umap'] = False
                 ds['do_cluster'] = False
+                ds['n_hvg'] = n_hvg
                 ds['annotation_params'] = annotation_params
 
                 annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
@@ -156,6 +159,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         integration_outputs = []
         if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
             dss['input'] = integration_inputs
+            dss['n_hvg'] = n_hvg
             integration_results = run_integration(job_id, dss, fig_path=fig_path)
             wf_results['integration'] = integration_results["process_ids"]
             process_ids.extend(integration_results["process_ids"])

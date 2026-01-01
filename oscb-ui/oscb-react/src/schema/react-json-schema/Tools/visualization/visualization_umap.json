@@ -10,6 +10,11 @@
             "title": "Cluster Label",
             "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
           },
+          "n_hvg": {
+            "type": "integer",
+            "title": "Number of Highly Variable Genes for Heatmap",
+            "default": 50
+          },
           "reduction_params": {
             "type": "object",
             "title": "Dimension Reduction Parameters",

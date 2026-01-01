@@ -41,7 +41,7 @@ const FlowControl = () => {
       selectedAssayName:'',
       qc_params:{
         min_genes: 200,
-        max_genes: 20000, // No limit
+        max_genes: 50000, // No limit
         min_cells: 2,
         target_sum: 1e4,
         n_top_genes: 2000,

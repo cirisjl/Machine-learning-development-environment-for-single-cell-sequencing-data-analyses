@@ -6,6 +6,26 @@ export const uiSchema = (dynamicOptions) => ({
           "classNames": "sub-category",
           "ui:widget": "ClusterLabelInput"
         },
+        "n_hvg": {
+          "classNames": "sub-category",
+          "ui:widget": "RangeSlider",
+          'ui:title': 'Number of Highly Variable Genes for Heatmap: ',
+          'ui:options': {
+            title: 'Number of Highly Variable Genes for Heatmap: ', // Title for the slider
+            min: 20,
+            max: 500,
+            step: 1,
+            marks: [
+              { value: 50, label: '50*' },
+              { value: 100, label: '100' },
+              { value: 150, label: '150' },
+              { value: 200, label: '200' },
+              { value: 250, label: '250' },
+              { value: 300, label: '300' },
+              { value: 500, label: '500' },
+            ]
+          }
+        },
         "reduction_params": {
           "classNames": "form-subset sub-category",
           "assay": {

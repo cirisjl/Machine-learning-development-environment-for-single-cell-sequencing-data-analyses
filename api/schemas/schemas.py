@@ -72,6 +72,7 @@ class reductionParameters(BaseModel):
     n_neighbors: Optional[int] = 15
     n_pcs: Optional[int] = 20 # Scanpy
     resolution: Optional[float] = 0.5
+    n_hvg: Optional[int] = 50 # Number of highly variable genes to use for Heatmap of Vitessce
     use_default: Optional[bool] = True
 
 
@@ -127,6 +128,7 @@ class Dataset(BaseModel):
     normalization_params: normalizationParameters = Field(default_factory=normalizationParameters)
     annotation_params: annotationParameters = Field(default_factory=annotationParameters)
     reduction_params: reductionParameters = Field(default_factory=reductionParameters)
+    n_hvg: Optional[int] = 50 # Number of highly variable genes to use for Heatmap of Vitessce
     do_umap: Optional[bool] = True
     do_cluster: Optional[bool] = True
     skip_3d: Optional[bool] = False
@@ -151,6 +153,7 @@ class Datasets(BaseModel):
     cluster_label: Optional[str] = None
     process: Optional[str] = None
     description: Optional[str] = None
+    n_hvg: Optional[int] = 50 # Number of highly variable genes to use for Heatmap of Vitessce
     do_umap: Optional[bool] = True
     do_cluster: Optional[bool] = True
     skip_3d: Optional[bool] = False

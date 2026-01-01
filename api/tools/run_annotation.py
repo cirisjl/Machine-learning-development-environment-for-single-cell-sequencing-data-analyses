@@ -23,6 +23,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     pp_stage = "Annotation"
     process = "Annotation"
     dataset = ds['dataset']
+    n_hvg = ds['n_hvg']
     species = ds['species'].lower()
     input = ds['input']
     user_refs = ds['user_refs']
@@ -43,6 +44,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    obsSets = []
 
     upsert_jobs(
         {
@@ -103,14 +105,16 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
-
-                    # Converrt dense martrix to sparse matrix
-                    if isinstance(adata.X, np.ndarray):
-                        adata.X = csr_matrix(adata.X)
                     # adata.write_h5ad(adata_path, compression='gzip')
-                    save_anndata(adata, adata_path)
+                    if "celltypist_label" in adata.obs.keys():
+                        obsSets.append({"name":"celltypist_label", "path":"obs/celltypist_label"})
+                    if "celltypist_ref_label" in adata.obs.keys():
+                        obsSets.append({"name":"celltypist_ref_label", "path":"obs/celltypist_ref_label"})
+
+                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+
                     annotation_output.append({"CellTypist": adata_path})
                     annotation_results["outputs"] = annotation_output
                     redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
@@ -147,14 +151,14 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
-
-                    # Converrt dense martrix to sparse matrix
-                    if isinstance(adata.X, np.ndarray):
-                        adata.X = csr_matrix(adata.X)
+                    if "scANVI_predicted" in adata.obs.keys():
+                        obsSets.append({"name":"scANVI_predicted", "path":"obs/scANVI_predicted"})
+                    
                     # adata.write_h5ad(adata_path, compression='gzip')
-                    save_anndata(adata, adata_path)
+                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+
                     annotation_output.append({"scANVI": adata_path})
                     annotation_results["outputs"] = annotation_output
                     # adata = None
@@ -242,14 +246,16 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         redislogger.info(job_id, "Clustering the neighborhood graph.")
                         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path)
-                    
-                    # Converrt dense martrix to sparse matrix
-                    if isinstance(adata.X, np.ndarray):
-                        adata.X = csr_matrix(adata.X)
+                    if "SingleR_main" in adata.obs.keys():
+                        obsSets.append({"name":"SingleR_main", "path":"obs/SingleR_main"})
+                    if "SingleR_fine" in adata.obs.keys():
+                        obsSets.append({"name":"SingleR_fine", "path":"obs/SingleR_fine"})
+                    if "SingleR_user_ref" in adata.obs.keys():
+                        obsSets.append({"name":"SingleR_user_ref", "path":"obs/SingleR_user_ref"})
                     # adata.write_h5ad(adata_path, compression='gzip')
-                    save_anndata(adata, adata_path)
+                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
                     
                     annotation_output.append({"SingleR": adata_path})
                     # annotation_output.append({"Report": report_path})

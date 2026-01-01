@@ -19,6 +19,11 @@
           "title": "Cluster Label",
           "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
         },
+        "n_hvg": {
+          "type": "integer",
+          "title": "Number of Highly Variable Genes for Heatmap",
+          "default": 50
+        },
         "do_umap": {
           "type": "boolean",
           "title": "Do you want to perform UMAP after processing?",

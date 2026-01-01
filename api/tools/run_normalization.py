@@ -27,6 +27,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     output = ds['output']
     species = ds['species']
     idtype = ds['idtype']
+    n_hvg = ds['n_hvg']
     cluster_label = ds['cluster_label']
     do_umap = ds['do_umap']
     do_cluster = ds['do_cluster']
@@ -136,10 +137,10 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        save_anndata(adata, adata_path)
+                        output_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, layer=method)
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")
-                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label)
+                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label, zarr_path=zarr_output)
                         if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})

@@ -31,7 +31,9 @@ console.log('HOSTURL: ' + process.env.HOST_URL);
 const app = express();
 app.use(cors({
     // origin: [`http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`],
-    origin: [`http://${process.env.HOST_URL}`, `http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, `http://${process.env.HOST_URL}/node/`, `http://${hostIp}/node/`],
+    origin: [`http://${process.env.HOST_URL}`, `http://${process.env.HOST_URL}:3000`, `http://${hostIp}:3000`, `http://${process.env.HOST_URL}:3001`, `http://${hostIp}:3001`, `http://${process.env.HOST_URL}/node/`, `http://${hostIp}/node/`],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS'],
+    allowedHeaders: ['Range', 'Content-Type', 'Authorization'],
     credentials: true
 }));
 // app.use(cors());
@@ -41,6 +43,9 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Unhandled Error in Node Application');
 });
+
+// Serve static files from the "s" directory
+app.use("/zarr", express.static(path.join(__dirname, 'storage/zarr/'), {dotfiles: 'allow'}));
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
@@ -1867,6 +1872,19 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
                     console.error(err);
                 }
             }
+
+            // Update unique cell type labels to a JSON file
+            // Retrieve unique values for the field "Selected Cell Types.label"
+            try {
+                const uniqueCellLabelsPublic = await db.collection(datasetCollection).distinct("Selected Cell Types.label");
+                const uniqueCellLabelsUser = await db.collection(userDatasetsCollection).distinct("Selected Cell Types.label");
+                const uniqueCellLabels = [...new Set([...uniqueCellLabelsPublic, ...uniqueCellLabelsUser])];
+                const jsonString = JSON.stringify(uniqueCellLabels, null, 2);
+                fs.writeFileSync(storageDir + 'uniqueCellLabels.json', jsonString, 'utf8');
+            } catch (err) {
+                console.error('Error updating unique cell labels:', err);
+            }
+
             res.status(200).json({ message: 'Metadata is submitted successfully' });
         }
     } catch (err) {
@@ -2449,7 +2467,7 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const searchResultsPipeline = [
         { $match: matchStage },
           {
-              $project: { Id: 1, Title: 1, 'Species': 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", Owner: 1, 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1, cell_metadata_head: 1, obs_names: 1, uns: 1, varm: 1, embeddings: 1, mod_keys: 1 } }, // Excluding fields
+              $project: { Id: 1, Title: 1, 'Species': 1, adata_path: 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", Owner: 1, 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1, cell_metadata_head: 1, obs_names: 1, uns: 1, varm: 1, embeddings: 1, mod_keys: 1 } }, // Excluding fields
         // { $skip: (page - 1) * pageSize },
         // { $limit: pageSize },
       ];

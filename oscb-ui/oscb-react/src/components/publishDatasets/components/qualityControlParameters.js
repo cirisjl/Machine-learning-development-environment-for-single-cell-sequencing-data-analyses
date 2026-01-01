@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Slider from '@mui/material/Slider';
+// import Slider from '@mui/material/Slider';
 import FormGroup from '@mui/material/FormGroup';
 // import FormControlLabel from '@mui/material/FormControlLabel';
-import {Accordion, AccordionSummary, AccordionDetails, Button } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Accordion, AccordionSummary, AccordionDetails, Slider, Switch } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { makeStyles } from '@mui/material/styles';
-import Switch from "react-switch";
+// import { makeStyles } from '@mui/styles';
+// import Switch from "react-switch";
 
 const QualityControlParameters = ({values, setValues, defaultValues, shouldHideForSeurat}) => {
 
@@ -20,56 +21,102 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
     }));
   };
 
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      width: '100%',
-      marginBottom: theme.spacing(2), // Adds space between expansion panels
-    },
-    panelSummary: {
-      '& .MuiTypography-h6': {
-        fontSize: '15px', // Targeting the content directly
-      },
-      '& .MuiTypography-body1': {
-        fontSize: '15px', // Ensuring all typography inside summary also gets the font size
-      }
-    },
-    panelDetails: {
-      display: 'block', // Ensures the contents take the full width and are blocked
-      '& .MuiTypography-h6': {
-        fontSize: '15px', // Targeting the content directly
-      },
-      '& .MuiTypography-body1': {
-        fontSize: '15px', // Ensuring all typography inside summary also gets the font size
-      }
-    },
-    valueLabel: {
-      // Increase the size of the value label to fit longer text
-      '& .MuiSlider-valueLabel': {
-        width: 'auto', // Allow the width to auto-adjust to content
-        minWidth: '40px', // Ensure a minimum width to avoid too narrow labels
-        borderRadius: '4px', // Adjust for a more rectangular shape
-        padding: '0 8px', // Add some padding horizontally to accommodate wider numbers
-  
-        // Ensure the font size is 14px within the value label
-        '& .MuiTypography-root': {
-          fontSize: '14px',
-        },
-      },
-    },
-    customSwitch: {
-      '& .MuiSwitch-switchBase.Mui-checked': {
-        color: '#1976d2',
-        '&:hover': {
-          backgroundColor: 'rgba(25, 118, 210, 0.04)', // Lighter shade for hover, adjust opacity as needed
-        },
-      },
-      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-        backgroundColor: '#1976d2',
-      },
-    },
+  // 1. Root container (formerly 'root')
+  const StyledAccordion = styled(Accordion)(({ theme }) => ({
+    width: '100%',
+    marginBottom: theme.spacing(2),
   }));
 
-  const classes = useStyles();
+  // 2. Summary with Typography overrides (formerly 'panelSummary')
+  const StyledSummary = styled(AccordionSummary)({
+    '& .MuiTypography-h6, & .MuiTypography-body1': {
+      fontSize: '15px',
+    },
+  });
+
+  // 3. Details (formerly 'panelDetails')
+  const StyledDetails = styled(AccordionDetails)({
+    display: 'block',
+    '& .MuiTypography-h6, & .MuiTypography-body1': {
+      fontSize: '15px',
+    },
+  });
+
+  // 4. Slider with ValueLabel overrides (formerly 'valueLabel')
+  const StyledSlider = styled(Slider)({
+    '& .MuiSlider-valueLabel': {
+      width: 'auto',
+      minWidth: '40px',
+      borderRadius: '4px',
+      padding: '0 8px',
+      '& .MuiTypography-root': {
+        fontSize: '14px',
+      },
+    },
+  });
+
+  // 5. Custom Blue Switch (formerly 'customSwitch')
+  const StyledSwitch = styled(Switch)(({ theme }) => ({
+    '& .MuiSwitch-switchBase.Mui-checked': {
+      color: '#1976d2',
+      '&:hover': {
+        backgroundColor: 'rgba(25, 118, 210, 0.04)',
+      },
+    },
+    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#1976d2',
+    },
+  }));
+  // const useStyles = makeStyles((theme) => ({
+  //   root: {
+  //     width: '100%',
+  //     marginBottom: theme.spacing(2), // Adds space between expansion panels
+  //   },
+  //   panelSummary: {
+  //     '& .MuiTypography-h6': {
+  //       fontSize: '15px', // Targeting the content directly
+  //     },
+  //     '& .MuiTypography-body1': {
+  //       fontSize: '15px', // Ensuring all typography inside summary also gets the font size
+  //     }
+  //   },
+  //   panelDetails: {
+  //     display: 'block', // Ensures the contents take the full width and are blocked
+  //     '& .MuiTypography-h6': {
+  //       fontSize: '15px', // Targeting the content directly
+  //     },
+  //     '& .MuiTypography-body1': {
+  //       fontSize: '15px', // Ensuring all typography inside summary also gets the font size
+  //     }
+  //   },
+  //   valueLabel: {
+  //     // Increase the size of the value label to fit longer text
+  //     '& .MuiSlider-valueLabel': {
+  //       width: 'auto', // Allow the width to auto-adjust to content
+  //       minWidth: '40px', // Ensure a minimum width to avoid too narrow labels
+  //       borderRadius: '4px', // Adjust for a more rectangular shape
+  //       padding: '0 8px', // Add some padding horizontally to accommodate wider numbers
+  
+  //       // Ensure the font size is 14px within the value label
+  //       '& .MuiTypography-root': {
+  //         fontSize: '14px',
+  //       },
+  //     },
+  //   },
+  //   customSwitch: {
+  //     '& .MuiSwitch-switchBase.Mui-checked': {
+  //       color: '#1976d2',
+  //       '&:hover': {
+  //         backgroundColor: 'rgba(25, 118, 210, 0.04)', // Lighter shade for hover, adjust opacity as needed
+  //       },
+  //     },
+  //     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+  //       backgroundColor: '#1976d2',
+  //     },
+  //   },
+  // }));
+
+  // const classes = useStyles();
 
 
   const handleSwitchChange = (name) => (checked) => {
@@ -100,12 +147,12 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
         Advanced Quality Control Parameters
       </Typography>
       
-      <Accordion className={classes.root}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <StyledAccordion defaultExpanded>
+        <StyledSummary expandIcon={<ExpandMoreIcon />}>
             {/* QC Parameters */}
             <Typography variant="h6" gutterBottom>QC Parameters</Typography>
-        </AccordionSummary>
-        <AccordionDetails className={classes.panelDetails}>
+        </StyledSummary>
+        <StyledDetails>
              <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -115,21 +162,24 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
 
                 <Box sx={{ m: 2 }}>
                     <Typography gutterBottom>Min Genes - Max Genes: <b>[{values.min_genes} - {values.max_genes}]</b></Typography>
-                    <Slider
+                    <StyledSlider
                     value={[values.min_genes, values.max_genes]}
                     onChange={handleGeneSliderChange}
                     valueLabelDisplay="auto"
                     min={0}
-                    max={20000}
+                    max={50000}
                     step={25}
                     name="min_max_genes"
                     marks={[
                       { value: 200, label: '200*' },
-                      { value: 1000, label: '1000' },
+                      { value: 2000, label: '2000' },
                       { value: 5000, label: '5000' },
                       { value: 10000, label: '10000' },
                       { value: 15000, label: '15000' },
                       { value: 20000, label: '20000' },
+                      { value: 30000, label: '30000' },
+                      { value: 40000, label: '40000' },
+                      { value: 50000, label: '50000*' },
                     ]}
                     />
                 </Box>
@@ -137,7 +187,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 <Box sx={{ m: 2 }}>
 
                     <Typography gutterBottom>Min Cells: <b>{values.min_cells}</b></Typography>
-                    <Slider
+                    <StyledSlider
                     value={values.min_cells}
                     onChange={(e, val) => handleSliderChange({ target: { name: 'min_cells', value: val } })}
                     valueLabelDisplay="auto"
@@ -158,7 +208,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 {!shouldHideForSeurat && (
                   <Box sx={{ m: 2 }}>
                       <Typography gutterBottom>Target Sum: <b>{values.target_sum.toExponential()}</b></Typography>
-                      <Slider
+                      <StyledSlider
                       value={values.target_sum}
                       onChange={(e, val) => handleSliderChange({ target: { name: 'target_sum', value: val } })}
                       //   valueLabelDisplay="auto"
@@ -179,7 +229,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 <Box sx={{ m: 2 }}>
 
                     <Typography gutterBottom>Highly Variable Genes (n_top_genes): <b>{values.n_top_genes}</b></Typography>
-                    <Slider
+                    <StyledSlider
                     value={values.n_top_genes}
                     onChange={(e, val) => handleSliderChange({ target: { name: 'n_top_genes', value: val } })}
                     valueLabelDisplay="auto"
@@ -198,43 +248,42 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                     />
                 </Box>
 
-                  <Box sx={{ m: 2 }}>
-                    <Typography gutterBottom>
-                      Expected Doublet Rate: <b>{`${(values.doublet_rate * 100).toFixed(2)}%`}</b>
-                    </Typography>
-                    <Typography variant="caption" display="block" gutterBottom>
-                      <b>Note:</b> A rate of <b>0%</b> means not to classify doublets.
-                    </Typography>
-                    <Slider
-                      value={values.doublet_rate}
-                      min={0}
-                      max={0.5}
-                      step={0.001}
-                      onChange={(e, val) => handleSliderChange({ target: { name: 'doublet_rate', value: val } })}
-                      valueLabelDisplay="auto"
-                      valueLabelFormat={(value) => `${(value * 100).toFixed(2)}%`}
-                      marks={[
-                        { value: 0, label: '0%*' }, // Default
-                        // { value: 0.008, label: '0.8%' },
-                        // { value: 0.023, label: '2.3%' },
-                        // { value: 0.038, label: '3.8%' },
-                        // { value: 0.046, label: '4.6%' },
-                        // { value: 0.061, label: '6.1%' },
-                        { value: 0.08, label: '8%' }, 
-                        { value: 0.125, label: '12.5%' },
-                        { value: 0.2, label: '20%' },
-                        { value: 0.5, label: '50%' },
-                      ]}
-                      name="doublet_rate"
-                      className={classes.valueLabel}
-                    />
-                  </Box>
+                <Box sx={{ m: 2 }}>
+                  <Typography gutterBottom>
+                    Expected Doublet Rate: <b>{`${(values.doublet_rate * 100).toFixed(2)}%`}</b>
+                  </Typography>
+                  <Typography variant="caption" display="block" gutterBottom>
+                    <b>Note:</b> A rate of <b>0%</b> means not to classify doublets.
+                  </Typography>
+                  <StyledSlider
+                    value={values.doublet_rate}
+                    min={0}
+                    max={0.5}
+                    step={0.001}
+                    onChange={(e, val) => handleSliderChange({ target: { name: 'doublet_rate', value: val } })}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(value) => `${(value * 100).toFixed(2)}%`}
+                    marks={[
+                      { value: 0, label: '0%*' }, // Default
+                      // { value: 0.008, label: '0.8%' },
+                      // { value: 0.023, label: '2.3%' },
+                      // { value: 0.038, label: '3.8%' },
+                      // { value: 0.046, label: '4.6%' },
+                      // { value: 0.061, label: '6.1%' },
+                      { value: 0.08, label: '8%' }, 
+                      { value: 0.125, label: '12.5%' },
+                      { value: 0.2, label: '20%' },
+                      { value: 0.5, label: '50%' },
+                    ]}
+                    name="doublet_rate"
+                  />
+                </Box>
 
                 <Box sx={{ m: 2 }}>
                     <div>
                       <label htmlFor="material-switch">
                         <p>{`Regress Cell Cycle: ${values.regress_cell_cycle ? 'Yes' : 'No'}`}</p>
-                        <Switch
+                        <StyledSwitch
                           checked={values.regress_cell_cycle}
                           onChange={handleSwitchChange("regress_cell_cycle")}
                           onColor="#86d3ff"
@@ -253,17 +302,17 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                     </div>
                 </Box>
             </FormGroup>
-            </AccordionDetails>
-      </Accordion>
+          </StyledDetails>
+      </StyledAccordion>
 
 
-      <Accordion className={classes.root}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <StyledAccordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             {/* Projection Parameters */}
             <Typography variant="h6" gutterBottom>Projection Parameters</Typography>
         </AccordionSummary>
         
-        <AccordionDetails className={classes.panelDetails}>
+        <StyledDetails>
             <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -272,7 +321,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 </Box>
                 <Box sx={{ m: 2 }}>
                     <Typography gutterBottom>n_neighbors: <b>{values.n_neighbors}</b></Typography>
-                    <Slider
+                    <StyledSlider
                     value={values.n_neighbors}
                     onChange={(e, val) => handleSliderChange({ target: { name: 'n_neighbors', value: val } })}
                     valueLabelDisplay="auto"
@@ -295,7 +344,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 {!shouldHideForSeurat && (
                   <Box sx={{ m: 2 }}>
                       <Typography gutterBottom>n_pcs: <b>{values.n_pcs}</b></Typography>
-                      <Slider
+                      <StyledSlider
                       value={values.n_pcs}
                       onChange={(e, val) => handleSliderChange({ target: { name: 'n_pcs', value: val } })}
                       valueLabelDisplay="auto"
@@ -321,7 +370,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
               <div>
                 <label htmlFor="material-switch">
                   <p>{`Skip 3D UMAP/t-SNE: ${values.skip_3d ? 'Yes' : 'No'}`}</p>
-                  <Switch
+                  <StyledSwitch
                     checked={values.skip_3d}
                     onChange={handleSwitchChange("skip_3d")}
                     onColor="#86d3ff"
@@ -344,7 +393,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
               <div>
                 <label htmlFor="material-switch">
                   <p>{`Skip t-SNE: ${values.skip_tsne ? 'Yes' : 'No'}`}</p>
-                  <Switch
+                  <StyledSwitch
                     checked={values.skip_tsne}
                     onChange={handleSwitchChange("skip_tsne")}
                     onColor="#86d3ff"
@@ -364,16 +413,16 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
             </Box>
 
             </FormGroup>
-        </AccordionDetails>
-      </Accordion> 
+        </StyledDetails>
+      </StyledAccordion> 
 
 
-      <Accordion className={classes.root}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} className={classes.panelSummary}>
+      <StyledAccordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" gutterBottom>Clustering Parameters</Typography>
         </AccordionSummary>
 
-        <AccordionDetails className={classes.panelDetails}>
+        <StyledDetails>
             <FormGroup>
                 <Box sx={{ m: 2 }}>
                   <Typography variant="caption" display="block" gutterBottom>
@@ -382,7 +431,7 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                 </Box>
                 <Box sx={{ m: 2 }}>
                     <Typography gutterBottom>Resolution: <b>{values.resolution}</b></Typography>
-                    <Slider
+                    <StyledSlider
                     value={values.resolution}
                     onChange={(e, val) => handleSliderChange({ target: { name: 'resolution', value: val } })}
                     valueLabelDisplay="auto"
@@ -401,15 +450,36 @@ const QualityControlParameters = ({values, setValues, defaultValues, shouldHideF
                     ]}
                     />
                 </Box>
+                <Box sx={{ m: 2 }}>
+                <Typography gutterBottom>n_hvg (Number of Highly Variable Genes for Heatmap): <b>{values.n_hvg}</b></Typography>
+                  <StyledSlider
+                    value={values.n_hvg}
+                    onChange={(e, val) => handleSliderChange({ target: { name: 'n_hvg', value: val } })}
+                    valueLabelDisplay="auto"
+                    min={20}
+                    max={500}
+                    step={1}
+                    name="n_hvg"
+                    marks={[
+                      { value: 50, label: '50*' },
+                      { value: 100, label: '100' },
+                      { value: 150, label: '150' },
+                      { value: 200, label: '200' },
+                      { value: 250, label: '250' },
+                      { value: 300, label: '300' },
+                      { value: 500, label: '500' },
+                    ]}
+                  />
+                </Box>
             </FormGroup>
-        </AccordionDetails>
-      </Accordion>
+        </StyledDetails>
+      </StyledAccordion>
 
       <div style={{ marginTop: '10px' }}>
         <div>
           <label htmlFor="material-switch">
             <p>Use Default Values</p>
-            <Switch
+            <StyledSwitch
               checked={values.use_default}
               onChange={handleSwitchChange("use_default")}
               onColor="#86d3ff"

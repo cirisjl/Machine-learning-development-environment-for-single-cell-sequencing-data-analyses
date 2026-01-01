@@ -271,7 +271,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
                         </div>                
                         
                         <div className='table-results'>
-                    <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem} username={username} isAdmin={isAdmin} enableClick={enableClick} showCheckbox={showCheckbox} showEdit={showEdit} showDelete={showDelete}/>
+                          <ResultsTable data={results} onSelectDataset={onSelect} selectedDatasets={selectedDatasets} multiple={false} pagination={pagination} onSelectSubItem={onSelectSubItem} username={username} isAdmin={isAdmin} enableClick={enableClick} showCheckbox={showCheckbox} showEdit={showEdit} showDelete={showDelete}/>
                         </div>
                         
                     </div>

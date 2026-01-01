@@ -46,7 +46,7 @@
             "max_genes": {
               "type": "integer",
               "title": "Max Genes",
-              "default": 20000
+              "default": 50000
             },
             "min_cells": {
               "type": "integer",
@@ -182,6 +182,11 @@
               "type": "number",
               "title": "Resolution:",
               "default": 0.5
+            },
+            "n_hvg": {
+              "type": "integer",
+              "title": "Number of Highly Variable Genes for Heatmap",
+              "default": 50
             }
           }
         }

@@ -17,7 +17,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, plotUmapObs, gunzipDict } from '../../../utils/utilFunctions';
+import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
@@ -828,6 +828,21 @@ function TaskDetailsComponent() {
                       <>
                         <h2>Highest expression Genes</h2>
                         <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+                      </>
+                    )}
+                    {result.zarr_path && (
+                      <>
+                        <h2>Gene Expression</h2>
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
+                          <ShowVitessce
+                            processId={result.process_id}
+                            description={result.description}
+                            zarrPath={result.zarr_path}
+                            initialFeatureFilterPath={result.initialFeatureFilterPath}
+                            obsEmbedding={result.obsEmbedding}
+                            obsSets={result.obsSets}
+                          />
+                        </div>
                       </>
                     )}
                   </React.Fragment>

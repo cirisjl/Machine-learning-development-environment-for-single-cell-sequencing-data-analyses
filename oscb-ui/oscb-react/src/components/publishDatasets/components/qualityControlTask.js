@@ -4,9 +4,10 @@ import axios from 'axios';
 import { CELERY_BACKEND_API, WEB_SOCKET_URL, STORAGE, defaultValues} from '../../../constants/declarations';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from './reactPlotly';
-import { isUserAuth, getCookie, plotUmapObs, gunzipDict } from '../../../utils/utilFunctions';
+import { isUserAuth, getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
 import QualityControlParameters from './qualityControlParameters';
-import { Button, makeStyles } from '@mui/material';
+import { Button, styled } from '@mui/material';
+// import { makeStyles } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import AlertMessageComponent from './alertMessageComponent';
 import ReactSelect from 'react-select';
@@ -23,21 +24,30 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
 
   const [plotDimension, setPlotDimension] = useState('2D');
  
-  const useStyles = makeStyles((theme) => ({
-    customButton: {
-      backgroundColor: '#007BFF',
-      color: '#fff', // Change text color to white for better contrast
-      textTransform: 'capitalize', // Capitalize the first letter of each word
-      '&:hover': {
-        backgroundColor: theme.palette.primary.dark, // Darken button on hover, adjust color as needed
-      },
+  // const useStyles = makeStyles((theme) => ({
+  //   customButton: {
+  //     backgroundColor: '#007BFF',
+  //     color: '#fff', // Change text color to white for better contrast
+  //     textTransform: 'capitalize', // Capitalize the first letter of each word
+  //     '&:hover': {
+  //       backgroundColor: 'primary.dark', // Darken button on hover, adjust color as needed
+  //     },
+  //   },
+  // }));
+
+  const CustomButton = styled(Button)(({ theme }) => ({
+    backgroundColor: '#007BFF',
+    color: '#fff',
+    textTransform: 'capitalize',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.dark,
     },
   }));
 
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [isError, setIsError] = useState(false);
-  const classes = useStyles(); // Use the custom styles
+  // const classes = useStyles(); // Use the custom styles
   const [loading, setLoading] = useState(false);
   const [values, setValues] = useState(taskData.quality_control.qc_params);
   const navigate = useNavigate();
@@ -219,6 +229,7 @@ const handleLogMessage = (event) => {
         output: extractDir(pathToUse),
         userID: taskData.quality_control.token,
         species: taskData.upload.Species.label,
+        n_hvg: values.n_hvg,
         skip_3d: values.skip_3d,
         skip_tsne: values.skip_tsne,
         qc_params : {
@@ -435,12 +446,12 @@ const handleAssaySelectionSubmit = async () => {
       <div>
         <QualityControlParameters values={values} setValues={setValues} defaultValues={defaultValues} shouldHideForSeurat={taskData.quality_control.shouldHideForSeurat}/>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginLeft: '10px', gap: '3rem' }}>
-          <Button onClick={() => runQualityControl(false)} variant="contained" className={classes.customButton}>
+          <CustomButton onClick={() => runQualityControl(false)} variant="contained">
             Run Quality Control
-          </Button>
-          <Button onClick={() => runQualityControl(true)} variant="contained" className={classes.customButton}>
+          </CustomButton>
+          <CustomButton onClick={() => runQualityControl(true)} variant="contained">
             Load Metadata
-          </Button>
+          </CustomButton>
         </div>
       </div>
 
@@ -768,6 +779,21 @@ const handleAssaySelectionSubmit = async () => {
               <>
                 <h2>Highest Expression Genes Plot</h2>
                 <ReactPlotly plot_data={result.highest_expr_genes_plot} />
+              </>
+            )}
+            {result.zarr_path && (
+              <>
+                <h2>Gene Expression</h2>
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
+                  <ShowVitessce
+                    processId={result.process_id}
+                    description={result.description}
+                    zarrPath={result.zarr_path}
+                    initialFeatureFilterPath={result.initialFeatureFilterPath}
+                    obsEmbedding={result.obsEmbedding}
+                    obsSets={result.obsSets}
+                  />
+                </div>
               </>
             )}
           </React.Fragment>

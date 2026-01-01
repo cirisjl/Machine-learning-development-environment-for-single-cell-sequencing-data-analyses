@@ -1,9 +1,10 @@
-import { NODE_API_URL } from '../constants/declarations'
+import { NODE_API_URL, NODE_DATA_URL } from '../constants/declarations'
 import axios from 'axios';
 import LZString from 'lz-string';
 import pako from 'pako'; // Import pako, a zlib-compatible library for browsers
-import { Vitessce } from 'vitessce';
-import { myViewConfig } from './my-view-config.js';
+import { 
+  Vitessce
+ } from 'vitessce';
 import "./vitessce.css";
 
 
@@ -261,7 +262,7 @@ export function plotUmapObs(obs, umap, clustering_plot_type = "leiden", selected
   let cluster_id_exists = Object.keys(obs).includes(clustering_plot_type);
 
   if (!cluster_id_exists) {
-    const possibleClusters = ["cluster.ids", "leiden", "louvain", "seurat_clusters"];
+    const possibleClusters = ['cell_type', 'cell_ontology_class', 'CellType', 'label', "labels", 'celltype', "cluster.ids", "leiden", "louvain", "seurat_clusters"];
     for (const cluster_id of possibleClusters) {
       if (Object.keys(obs).includes(cluster_id)) {
         clustering_plot_type = cluster_id;
@@ -399,13 +400,86 @@ const discrete_colors_3 = [
 
 
 // Initialize Vitessce with custom view config
-export function showVitessce() {
+export const ShowVitessce = ({processId, description, zarrPath, initialFeatureFilterPath, obsEmbedding, obsSets}) => {
+  const zarrUrl = NODE_DATA_URL + zarrPath.replace("/usr/src/app/storage/zarr", "");
+  const config = {
+    version: "1.0.17",
+    name: description,
+    description: description,
+    datasets: [
+      {
+        uid: processId,
+        name: description,
+        files: [
+          {
+            fileType: "anndata.zarr",
+            url: zarrUrl,
+            coordinationValues: {
+              embeddingType: "UMAP",
+            },
+            options: {
+              obsFeatureMatrix: {
+                path: "X",
+                initialFeatureFilterPath: initialFeatureFilterPath,
+              },
+              obsEmbedding: {
+                path: obsEmbedding,
+              },
+              obsSets: obsSets,
+            },
+          },
+        ],
+      },
+    ],
+    initStrategy: "auto",
+    coordinationSpace: {
+      embeddingType: {
+        UMAP: "UMAP",
+      },
+      featureValueColormapRange: {
+        A: [0, 0.35],
+      },
+    },
+    layout: [
+      {
+        component: "obsSets",
+        h: 4, w: 4, x: 4, y: 0,
+      },
+      {
+        component: "obsSetSizes",
+        h: 4, w: 4, x: 8, y: 0,
+      },
+      {
+        component: "scatterplot",
+        h: 4, w: 4, x: 0, y: 0,
+        coordinationScopes: {
+          embeddingType: "UMAP",
+          featureValueColormapRange: "A",
+        },
+      },
+      {
+        component: "heatmap",
+        h: 4, w: 8, x: 0, y: 4,
+        coordinationScopes: {
+          featureValueColormapRange: "A",
+        },
+        props: {
+          transpose: true,
+        },
+      },
+      {
+        component: "featureList",
+        h: 4, w: 4, x: 8, y: 4,
+      },
+    ],
+  };
+
+  console.log("Vitessce config:", config);
+
   return (
     <Vitessce
-      config={myViewConfig}
+      config={config}
       height={900}
-      left={'10%'}
-      width={'80%'}
       theme="light"
     />
   );

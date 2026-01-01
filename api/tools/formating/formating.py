@@ -9,7 +9,6 @@ import pandas as pd
 from detect_delimiter import detect
 import scipy.sparse as sp_sparse
 from scipy.sparse import csr_matrix
-from typing import Optional, Union
 from string import ascii_letters
 import csv
 import gzip
@@ -27,9 +26,12 @@ from rpy2.robjects.conversion import localconverter
 from tools.evaluation.clustering import clustering_metrics
 from tools.utils.gzip_str import *
 from rpy2.robjects import r, StrVector, NULL
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 from attrdict import AttrDict
 import json_numpy
+import json
+from vitessce.data_utils import optimize_adata
+import scipy.cluster
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -294,7 +296,7 @@ def get_cell_metadata(adata, adata_path=None):
     return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden', n_top_genes=2000): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden', n_top_genes=2000, zarr_path=None, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=[]): 
     layers = None
     cell_metadata = None
     obs_names = None
@@ -333,7 +335,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     uns = None
     obsp = None
     varm = None
-
+    vitessce_config = None
+    unique_cell_labels = []
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -352,6 +355,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 if 'louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs['louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
+                obsSets.append({"name":"Cluster", "path":"obs/leiden"})
         else:
             scanpy_cluster = layer + '_leiden'
             if cluster_label is not None and cluster_label in adata.obs.keys():
@@ -361,7 +365,24 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs[layer+'_louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
-        
+                obsSets.append({"name":"Cluster", "path":"obs/" + layer + "_leiden"})
+
+        obsEmbedding = 'obsm/' + layer + '_umap'
+
+        # Retrieve unique cell type labels
+        try:
+            with open('/usr/src/app/storage/uniqueCellLabels.json', 'r', encoding='utf-8') as file:
+                unique_cell_labels = json.load(file)
+        except FileNotFoundError:
+            print("The specified JSON file was not found.")
+        except json.JSONDecodeError:
+            print("Error decoding JSON. Ensure the file contains a valid list.")
+        # Add cell type annotations to obsSets
+        if len(unique_cell_labels) > 0:
+            for label in unique_cell_labels:
+                if label in adata.obs.columns:
+                    obsSets.append({"name": label, "path": "obs/" + label})
+
         # if('cluster.ids' in adata.obs.keys()):
         #     scanpy_cluster = 'cluster.ids'
                 
@@ -381,12 +402,14 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
             var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
             gene_metadata = gzip_dict(var_dict)
+            initialFeatureFilterPath = "var/highly_variable"
         elif "vst.variable" in adata.var.keys():
             genes = gzip_list(adata.var[adata.var['vst.variable']==True].index.tolist())
             # gene_metadata = adata.var[adata.var['vst.variable']==True] # pandas dataframe
             var_dict = adata.var[adata.var['vst.variable']==True].to_dict('list') # Pandas dataframe
             var_dict['index'] = adata.var[adata.var['vst.variable']==True].index.tolist()
             gene_metadata = gzip_dict(var_dict)
+            initialFeatureFilterPath = "var/vst.variable"
         elif nGenes > n_top_genes:
             # If highly variable does not exist, then create it.
             if is_normalized(adata.X) and not check_nonnegative_integers(adata.X):
@@ -404,6 +427,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             var_dict = adata.var[adata.var['highly_variable']==True].to_dict('list') # Pandas dataframe
             var_dict['index'] = adata.var[adata.var['highly_variable']==True].index.tolist()
             gene_metadata = gzip_dict(var_dict)
+            initialFeatureFilterPath = "var/highly_variable"
         else:
             genes = gzip_list(adata.var.index.tolist())
             # gene_metadata = adata.var[adata.var['highly_variable']==True] # pandas dataframe
@@ -491,6 +515,11 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 }
             }
 
+        if zarr_path is None:
+            initialFeatureFilterPath = None
+            obsEmbedding = None
+            obsSets = None
+
         pp_results = {
             "process_id": process_id,
             "description": description,
@@ -527,10 +556,89 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # "scatter_plot": scatter_plot,
             # "highest_expr_genes_plot": highest_expr_genes_plot,
             "evaluation_results": evaluation_results,
+            # "vitessce_config": vitessce_config,
+            "zarr_path": zarr_path,
+            "initialFeatureFilterPath": initialFeatureFilterPath,
+            "obsEmbedding": obsEmbedding,
+            "obsSets": obsSets,
             # "obs":cell_metadata
             }
         
     return pp_results
+
+
+# def create_vitessce_config(process_id, description, zarr_url, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=[{name:"Cluster", path:"obs/leiden"}, ]):
+#     return {
+#         version: "1.0.17",
+#         name: description,
+#         description: description,
+#         datasets: [
+#             {
+#                 uid: process_id,
+#                 name: description,
+#                 files: [
+#                     {
+#                         fileType: "anndata.zarr",
+#                         url: zarr_url,
+#                         coordinationValues: {
+#                             embeddingType: "UMAP",
+#                         },
+#                         options: {
+#                             obsFeatureMatrix: {
+#                                 path: "X",
+#                                 initialFeatureFilterPath: initialFeatureFilterPath,
+#                             },
+#                             obsEmbedding: {
+#                                 path: obsEmbedding,
+#                             },
+#                             obsSets: obsSets,
+#                         },
+#                     },
+#                 ],
+#             },
+#         ],
+#         initStrategy: "auto",
+#         coordinationSpace: {
+#             embeddingType: {
+#                 UMAP: "UMAP",
+#             },
+#             featureValueColormapRange: {
+#                 A: [0, 0.35],
+#             },
+#         },
+#         layout: [
+#             {
+#                 component: "obsSets",
+#                 h: 4, w: 4, x: 4, y: 0,
+#             },
+#             {
+#                 component: "obsSetSizes",
+#                 h: 4, w: 4, x: 8, y: 0,
+#             },
+#             {
+#                 component: "scatterplot",
+#                 h: 4, w: 4, x: 0, y: 0,
+#                 coordinationScopes: {
+#                     embeddingType: "UMAP",
+#                     featureValueColormapRange: "A",
+#                 },
+#             },
+#             {
+#                 component: "heatmap",
+#                 h: 4, w: 8, x: 0, y: 4,
+#                 coordinationScopes: {
+#                     featureValueColormapRange: "A",
+#                 },
+#                 props: {
+#                     transpose: true,
+#                 },
+#             },
+#             {
+#                 component: "featureList",
+#                 h: 4, w: 4, x: 8, y: 4,
+#             },
+#         ],
+#     }
 
 
 def file_size(path): # MB
@@ -1147,15 +1255,17 @@ def is_number(s):
     return False
 
 
-def save_anndata(adata, output):
+def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None):
     # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
     #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
     #     # Example: Replacing NaNs with 0 (use with caution based on your data)
     #     adata.X[np.isnan(adata.X)] = 0
     #     adata.X[np.isinf(adata.X)] = 0
     
+
     # Convert to float64 to avoid potential issues with dgRMatrix
     adata.X = adata.X.astype(np.float64)
+    
     if len(adata.layers) > 0:
         for layer in adata.layers.keys():
             adata.layers[layer] = adata.layers[layer].astype(np.float64)
@@ -1163,8 +1273,93 @@ def save_anndata(adata, output):
     if not isinstance(adata.X, csr_matrix):
         adata.X = csr_matrix(adata.X)
     adata.write_h5ad(output, compression='gzip')
+
+    zarr_output = None
+    if zarr:
+        zarr_output = save_zarr(adata, output, n_hvg=n_hvg, layer=layer)
     
-    return output
+    return output, zarr_output
+
+
+def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200):
+    zarr_output = adata_path.replace('storage/', 'storage/zarr/').replace('.h5ad', '.zarr')
+
+    unique_cell_labels = []
+    obs_cols = []
+    obsm_keys = []
+
+    if layer is not None and layer+'_leiden' in adata.obs.columns:
+        obs_cols.append(layer+'_leiden')
+    elif 'leiden' in adata.obs.columns:
+        obs_cols.append('leiden')
+
+    if layer is not None and layer+'_umap' in adata.obsm.keys():
+        obsm_keys.append(layer+'_umap')
+    elif 'X_umap' in adata.obsm.keys():
+        obsm_keys.append('X_umap')
+
+    # Retrieve unique cell type labels
+    try:
+        with open('/usr/src/app/storage/uniqueCellLabels.json', 'r', encoding='utf-8') as file:
+            unique_cell_labels = json.load(file)
+    except FileNotFoundError:
+        print("The specified JSON file was not found.")
+    except json.JSONDecodeError:
+        print("Error decoding JSON. Ensure the file contains a valid list.")
+    # Add cell type annotations to obsSets
+    if len(unique_cell_labels) > 0:
+        for label in unique_cell_labels:
+            if label in adata.obs.columns:
+                obs_cols.append(label)
+
+    if layer is not None and layer in adata.layers.keys():
+        adata.X = adata.layers[layer]
+    elif not is_normalized(adata.X, min_genes) or check_nonnegative_integers(adata.X):
+        if "scale.data" in adata.layers.keys():
+            adata.X = adata.layers["scale.data"]
+        elif "normalized_X" in adata.layers.keys():
+            adata.X = adata.layers["normalized_X"]
+        else:
+            # Perform normalization
+            sc.pp.normalize_total(adata, inplace=True)
+            sc.pp.log1p(adata)
+    
+    sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
+    # Get the highly variable gene matrix as a plain NumPy array
+    X_hvg_arr = adata[:, adata.var['highly_variable']].X.toarray()
+    X_hvg_index = adata[:, adata.var['highly_variable']].var.copy().index
+    # Get the highly variable gene matrix as a plain NumPy array
+    X_hvg_arr = adata[:, adata.var['highly_variable']].X.toarray()
+    X_hvg_index = adata[:, adata.var['highly_variable']].var.copy().index
+
+    # Perform average linkage hierarchical clustering on along the genes axis of the array
+    Z = scipy.cluster.hierarchy.linkage(X_hvg_arr.T, method="average", optimal_ordering=True)
+
+    # Get the hierarchy-based ordering of genes.
+    num_genes = adata.var.shape[0]
+    highly_var_index_ordering = scipy.cluster.hierarchy.leaves_list(Z)
+    highly_var_genes = X_hvg_index.values[highly_var_index_ordering].tolist()
+
+    all_genes = adata.var.index.values.tolist()
+    not_var_genes = adata.var.loc[~adata.var['highly_variable']].index.values.tolist()
+
+    def get_orig_index(gene_id):
+        return all_genes.index(gene_id)
+    var_index_ordering = list(map(get_orig_index, highly_var_genes)) + list(map(get_orig_index, not_var_genes))
+    adata = adata[:, var_index_ordering].copy()
+    adata.obsm['X_hvg'] = adata[:, adata.var['highly_variable']].X.copy()
+
+    adata = optimize_adata(
+        adata,
+        obs_cols = obs_cols, # Add your "hue" columns here
+        obsm_keys = obsm_keys,             # Add your UMAP key
+    )
+
+    # Write out to Zarr
+    # Vitessce expects a specific hierarchy. This helper makes it compatible.
+    adata.write_zarr(zarr_output, chunks=(adata.n_obs, adata.n_vars))
+    
+    return zarr_output
 
 
 def clean_anndata(adata):

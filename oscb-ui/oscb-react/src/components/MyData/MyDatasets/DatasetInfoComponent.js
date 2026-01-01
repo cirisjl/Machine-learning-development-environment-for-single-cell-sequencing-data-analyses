@@ -7,7 +7,7 @@ import AlertMessageComponent from '../../publishDatasets/components/alertMessage
 import { Card, CardContent, Typography } from '@mui/material';
 import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { downloadFile, getFileNameFromURL, getCookie, plotUmapObs, gunzipDict, showVitessce } from '../../../utils/utilFunctions';
+import { downloadFile, getFileNameFromURL, getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
 import RightRail from '../../RightNavigation/rightRail';
 import DatasetDetailsTable from '../../Benchmarks/components/DatasetDetailsTable';
 import { Descriptions } from 'antd';
@@ -65,6 +65,8 @@ const DatasetInfoComponent = () => {
         let plot_3d = null;
 
         cell_metadata = gunzipDict(cell_metadata);
+        // console.log("cell_metadata after gunzip:", cell_metadata);
+        // console.log("twoDArray:", twoDArray);
 
         if (twoDArray) {
           plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
@@ -206,6 +208,8 @@ const DatasetInfoComponent = () => {
         const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: [processId] });
         // console.log('Process Results:', response.data);
         const taskInfo = response.data;
+        // let geneMetadata = gunzipDict(taskInfo.gene_metadata);
+        // console.log("geneMetadata:", geneMetadata);
         const jobId = taskInfo.job_id;
         setppJobId(jobId);
       } catch (error) {
@@ -230,7 +234,7 @@ const DatasetInfoComponent = () => {
       if (data.task_status) {
         if (data.task_status === "SUCCESS") {
           const preProcessResult = data.task_result[0];
-          // console.log(preProcessResult);
+          console.log(preProcessResult);
           const processId = preProcessResult.process_id;
 
           // Only set plotData if at least one plot exists
@@ -258,6 +262,8 @@ const DatasetInfoComponent = () => {
             ...prevDetails,
             [processId]: preProcessResult, // Store fetched data for the corresponding process_id
           }));
+
+          console.log("details:", details);
 
           setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
           // setLoading(false);
@@ -736,13 +742,21 @@ const DatasetInfoComponent = () => {
                                                 </div>
                                               </>
                                             )}
-                                          </React.Fragment>
-
-                                          <React.Fragment key="gene-expression-plots">
-                                            <h2>Gene Expression</h2>
-                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
-                                                {showVitessce()}
-                                              </div>
+                                            {details[preProcessResult.process_id].zarr_path && (
+                                              <>
+                                                <h2>Gene Expression</h2>
+                                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
+                                                  <ShowVitessce
+                                                    processId={details[preProcessResult.process_id].process_id}
+                                                    description={details[preProcessResult.process_id].description}
+                                                    zarrPath={details[preProcessResult.process_id].zarr_path}
+                                                    initialFeatureFilterPath={details[preProcessResult.process_id].initialFeatureFilterPath}
+                                                    obsEmbedding={details[preProcessResult.process_id].obsEmbedding}
+                                                    obsSets={details[preProcessResult.process_id].obsSets}
+                                                  />
+                                                </div>
+                                              </>
+                                            )}
                                           </React.Fragment>
                                         </div>
 

@@ -28,6 +28,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     do_umap = ds['do_umap']
     do_cluster = ds['do_cluster']
     parameters = ds['imputation_params']
+    n_hvg = ds['n_hvg']
     layer = None
     if parameters['layer'] is not None and parameters['layer'].strip != "":
         layer = parameters['layer']
@@ -86,13 +87,12 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     redislogger.info(job_id, "Clustering the neighborhood graph.")
                     adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
-                # Converrt dense martrix to sparse matrix
-                if isinstance(adata.X, np.ndarray):
-                    adata.X = csr_matrix(adata.X)
                 # adata.write_h5ad(output, compression='gzip')
-                save_anndata(adata, output)
+                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
+
+                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', zarr_path=zarr_output)
+                
                 imputation_output.append({"MAGIC": output})
                 imputation_results["outputs"] = imputation_output
                 adata = None
@@ -128,14 +128,12 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
                             adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
-
-                        # Converrt dense martrix to sparse matrix
-                        if isinstance(adata.X, np.ndarray):
-                            adata.X = csr_matrix(adata.X)
                         # adata.write_h5ad(output, compression='gzip')
-                        save_anndata(adata, output)
+                        output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
+
+                        redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', zarr_path=zarr_output)
+
                         imputation_output.append({"MAGIC": output})
                         imputation_results["outputs"] = imputation_output
                         adata = None
@@ -200,14 +198,12 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     redislogger.info(job_id, "Clustering the neighborhood graph.")
                     adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
 
-                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
-                
-                # Converrt dense martrix to sparse matrix
-                if isinstance(adata.X, np.ndarray):
-                    adata.X = csr_matrix(adata.X)
                 # adata.write_h5ad(output, compression='gzip')
-                save_anndata(adata, output)
+                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
+
+                redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
+                
                 imputation_output.append({"SAVER": output})
                 imputation_output.append({"Report": report_path})
                 imputation_results["outputs"] = imputation_output
@@ -250,15 +246,12 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             if do_cluster:
                                 redislogger.info(job_id, "Clustering the neighborhood graph.")
                                 adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                            
+                            # adata.write_h5ad(output, compression='gzip')
+                            output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER')
-                            
-                            # Converrt dense martrix to sparse matrix
-                            if isinstance(adata.X, np.ndarray):
-                                adata.X = csr_matrix(adata.X)
-                            # adata.write_h5ad(output, compression='gzip')
-                            save_anndata(adata, output)
+                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
                             
                             imputation_output.append({"SAVER": output})
                             imputation_output.append({"Report": report_path})

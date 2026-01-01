@@ -1,3 +1,6 @@
 {
-    "storageDir": "D:/Work/storage/"
+    "storageDir": "/usr/src/app/storage/",
+    "storageAllowance": 5,
+    "intermediateStorage": "/usr/src/app/temp/",
+    "publicStorage": "/usr/src/app/storage/publicDatasets/"
 }
