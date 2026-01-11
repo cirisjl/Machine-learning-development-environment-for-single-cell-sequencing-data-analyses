@@ -100,9 +100,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                 report_path = adata_path.replace(".h5ad", "_report.html")
                 
                 # methods = list_py_to_r(methods)
-                if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
-                    input = seurat_path
-                    redislogger.info(job_id, "Output already exists, start from the last run.")
+                # if os.path.exists(seurat_path): # If seurat_path exist from the last run, then just pick up it.
+                #     input = seurat_path
+                #     redislogger.info(job_id, "Output already exists, start from the last run.")
                 # report_path = get_report_path(dataset, output, "normalization")
                 
                 # Get the absolute path of the current file
@@ -133,9 +133,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                             redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
                             adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
                         
-                        # Converrt dense martrix to sparse matrix
-                        if isinstance(adata.X, np.ndarray):
-                            adata.X = csr_matrix(adata.X)
+                        # # Converrt dense martrix to sparse matrix
+                        # if isinstance(adata.X, np.ndarray):
+                        #     adata.X = csr_matrix(adata.X)
                         # adata.write_h5ad(adata_path, compression='gzip')
                         output_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, layer=method)
 

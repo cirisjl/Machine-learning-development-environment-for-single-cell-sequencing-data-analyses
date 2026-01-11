@@ -45,6 +45,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
     obsSets = []
+    obs_cols = []
 
     upsert_jobs(
         {
@@ -61,9 +62,9 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     
     input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
-    # process_id = generate_process_id(md5, process, methods, parameters)
+    process_id = generate_process_id(md5, process, methods, parameters)
     # output = get_output_path(output, process_id, dataset, method='annotation')
-    adata_path = get_output_path(output, 'annotation', dataset)
+    adata_path = get_output_path(output, process_id, dataset)
 
     adata = load_anndata(input)
     if adata is None:
@@ -79,10 +80,9 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         raise CeleryTaskException(detail)
 
     redislogger.info(job_id, f"Using Annotation Parameters: {parameters}")
-
-    methods = [x.upper() for x in methods if isinstance(x,str)]
+    methods = [x.upper() for x in methods if isinstance(x, str)]
     for method in methods:
-        process_id = generate_process_id(md5, process, method, parameters)
+        
         # adata_path = get_output_path(output, process_id, dataset, method=method)
         annotation_results = pp_result_exists(process_id)
 
@@ -97,32 +97,34 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     adata = run_celltypist(adata, model_name=celltypist_model, refs = user_refs, labels = user_label, species = species)
                     redislogger.info(job_id, "CellTypist annotation has been added to AnnData.obs.")
                     
-                    if do_umap:
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(job_id, msg)
-                    if do_cluster:
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    # if do_umap:
+                    #     redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    #     adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    #     if msg is not None: redislogger.warning(job_id, msg)
+                    # if do_cluster:
+                    #     redislogger.info(job_id, "Clustering the neighborhood graph.")
+                    #     adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     # adata.write_h5ad(adata_path, compression='gzip')
                     if "celltypist_label" in adata.obs.keys():
                         obsSets.append({"name":"celltypist_label", "path":"obs/celltypist_label"})
+                        obs_cols.append("celltypist_label")
                     if "celltypist_ref_label" in adata.obs.keys():
                         obsSets.append({"name":"celltypist_ref_label", "path":"obs/celltypist_ref_label"})
+                        obs_cols.append("celltypist_ref_label")
 
-                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+                    # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
 
                     annotation_output.append({"CellTypist": adata_path})
-                    annotation_results["outputs"] = annotation_output
-                    redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
-                    process_ids.append(process_id)
+                    # annotation_results["outputs"] = annotation_output
+                    # redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
+                    # process_ids.append(process_id)
 
-                    annotation_results['datasetId'] = datasetId
-                    create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
-                    pp_results.append(annotation_results)
+                    # annotation_results['datasetId'] = datasetId
+                    # create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
+                    # pp_results.append(annotation_results)
 
                 except Exception as e:
                     detail = f"CellTypist annotation is failed: {e}"
@@ -143,30 +145,31 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     adata = scanvi_transfer(adata, refs = user_refs, labels = user_label)
                     redislogger.info(job_id, "scANVI cell type transfer has been added to AnnData.obs.")
 
-                    if do_umap:
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(job_id, msg)
-                    if do_cluster:
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    # if do_umap:
+                    #     redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    #     adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    #     if msg is not None: redislogger.warning(job_id, msg)
+                    # if do_cluster:
+                    #     redislogger.info(job_id, "Clustering the neighborhood graph.")
+                    #     adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     if "scANVI_predicted" in adata.obs.keys():
                         obsSets.append({"name":"scANVI_predicted", "path":"obs/scANVI_predicted"})
+                        obs_cols.append("scANVI_predicted")
                     
                     # adata.write_h5ad(adata_path, compression='gzip')
-                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+                    # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
 
                     annotation_output.append({"scANVI": adata_path})
-                    annotation_results["outputs"] = annotation_output
-                    # adata = None
-                    redislogger.info(job_id, "AnnData object for scANVI annotation is saved successfully")
-                    process_ids.append(process_id)
-                    annotation_results['datasetId'] = datasetId
-                    create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
-                    pp_results.append(annotation_results)
+                    # annotation_results["outputs"] = annotation_output
+                    # # adata = None
+                    # redislogger.info(job_id, "AnnData object for scANVI annotation is saved successfully")
+                    # process_ids.append(process_id)
+                    # annotation_results['datasetId'] = datasetId
+                    # create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
+                    # pp_results.append(annotation_results)
 
                 except Exception as e:
                     detail = f"scANVI annotation is failed: {e}"
@@ -238,33 +241,36 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                     adata = run_singler(adata, SingleR_ref=SingleR_ref, user_ref=user_refs, user_label=user_label)
 
-                    if do_umap:
-                        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
-                        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
-                        if msg is not None: redislogger.warning(job_id, msg)
-                    if do_cluster:
-                        redislogger.info(job_id, "Clustering the neighborhood graph.")
-                        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    # if do_umap:
+                    #     redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+                    #     adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+                    #     if msg is not None: redislogger.warning(job_id, msg)
+                    # if do_cluster:
+                    #     redislogger.info(job_id, "Clustering the neighborhood graph.")
+                    #     adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
                     if "SingleR_main" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_main", "path":"obs/SingleR_main"})
+                        obs_cols.append("SingleR_main")
                     if "SingleR_fine" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_fine", "path":"obs/SingleR_fine"})
+                        obs_cols.append("SingleR_fine")
                     if "SingleR_user_ref" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_user_ref", "path":"obs/SingleR_user_ref"})
+                        obs_cols.append("SingleR_user_ref")
                     # adata.write_h5ad(adata_path, compression='gzip')
-                    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
-                    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+                    # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                    # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+                    # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
                     
                     annotation_output.append({"SingleR": adata_path})
-                    # annotation_output.append({"Report": report_path})
-                    annotation_results["outputs"] = annotation_output
-                    redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
-                    process_ids.append(process_id)
-                    annotation_results['datasetId'] = datasetId
-                    create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
-                    pp_results.append(annotation_results)
+                    # # annotation_output.append({"Report": report_path})
+                    # annotation_results["outputs"] = annotation_output
+                    # redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
+                    # process_ids.append(process_id)
+                    # annotation_results['datasetId'] = datasetId
+                    # create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
+                    # pp_results.append(annotation_results)
             
                 except Exception as e:
                     detail = f"SingleR annotation is failed: {e}"
@@ -277,9 +283,28 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         }
                     )
                     raise CeleryTaskException(detail)
-
-        
+ 
     process_ids = list(set(process_ids)) # De-duplicate process_ids
+
+    if do_umap:
+        redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
+        adata, msg = run_dimension_reduction(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, random_state=random_state)
+        if msg is not None: redislogger.warning(job_id, msg)
+    if do_cluster:
+        redislogger.info(job_id, "Clustering the neighborhood graph.")
+        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+
+    adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
+    redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
+    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+
+    annotation_results["outputs"] = annotation_output
+    redislogger.info(job_id, "AnnData object for Annotation is saved successfully")
+    process_ids.append(process_id)
+
+    annotation_results['datasetId'] = datasetId
+    create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
+    pp_results.append(annotation_results)
 
     results = {
         "output": annotation_output,

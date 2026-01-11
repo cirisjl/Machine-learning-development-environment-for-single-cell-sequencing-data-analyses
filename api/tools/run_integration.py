@@ -77,7 +77,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
     if datasets is not None:
         dataset = datasets[0]
     datasets = list_to_string(datasets)
-    input = list_to_string_default(abs_inputList)
+    input_str = list_to_string_default(abs_inputList)
     
     redislogger.info(job_id, f"Using Integration Parameters: {parameters}")
 
@@ -107,16 +107,29 @@ def run_integration(job_id, ids:dict, fig_path=None):
             try:
                 if ("HARMONY" in methods or "SCVI" in methods):
                     adata = None
+                    print("inputs: ", inputs)
                     if len(inputs) > 1:
-                        # adatas = [load_anndata(input) for input in inputs]
+                        # adatas = [load_anndata(input) for input in inputs]                      
                         adatas = []
-                        for input in inputs:
-                            ad = load_anndata(input)
-                            if batch_key is None or batch_key.strip() == '':
+                        if batch_key is None or batch_key.strip() == '':
+                            for input in inputs:
+                                ad = load_anndata(input)
                                 ad.obs['batch'] = os.path.basename(input).split('.')[0] # If bacth_key is empty, use filename as batch_key
-                                batch_key = 'batch'
-                            adatas.append(ad)                        
+                                adatas.append(ad) 
+                            batch_key = 'batch'
+                        elif '.' in batch_key:
+                            for input in inputs:
+                                ad = load_anndata(input)
+                                ad.obs['batch'] = ad.obs[batch_key].values.astype("str")
+                                adatas.append(ad)
+                            batch_key = 'batch'
+                        else:
+                            for input in inputs:
+                                ad = load_anndata(input)
+                                ad.obs[batch_key] = ad.obs[batch_key].values.astype("str")
+                                adatas.append(ad)
                         adata = sc.concat(adatas, join='outer')
+                        adata.obs[batch_key] = adata.obs[batch_key].astype("category")
                         # if batch_key is None or batch_key.strip() == '':
                         #     batch_key = 'batch'
                     elif len(inputs) == 1:
@@ -126,19 +139,6 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             # batch_key = 'batch'
                             raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for single file input.")
                     
-                    # Check if X is normalized
-                    if adata is not None:
-                        if not is_normalized(adata.X) and check_nonnegative_integers(adata.X):
-                            adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
-                    else:
-                        raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
-
-                    if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
-                        # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
-                        # Example: Replacing NaNs with 0 (use with caution based on your data)
-                        adata.X[np.isnan(adata.X)] = 0
-                        adata.X[np.isinf(adata.X)] = 0
-                    
                     # Pseudo replicates
                     if pseudo_replicates > 1:
                         adata = create_pseudo_replicates(adata, batch_key, pseudo_replicates)
@@ -146,7 +146,20 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     if "HARMONY" in methods and adata is not None:
                         redislogger.info(job_id, f"Start {method} integration...")
                         import scanpy.external as sce
-                        sc.pp.normalize_total(adata)
+                        # Check if X is normalized
+                        if adata is not None:
+                            if not is_normalized(adata.X) and check_nonnegative_integers(adata.X):
+                                adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
+                            else:
+                                adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
+                                # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+                                # Example: Replacing NaNs with 0 (use with caution based on your data)
+                                adata.X[np.isnan(adata.X)] = 0
+                                adata.X[np.isinf(adata.X)] = 0
+                                sc.pp.normalize_total(adata) 
+                        else:
+                            raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+
                         sc.pp.log1p(adata)
                         sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
                         sc.pp.scale(adata)
@@ -169,10 +182,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0, fig_path=fig_path)
 
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output)
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -186,7 +199,19 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     if "SCVI" in methods and adata is not None:
                         redislogger.info(job_id, "Start scVI integration...")
                         scvi_path = get_scvi_path(adata_path, "batch_integration")
-                        adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
+                        # Check if X is normalized
+                        if adata is not None:
+                            if not is_normalized(adata.X) and check_nonnegative_integers(adata.X):
+                                adata.layers['raw_counts'] = adata.X.copy() # Keep a copy of the raw counts
+                            else:
+                                adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
+                        else:
+                            raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+
+                        # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
+                        # Example: Replacing NaNs with 0 (use with caution based on your data)
+                        adata.X[np.isnan(adata.X)] = 0
+                        adata.X[np.isinf(adata.X)] = 0
 
                         adata = scvi_integrate(adata, batch_key=batch_key, model_path=scvi_path)
 
@@ -199,10 +224,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0, fig_path=fig_path)
 
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
                         # adata.write_h5ad(adata_path, compression='gzip')
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output)
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         integration_output.append({f"{method}_AnnDate": adata_path})
                         integration_results['outputs'] = integration_output
@@ -227,9 +252,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     # Get the absolute path of the desired file
                     rmd_path = os.path.abspath(relative_path)
                     # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{batch_key}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{batch_key}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, str(s))
-                    # print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
+                    print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
                     if os.path.exists(adata_path):
                         redislogger.info(job_id, "Adding 2D & 3D UMAP to AnnData object.")
@@ -252,7 +277,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             adata.X = csr_matrix(adata.X)
 
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
                         adata_3D = None
                     else:
                         upsert_jobs(
@@ -266,7 +291,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key, zarr_path=zarr_output)
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                     integration_output.append({f"{method}_AnnDate": adata_path})
                     integration_output.append({f"{method}_Seurat": output})

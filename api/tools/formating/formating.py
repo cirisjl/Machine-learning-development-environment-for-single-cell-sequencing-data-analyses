@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 from detect_delimiter import detect
 import scipy.sparse as sp_sparse
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, issparse
+import scipy.cluster
 from string import ascii_letters
 import csv
 import gzip
@@ -30,8 +31,7 @@ from typing import Any, List, Optional, Union
 from attrdict import AttrDict
 import json_numpy
 import json
-from vitessce.data_utils import optimize_adata
-import scipy.cluster
+from tools.formating.zarr_utils import optimize_adata
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -337,6 +337,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     varm = None
     vitessce_config = None
     unique_cell_labels = []
+    print("obsSets before:", obsSets)
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -348,6 +349,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     if adata is not None and isinstance(adata, AnnData):
         if layer is None:
             layer = "X"
+            if 'leiden' in adata.obs.keys(): 
+                obsSets.append({"name":"Cluster", "path":"obs/leiden"})
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
                 if 'leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
@@ -355,9 +358,10 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 if 'louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs['louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
-                obsSets.append({"name":"Cluster", "path":"obs/leiden"})
         else:
             scanpy_cluster = layer + '_leiden'
+            if layer+'_leiden' in adata.obs.keys():
+                obsSets.append({"name":"Cluster", "path":"obs/" + layer + "_leiden"})
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
                 if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
@@ -365,7 +369,6 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs[layer+'_louvain']
                 cluster_embedding = adata.obsm[layer+'_umap']
-                obsSets.append({"name":"Cluster", "path":"obs/" + layer + "_leiden"})
 
         obsEmbedding = 'obsm/' + layer + '_umap'
 
@@ -519,7 +522,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             initialFeatureFilterPath = None
             obsEmbedding = None
             obsSets = None
-
+        print("obsSets after:", obsSets)
         pp_results = {
             "process_id": process_id,
             "description": description,
@@ -1255,7 +1258,7 @@ def is_number(s):
     return False
 
 
-def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None):
+def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None, obsm_keys=[], obs_cols=[]):
     # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
     #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
     #     # Example: Replacing NaNs with 0 (use with caution based on your data)
@@ -1267,8 +1270,8 @@ def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None):
     adata.X = adata.X.astype(np.float64)
     
     if len(adata.layers) > 0:
-        for layer in adata.layers.keys():
-            adata.layers[layer] = adata.layers[layer].astype(np.float64)
+        for i in adata.layers.keys():
+            adata.layers[i] = adata.layers[i].astype(np.float64)
 
     if not isinstance(adata.X, csr_matrix):
         adata.X = csr_matrix(adata.X)
@@ -1276,18 +1279,16 @@ def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None):
 
     zarr_output = None
     if zarr:
-        zarr_output = save_zarr(adata, output, n_hvg=n_hvg, layer=layer)
+        zarr_output = save_zarr(adata, output, n_hvg=n_hvg, layer=layer, obsm_keys=obsm_keys, obs_cols=obs_cols)
     
     return output, zarr_output
 
 
-def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200):
+def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=[], obs_cols=[]):
     zarr_output = adata_path.replace('storage/', 'storage/zarr/').replace('.h5ad', '.zarr')
-
     unique_cell_labels = []
-    obs_cols = []
-    obsm_keys = []
-
+    print("layer: " + str(layer))
+    print("adata.obs.columns: " + str(adata.obs.columns))
     if layer is not None and layer+'_leiden' in adata.obs.columns:
         obs_cols.append(layer+'_leiden')
     elif 'leiden' in adata.obs.columns:
@@ -1314,6 +1315,7 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200):
 
     if layer is not None and layer in adata.layers.keys():
         adata.X = adata.layers[layer]
+        sc.pp.log1p(adata)
     elif not is_normalized(adata.X, min_genes) or check_nonnegative_integers(adata.X):
         if "scale.data" in adata.layers.keys():
             adata.X = adata.layers["scale.data"]
@@ -1323,8 +1325,13 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200):
             # Perform normalization
             sc.pp.normalize_total(adata, inplace=True)
             sc.pp.log1p(adata)
-    
-    sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
+    try:
+        sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
+    except Exception as e:
+        print("Highly variable gene selection failed: " + str(e))
+        print("Log1p normalize count matrix and try again...")
+        sc.pp.log1p(adata)
+        sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     # Get the highly variable gene matrix as a plain NumPy array
     X_hvg_arr = adata[:, adata.var['highly_variable']].X.toarray()
     X_hvg_index = adata[:, adata.var['highly_variable']].var.copy().index
@@ -1348,6 +1355,9 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200):
     var_index_ordering = list(map(get_orig_index, highly_var_genes)) + list(map(get_orig_index, not_var_genes))
     adata = adata[:, var_index_ordering].copy()
     adata.obsm['X_hvg'] = adata[:, adata.var['highly_variable']].X.copy()
+
+    print("obsm_keys: " + str(obsm_keys))
+    print("obs_cols: " + str(obs_cols))
 
     adata = optimize_adata(
         adata,
@@ -1428,4 +1438,3 @@ def reset_x_to_raw(adata, min_genes=200):
             raise ValueError("Raw counts are not available.")
     
     return adata
-    

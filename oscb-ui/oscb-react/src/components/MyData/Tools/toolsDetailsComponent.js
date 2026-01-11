@@ -398,7 +398,7 @@ const onSelectRefSubItem = (mainItem, subItem) => {
              if (adata_path) {
                 formData.input = adata_path;
                 const directory = extractDir(formData.input);
-                formData.output = directory + "/results";
+                formData.output = directory + "/" + filterCategory;
               }
           }
 

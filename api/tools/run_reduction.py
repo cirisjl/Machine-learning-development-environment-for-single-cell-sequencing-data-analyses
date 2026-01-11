@@ -16,7 +16,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     dataset = ds['dataset']
     input = ds['input']
     userID = ds['userID']
-    output = ds['output']
+    # output = ds['output']
     datasetId = ds['datasetId']
     parameters = ds['reduction_params']
     n_hvg = ds['n_hvg']
@@ -44,7 +44,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     #Get the absolute path for the given output
     input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
-    # output = get_output(output, userID, job_id)
+    output = input.replace('.h5ad', f'_resolution_{str(resolution).replace(".", "_")}.h5ad')
+    print(f"Output path: {output}")
     adata = load_anndata(input)
     process_id = generate_process_id(md5, process, method, parameters)
     reduction_results = pp_result_exists(process_id)
@@ -64,7 +65,6 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
 
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, zarr_path=zarr_output)
-            output = get_output_path(output, process_id=process_id, dataset=dataset, method='UMAP_t-SNE')
             
             adata = None
             reduction_results['datasetId'] = datasetId

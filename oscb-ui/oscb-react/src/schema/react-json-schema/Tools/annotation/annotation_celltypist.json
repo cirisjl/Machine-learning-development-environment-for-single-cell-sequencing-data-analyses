@@ -27,14 +27,14 @@
         "do_umap": {
           "type": "boolean",
           "title": "Do you want to perform UMAP after processing?",
-          "default": true,
+          "default": false,
           "format": "switch",
           "description": "Toggle this switch to decide whether to perform UMAP (Uniform Manifold Approximation and Projection) analysis after processing your data."
         },
         "do_cluster": {
           "type": "boolean",
           "title": "Do you want to perform Cluster after processing?",
-          "default": true,
+          "default": false,
           "format": "switch",
           "description": "Toggle this switch to decide whether to perform Cluster analysis after processing your data."
         },

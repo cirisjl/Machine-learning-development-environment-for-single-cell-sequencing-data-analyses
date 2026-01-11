@@ -141,10 +141,10 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         
         # Clustering the neighborhood graph
         sc.tl.leiden(adata_temp, resolution=resolution, 
-                    random_state=random_state, n_iterations=3)
+                    random_state=random_state, flavor="igraph", n_iterations=2)
         # Save the Clustering plot
         if fig_path is not None:
-            sc.pl.embedding(adata_temp, basis=layer+'_umap', color='leiden', show=False)
+            sc.pl.embedding(adata_temp, basis=layer+'_umap', color=layer+'_leiden', show=False)
             plt.savefig(fig_path, dpi=300, bbox_inches='tight')
 
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
@@ -158,7 +158,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         leiden_key = "leiden_" + use_rep
         louvain_key = "louvain_" + use_rep
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
-                    random_state=random_state, n_iterations=3)
+                    random_state=random_state, flavor="igraph", n_iterations=2)
         
         # Save the Clustering plot
         if fig_path is not None:
@@ -177,7 +177,7 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
             sc.pp.log1p(adata)
 
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
-                    random_state=random_state, n_iterations=3)
+                    random_state=random_state, flavor="igraph", n_iterations=2)
         # Save the Clustering plot
         if fig_path is not None:
             sc.pl.umap(adata, color=leiden_key, show=False)

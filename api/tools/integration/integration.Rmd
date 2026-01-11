@@ -45,13 +45,13 @@ library(SeuratWrappers)
 library(reshape2)
 library(RColorBrewer)
 library(dplyr)
-# source("../formating/formating.R")
+source("../formating/formating.R")
 
 RedisInfo(unique_id, "Loading datasets ...")
 
 srats.list <- list()
 for (i in 1:length(inputs)) {
-  srats.list[[datasets[i]]] <- LoadSeurat(inputs[i], project = datasets[i])
+  srats.list[[datasets[i]]] <- LoadSeurat(inputs[i], project = datasets[i], raw=TRUE)
   srats.list[[datasets[i]]]@meta.data[batch_key] <- datasets[i]
   if(!params$default_assay %in% names(x = srats.list[[datasets[i]]])) stop(paste(params$default_assay, "does not exist."))
   DefaultAssay(object = srats.list[[datasets[i]]]) <- params$default_assay

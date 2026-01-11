@@ -1,13 +1,13 @@
-FROM node:22.21.1
-# FROM stormgod/oscb_react
+# FROM node:22.21.1
+FROM stormgod/oscb-react:0.1
 
 # Create app directory
 WORKDIR /opt/src/app
 # Install app dependencies
-COPY package*.json ./
+# COPY package*.json ./
 
 # RUN npm config set legacy-peer-deps true
-RUN npm install
+# RUN npm install
 # RUN npm install @octokit/rest
 # RUN npm install @rjsf/core @rjsf/utils @rjsf/validator-ajv8 --save
 
