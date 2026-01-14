@@ -73,7 +73,8 @@ router.post('/', async (req, res) => {
 
     } catch (error) {
         console.error('Chat API Error:', error);
-        res.status(500).json({ error: 'Failed to fetch response from AI provider', details: error.message });
+        const status = error.status || 500;
+        res.status(status).json({ error: 'Failed to fetch response from AI provider', details: error.message });
     }
 });
 
