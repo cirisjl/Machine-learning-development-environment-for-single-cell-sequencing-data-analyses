@@ -796,7 +796,7 @@ const onSelectSubItem = (mainItem, subItem) => {
 
                 {dataset.dataSplit.dataSplitPerformed && (
                   <Typography variant="body2" component="p">
-                    <b>AnnDate Path: </b>{dataset.dataSplit.adataPath}
+                    <b>AnnData Path: </b>{dataset.dataSplit.adataPath}
                   </Typography>
                 )}
               </CardContent>

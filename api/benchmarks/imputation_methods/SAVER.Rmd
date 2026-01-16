@@ -6,7 +6,7 @@ params:
   dataset: NA
   input: NA # Input file path to scRNA data.
   output: NA # Output file path of the AnnData object.
-  output_format: AnnData # Seurat or AnnDate
+  output_format: AnnData # Seurat or AnnData
   layer: NULL # Layer of Anndata object for imputation method
   genes: NULL # Genes for SAVER imputation
   ncores: 5 # Number of workers for SAVER imputation

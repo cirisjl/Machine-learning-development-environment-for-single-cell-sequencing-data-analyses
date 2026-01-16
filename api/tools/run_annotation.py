@@ -16,7 +16,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
     
 
-def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state=0):
+def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=True, random_state=0):
     pp_results = []
     process_ids = []
     annotation_output = []
@@ -117,7 +117,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
 
-                    annotation_output.append({"CellTypist": adata_path})
+                    # annotation_output.append({"CellTypist": adata_path})
                     # annotation_results["outputs"] = annotation_output
                     # redislogger.info(job_id, "AnnData object for CellTypist annotation is saved successfully")
                     # process_ids.append(process_id)
@@ -162,7 +162,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
 
-                    annotation_output.append({"scANVI": adata_path})
+                    # annotation_output.append({"scANVI": adata_path})
                     # annotation_results["outputs"] = annotation_output
                     # # adata = None
                     # redislogger.info(job_id, "AnnData object for scANVI annotation is saved successfully")
@@ -263,7 +263,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
                     
-                    annotation_output.append({"SingleR": adata_path})
+                    # annotation_output.append({"SingleR": adata_path})
                     # # annotation_output.append({"Report": report_path})
                     # annotation_results["outputs"] = annotation_output
                     # redislogger.info(job_id, "AnnData object for SingleR annotation is saved successfully")
@@ -283,8 +283,6 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         }
                     )
                     raise CeleryTaskException(detail)
- 
-    process_ids = list(set(process_ids)) # De-duplicate process_ids
 
     if do_umap:
         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -295,17 +293,19 @@ def run_annotation(job_id, ds:dict, fig_path=None, show_error=True, random_state
         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
     adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
+    annotation_output.append({"Annotation": adata_path})
     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, methods, parameters, md5, description=description, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
 
     annotation_results["outputs"] = annotation_output
     redislogger.info(job_id, "AnnData object for Annotation is saved successfully")
     process_ids.append(process_id)
+    process_ids = list(set(process_ids)) # De-duplicate process_ids
 
     annotation_results['datasetId'] = datasetId
     create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
     pp_results.append(annotation_results)
-
+    
     results = {
         "output": annotation_output,
         "adata_path": adata_path,

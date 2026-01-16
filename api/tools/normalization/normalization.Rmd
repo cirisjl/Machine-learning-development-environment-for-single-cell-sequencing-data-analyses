@@ -10,7 +10,7 @@ params:
   adata_path: NULL
   methods: NULL # Normalization methods: c("logCP10K", "logCPM", "SCT", "SCT_V2", 'sctransform', 'sctransform_v2', "scran", "DESeq2", "RLE", "TMM", "upperquartile", "UQ", "TPM", "FPKM", "Pearson_residuals")
   default_assay: RNA # Default assay for each normalization method:  "RNA", "MAGIC_imputed", "SAVER_imputed", "scGNN_imputed"
-  output_format: AnnData # Seurat or AnnDate
+  output_format: AnnData # Seurat or AnnData
   species: NULL # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
   idtype: ENSEMBL # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
   show_umap: FALSE

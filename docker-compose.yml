@@ -99,7 +99,7 @@ services:
       dockerfile: Dockerfile
     container_name: oscb_worker1
     restart: always
-    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web
+    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web --max-tasks-per-child=50 --max-memory-per-child=200000000
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo
     # command: celery --app project.server.tasks.celery worker -P gevent -c 1
@@ -136,7 +136,7 @@ services:
       dockerfile: Dockerfile
     container_name: oscb_worker2
     restart: always
-    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web
+    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web --max-tasks-per-child=50 --max-memory-per-child=200000000
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo 
     # command: celery --app project.server.tasks.celery worker -P gevent -c 1
@@ -172,7 +172,7 @@ services:
       dockerfile: Dockerfile
     container_name: oscb_worker3
     restart: always
-    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web
+    command: celery -A main.celery worker --loglevel=info -Q tools,benchmarks,workflows,web --max-tasks-per-child=50 --max-memory-per-child=200000000
     # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
     # command: celery --app project.server.tasks.celery worker -P solo 
     # command: celery --app project.server.tasks.celery worker -P gevent -c 1
@@ -257,7 +257,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=c240g5-110209.wisc.cloudlab.us
+      - HOST_URL=c240g5-110219.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -277,7 +277,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=c240g5-110209.wisc.cloudlab.us
+      - HOST_URL=c240g5-110219.wisc.cloudlab.us
     networks:
       - oscb-network
 

@@ -14,7 +14,7 @@ from scipy.sparse import csr_matrix
 from tools.visualization.plotConstants import *
 
 
-def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2, plot_name='UMAP'): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected_cell_intersection=None, annotation=None, n_dim=2, plot_name='UMAP'): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     cluster_id_exists = True
 
     # Validate if the clustering id exists. If not, find a default one.
@@ -134,7 +134,7 @@ def plot_UMAP_obs(obs, umap, layer=None, clustering_plot_type="leiden", selected
         })
 
 
-def plot_UMAP(adata, layer=None, clustering_plot_type="leiden", selected_cell_intersection=[], annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
+def plot_UMAP(adata, layer=None, clustering_plot_type="leiden", selected_cell_intersection=None, annotation=None, n_dim=2): # clustering_plot_type: 'cluster.ids', 'leiden', 'louvain', 'seurat_clusters'
     print("[DEBUG] generating new UMAP plot")
     
     obs = adata.obs

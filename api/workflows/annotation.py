@@ -8,6 +8,8 @@ from fastapi import HTTPException, status
 from utils.redislogger import *
 from utils.mongodb import generate_workflow_id, upsert_jobs, upsert_workflows
 from datetime import datetime
+from exceptions.custom_exceptions import CeleryTaskException
+
 
 def run_annotation_wf(job_id, dss:dict, random_state=0):
     wf_results = {}
@@ -127,38 +129,12 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         wf_results['QC'] = qc_process_ids
         wf_results['QC_output'] = qc_outputs
         
-        # Run Annotation
-        ann_process_ids = []
-        integration_inputs = []
-        annotation_outputs = []
-        if len(qc_outputs) > 0 and len(annotation_params["methods"]) > 0:
-            for i in range(len(qc_outputs)):
-                ds = {}
-                ds['userID'] = userID
-                ds['input'] = qc_outputs[i]
-                ds['output'] = dss['output']
-                ds['datasetId'] = datasetIds[i]
-                ds['dataset'] = datasets[i]
-                ds['species'] = dss['species']
-                ds['user_refs'] = user_refs
-                ds['do_umap'] = False
-                ds['do_cluster'] = False
-                ds['n_hvg'] = n_hvg
-                ds['annotation_params'] = annotation_params
-
-                annotation_results = run_annotation(job_id, ds, fig_path=fig_path)
-                ann_process_ids.extend(annotation_results["process_ids"])
-                process_ids.extend(annotation_results["process_ids"])
-                annotation_outputs.append(annotation_results['output'])
-                integration_inputs.append(annotation_results['adata_path'])
-        wf_results['annotation'] = ann_process_ids
-        wf_results['annotation_output'] = annotation_outputs
 
         # Run Integration
         integration_process_ids = []
-        integration_outputs = []
-        if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
-            dss['input'] = integration_inputs
+        integration_outputs = {}
+        if len(qc_outputs) > 0 and len(integration_params["methods"]) > 0:
+            dss['input'] = qc_outputs
             dss['n_hvg'] = n_hvg
             integration_results = run_integration(job_id, dss, fig_path=fig_path)
             wf_results['integration'] = integration_results["process_ids"]
@@ -166,8 +142,38 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             wf_results['integration_output'] = integration_results['output']
             output = integration_results['output']
             adata_outputs = integration_results['adata_path']
+            integration_outputs.update(integration_results['adata_path'])
         else:
-            output = annotation_outputs
+            integration_outputs = {qc_params["methods"][i]: qc_outputs[i] for i in range(len(qc_outputs))}
+
+        # Run Annotation
+        ann_process_ids = []
+        annotation_outputs = []
+        if len(integration_outputs) > 0 and len(annotation_params["methods"]) > 0:
+            for key, value in integration_outputs.items():
+                ds = {}
+                ds['userID'] = userID
+                ds['input'] = value
+                ds['output'] = dss['output']
+                ds['datasetId'] = datasetIds[0]
+                ds['dataset'] = '_'.join(datasets)
+                ds['species'] = dss['species']
+                ds['user_refs'] = user_refs
+                ds['do_umap'] = False
+                ds['do_cluster'] = False
+                ds['n_hvg'] = n_hvg
+                ds['annotation_params'] = annotation_params
+
+                annotation_results = run_annotation(job_id, ds, fig_path=fig_path, description=f"{', '.join(annotation_params['methods'])} Annotation for {key} Integration")
+                ann_process_ids.extend(annotation_results["process_ids"])
+                process_ids.extend(annotation_results["process_ids"])
+                annotation_outputs.append(annotation_results['output'])
+            output = annotation_results['output']
+                
+        wf_results['annotation'] = ann_process_ids
+        wf_results['annotation_output'] = annotation_outputs
+        
+
 
         results = {
             "output": output,

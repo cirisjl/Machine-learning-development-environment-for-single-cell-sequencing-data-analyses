@@ -296,7 +296,7 @@ def get_cell_metadata(adata, adata_path=None):
     return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, scanpy_cluster='leiden', n_top_genes=2000, zarr_path=None, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=[]): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, description=None, scanpy_cluster='leiden', n_top_genes=2000, zarr_path=None, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=None): 
     layers = None
     cell_metadata = None
     obs_names = None
@@ -328,7 +328,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_leiden = None
     labels_pred_louvain = None
     cluster_embedding = None
-    description = f'{method} {process}' 
+    if description is None:
+        description = f'{', '.join(method)} {process}' 
     min_genes = None
     target_sum = None
     obs = None
@@ -337,7 +338,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     varm = None
     vitessce_config = None
     unique_cell_labels = []
-    print("obsSets before:", obsSets)
+    if obsSets is None:
+        obsSets = []
 
     if adata_path is not None and os.path.exists(adata_path):
         adata_size = file_size(adata_path)
@@ -522,7 +524,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             initialFeatureFilterPath = None
             obsEmbedding = None
             obsSets = None
-        print("obsSets after:", obsSets)
+
         pp_results = {
             "process_id": process_id,
             "description": description,
@@ -1258,17 +1260,27 @@ def is_number(s):
     return False
 
 
-def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None, obsm_keys=[], obs_cols=[]):
+def make_unique(cols):
+    import collections
+    counts = collections.defaultdict(int)
+    for i, col in enumerate(cols):
+        counts[col] += 1
+        if counts[col] > 1:
+            cols[i] = f"{col}_{counts[col]-1}"
+    return cols
+
+
+def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None, obsm_keys=None, obs_cols=None):
     # if np.isnan(adata.X.data).any() or np.isinf(adata.X.data).any():
     #     # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
     #     # Example: Replacing NaNs with 0 (use with caution based on your data)
     #     adata.X[np.isnan(adata.X)] = 0
     #     adata.X[np.isinf(adata.X)] = 0
     
-
     # Convert to float64 to avoid potential issues with dgRMatrix
+
     adata.X = adata.X.astype(np.float64)
-    
+    # adata.obs.columns = make_unique(adata.obs.columns.tolist()) # Ensure unique column names in obs
     if len(adata.layers) > 0:
         for i in adata.layers.keys():
             adata.layers[i] = adata.layers[i].astype(np.float64)
@@ -1284,10 +1296,16 @@ def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None, obsm_keys=[], 
     return output, zarr_output
 
 
-def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=[], obs_cols=[]):
+def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=None, obs_cols=None):
+    if obsm_keys is None:
+        obsm_keys = []
+    if obs_cols is None:
+        obs_cols = []
     zarr_output = adata_path.replace('storage/', 'storage/zarr/').replace('.h5ad', '.zarr')
     unique_cell_labels = []
     print("layer: " + str(layer))
+    print("obsm_keys: " + str(obsm_keys))
+    print("obs_cols: " + str(obs_cols))
     print("adata.obs.columns: " + str(adata.obs.columns))
     if layer is not None and layer+'_leiden' in adata.obs.columns:
         obs_cols.append(layer+'_leiden')
@@ -1313,8 +1331,13 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=
             if label in adata.obs.columns:
                 obs_cols.append(label)
 
+    if not isinstance(adata.X, np.ndarray):
+        adata.X = adata.X.toarray()
+
     if layer is not None and layer in adata.layers.keys():
         adata.X = adata.layers[layer]
+        if not isinstance(adata.X, np.ndarray):
+            adata.X = adata.X.toarray()
         sc.pp.log1p(adata)
     elif not is_normalized(adata.X, min_genes) or check_nonnegative_integers(adata.X):
         if "scale.data" in adata.layers.keys():
@@ -1323,13 +1346,19 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=
             adata.X = adata.layers["normalized_X"]
         else:
             # Perform normalization
+            adata.X[np.isnan(adata.X)] = 0
+            adata.X[np.isinf(adata.X)] = 0
             sc.pp.normalize_total(adata, inplace=True)
             sc.pp.log1p(adata)
     try:
+        adata.X[np.isnan(adata.X)] = 0
+        adata.X[np.isinf(adata.X)] = 0
         sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     except Exception as e:
         print("Highly variable gene selection failed: " + str(e))
         print("Log1p normalize count matrix and try again...")
+        adata.X[np.isnan(adata.X)] = 0
+        adata.X[np.isinf(adata.X)] = 0
         sc.pp.log1p(adata)
         sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     # Get the highly variable gene matrix as a plain NumPy array
@@ -1359,15 +1388,22 @@ def save_zarr(adata, adata_path, n_hvg=50, layer=None, min_genes=200, obsm_keys=
     print("obsm_keys: " + str(obsm_keys))
     print("obs_cols: " + str(obs_cols))
 
+    obsm_keys = list(set(obsm_keys))
+    obs_cols = list(set(obs_cols))
+
     adata = optimize_adata(
         adata,
         obs_cols = obs_cols, # Add your "hue" columns here
         obsm_keys = obsm_keys,             # Add your UMAP key
     )
 
+    obsm_keys = None # Clear obsm_keys after use
+    obs_cols = None # Clear obs_cols after use
+
     # Write out to Zarr
     # Vitessce expects a specific hierarchy. This helper makes it compatible.
     adata.write_zarr(zarr_output, chunks=(adata.n_obs, adata.n_vars))
+    # adata = None  # Free up memory
     
     return zarr_output
 

@@ -145,6 +145,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})
                         normalization_results['outputs'] = normalization_output
+                        adata = None
                         
                         # pp_results.append(normalization_results)
                         process_ids.append(process_id)

@@ -6,9 +6,11 @@ from liana.mt import rank_aggregate
 from liana.method import singlecellsignalr, connectome, cellphonedb, natmi, logfc, cellchat, geometric_mean
 
 # https://liana-py.readthedocs.io/en/latest/notebooks/basic_usage.html
-def run_liana_ccc(adata, cell_type_label, species, methods=[], aggregate_methods=['rra']):
+def run_liana_ccc(adata, cell_type_label, species, methods=None, aggregate_methods=['rra']):
     if adata is None:
         raise ValueError("Failed to load AnnData object.")
+    if methods is None:
+        methods = []
     
     if is_normalized(adata.X, 200) and not check_nonnegative_integers(adata.X):
         redislogger.info(unique_id, "adata.X is not raw counts.")

@@ -401,7 +401,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         if os.path.exists(output_path): qc_output.append({'Seurat': output_path})
                         qc_results['datasetId'] = datasetId
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
-                        adata = None         
+                        adata = None      
                 except Exception as e:
                     detail = f"Error during Seurat QC: {str(e)}"
                     redislogger.error(job_id, detail)

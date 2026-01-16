@@ -43,7 +43,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
     npcs = parameters['npcs']
     resolution = parameters['resolution']
     integration_output = []
-    adata_outputs = []
+    adata_outputs = {}
     zarr_output = None
 
     upsert_jobs(
@@ -101,7 +101,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
         if integration_results is not None:
             redislogger.info(job_id, "Found existing pre-process results in database, skip Integration.")
             integration_output = integration_results['outputs']
-            adata_outputs.append(integration_results['adata_path'])
+            adata_outputs.update({method: integration_results['adata_path']})
             process_ids.append(process_id)
         else:
             try:
@@ -126,6 +126,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         else:
                             for input in inputs:
                                 ad = load_anndata(input)
+                                batch_key = parameters['batch_key']
                                 ad.obs[batch_key] = ad.obs[batch_key].values.astype("str")
                                 adatas.append(ad)
                         adata = sc.concat(adatas, join='outer')
@@ -187,10 +188,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
-                        integration_output.append({f"{method}_AnnDate": adata_path})
+                        integration_output.append({f"{method}_AnnData": adata_path})
                         integration_results['outputs'] = integration_output
-                        adata_outputs.append(adata_path)
+                        adata_outputs.update({method: adata_path})
                         adata = None
+
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
                         create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
@@ -229,9 +231,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
-                        integration_output.append({f"{method}_AnnDate": adata_path})
+                        integration_output.append({f"{method}_AnnData": adata_path})
                         integration_results['outputs'] = integration_output
-                        adata_outputs.append(adata_path)
+                        adata_outputs.update({method: adata_path})
                         adata = None
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
@@ -239,7 +241,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         process_ids.append(process_id)
 
                 else:
-                    if batch_key is None or batch_key.strip() == '':
+                    if parameters['batch_key'] is None or parameters['batch_key'].strip() == '':
                         # adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
                         # batch_key = 'batch'
                         raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for {method} integration.")
@@ -252,7 +254,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     # Get the absolute path of the desired file
                     rmd_path = os.path.abspath(relative_path)
                     # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
-                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{batch_key}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
+                    s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{parameters['batch_key']}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, str(s))
                     print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
@@ -270,14 +272,14 @@ def run_integration(job_id, ids:dict, fig_path=None):
 
                         # Pseudo replicates
                         if pseudo_replicates > 1:
-                            adata = create_pseudo_replicates(adata, batch_key, pseudo_replicates)
+                            adata = create_pseudo_replicates(adata, parameters['batch_key'], pseudo_replicates)
 
                         # Converrt dense martrix to sparse matrix
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
 
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[parameters['batch_key']])
                         adata_3D = None
                     else:
                         upsert_jobs(
@@ -291,13 +293,13 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
-                    integration_output.append({f"{method}_AnnDate": adata_path})
+                    integration_output.append({f"{method}_AnnData": adata_path})
                     integration_output.append({f"{method}_Seurat": output})
                     integration_output.append({f"{method}_Report": report_path})
                     integration_results['outputs'] = integration_output
-                    adata_outputs.append(adata_path)
+                    adata_outputs.update({method: adata_path})
                     adata = None
                     redislogger.info(job_id, integration_results['info'])
                     integration_results['datasetIds'] = datasetIds

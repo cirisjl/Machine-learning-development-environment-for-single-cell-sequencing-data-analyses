@@ -8,6 +8,8 @@ from fastapi import HTTPException, status
 from utils.redislogger import *
 from utils.mongodb import generate_workflow_id, upsert_jobs, upsert_workflows
 from datetime import datetime
+from exceptions.custom_exceptions import CeleryTaskException
+
 
 def run_clustering(job_id, ds:dict, random_state=0):
     wf_results = {}
