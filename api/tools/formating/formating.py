@@ -329,7 +329,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     labels_pred_louvain = None
     cluster_embedding = None
     if description is None:
-        description = f'{', '.join(method)} {process}' 
+        description = f"{', '.join(method) if isinstance(method, list) else method} {process}" 
     min_genes = None
     target_sum = None
     obs = None
