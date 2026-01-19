@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTrash, faUser, faRobot, faRotateRight, faMagic } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faTrash, faUser, faRobot, faRotateRight, faMagic, faMinus, faExpand } from '@fortawesome/free-solid-svg-icons';
 import { NODE_API_URL } from '../../constants/declarations';
 import styled from 'styled-components';
 
@@ -10,11 +10,41 @@ import styled from 'styled-components';
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: #ffffff;
-  border-top: 1px solid #f1f5f9;
   font-family: 'Inter', sans-serif;
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+`;
+
+const ResizeHandle = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nw-resize;
+  z-index: 20;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 6px;
+    height: 6px;
+    border-top: 2px solid #cbd5e1;
+    border-left: 2px solid #cbd5e1;
+  }
+
+  &:hover::after {
+    border-color: #64748b;
+  }
 `;
 
 const Header = styled.div`
@@ -24,7 +54,42 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: #ffffff;
+  background-color: #ffffff;
   z-index: 10;
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+`;
+
+const MinimizedButton = styled.button`
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const HeaderTitleGroup = styled.div`
@@ -87,6 +152,21 @@ const ClearButton = styled.button`
   &:hover {
     color: #ef4444;
     background-color: #fef2f2;
+  }
+`;
+
+const IconButton = styled.button`
+  color: #94a3b8;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #0f766e;
+    background-color: #f0fdfa;
   }
 `;
 
@@ -335,7 +415,14 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gpt'); // 'gpt' or 'gemini'
+  const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Resize state
+  const [size, setSize] = useState({ width: 380, height: 600 });
+  const isResizing = useRef(false);
+  const startPos = useRef({ x: 0, y: 0 });
+  const startSize = useRef({ w: 0, h: 0 });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -344,6 +431,42 @@ const Chatbot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing.current) return;
+      const deltaX = e.clientX - startPos.current.x;
+      const deltaY = e.clientY - startPos.current.y;
+
+      setSize({
+        width: Math.max(300, startSize.current.w - deltaX),
+        height: Math.max(400, startSize.current.h - deltaY)
+      });
+    };
+
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const startResize = (e) => {
+    e.preventDefault();
+    isResizing.current = true;
+    startPos.current = { x: e.clientX, y: e.clientY };
+    startSize.current = { w: size.width, h: size.height };
+    document.body.style.cursor = 'nw-resize';
+    document.body.style.userSelect = 'none';
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -387,8 +510,17 @@ const Chatbot = () => {
     }
   };
 
+  if (isMinimized) {
+    return (
+      <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
+        <FontAwesomeIcon icon={faRobot} size="lg" />
+      </MinimizedButton>
+    );
+  }
+
   return (
-    <Container>
+    <Container style={{ width: `${size.width}px`, height: `${size.height}px` }}>
+      <ResizeHandle onMouseDown={startResize} title="Drag to resize" />
       <Header>
         <HeaderTitleGroup>
           <AvatarCircle>
@@ -402,9 +534,14 @@ const Chatbot = () => {
             </StatusIndicator>
           </div>
         </HeaderTitleGroup>
-        <ClearButton onClick={handleClear} title="Clear Conversation">
-          <FontAwesomeIcon icon={faTrash} size="sm" />
-        </ClearButton>
+        <HeaderActions>
+          <IconButton onClick={() => setIsMinimized(true)} title="Minimize">
+            <FontAwesomeIcon icon={faMinus} size="sm" />
+          </IconButton>
+          <ClearButton onClick={handleClear} title="Clear Conversation">
+            <FontAwesomeIcon icon={faTrash} size="sm" />
+          </ClearButton>
+        </HeaderActions>
       </Header>
 
       <MessagesArea>
