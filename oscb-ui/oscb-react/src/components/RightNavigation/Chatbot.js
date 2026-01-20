@@ -628,7 +628,7 @@ const Chatbot = () => {
               onChange={(e) => setSelectedModel(e.target.value)}
             >
               <option value="gpt">GPT-4o (OpenAI)</option>
-              <option value="gemini">Gemini Pro (Google)</option>
+              <option value="gemini">Gemini Flash (Latest) (Google)</option>
             </ModelSelect>
             <IconWrapper>
               <FontAwesomeIcon icon={faRotateRight} rotation={90} size="xs" />
