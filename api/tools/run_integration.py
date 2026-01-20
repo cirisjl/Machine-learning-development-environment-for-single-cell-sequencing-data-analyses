@@ -7,7 +7,7 @@ from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
 from tools.integration.scvi import scvi_integrate
 from scipy.sparse import csr_matrix
-from tools.reduction.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import *
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
@@ -180,7 +180,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0, fig_path=fig_path)
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_pca_harmony", random_state=0)
+                        if fig_path is not None:
+                            plot_embedding(adata, color=batch_key, fig_path=fig_path, title="Harmony Integration")
 
                         # adata.write_h5ad(adata_path, compression='gzip')
                         adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
@@ -224,7 +226,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0, fig_path=fig_path)
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0,)
+                        if fig_path is not None:
+                            plot_embedding(adata, color=batch_key, fig_path=fig_path, title="scVI Integration")
 
                         adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
                         # adata.write_h5ad(adata_path, compression='gzip')
@@ -256,7 +260,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     # s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input}', output_folder='{output}', adata_path='{adata_path}', methods='{methods}', dims='{dims}', npcs='{npcs}', default_assay='{default_assay}', reference='{reference}'), output_file='{report_path}')\""], shell = True)
                     s = subprocess.call([f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', batch_key='{parameters['batch_key']}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, resolution={resolution}, default_assay='{default_assay}'), output_file='{report_path}')\""], shell = True)
                     # redislogger.info(job_id, str(s))
-                    print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
+                    print(f"R -e \"rmarkdown::render('{rmd_path}', params=list(unique_id='{job_id}', datasets='{datasets}', inputs='{input_str}', output_folder='{output}', adata_path='{adata_path}', fig_path='{fig_path}', methods='{method}', dims={dims}, npcs={npcs}, default_assay='{default_assay}'), output_file='{report_path}')\"")
 
                     if os.path.exists(adata_path):
                         redislogger.info(job_id, "Adding 2D & 3D UMAP to AnnData object.")
@@ -291,6 +295,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             }
                         )
                         raise ValueError("AnnData file does not exist due to the failure of Integration.")
+
+                    if fig_path is not None:
+                            plot_embedding(adata, color=parameters['batch_key'], fig_path=fig_path, title=method + " Integration")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])

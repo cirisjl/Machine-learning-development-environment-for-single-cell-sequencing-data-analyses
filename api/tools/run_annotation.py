@@ -7,7 +7,7 @@ from tools.annotation.scanvi import scanvi_transfer
 from tools.annotation.SingleR import run_singler
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from tools.reduction.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import *
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
@@ -80,6 +80,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
         raise CeleryTaskException(detail)
 
     redislogger.info(job_id, f"Using Annotation Parameters: {parameters}")
+    methodMap = ', '.join(methods)
+    methodsArr = methods
     methods = [x.upper() for x in methods if isinstance(x, str)]
     for method in methods:
         
@@ -109,9 +111,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if "celltypist_label" in adata.obs.keys():
                         obsSets.append({"name":"celltypist_label", "path":"obs/celltypist_label"})
                         obs_cols.append("celltypist_label")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="celltypist_label", fig_path=fig_path, title="CellTypist UMAP of " + description)
                     if "celltypist_ref_label" in adata.obs.keys():
                         obsSets.append({"name":"celltypist_ref_label", "path":"obs/celltypist_ref_label"})
                         obs_cols.append("celltypist_ref_label")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="celltypist_ref_label", fig_path=fig_path, title="CellTypist Ref UMAP of " + description)
 
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
@@ -156,6 +162,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if "scANVI_predicted" in adata.obs.keys():
                         obsSets.append({"name":"scANVI_predicted", "path":"obs/scANVI_predicted"})
                         obs_cols.append("scANVI_predicted")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="scANVI_predicted", fig_path=fig_path, title="scANVI UMAP of " + description)
                     
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
@@ -252,12 +260,18 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if "SingleR_main" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_main", "path":"obs/SingleR_main"})
                         obs_cols.append("SingleR_main")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="SingleR_main", fig_path=fig_path, title="SingleR main UMAP of " + description)
                     if "SingleR_fine" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_fine", "path":"obs/SingleR_fine"})
                         obs_cols.append("SingleR_fine")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="SingleR_fine", fig_path=fig_path, title="SingleR fine UMAP of " + description)
                     if "SingleR_user_ref" in adata.obs.keys():
                         obsSets.append({"name":"SingleR_user_ref", "path":"obs/SingleR_user_ref"})
                         obs_cols.append("SingleR_user_ref")
+                        if fig_path is not None:
+                            plot_embedding(adata, color="SingleR_user_ref", fig_path=fig_path, title="SingleR Ref UMAP of " + description)
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
@@ -293,10 +307,11 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
         adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
 
     adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
-    annotation_output.append({"Annotation": adata_path})
+    dictKey = description if description else ', '.join(methodsArr) + ' Annotation'
+    annotation_output.append({dictKey: adata_path})
     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, methods, parameters, md5, description=description, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
-
+    annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, methodMap, parameters, md5, description=description, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
+    # annotation_output = [dict(fs) for fs in set(frozenset(d.items()) for d in annotation_output)]  # De-duplicate outputs
     annotation_results["outputs"] = annotation_output
     redislogger.info(job_id, "AnnData object for Annotation is saved successfully")
     process_ids.append(process_id)

@@ -167,14 +167,12 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
                 annotation_results = run_annotation(job_id, ds, fig_path=fig_path, description=f"{', '.join(annotation_params['methods'])} Annotation for {key} Integration")
                 ann_process_ids.extend(annotation_results["process_ids"])
                 process_ids.extend(annotation_results["process_ids"])
-                annotation_outputs.append(annotation_results['output'])
-            output = annotation_results['output']
+                annotation_outputs.extend(annotation_results['output'])
+            output = annotation_outputs
                 
         wf_results['annotation'] = ann_process_ids
         wf_results['annotation_output'] = annotation_outputs
         
-
-
         results = {
             "output": output,
             # "workflow_id": workflow_id,

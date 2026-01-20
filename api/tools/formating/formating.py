@@ -1474,3 +1474,14 @@ def reset_x_to_raw(adata, min_genes=200):
             raise ValueError("Raw counts are not available.")
     
     return adata
+
+
+# Remove duplicates by key in a list of dictionaries
+def unique_by_key(data, key):
+    seen = set()
+    result = []
+    for d in data:
+        if d[key] not in seen:
+            seen.add(d[key])
+            result.append(d)
+    return result

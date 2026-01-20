@@ -4440,11 +4440,14 @@ app.post('/node/load-images', (req, res) => {
       const filePath = path.join(folderPath, file);
       const base64 = fs.readFileSync(filePath, { encoding: 'base64' });
       const mimeType = getMimeType(file);
+      const stats = fs.statSync(filePath);
       return {
         fileName: file,
         base64: `data:${mimeType};base64,${base64}`,
+        time: stats.mtime ? stats.mtime.getTime() : 0  // Modification time
       };
-    });
+    })
+    .sort((a, b) => a.time - b.time); // Sort by modification time ascending;
 
     res.json(images);
   } catch (err) {

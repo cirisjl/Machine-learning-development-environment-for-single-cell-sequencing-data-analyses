@@ -116,16 +116,10 @@ def run_dimension_reduction(adata, layer=None, n_neighbors=15, use_rep=None, n_p
     return adata, msg
 
 
-def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0, skip_if_exist=False, fig_path=None):
+def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state=0, skip_if_exist=False):
     if layer == "Pearson_residuals":
         print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
         return adata
-    
-    if fig_path is not None:
-        if layer is None:
-            fig_path = os.path.join(fig_path, 'leiden_clustering.png')
-        else:
-            fig_path = os.path.join(fig_path, layer+'_leiden_clustering.png')
 
     if skip_if_exist:
         if layer is not None and layer + '_louvain' in adata.obs.keys() and  layer + '_leiden' in adata.obs.keys():
@@ -142,10 +136,6 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         # Clustering the neighborhood graph
         sc.tl.leiden(adata_temp, resolution=resolution, 
                     random_state=random_state, flavor="igraph", n_iterations=2)
-        # Save the Clustering plot
-        if fig_path is not None:
-            sc.pl.embedding(adata_temp, basis=layer+'_umap', color=layer+'_leiden', show=False)
-            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
 
         adata.uns[layer + '_leiden'] = adata_temp.uns["leiden"].copy()
         adata.obs[layer + '_leiden'] = adata_temp.obs["leiden"].copy()
@@ -159,11 +149,6 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         louvain_key = "louvain_" + use_rep
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, flavor="igraph", n_iterations=2)
-        
-        # Save the Clustering plot
-        if fig_path is not None:
-            sc.pl.umap(adata, color=leiden_key, show=False)
-            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
 
         sc.tl.louvain(adata, key_added = louvain_key)
     elif layer is None: # and 'louvain' not in adata.obs.keys():
@@ -178,10 +163,6 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
 
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, flavor="igraph", n_iterations=2)
-        # Save the Clustering plot
-        if fig_path is not None:
-            sc.pl.umap(adata, color=leiden_key, show=False)
-            plt.savefig(fig_path, dpi=300, bbox_inches='tight')
 
         sc.tl.louvain(adata, key_added = louvain_key)
     # else:
@@ -189,3 +170,26 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
     #     print(f"Cluster for {layer} already exists, skipped.")
 
     return adata
+
+
+def plot_embedding(adata: AnnData, basis: str = 'X_umap', layer: str = None, color: str = 'leiden', fig_path: str = None, title: str = None, dpi: int = 300):
+    if layer == "Pearson_residuals":
+        print("Normalize Pearson_residuals may create NaN values, which are not accepted by PCA.")
+        return
+    if layer is not None:
+        basis = layer + '_umap'
+        if color is None:
+            color = layer + '_leiden'
+
+    if fig_path is not None:
+        if title is not None:
+            fig_path = os.path.join(fig_path, title + f'_{basis}.png')
+        elif color is not None:
+            fig_path = os.path.join(fig_path, f'{color}_{basis}.png')
+        else:
+            fig_path = os.path.join(fig_path, f'{basis}.png')
+        print(f"Embedding figure will be saved to {fig_path}")
+
+    if fig_path is not None and color is not None and color in adata.obs.keys() and basis in adata.obsm.keys():
+        sc.pl.embedding(adata, basis=basis, color=color, show=False)
+        plt.savefig(fig_path, dpi=dpi, bbox_inches='tight')

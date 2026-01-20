@@ -10,6 +10,7 @@ params:
   output_folder: NA # Output file path of the Seurat object.
   # output_format: Seurat  # Seurat or AnnData
   adata_path: NULL
+  fig_path: NULL
   default_assay: RNA # Default assay for each integration method
   methods: NULL # Integration methods: "Seurat", "Harmony", "LIGER"
   dims: 30
@@ -37,6 +38,8 @@ dims <- params$dims
 batch_key <- params$batch_key
 methods <- strsplit(params$methods, ",")[[1]]
 methods = toupper(methods)
+# fig_path <- params$fig_path
+# if(!is.null(fig_path) && !dir.exists(fig_path)) dir.create(fig_path, recursive = TRUE)
 if(is.null(params$methods)) stop("No integration method is selected.")
 if(length(datasets) != length(inputs)) stop("The number of datasets and files does not match.")
 if(length(inputs) < 2 ) stop("Integration requires at least 2 samples.")
@@ -113,8 +116,9 @@ if("SEURAT" %in% methods) {
     srats.integrated <- RunUMAP(object = srats.integrated, dims = 1:dims) 
 
     DimPlot(srats.integrated, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Seurat integration")
-    DimPlot(srats.integrated, reduction = "umap", split.by = batch_key) + NoLegend()
-
+    p_seurat <- DimPlot(srats.integrated, reduction = "umap", split.by = batch_key) + NoLegend()
+    print(p_seurat)
+    # if(!is.null(fig_path)) ggsave(paste0(fig_path, "/Seurat_Integration.png"), plot = p_seurat, width = 6, height = 4, units = "in", dpi = 300)
     srats.integrated <- FindNeighbors(srats.integrated, dims = 1:dims, k.param = 10, verbose = F)
     srats.integrated <- FindClusters(srats.integrated, verbose = F, resolution = params$resolution)
     DimPlot(srats.integrated, label = T) + NoLegend()
@@ -170,7 +174,9 @@ if("HARMONY" %in% methods) {
     srat.harmony <- SetIdent(srat.harmony, value = batch_key)
     DimPlot(srat.harmony, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after Harmony integration")
 
-    DimPlot(srat.harmony, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    p_harmony <- DimPlot(srat.harmony, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    print(p_harmony)
+    # if(!is.null(fig_path)) ggsave(paste0(fig_path, "/Harmony_Integration.png"), plot = p_harmony, width = 6, height = 4, units = "in", dpi = 300)
 
     srat.harmony <- SetIdent(srat.harmony, value = "seurat_clusters")
     DimPlot(srat.harmony, label = T) + NoLegend()
@@ -215,7 +221,9 @@ if("LIGER" %in% methods) {
     srat.liger <- RunUMAP(srat.liger, dims = 1:ncol(srat.liger[["inmf"]]), reduction = "inmf", verbose = F)
     srat.liger <- SetIdent(srat.liger,value = batch_key)
     DimPlot(srat.liger, reduction = "umap") + plot_annotation(title = paste(sapply(datasets, paste, collapse = ":"), collapse = ", "), " after LIGER integration")
-    DimPlot(srat.liger, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    p_liger <- DimPlot(srat.liger, reduction = "umap", group.by = batch_key, pt.size = .1, split.by = batch_key) + NoLegend()
+    print(p_liger)
+    # if(!is.null(fig_path)) ggsave(paste0(fig_path, "/LIGER_Integration.png"), plot = p_liger, width = 6, height = 4, units = "in", dpi = 300)
 
     srat.liger <- SetIdent(srat.liger,value = "seurat_clusters")
     DimPlot(srat.liger, reduction = "umap",label = T) + NoLegend()

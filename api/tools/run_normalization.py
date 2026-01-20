@@ -6,7 +6,7 @@ from tools.formating.formating import *
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
 from scipy.sparse import csr_matrix
-from tools.reduction.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import *
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
@@ -131,7 +131,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, f"Clustering the neighborhood graph for layer {method}.")
-                            adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state, fig_path=fig_path)
+                            adata = run_clustering(adata, layer=method, resolution=resolution, random_state=random_state)
+                        if fig_path is not None:
+                            plot_embedding(adata, layer=method, fig_path=fig_path, title=method + " Normalization")
                         
                         # # Converrt dense martrix to sparse matrix
                         # if isinstance(adata.X, np.ndarray):

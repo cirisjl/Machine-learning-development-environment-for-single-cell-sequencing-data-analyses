@@ -5,7 +5,7 @@ from tools.formating.formating import *
 from tools.imputation.MAGIC import magic_impute
 from config.celery_utils import get_input_path, get_output
 from utils.redislogger import *
-from tools.reduction.reduction import run_dimension_reduction, run_clustering
+from tools.reduction.reduction import *
 from utils.mongodb import generate_process_id, pp_result_exists, create_pp_results, upsert_jobs
 from utils.unzip import unzip_file_if_compressed
 from fastapi import HTTPException, status
@@ -85,7 +85,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     if msg is not None: redislogger.warning(job_id, msg)
                 if do_cluster:
                     redislogger.info(job_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
+                if fig_path is not None:
+                    plot_embedding(adata, layer='MAGIC', fig_path=fig_path, title="MAGIC Imputation")
 
                 # adata.write_h5ad(output, compression='gzip')
                 output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
@@ -126,7 +128,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                            adata = run_clustering(adata, layer='MAGIC', resolution=resolution, random_state=random_state)
+                        if fig_path is not None:
+                            plot_embedding(adata, layer='MAGIC', fig_path=fig_path, title="MAGIC Imputation")
 
                         # adata.write_h5ad(output, compression='gzip')
                         output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
@@ -196,7 +200,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     if msg is not None: redislogger.warning(job_id, msg)
                 if do_cluster:
                     redislogger.info(job_id, "Clustering the neighborhood graph.")
-                    adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                    adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
+                if fig_path is not None:
+                    plot_embedding(adata, layer='SAVER', fig_path=fig_path, title="SAVER Imputation")
 
                 # adata.write_h5ad(output, compression='gzip')
                 output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
@@ -245,7 +251,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                                 if msg is not None: redislogger.warning(job_id, msg)
                             if do_cluster:
                                 redislogger.info(job_id, "Clustering the neighborhood graph.")
-                                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state, fig_path=fig_path)
+                                adata = run_clustering(adata, layer='SAVER', resolution=resolution, random_state=random_state)
+                            if fig_path is not None:
+                                plot_embedding(adata, layer='SAVER', fig_path=fig_path, title="SAVER Imputation")
                             
                             # adata.write_h5ad(output, compression='gzip')
                             output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
