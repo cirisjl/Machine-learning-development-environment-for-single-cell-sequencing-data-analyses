@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTrash, faUser, faRobot, faRotateRight, faMagic, faMinus, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faTrash, faUser, faRobot, faDna, faRotateRight, faMagic, faMinus, faExpand, faAnchor } from '@fortawesome/free-solid-svg-icons';
 import { NODE_API_URL } from '../../constants/declarations';
+
 import styled from 'styled-components';
+import SingleCellLogo from '../../assets/single-cell-logo.png';
 
 // --- Styled Components ---
 
@@ -201,7 +203,49 @@ const EmptyIconWrapper = styled.div`
   justify-content: center;
   color: #14b8a6;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   border: 1px solid #f0f9ff;
+`;
+
+const SuggestedQuestionsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+`;
+
+const SuggestionChip = styled.button`
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+
+  &:hover {
+    border-color: #0f766e;
+    color: #0f766e;
+    background-color: #f0fdfa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+
+  svg {
+    color: #94a3b8;
+    transition: color 0.2s;
+  }
+  
+  &:hover svg {
+    color: #0f766e;
+  }
 `;
 
 const MessageRow = styled.div`
@@ -406,6 +450,26 @@ const Disclaimer = styled.span`
   font-size: 10px;
   color: #cbd5e1;
   font-weight: 500;
+  font-size: 10px;
+  color: #cbd5e1;
+  font-weight: 500;
+`;
+
+const ClearChatLink = styled.button`
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 8px;
+  align-self: flex-end;
+  text-decoration: underline;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #ef4444;
+  }
 `;
 
 // --- Component ---
@@ -415,8 +479,22 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gpt'); // 'gpt' or 'gemini'
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(() => {
+    const savedState = localStorage.getItem('chatbot_minimized');
+    return savedState === 'true';
+  });
+  const [isDocked, setIsDocked] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const PRESET_QUESTIONS = [
+    { title: "What is the cell type of cluster 1?", "prompt": "Could you please give the cell type with marker genes Cd3e, Cd3d, Cd3g and give me your reasoning?" },
+    { title: "Explain UMAP", "prompt": "Explain the UMAP plot and how it represents the single-cell data." },
+    { title: "Differential Expression", "prompt": "Perform differential expression analysis between Cluster 1 and Cluster 2." }
+  ];
+
+  useEffect(() => {
+    localStorage.setItem('chatbot_minimized', isMinimized);
+  }, [isMinimized]);
 
   // Resize state
   const [size, setSize] = useState({ width: 380, height: 600 });
@@ -438,10 +516,12 @@ const Chatbot = () => {
       const deltaX = e.clientX - startPos.current.x;
       const deltaY = e.clientY - startPos.current.y;
 
-      setSize({
-        width: Math.max(300, startSize.current.w - deltaX),
-        height: Math.max(400, startSize.current.h - deltaY)
-      });
+      if (Number.isFinite(startSize.current.w - deltaX) && Number.isFinite(startSize.current.h - deltaY)) {
+        setSize({
+          width: Math.max(300, startSize.current.w - deltaX),
+          height: Math.max(400, startSize.current.h - deltaY)
+        });
+      }
     };
 
     const handleMouseUp = () => {
@@ -476,10 +556,12 @@ const Chatbot = () => {
     setInput('');
     setIsLoading(true);
 
+    const targetModel = selectedModel; // Capture current model
+
     try {
       const response = await axios.post(`${NODE_API_URL}/api/chat`, {
         message: userMessage.content,
-        model: selectedModel
+        model: targetModel
       });
 
       const botMessage = { role: 'assistant', content: response.data.reply };
@@ -513,18 +595,28 @@ const Chatbot = () => {
   if (isMinimized) {
     return (
       <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
-        <FontAwesomeIcon icon={faRobot} size="lg" />
+        <img src={SingleCellLogo} alt="AI" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
       </MinimizedButton>
     );
   }
 
   return (
-    <Container style={{ width: `${size.width}px`, height: `${size.height}px` }}>
-      <ResizeHandle onMouseDown={startResize} title="Drag to resize" />
+    <Container
+      style={{
+        width: isDocked ? '600px' : `${size.width}px`,
+        height: isDocked ? '500px' : `${size.height}px`,
+        right: isDocked ? '24px' : '24px',
+        bottom: isDocked ? '0px' : '24px',
+        borderBottomRightRadius: isDocked ? '0' : '16px',
+        borderBottomLeftRadius: isDocked ? '0' : '16px',
+        fontSize: size.width > 500 ? '16px' : '14px' // Responsive font size
+      }}
+    >
+      {!isDocked && <ResizeHandle onMouseDown={startResize} title="Drag to resize" />}
       <Header>
         <HeaderTitleGroup>
-          <AvatarCircle>
-            <FontAwesomeIcon icon={faRobot} size="sm" />
+          <AvatarCircle style={{ background: 'transparent', boxShadow: 'none' }}>
+            <img src={SingleCellLogo} alt="AI" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
           </AvatarCircle>
           <div>
             <TitleText>AI Assistant</TitleText>
@@ -534,13 +626,11 @@ const Chatbot = () => {
             </StatusIndicator>
           </div>
         </HeaderTitleGroup>
+
         <HeaderActions>
           <IconButton onClick={() => setIsMinimized(true)} title="Minimize">
             <FontAwesomeIcon icon={faMinus} size="sm" />
           </IconButton>
-          <ClearButton onClick={handleClear} title="Clear Conversation">
-            <FontAwesomeIcon icon={faTrash} size="sm" />
-          </ClearButton>
         </HeaderActions>
       </Header>
 
@@ -556,6 +646,15 @@ const Chatbot = () => {
                 I can answer questions about single-cell analysis, datasets, and RNA sequencing.
               </p>
             </div>
+
+            <SuggestedQuestionsContainer>
+              {PRESET_QUESTIONS.map((q, idx) => (
+                <SuggestionChip key={idx} onClick={() => setInput(q.prompt)}>
+                  <FontAwesomeIcon icon={faMagic} size="xs" />
+                  {q.title}
+                </SuggestionChip>
+              ))}
+            </SuggestedQuestionsContainer>
           </EmptyState>
         )}
 
@@ -620,6 +719,13 @@ const Chatbot = () => {
             <FontAwesomeIcon icon={faPaperPlane} size="sm" />
           </SendButton>
         </InputWrapper>
+        {messages.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <ClearChatLink onClick={handleClear}>
+              Clear chat history
+            </ClearChatLink>
+          </div>
+        )}
 
         <FooterRow>
           <SelectWrapper>
@@ -637,7 +743,7 @@ const Chatbot = () => {
           <Disclaimer>Powered by AI</Disclaimer>
         </FooterRow>
       </InputArea>
-    </Container>
+    </Container >
   );
 };
 
