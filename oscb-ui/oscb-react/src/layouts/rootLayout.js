@@ -235,7 +235,7 @@ export default function RootLayout() {
                 <main>
                     <Outlet isUserLoggedIn={isUserLoggedIn} />
                 </main>
-                <Chatbot />
+                {isUserLoggedIn && <Chatbot />}
             </div>
         </div>
 
