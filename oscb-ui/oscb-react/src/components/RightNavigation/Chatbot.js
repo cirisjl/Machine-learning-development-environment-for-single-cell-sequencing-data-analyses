@@ -475,273 +475,273 @@ const ClearChatLink = styled.button`
 // --- Component ---
 
 const Chatbot = () => {
-    const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('gpt'); // 'gpt' or 'gemini'
-    const [isMinimized, setIsMinimized] = useState(() => {
-        const savedState = localStorage.getItem('chatbot_minimized');
-        return savedState === 'true';
-    });
-    const [isDocked, setIsDocked] = useState(false);
-    const messagesEndRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('gpt'); // 'gpt' or 'gemini'
+  const [isMinimized, setIsMinimized] = useState(() => {
+    const savedState = localStorage.getItem('chatbot_minimized');
+    return savedState === 'true';
+  });
+  const [isDocked, setIsDocked] = useState(false);
+  const messagesEndRef = useRef(null);
 
-    const PRESET_QUESTIONS = [
-        { title: "What is the cell type of cluster 1?", "prompt": "Could you please give the cell type with marker genes Cd3e, Cd3d, Cd3g and give me your reasoning?" },
-        { title: "Explain UMAP", "prompt": "Explain the UMAP plot and how it represents the single-cell data." },
-        { title: "Differential Expression", "prompt": "Perform differential expression analysis between Cluster 1 and Cluster 2." }
-    ];
+  const PRESET_QUESTIONS = [
+    { title: "What is the cell type of cluster 1?", "prompt": "Could you please give the cell type with marker genes Cd3e, Cd3d, Cd3g and give me your reasoning?" },
+    { title: "Explain UMAP", "prompt": "Explain the UMAP plot and how it represents the single-cell data." },
+    { title: "Differential Expression", "prompt": "Perform differential expression analysis between Cluster 1 and Cluster 2." }
+  ];
 
-    useEffect(() => {
-        localStorage.setItem('chatbot_minimized', isMinimized);
-    }, [isMinimized]);
+  useEffect(() => {
+    localStorage.setItem('chatbot_minimized', isMinimized);
+  }, [isMinimized]);
 
-    // Resize state
-    const [size, setSize] = useState({ width: 380, height: 600 });
-    const isResizing = useRef(false);
-    const startPos = useRef({ x: 0, y: 0 });
-    const startSize = useRef({ w: 0, h: 0 });
+  // Resize state
+  const [size, setSize] = useState({ width: 380, height: 600 });
+  const isResizing = useRef(false);
+  const startPos = useRef({ x: 0, y: 0 });
+  const startSize = useRef({ w: 0, h: 0 });
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing.current) return;
+      const deltaX = e.clientX - startPos.current.x;
+      const deltaY = e.clientY - startPos.current.y;
+
+      if (Number.isFinite(startSize.current.w - deltaX) && Number.isFinite(startSize.current.h - deltaY)) {
+        setSize({
+          width: Math.max(300, startSize.current.w - deltaX),
+          height: Math.max(400, startSize.current.h - deltaY)
+        });
+      }
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            if (!isResizing.current) return;
-            const deltaX = e.clientX - startPos.current.x;
-            const deltaY = e.clientY - startPos.current.y;
-
-            if (Number.isFinite(startSize.current.w - deltaX) && Number.isFinite(startSize.current.h - deltaY)) {
-                setSize({
-                    width: Math.max(300, startSize.current.w - deltaX),
-                    height: Math.max(400, startSize.current.h - deltaY)
-                });
-            }
-        };
-
-        const handleMouseUp = () => {
-            isResizing.current = false;
-            document.body.style.cursor = 'default';
-            document.body.style.userSelect = 'auto';
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, []);
-
-    const startResize = (e) => {
-        e.preventDefault();
-        isResizing.current = true;
-        startPos.current = { x: e.clientX, y: e.clientY };
-        startSize.current = { w: size.width, h: size.height };
-        document.body.style.cursor = 'nw-resize';
-        document.body.style.userSelect = 'none';
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
     };
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
 
-        const userMessage = { role: 'user', content: input };
-        setMessages(prev => [...prev, userMessage]);
-        setInput('');
-        setIsLoading(true);
-
-        const targetModel = selectedModel; // Capture current model
-
-        try {
-            const response = await axios.post(`${NODE_API_URL}/api/chat`, {
-                message: userMessage.content,
-                model: targetModel
-            });
-
-            const botMessage = { role: 'assistant', content: response.data.reply };
-            setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            console.error("Chat error:", error);
-            let messageContent = "Sorry, something went wrong. Please check your API keys in oscb-node/.env.";
-
-            if (error.response && error.response.status === 429) {
-                messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
-            }
-
-            const errorMessage = { role: 'assistant', content: messageContent };
-            setMessages(prev => [...prev, errorMessage]);
-        } finally {
-            setIsLoading(false);
-        }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
+  }, []);
 
-    const handleClear = () => {
-        setMessages([]);
-    };
+  const startResize = (e) => {
+    e.preventDefault();
+    isResizing.current = true;
+    startPos.current = { x: e.clientX, y: e.clientY };
+    startSize.current = { w: size.width, h: size.height };
+    document.body.style.cursor = 'nw-resize';
+    document.body.style.userSelect = 'none';
+  };
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-    if (isMinimized) {
-        return (
-            <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
-                <img src={SingleCellLogo} alt="AI" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-            </MinimizedButton>
-        );
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    const targetModel = selectedModel; // Capture current model
+
+    try {
+      const response = await axios.post(`${NODE_API_URL}/api/chat`, {
+        message: userMessage.content,
+        model: targetModel
+      });
+
+      const botMessage = { role: 'assistant', content: response.data.reply };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      let messageContent = "Sorry, something went wrong. Please check your API keys in oscb-node/.env.";
+
+      if (error.response && error.response.status === 429) {
+        messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
+      }
+
+      const errorMessage = { role: 'assistant', content: messageContent };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  const handleClear = () => {
+    setMessages([]);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  if (isMinimized) {
     return (
-        <Container
-            style={{
-                width: isDocked ? '600px' : `${size.width}px`,
-                height: isDocked ? '500px' : `${size.height}px`,
-                right: isDocked ? '24px' : '24px',
-                bottom: isDocked ? '0px' : '24px',
-                borderBottomRightRadius: isDocked ? '0' : '16px',
-                borderBottomLeftRadius: isDocked ? '0' : '16px',
-                fontSize: size.width > 500 ? '16px' : '14px' // Responsive font size
-            }}
-        >
-            {!isDocked && <ResizeHandle onMouseDown={startResize} title="Drag to resize" />}
-            <Header>
-                <HeaderTitleGroup>
-                    <div>
-                        <TitleText>AI Assistant</TitleText>
-                        <StatusIndicator>
-                            <StatusDot />
-                            <StatusText>Online</StatusText>
-                        </StatusIndicator>
-                    </div>
-                </HeaderTitleGroup>
-
-                <HeaderActions>
-                    <IconButton onClick={() => setIsMinimized(true)} title="Minimize">
-                        <FontAwesomeIcon icon={faMinus} size="sm" />
-                    </IconButton>
-                </HeaderActions>
-            </Header>
-
-            <MessagesArea>
-                {messages.length === 0 && (
-                    <EmptyState>
-                        <EmptyIconWrapper>
-                            <FontAwesomeIcon icon={faMagic} size="lg" />
-                        </EmptyIconWrapper>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#334155' }}>How can I help you?</p>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '220px', lineHeight: '1.5' }}>
-                                I can answer questions about single-cell analysis, datasets, and RNA sequencing.
-                            </p>
-                        </div>
-
-                        <SuggestedQuestionsContainer>
-                            {PRESET_QUESTIONS.map((q, idx) => (
-                                <SuggestionChip key={idx} onClick={() => setInput(q.prompt)}>
-                                    <FontAwesomeIcon icon={faMagic} size="xs" />
-                                    {q.title}
-                                </SuggestionChip>
-                            ))}
-                        </SuggestedQuestionsContainer>
-                    </EmptyState>
-                )}
-
-                {messages.map((msg, index) => (
-                    <MessageRow key={index} $isUser={msg.role === 'user'}>
-                        <MessageGroup $isUser={msg.role === 'user'}>
-                            {/* Bot Avatar */}
-                            {msg.role !== 'user' && (
-                                <BotAvatarSmall>
-                                    <FontAwesomeIcon icon={faRobot} size="xs" />
-                                </BotAvatarSmall>
-                            )}
-
-                            {/* Bubble */}
-                            <Bubble $isUser={msg.role === 'user'}>
-                                {msg.content}
-                            </Bubble>
-
-                            {/* User Avatar (Hidden) */}
-                            {msg.role === 'user' && (
-                                <UserAvatarSmall>
-                                    <FontAwesomeIcon icon={faUser} size="xs" />
-                                </UserAvatarSmall>
-                            )}
-                        </MessageGroup>
-                    </MessageRow>
-                ))}
-
-                {isLoading && (
-                    <MessageRow $isUser={false}>
-                        <MessageGroup $isUser={false}>
-                            <BotAvatarSmall>
-                                <FontAwesomeIcon icon={faRobot} size="xs" />
-                            </BotAvatarSmall>
-                            <ThinkingBubble>
-                                <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>Thinking</span>
-                                <div style={{ display: 'flex', gap: '2px', marginLeft: '2px' }}>
-                                    <Dot />
-                                    <Dot />
-                                    <Dot />
-                                </div>
-                            </ThinkingBubble>
-                        </MessageGroup>
-                    </MessageRow>
-                )}
-                <div ref={messagesEndRef} />
-            </MessagesArea>
-
-            <InputArea>
-                <InputWrapper>
-                    <TextArea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type your message..."
-                        rows="1"
-                    />
-                    <SendButton
-                        onClick={handleSend}
-                        disabled={isLoading || !input.trim()}
-                    >
-                        <FontAwesomeIcon icon={faPaperPlane} size="sm" />
-                    </SendButton>
-                </InputWrapper>
-                {messages.length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-                        <ClearChatLink onClick={handleClear}>
-                            Clear chat history
-                        </ClearChatLink>
-                    </div>
-                )}
-
-                <FooterRow>
-                    <SelectWrapper>
-                        <ModelSelect
-                            value={selectedModel}
-                            onChange={(e) => setSelectedModel(e.target.value)}
-                        >
-                            <option value="gpt">GPT-4o (OpenAI)</option>
-                            <option value="gemini">Gemini Flash (Latest) (Google)</option>
-                        </ModelSelect>
-                        <IconWrapper>
-                            <FontAwesomeIcon icon={faRotateRight} rotation={90} size="xs" />
-                        </IconWrapper>
-                    </SelectWrapper>
-                    <Disclaimer>Powered by AI</Disclaimer>
-                </FooterRow>
-            </InputArea>
-        </Container >
+      <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
+        <img src={SingleCellLogo} alt="AI" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+      </MinimizedButton>
     );
+  }
+
+  return (
+    <Container
+      style={{
+        width: isDocked ? '600px' : `${size.width}px`,
+        height: isDocked ? '500px' : `${size.height}px`,
+        right: isDocked ? '24px' : '24px',
+        bottom: isDocked ? '0px' : '24px',
+        borderBottomRightRadius: isDocked ? '0' : '16px',
+        borderBottomLeftRadius: isDocked ? '0' : '16px',
+        fontSize: size.width > 500 ? '16px' : '14px' // Responsive font size
+      }}
+    >
+      {!isDocked && <ResizeHandle onMouseDown={startResize} title="Drag to resize" />}
+      <Header>
+        <HeaderTitleGroup>
+          <div>
+            <TitleText>AI Assistant</TitleText>
+            <StatusIndicator>
+              <StatusDot />
+              <StatusText>Online</StatusText>
+            </StatusIndicator>
+          </div>
+        </HeaderTitleGroup>
+
+        <HeaderActions>
+          <IconButton onClick={() => setIsMinimized(true)} title="Minimize">
+            <FontAwesomeIcon icon={faMinus} size="sm" />
+          </IconButton>
+        </HeaderActions>
+      </Header>
+
+      <MessagesArea>
+        {messages.length === 0 && (
+          <EmptyState>
+            <EmptyIconWrapper>
+              <FontAwesomeIcon icon={faMagic} size="lg" />
+            </EmptyIconWrapper>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#334155' }}>How can I help you?</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '220px', lineHeight: '1.5' }}>
+                I can answer questions about single-cell analysis, datasets, and RNA sequencing.
+              </p>
+            </div>
+
+            <SuggestedQuestionsContainer>
+              {PRESET_QUESTIONS.map((q, idx) => (
+                <SuggestionChip key={idx} onClick={() => setInput(q.prompt)}>
+                  <FontAwesomeIcon icon={faMagic} size="xs" />
+                  {q.title}
+                </SuggestionChip>
+              ))}
+            </SuggestedQuestionsContainer>
+          </EmptyState>
+        )}
+
+        {messages.map((msg, index) => (
+          <MessageRow key={index} $isUser={msg.role === 'user'}>
+            <MessageGroup $isUser={msg.role === 'user'}>
+              {/* Bot Avatar */}
+              {msg.role !== 'user' && (
+                <BotAvatarSmall>
+                  <FontAwesomeIcon icon={faRobot} size="xs" />
+                </BotAvatarSmall>
+              )}
+
+              {/* Bubble */}
+              <Bubble $isUser={msg.role === 'user'}>
+                {msg.content}
+              </Bubble>
+
+              {/* User Avatar (Hidden) */}
+              {msg.role === 'user' && (
+                <UserAvatarSmall>
+                  <FontAwesomeIcon icon={faUser} size="xs" />
+                </UserAvatarSmall>
+              )}
+            </MessageGroup>
+          </MessageRow>
+        ))}
+
+        {isLoading && (
+          <MessageRow $isUser={false}>
+            <MessageGroup $isUser={false}>
+              <BotAvatarSmall>
+                <FontAwesomeIcon icon={faRobot} size="xs" />
+              </BotAvatarSmall>
+              <ThinkingBubble>
+                <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>Thinking</span>
+                <div style={{ display: 'flex', gap: '2px', marginLeft: '2px' }}>
+                  <Dot />
+                  <Dot />
+                  <Dot />
+                </div>
+              </ThinkingBubble>
+            </MessageGroup>
+          </MessageRow>
+        )}
+        <div ref={messagesEndRef} />
+      </MessagesArea>
+
+      <InputArea>
+        <InputWrapper>
+          <TextArea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            rows="1"
+          />
+          <SendButton
+            onClick={handleSend}
+            disabled={isLoading || !input.trim()}
+          >
+            <FontAwesomeIcon icon={faPaperPlane} size="sm" />
+          </SendButton>
+        </InputWrapper>
+        {messages.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <ClearChatLink onClick={handleClear}>
+              Clear chat history
+            </ClearChatLink>
+          </div>
+        )}
+
+        <FooterRow>
+          <SelectWrapper>
+            <ModelSelect
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+            >
+              <option value="gpt">GPT-4o (OpenAI)</option>
+              <option value="gemini">Gemini Flash (Latest) (Google)</option>
+            </ModelSelect>
+            <IconWrapper>
+              <FontAwesomeIcon icon={faRotateRight} rotation={90} size="xs" />
+            </IconWrapper>
+          </SelectWrapper>
+          <Disclaimer>Powered by AI</Disclaimer>
+        </FooterRow>
+      </InputArea>
+    </Container >
+  );
 };
 
 export default Chatbot;
