@@ -345,7 +345,7 @@ const InputWrapper = styled.div`
 const TextArea = styled.textarea`
   width: 100%;
   padding: 14px 16px;
-  padding-right: 48px;
+  padding-right: 90px;
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -400,6 +400,32 @@ const SendButton = styled.button`
       transform: translateY(0);
     }
   `}
+`;
+
+const TrashButton = styled.button`
+  position: absolute;
+  right: 50px;
+  bottom: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #94a3b8;
+
+  &:hover {
+    color: #ef4444;
+    background-color: #fef2f2;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 const FooterRow = styled.div`
@@ -711,6 +737,13 @@ const Chatbot = () => {
             placeholder="Type your message..."
             rows="1"
           />
+          <TrashButton 
+            onClick={handleClear} 
+            title="Clear chat history"
+            style={{ display: messages.length > 0 ? 'flex' : 'none' }}
+          >
+            <FontAwesomeIcon icon={faTrash} size="sm" />
+          </TrashButton>
           <SendButton
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
@@ -718,13 +751,6 @@ const Chatbot = () => {
             <FontAwesomeIcon icon={faPaperPlane} size="sm" />
           </SendButton>
         </InputWrapper>
-        {messages.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-            <ClearChatLink onClick={handleClear}>
-              Clear chat history
-            </ClearChatLink>
-          </div>
-        )}
 
         <FooterRow>
           <SelectWrapper>
