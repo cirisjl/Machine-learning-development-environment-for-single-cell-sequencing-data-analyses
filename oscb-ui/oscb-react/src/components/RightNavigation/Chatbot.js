@@ -256,8 +256,7 @@ const MessageRow = styled.div`
 
 const MessageGroup = styled.div`
   display: flex;
-  /* max-width: 85%; */
-  /* Using inline styles for responsive width if needed, but 85% is good default */
+  max-width: 85%;
   align-items: flex-end;
   flex-direction: ${props => props.$isUser ? 'row-reverse' : 'row'};
   gap: 8px;
@@ -287,11 +286,11 @@ const UserAvatarSmall = styled.div`
 
 const Bubble = styled.div`
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: 1em;
   line-height: 1.5;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   white-space: pre-wrap;
-  max-width: 280px; /* Constrain width */
+  max-width: 100%;
   
   ${props => props.$isUser ? `
     background-color: #0f766e; /* Teal-700 equivalent */
@@ -351,7 +350,7 @@ const TextArea = styled.textarea`
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 1em;
   color: #334155;
   resize: none;
   min-height: 52px;
@@ -609,12 +608,15 @@ const Chatbot = () => {
         bottom: isDocked ? '0px' : '24px',
         borderBottomRightRadius: isDocked ? '0' : '16px',
         borderBottomLeftRadius: isDocked ? '0' : '16px',
-        fontSize: size.width > 500 ? '16px' : '14px' // Responsive font size
+        fontSize: size.width > 600 ? '18px' : size.width > 450 ? '16px' : '14px' // Enhanced responsive font size
       }}
     >
       {!isDocked && <ResizeHandle onMouseDown={startResize} title="Drag to resize" />}
       <Header>
         <HeaderTitleGroup>
+          <AvatarCircle style={{ background: 'transparent', boxShadow: 'none' }}>
+            <img src={SingleCellLogo} alt="AI" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+          </AvatarCircle>
           <div>
             <TitleText>AI Assistant</TitleText>
             <StatusIndicator>

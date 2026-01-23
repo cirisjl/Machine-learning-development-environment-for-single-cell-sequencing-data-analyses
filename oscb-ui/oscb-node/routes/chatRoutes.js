@@ -1,28 +1,3 @@
-// Polyfill for fetch which is required for openai in node < 18
-const fetch = require('node-fetch');
-const FormData = require('form-data');
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-    globalThis.Headers = fetch.Headers;
-    globalThis.Request = fetch.Request;
-    globalThis.Response = fetch.Response;
-    globalThis.FormData = FormData;
-    if (!globalThis.Blob) {
-        globalThis.Blob = class Blob {
-            constructor(content, options) {
-                this.content = content;
-                this.options = options;
-            }
-        };
-    }
-    globalThis.File = class File extends globalThis.Blob {
-        constructor(parts, filename, options) {
-            super(parts, options);
-            this.name = filename;
-        }
-    }
-}
-
 const express = require('express');
 const router = express.Router();
 const OpenAI = require('openai');
@@ -36,8 +11,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 router.post('/', async (req, res) => {
     const { message, model } = req.body;
     console.log(`[Chat API] Received request for model: ${model}`);
-    console.log(`[Chat API] OpenAI Key exists: ${!!process.env.OPENAI_API_KEY}`);
-    console.log(`[Chat API] Gemini Key exists: ${!!process.env.GEMINI_API_KEY}`);
+    
+    // Log key presence (checking length to be safe against empty strings)
+    console.log(`[Chat API] OpenAI Key present: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
+    console.log(`[Chat API] Gemini Key present: ${process.env.GEMINI_API_KEY ? 'Yes' : 'No'}`);
 
     if (!message) {
         return res.status(400).json({ error: 'Message is required' });
@@ -73,8 +50,14 @@ router.post('/', async (req, res) => {
 
     } catch (error) {
         console.error('Chat API Error:', error);
+        if (error.response) {
+             console.error('Chat API Error Response:', error.response.data);
+        }
+        
         const status = error.status || 500;
-        res.status(status).json({ error: 'Failed to fetch response from AI provider', details: error.message });
+        // Return more specific error message if possible
+        const errorMessage = error.message || 'Failed to fetch response from AI provider';
+        res.status(status).json({ error: 'AI Provider Error', details: errorMessage });
     }
 });
 

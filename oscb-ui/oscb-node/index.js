@@ -48,7 +48,7 @@ app.use((err, req, res, next) => {
 
 // Serve static files from the "s" directory
 app.use("/zarr", express.static(path.join(__dirname, 'storage/zarr/'), { dotfiles: 'allow' }));
-app.use('/api/chat', chatRoutes);
+app.use('/node/api/chat', chatRoutes);
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
