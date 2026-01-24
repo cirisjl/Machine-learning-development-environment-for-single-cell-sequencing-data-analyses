@@ -72,10 +72,10 @@ const MinimizedButton = styled.button`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  background: transparent;
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
+  /* box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4); */
   cursor: pointer;
   z-index: 9999;
   display: flex;
@@ -620,7 +620,7 @@ const Chatbot = () => {
   if (isMinimized) {
     return (
       <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
-        <img src={SingleCellLogo} alt="AI" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+        <img src={SingleCellLogo} alt="AI" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
       </MinimizedButton>
     );
   }
@@ -737,8 +737,8 @@ const Chatbot = () => {
             placeholder="Type your message..."
             rows="1"
           />
-          <TrashButton 
-            onClick={handleClear} 
+          <TrashButton
+            onClick={handleClear}
             title="Clear chat history"
             style={{ display: messages.length > 0 ? 'flex' : 'none' }}
           >
