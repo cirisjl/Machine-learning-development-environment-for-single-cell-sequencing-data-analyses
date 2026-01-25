@@ -1,5 +1,6 @@
-import {Outlet, Link, NavLink} from "react-router-dom"
+import { Outlet, Link, NavLink } from "react-router-dom"
 import Authentication from "../components/Authentication/AuthForm";
+import Chatbot from "../components/RightNavigation/Chatbot";
 // import SearchBox from "../components/Header/searchBar"
 import React, { useState, useEffect } from "react";
 import { deleteCookie, getCookie, isUserAuth } from "../utils/utilFunctions";
@@ -31,7 +32,7 @@ export default function RootLayout() {
     };
 
     const handleLogoutClick = () => {
-        if(deleteCookie('jwtToken'))
+        if (deleteCookie('jwtToken'))
         setIsUserLoggedIn(false);
         navigate('/getStarted');
         window.location.reload();  
@@ -73,12 +74,12 @@ export default function RootLayout() {
     //     };
     //   }, []);
   
-    return(
+    return (
         <div className="container">
             <div className="auth-form-container">
-                <Authentication isLoginReq={isLoginReq} handleAuth={handleAuth}/>
+                <Authentication isLoginReq={isLoginReq} handleAuth={handleAuth} />
             </div>
-            <div className ="header-container">
+            <div className="header-container">
                 <header className="border-b border-gray-100">
                     <div className="px-4 flex h-16 items-center">
                         <div className="flex flex-1 items-center">
@@ -157,13 +158,13 @@ export default function RootLayout() {
                                         <div className="rounded-xl border-gray-100 border styles-for-dropdown">
                                             <ul className="ul-suboptions">
                                                 { /* <li><NavLink to="benchmarks">Overview</NavLink></li> */}
-                                                <li><Link reloadDocument  to="benchmarks/clustering">Clustering</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/imputation">Imputation</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/batch-integration">Batch Integration</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/multimodal-data-integration">Multimodal Data Integration</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/trajectory">Trajectory</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/cell-cell-communication">Cell-Cell Communication</Link></li>
-                                                <li><Link reloadDocument  to="benchmarks/cell-type-annotation">Cell Type Annotation</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/clustering">Clustering</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/imputation">Imputation</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/batch-integration">Batch Integration</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/multimodal-data-integration">Multimodal Data Integration</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/trajectory">Trajectory</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/cell-cell-communication">Cell-Cell Communication</Link></li>
+                                                <li><Link reloadDocument to="benchmarks/cell-type-annotation">Cell Type Annotation</Link></li>
                                                 {isAdmin && (<li><NavLink to="benchmarks/uploads">Create New Benchmarks</NavLink></li>)}
                                             </ul>
                                         </div>
@@ -217,7 +218,7 @@ export default function RootLayout() {
                                             {!isUserLoggedIn && (<li><NavLink to="forgot-password">Forgot Password</NavLink></li>)}
                                             {isUserLoggedIn && (<li><NavLink to="reset/:token">Reset Password</NavLink></li>)}
                                             {isUserLoggedIn ? (
-                                                <li><span style={{ cursor: 'pointer'}} onClick={handleLogoutClick}>Log Out</span></li>
+                                                    <li><span style={{ cursor: 'pointer' }} onClick={handleLogoutClick}>Log Out</span></li>
                                             ) : (
                                                 <li><NavLink to="login">Log In</NavLink></li>
                                             )}
@@ -232,8 +233,9 @@ export default function RootLayout() {
              </div>
              <div className="main-container">
                  <main>
-                     <Outlet isUserLoggedIn={isUserLoggedIn}/>
+                    <Outlet isUserLoggedIn={isUserLoggedIn} />
                  </main>
+                {isUserLoggedIn && <Chatbot />}
              </div>
          </div>
 

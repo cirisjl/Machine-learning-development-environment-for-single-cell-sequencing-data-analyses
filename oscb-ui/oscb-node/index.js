@@ -24,6 +24,8 @@ const { MongoClient, ObjectId } = require('mongodb');
 // const Option = require('../models/Option');
 // // Import the database configuration
 // require('./config/mongoDBClient');
+const chatRoutes = require('./routes/chatRoutes');
+
 
 // Increase the limit for the request body size to 25MB
 
@@ -45,7 +47,8 @@ app.use((err, req, res, next) => {
 });
 
 // Serve static files from the "s" directory
-app.use("/zarr", express.static(path.join(__dirname, 'storage/zarr/'), {dotfiles: 'allow'}));
+app.use("/zarr", express.static(path.join(__dirname, 'storage/zarr/'), { dotfiles: 'allow' }));
+app.use('/node/api/chat', chatRoutes);
 
 const dbConfig = JSON.parse(fs.readFileSync('./configs/dbconfigs.json'));
 const storageConfig = JSON.parse(fs.readFileSync('./configs/storageConfig.json'));
@@ -114,7 +117,7 @@ function getUserFromToken(token) {
 }
 
 
-function removeFiles(fileList){
+function removeFiles(fileList) {
     if (fileList && Array.isArray(fileList)) {
         let successCount = 0;
         let errorCount = 0;
@@ -1860,7 +1863,7 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
                     }
 
                     let userPrivateStorageDir = storageDir + username; // Change this to the user's private storage path
-                    if (formData.flow == "Benchmark"){
+                    if (formData.flow == "Benchmark") {
                         removeFiles(inputFiles); // Remove original input files
                         formData.inputFiles = formData.adata_path;
                     }
@@ -2396,7 +2399,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         { $match: matchStage },
         { $unwind: '$Selected Cell Types.value' },
         { $unwind: '$Disease Status (Donor)' },
-        { $facet: {
+            {
+                $facet: {
             'Species': [
                     { $group: { _id: '$Species.label', uniqueValues: { $addToSet: '$Id' } } },
                     {
@@ -2454,7 +2458,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
         //     { $group: { _id: '$Disease Status (Donor).label', count: { $sum: 1 } } }, { $sort: { count: -1 } } 
         //   ],
           // ... add other facets here
-        }}
+                }
+            }
       ];
   
       // Get the facets
@@ -2467,7 +2472,8 @@ app.post('/node/benchmarks/datasets/search', async (req, res) => {
       const searchResultsPipeline = [
         { $match: matchStage },
           {
-              $project: { Id: 1, Title: 1, 'Species': 1, adata_path: 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", Owner: 1, 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1, cell_metadata_head: 1, obs_names: 1, uns: 1, varm: 1, embeddings: 1, mod_keys: 1 } }, // Excluding fields
+              $project: { Id: 1, Title: 1, 'Species': 1, adata_path: 1, 'Cell Count Estimate': 1, 'Organ Part': 1, 'Dataset ID': "$Id", Owner: 1, 'Disease Status(Donor)': 1, 'Development Stage': 1, 'Author': 1, 'Submission Date': 1, 'Source': 1, process_ids: 1, Category: 1, cell_metadata_head: 1, obs_names: 1, uns: 1, varm: 1, embeddings: 1, mod_keys: 1 } 
+          }, // Excluding fields
         // { $skip: (page - 1) * pageSize },
         // { $limit: pageSize },
       ];
@@ -2694,24 +2700,26 @@ app.post('/node/tasks/search', async (req, res) => {
                     documents: [
                         // { $skip: (page - 1) * pageSize },
                         // { $limit: pageSize },
-                        { $group: { 
-                            _id: {
-                                "Benchmarks ID": "$benchmarksId",
-                                // "Dataset ID": "$datasetDetails.Id",
-                                Title: "$datasetDetails.Title",
-                                'Task': "$task_type",
-                                Species: "$datasetDetails.Species.label",
-                                'Organ Part': "$datasetDetails.Organ Part.label",
-                                'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
-                                'Development Stage': "$datasetDetails.Development Stage",
-                                // 'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
-                                // 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
-                                Author: "$datasetDetails.Author",
-                                TaskLabel: "$task_label",
-                                'Source': "$datasetDetails.Source",
-                                'Submission Date': "$datasetDetails.Submission Date",
-                            }
-                         } },
+                        { 
+                            $group: { 
+                                _id: {
+                                    "Benchmarks ID": "$benchmarksId",
+                                    // "Dataset ID": "$datasetDetails.Id",
+                                    Title: "$datasetDetails.Title",
+                                    'Task': "$task_type",
+                                    Species: "$datasetDetails.Species.label",
+                                    'Organ Part': "$datasetDetails.Organ Part.label",
+                                    'Cell Count Estimate': "$datasetDetails.Cell Count Estimate",
+                                    'Development Stage': "$datasetDetails.Development Stage",
+                                    // 'Anatomical Entity': "$datasetDetails.Anatomical Entity.label",
+                                    // 'Disease Status (Donor)': "$datasetDetails.Disease Status (Donor).label",
+                                    Author: "$datasetDetails.Author",
+                                    TaskLabel: "$task_label",
+                                    'Source': "$datasetDetails.Source",
+                                    'Submission Date': "$datasetDetails.Submission Date",
+                                }
+                            } 
+                        },
                         {
                             $project: {
                                 _id: '$_id.Benchmarks ID',
@@ -3977,7 +3985,7 @@ app.post('/node/getPreProcessResults', async (req, res) => {
 
         const detailsType = req.body.details;
         
-        if(detailsType === "PARTIAL") {
+        if (detailsType === "PARTIAL") {
             projection = { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1, adata_path: 1, cell_metadata: 1 };
         }
 
