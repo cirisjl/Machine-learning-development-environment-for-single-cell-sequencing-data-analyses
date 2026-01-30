@@ -20,6 +20,8 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
     datasetId = ds['datasetId']
     parameters = ds['reduction_params']
     n_hvg = ds['n_hvg']
+    species = ds['species'].lower()
+    organ_part = ds['organ_part']
     layer = None
     layers = None
     if(len(parameters['layer'].strip())):
@@ -66,6 +68,11 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
             reduction_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, zarr_path=zarr_output)
             
+            # Add preset questions for tissue and species
+            if organ_part is not None and organ_part != "" and species is not None and species != "":
+                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=layer, method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                reduction_results['preset_questions'] = preset_questions
+
             adata = None
             reduction_results['datasetId'] = datasetId
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database

@@ -42,10 +42,26 @@ export const uiSchema = (dynamicOptions) => ({
         "path_of_scrublet_calls": {
           "classNames": "sub-category"
         },
-        "species": {
-          "classNames": "sub-category",
-          "ui:placeholder": "Select species type"
-        },
+    "species": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
+      }
+    },
         "idtype": {
           "classNames": "sub-category"
         },

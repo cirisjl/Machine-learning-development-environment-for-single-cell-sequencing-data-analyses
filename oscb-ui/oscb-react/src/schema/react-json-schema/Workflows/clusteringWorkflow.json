@@ -9,6 +9,10 @@
           "type": "string",
           "title": "Species Type"
         },
+        "organ_part": {
+          "type": "string",
+          "title": "Organ Part"
+        },
         "qc_params": {
           "type": "object",
           "title": "Quality Control Parameters",

@@ -338,6 +338,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     varm = None
     vitessce_config = None
     unique_cell_labels = []
+    
     if obsSets is None:
         obsSets = []
 
@@ -1485,3 +1486,92 @@ def unique_by_key(data, key):
             seen.add(d[key])
             result.append(d)
     return result
+
+
+def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, method="t-test", groupby="leiden", top=25):
+    preset_questions = []
+    if layer is not None and layer in adata.layers.keys():
+        sc.tl.rank_genes_groups(adata, groupby, layer=layer, method=method, use_raw=False)
+        markers_df = sc.get.rank_genes_groups_df(adata, group=None, pval_cutoff=0.05)
+        markers_df = markers_df.sort_values(['group', 'scores'], ascending=[True, False]) # View the top 100 for each cluster (sorted by group)
+        # Create a wide-format DataFrame where columns are groups and rows are genes
+        top_marker_df = pd.DataFrame(adata.uns['rank_genes_groups']['names']).head(top)
+
+        # Convert the DataFrame to a dictionary
+        marker_genes_dict = top_marker_df.to_dict(orient='list')
+        prompt = f"Identify cell types of {tissue} cells from {species} using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
+        for cluster, genes in marker_genes_dict.items():
+            gene_list = ', '.join(genes)
+            prompt += f"Cluster {cluster}: {gene_list}\n"
+        prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
+
+        preset_question = {
+            "title": f"What cell type does each cluster most likely represent using layer: {layer}?", 
+            "prompt": prompt
+        }
+        preset_questions.append(preset_question)
+
+    if use_rep is not None:
+        if type(use_rep) is list:
+            for rep in use_rep:
+                if rep in adata.obsm.keys():
+                    sc.tl.rank_genes_groups(adata, groupby, use_rep=rep, method=method, use_raw=False)
+                    markers_df = sc.get.rank_genes_groups_df(adata, group=None, pval_cutoff=0.05)
+                    markers_df = markers_df.sort_values(['group', 'scores'], ascending=[True, False]) # View the top 100 for each cluster (sorted by group)
+                    # Create a wide-format DataFrame where columns are groups and rows are genes
+                    top_marker_df = pd.DataFrame(adata.uns['rank_genes_groups']['names']).head(top)
+
+                    # Convert the DataFrame to a dictionary
+                    marker_genes_dict = top_marker_df.to_dict(orient='list')
+                    prompt = f"Identify cell types of {tissue} cells from {species} using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
+                    for cluster, genes in marker_genes_dict.items():
+                        gene_list = ', '.join(genes)
+                        prompt += f"Cluster {cluster}: {gene_list}\n"
+                    prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
+
+                    preset_question = {
+                        f"What cell type does each cluster most likely represent using representation: {rep}?": prompt
+                    }
+                    preset_questions.append(preset_question)
+        else:
+            if use_rep in adata.obsm.keys():
+                sc.tl.rank_genes_groups(adata, groupby, use_rep=use_rep, method=method, use_raw=False)
+                markers_df = sc.get.rank_genes_groups_df(adata, group=None, pval_cutoff=0.05)
+                markers_df = markers_df.sort_values(['group', 'scores'], ascending=[True, False]) # View the top 100 for each cluster (sorted by group)
+                # Create a wide-format DataFrame where columns are groups and rows are genes
+                top_marker_df = pd.DataFrame(adata.uns['rank_genes_groups']['names']).head(top)
+
+                # Convert the DataFrame to a dictionary
+                marker_genes_dict = top_marker_df.to_dict(orient='list')
+                prompt = f"Identify cell types of {tissue} cells from {species} using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
+                for cluster, genes in marker_genes_dict.items():
+                    gene_list = ', '.join(genes)
+                    prompt += f"Cluster {cluster}: {gene_list}\n"
+                prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
+
+                preset_question = {
+                    f"What cell type does each cluster most likely represent using representation: {use_rep}?": prompt
+                }
+                preset_questions.append(preset_question)
+
+    if layer is None and use_rep is None:
+        sc.tl.rank_genes_groups(adata, groupby, method=method, use_raw=False)
+        markers_df = sc.get.rank_genes_groups_df(adata, group=None, pval_cutoff=0.05)
+        markers_df = markers_df.sort_values(['group', 'scores'], ascending=[True, False]) # View the top 100 for each cluster (sorted by group)
+        # Create a wide-format DataFrame where columns are groups and rows are genes
+        top_marker_df = pd.DataFrame(adata.uns['rank_genes_groups']['names']).head(top)
+
+        # Convert the DataFrame to a dictionary
+        marker_genes_dict = top_marker_df.to_dict(orient='list')
+        prompt = f"Identify cell types of {tissue} cells from {species} using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
+        for cluster, genes in marker_genes_dict.items():
+            gene_list = ', '.join(genes)
+            prompt += f"Cluster {cluster}: {gene_list}\n"
+        prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
+
+        preset_question = {
+            "What cell type does each cluster most likely represent?": prompt
+        }
+        preset_questions.append(preset_question)
+
+    return preset_questions

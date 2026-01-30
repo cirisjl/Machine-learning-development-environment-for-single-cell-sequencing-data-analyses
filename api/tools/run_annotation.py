@@ -16,7 +16,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
     
 
-def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=True, random_state=0):
+def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=True, random_state=0, wf=False):
     pp_results = []
     process_ids = []
     annotation_output = []
@@ -25,6 +25,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     dataset = ds['dataset']
     n_hvg = ds['n_hvg']
     species = ds['species'].lower()
+    organ_part = ds['organ_part']
     input = ds['input']
     user_refs = ds['user_refs']
     userID = ds['userID']
@@ -46,6 +47,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     resolution = parameters['resolution']
     obsSets = []
     obs_cols = []
+    preset_questions = []
 
     upsert_jobs(
         {
@@ -58,7 +60,8 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     if methods is None:
         redislogger.error(job_id, "No annotation method is selected.")
         detail = 'No annotation method is selected.'
-        raise CeleryTaskException(detail)
+        if not wf:
+            raise CeleryTaskException(detail)
     
     input = unzip_file_if_compressed(job_id, ds['input'])
     md5 = get_md5(input)
@@ -77,7 +80,10 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                 "Status": "Failure"
             }
         )
-        raise CeleryTaskException(detail)
+        if wf:
+            redislogger.error(job_id, detail)
+        else:
+            raise CeleryTaskException(detail)
 
     redislogger.info(job_id, f"Using Annotation Parameters: {parameters}")
     methodMap = ', '.join(methods)
@@ -119,6 +125,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                         if fig_path is not None:
                             plot_embedding(adata, color="celltypist_ref_label", fig_path=fig_path, title="CellTypist Ref UMAP of " + description)
 
+                    # Add preset questions for tissue and species
+                    if organ_part is not None and organ_part != "" and species is not None and species != "":
+                        if "leiden" not in adata.obs.columns:
+                            adata = run_clustering(adata, resolution=resolution, random_state=0)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        preset_questions.append(preset_question[0])
+                        
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     # annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
@@ -143,7 +156,9 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                         }
                     )
                     # os.remove(output)
-                    raise CeleryTaskException(detail)
+                    redislogger.error(job_id, detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
 
             if method == "SCANVI":
                 try:
@@ -164,7 +179,12 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                         obs_cols.append("scANVI_predicted")
                         if fig_path is not None:
                             plot_embedding(adata, color="scANVI_predicted", fig_path=fig_path, title="scANVI UMAP of " + description)
-                    
+                    # Add preset questions for tissue and species
+                    if organ_part is not None and organ_part != "" and species is not None and species != "":
+                        if "X_scVI_leiden" not in adata.obs.columns:
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg)
+                        preset_questions.append(preset_question[0])
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
@@ -190,11 +210,15 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                         }
                     )
                     # os.remove(adata_path)
-                    raise CeleryTaskException(detail)
+                    redislogger.error(job_id, detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
 
             if method == "SINGLER":
                 if len(SingleR_ref) == 0 and (len(user_refs) == 0 or user_label is None):
-                    raise CeleryTaskException(f"SingleR annotation is failed due to empty reference ({SingleR_ref}) and empty user reference ({user_refs}) or cell labels ({user_label}).")
+                    redislogger.error(job_id, f"SingleR annotation is failed due to empty reference ({SingleR_ref}) and empty user reference ({user_refs}) or cell labels ({user_label}).")
+                    if not wf:
+                        raise CeleryTaskException(f"SingleR annotation is failed due to empty reference ({SingleR_ref}) and empty user reference ({user_refs}) or cell labels ({user_label}).")
 
                 try:
                     # # report_path = get_report_path(dataset, output, "SAVER")
@@ -272,6 +296,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                         obs_cols.append("SingleR_user_ref")
                         if fig_path is not None:
                             plot_embedding(adata, color="SingleR_user_ref", fig_path=fig_path, title="SingleR Ref UMAP of " + description)
+                    
+                    # Add preset questions for tissue and species
+                    if organ_part is not None and organ_part != "" and species is not None and species != "":
+                        if "leiden" not in adata.obs.columns:
+                            adata = run_clustering(adata, resolution=resolution, random_state=0)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        preset_questions.append(preset_question[0])
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
                     # redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
@@ -296,7 +327,9 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                             "Status": "Failure"
                         }
                     )
-                    raise CeleryTaskException(detail)
+                    redislogger.error(job_id, detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
 
     if do_umap:
         redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -312,6 +345,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
     annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, methodMap, parameters, md5, description=description, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
     # annotation_output = [dict(fs) for fs in set(frozenset(d.items()) for d in annotation_output)]  # De-duplicate outputs
+    annotation_results['preset_questions'] = preset_questions
     annotation_results["outputs"] = annotation_output
     redislogger.info(job_id, "AnnData object for Annotation is saved successfully")
     process_ids.append(process_id)

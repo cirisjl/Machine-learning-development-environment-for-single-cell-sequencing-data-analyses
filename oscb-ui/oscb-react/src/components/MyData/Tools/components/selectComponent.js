@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import CreatableSelect from 'react-select';
 
-const SelectComponent = ({value, onChange,options}) => {
-
-
-    const selectOptions = options.opts.map(option => ({
-        label: option, // Use the string value as both label and value
-        value: option
-      }));
+const SelectComponent = ({value, onChange, options}) => {
+  const selectOptions = options.opts.map(option => ({
+      label: option, // Use the string value as both label and value
+      value: option
+    }));
 
   const handleChange = selectedOption => {
     onChange(selectedOption ? selectedOption.value : null);
@@ -16,7 +14,9 @@ const SelectComponent = ({value, onChange,options}) => {
   return (
     <div>
       <CreatableSelect 
-        value={selectOptions.find(option => option.value === value) || null}
+        value={selectOptions.find(option => option.value === value) || selectOptions[0] || null}
+        // value={selectOptions[0] === '' ? null : selectOptions[0]}
+        // defaultValue={selectOptions[0] === '' ? null : selectOptions[0]}
         onChange={handleChange}
         options={selectOptions}
         isClearable={options.clearable}

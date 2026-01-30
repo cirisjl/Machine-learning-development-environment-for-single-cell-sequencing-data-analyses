@@ -46,6 +46,10 @@
             "title": "Species Type",
             "enum": ["human", "mouse"]
            },
+          "organ_part": {
+            "type": "string",
+            "title": "Organ Part"
+          },
           "idtype": {
              "type": "string",
              "title": "ID Type",

@@ -14,7 +14,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
     
 
-def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state=0):
+def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state=0, wf=False):
     pp_results = []
     process_ids = []
     imputation_output = []
@@ -28,6 +28,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     do_umap = ds['do_umap']
     do_cluster = ds['do_cluster']
     parameters = ds['imputation_params']
+    species = ds['species'].lower()
+    organ_part = ds['organ_part']
     n_hvg = ds['n_hvg']
     layer = None
     if parameters['layer'] is not None and parameters['layer'].strip != "":
@@ -51,7 +53,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     if methods is None:
         redislogger.error(job_id, "No imputation method is selected.")
         detail = 'No imputation method is selected.'
-        raise CeleryTaskException(detail)
+        redislogger.error(job_id, detail)
+        if not wf:
+            raise CeleryTaskException(detail)
     
     #Get the absolute path for the given input
     # input = get_input_path(input, userID)
@@ -97,6 +101,12 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 
                 imputation_output.append({"MAGIC": output})
                 imputation_results["outputs"] = imputation_output
+
+                # Add preset questions for tissue and species
+                if organ_part is not None and organ_part != "" and species is not None and species != "":
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                    imputation_results['preset_questions'] = preset_questions
+                    
                 adata = None
                 redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
@@ -114,6 +124,8 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             "Status": "Failure"
                         }
                     )
+                redislogger.error(job_id, detail)
+                if not wf:
                     raise CeleryTaskException(detail)
                 elif 'MAGIC' not in adata.layers.keys(): 
                     try:
@@ -138,6 +150,11 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', zarr_path=zarr_output)
 
+                        # Add preset questions for tissue and species
+                        if organ_part is not None and organ_part != "" and species is not None and species != "":
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                            imputation_results['preset_questions'] = preset_questions
+
                         imputation_output.append({"MAGIC": output})
                         imputation_results["outputs"] = imputation_output
                         adata = None
@@ -155,7 +172,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             }
                         )
                         os.remove(output)
-                        raise CeleryTaskException(detail)
+                        redislogger.error(job_id, detail)
+                        if not wf:
+                            raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(job_id, "'MAGIC' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
@@ -210,6 +229,11 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                 imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
                 
+                # Add preset questions for tissue and species
+                if organ_part is not None and organ_part != "" and species is not None and species != "":
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                    imputation_results['preset_questions'] = preset_questions
+
                 imputation_output.append({"SAVER": output})
                 imputation_output.append({"Report": report_path})
                 imputation_results["outputs"] = imputation_output
@@ -222,7 +246,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 adata, counts, csv_path = load_anndata_to_csv(input, csv_path)
                 if adata is None:
                     detail = f"Layer {layer} does not exist in AnnData file: {input}"
-                    raise CeleryTaskException(detail)
+                    redislogger.error(job_id, detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
                 elif 'SAVER' not in adata.layers.keys(): 
                     try:
                         # report_path = get_report_path(dataset, output, "SAVER")
@@ -261,6 +287,11 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                             imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
                             
+                            # Add preset questions for tissue and species
+                            if organ_part is not None and organ_part != "" and species is not None and species != "":
+                                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                                imputation_results['preset_questions'] = preset_questions
+
                             imputation_output.append({"SAVER": output})
                             imputation_output.append({"Report": report_path})
                             imputation_results["outputs"] = imputation_output
@@ -288,7 +319,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                                 "Status": "Failure"
                             }
                         )
-                        raise CeleryTaskException(detail)
+                        redislogger.error(job_id, detail)
+                        if not wf:
+                            raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(job_id, "'SAVER' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output, layer='SAVER')

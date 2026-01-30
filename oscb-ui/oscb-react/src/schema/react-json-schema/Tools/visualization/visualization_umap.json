@@ -5,6 +5,14 @@
         "type":"object",
         "title": "Parameters for Dimension Reduction Process",  
         "properties": {
+          "species": {
+            "type": "string",
+            "title": "Species Type"
+          },
+          "organ_part": {
+            "type": "string",
+            "title": "Organ Part"
+          },
            "cluster_label": {
             "type": "string",
             "title": "Cluster Label",

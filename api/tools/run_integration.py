@@ -18,7 +18,7 @@ warnings.simplefilter("ignore", UserWarning)
 warnings.simplefilter("ignore", RuntimeWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def run_integration(job_id, ids:dict, fig_path=None):
+def run_integration(job_id, ids:dict, fig_path=None, wf=False):
     pp_stage = "Corrected"
     md5 = []
     process_ids = []
@@ -31,6 +31,8 @@ def run_integration(job_id, ids:dict, fig_path=None):
     do_umap = ids['do_umap']
     do_cluster = ids['do_cluster']
     n_hvg = ids['n_hvg']
+    species = ids['species'].lower()
+    organ_part = ids['organ_part']
     
     # output_format = ids['output_format']
     parameters = ids['integration_params']
@@ -57,7 +59,9 @@ def run_integration(job_id, ids:dict, fig_path=None):
     if methods is None:
         redislogger.warning(job_id, "No integration method is selected.")
         detail = 'No integration method is selected.'
-        raise CeleryTaskException(detail)
+        redislogger.error(job_id, detail)
+        if not wf:
+            raise CeleryTaskException(detail)
     # output = get_output_path(datasets, input, method='integration')
     methods = [x.upper() for x in methods if isinstance(x,str)]
     # adata, counts, csv_path = LoadAnndata_to_csv(input, output, layer, show_error)
@@ -138,7 +142,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         if batch_key is None or batch_key.strip() == '':
                             # adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
                             # batch_key = 'batch'
-                            raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for single file input.")
+                            detail = f"{method} integration is failed: 'Batch Key' is required for single file input."
+                            redislogger.error(job_id, detail)
+                            if not wf:
+                                raise CeleryTaskException(detail)
                     
                     # Pseudo replicates
                     if pseudo_replicates > 1:
@@ -159,7 +166,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                                 adata.X[np.isinf(adata.X)] = 0
                                 sc.pp.normalize_total(adata) 
                         else:
-                            raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+                            detail = f"{method} integration is failed: AnnData is None."
+                            redislogger.error(job_id, detail)
+                            if not wf:
+                                raise CeleryTaskException(detail)
 
                         sc.pp.log1p(adata)
                         sc.pp.highly_variable_genes(adata, batch_key = batch_key, subset=False)
@@ -190,6 +200,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
+                        # Add preset questions for tissue and species
+                        if organ_part is not None and organ_part != "" and species is not None and species != "":
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_pca_harmony", method="t-test", groupby="X_pca_harmony_leiden", top=n_hvg)
+                            integration_results['preset_questions'] = preset_questions
+
                         integration_output.append({f"{method}_AnnData": adata_path})
                         integration_results['outputs'] = integration_output
                         adata_outputs.update({method: adata_path})
@@ -210,7 +225,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             else:
                                 adata.X = adata.layers['raw_counts'].copy() # Restore the raw counts
                         else:
-                            raise CeleryTaskException(f"{method} integration is failed: AnnData is None.")
+                            detail = f"{method} integration is failed: AnnData is None."
+                            redislogger.error(job_id, detail)
+                            if not wf:
+                                raise CeleryTaskException(detail)
 
                         # Handle NaNs/Infinities, e.g., replace with 0 or a small value, or remove affected genes/cells
                         # Example: Replacing NaNs with 0 (use with caution based on your data)
@@ -226,7 +244,7 @@ def run_integration(job_id, ids:dict, fig_path=None):
                             if msg is not None: redislogger.warning(job_id, msg)
                         if do_cluster:
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
-                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0,)
+                            adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
                         if fig_path is not None:
                             plot_embedding(adata, color=batch_key, fig_path=fig_path, title="scVI Integration")
 
@@ -234,6 +252,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         # adata.write_h5ad(adata_path, compression='gzip')
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+
+                        # Add preset questions for tissue and species
+                        if organ_part is not None and organ_part != "" and species is not None and species != "":
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg)
+                            integration_results['preset_questions'] = preset_questions
 
                         integration_output.append({f"{method}_AnnData": adata_path})
                         integration_results['outputs'] = integration_output
@@ -248,7 +271,11 @@ def run_integration(job_id, ids:dict, fig_path=None):
                     if parameters['batch_key'] is None or parameters['batch_key'].strip() == '':
                         # adata.obs['batch'] = os.path.basename(input[0]).split('.')[0]
                         # batch_key = 'batch'
-                        raise CeleryTaskException(f"{method} integration is failed: 'Batch Key' is required for {method} integration.")
+                        detail = f"{method} integration is failed: 'Batch Key' is required for {method} integration."
+                        redislogger.error(job_id, detail)
+                        if not wf:
+                            raise CeleryTaskException(detail)
+                        
                     redislogger.info(job_id, f"Start {method} integration...")
                     # report_path = get_report_path(dataset, output, "integration")
                     # Get the absolute path of the current file
@@ -301,6 +328,12 @@ def run_integration(job_id, ids:dict, fig_path=None):
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
+                    
+                    # Add preset questions for tissue and species
+                    if organ_part is not None and organ_part != "" and species is not None and species != "":
+                        preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        integration_results['preset_questions'] = preset_questions
+
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                     integration_output.append({f"{method}_AnnData": adata_path})
                     integration_output.append({f"{method}_Seurat": output})
@@ -322,8 +355,10 @@ def run_integration(job_id, ids:dict, fig_path=None):
                         "Status": "Failure"
                     }
                 )
-                redislogger.error(job_id, f"{method} integration is failed: {e}")
-                raise CeleryTaskException(f"{method} integration is failed: {e}")
+                detail = f"{method} integration is failed: {e}"
+                redislogger.error(job_id, detail)
+                if not wf:
+                    raise CeleryTaskException(detail)
 
     results = {
         "output": integration_output,

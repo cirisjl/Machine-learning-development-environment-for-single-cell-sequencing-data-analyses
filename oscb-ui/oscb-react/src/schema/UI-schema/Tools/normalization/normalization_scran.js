@@ -2,17 +2,26 @@ export const uiSchema = (dynamicOptions) => ({
 
   "parameters": {
     "classNames": "category",
-      "species": {
-        "classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Species type",
-          creatable: false,
-          searchable: true,
-          opts:["human", "mouse"]
-        }
-      },
+    "species": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
+      }
+    },
       "idtype": {
         "classNames": "sub-category",
         "ui:widget": "SelectComponent",
@@ -26,7 +35,14 @@ export const uiSchema = (dynamicOptions) => ({
       },
       "cluster_label": {
         "classNames": "sub-category",
-        "ui:widget": "ClusterLabelInput"
+        "ui:widget": "SelectComponent",
+        'ui:options': {
+          clearable: true,
+          placeholder: "Choose the cluster label for UMAP/t-SNE visualization",
+          creatable: false,
+          searchable: true,
+          opts: dynamicOptions.obs_names
+        }
       },
       "n_hvg": {
         "classNames": "sub-category",

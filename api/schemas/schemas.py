@@ -119,7 +119,8 @@ class Dataset(BaseModel):
     method: Optional[List[str]] = []
     process: Optional[str] = None
     output_format: Optional[str] = 'AnnData'
-    species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    species: Optional[str] = 'Mouse' # c("Human", "Mouse") Species of the database for annotation. Allowed input is human or mouse.
+    organ_part: Optional[str] = None # organ part or tissue for annotation, e.g., "lung", "brain"
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
     qc_params: QCParameters = Field(default_factory=QCParameters)
@@ -148,7 +149,8 @@ class Datasets(BaseModel):
     method: Optional[List[str]] = []
     # batch_key: Optional[str] = None
     # pseudo_replicates: Optional[int] = 0
-    species: Optional[str] = 'mouse' # c("human", "mouse") Species of the database for annotation. Allowed input is human or mouse.
+    species: Optional[str] = 'Mouse' # c("Human", "Mouse") Species of the database for annotation. Allowed input is human or mouse.
+    organ_part: Optional[str] = None # organ part or tissue for annotation, e.g., "lung", "brain"
     idtype: Optional[str] = 'SYMBOL' # idtype should be one of "SYMBOL", "ENSEMBL", "ENTREZID" or "REFSEQ".
     cluster_label: Optional[str] = None
     process: Optional[str] = None

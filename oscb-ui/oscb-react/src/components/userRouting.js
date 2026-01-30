@@ -29,7 +29,8 @@ function UserRouting (props) {
         <img src={hovered ? close_icon_hover : close_icon} alt="close-icon" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleCrossButtonClick} />
       </div>
       <div className='inner-container-auth'>
-        <p>Please <NavLink to="/login" className="span-class-link">login</NavLink> to access your data.</p>
+        <p>Please <NavLink to="/login" className="span-class-link">Login</NavLink> to access your data.</p>
+        {/* <p>Don't have an account? <NavLink to="/SignUp" className="span-class-link">Sign Up</NavLink></p> */}
       </div>
     </div>
   );

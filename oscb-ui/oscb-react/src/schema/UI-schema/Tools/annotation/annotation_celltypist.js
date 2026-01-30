@@ -6,10 +6,19 @@ export const uiSchema = (dynamicOptions) => ({
       "ui:widget": "SelectComponent",
       'ui:options': {
         clearable: true,
-        placeholder: "Select the Species type",
-        creatable: false,
+        creatable: true,
         searchable: true,
-        opts: ["human", "mouse"]
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
       }
     },
     "idtype": {
@@ -25,7 +34,14 @@ export const uiSchema = (dynamicOptions) => ({
     },
     "cluster_label": {
       "classNames": "sub-category",
-      "ui:widget": "ClusterLabelInput"
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        placeholder: "Choose the cluster label for UMAP/t-SNE visualization",
+        creatable: false,
+        searchable: true,
+        opts: dynamicOptions.obs_names
+      }
     },
     "n_hvg": {
       "classNames": "sub-category",
@@ -74,6 +90,7 @@ export const uiSchema = (dynamicOptions) => ({
           creatable: false,
           searchable: true,
           opts: [
+            "",
             "Human_Placenta_Decidua.pkl",
             "Adult_Mouse_Gut.pkl",
             "Human_Longitudinal_Hippocampus.pkl",

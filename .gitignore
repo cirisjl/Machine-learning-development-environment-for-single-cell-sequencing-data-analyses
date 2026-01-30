@@ -4,3 +4,4 @@
 /oscb-cli/oscb/Downloads/venv/*
 /oscb-ui/oscb-node/.env
 /oscb-ui/oscb-react/.env
+.env

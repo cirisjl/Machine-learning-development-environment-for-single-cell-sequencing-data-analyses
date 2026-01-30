@@ -14,7 +14,7 @@ from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
 
 
-def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error=True):
+def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error=True, wf=False):
 
     # pp_results = []
     process_ids = []
@@ -25,7 +25,8 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     input = ds['input']
     userID = ds['userID']
     output = ds['output']
-    species = ds['species']
+    species = ds['species'].lower()
+    organ_part = ds['organ_part']
     idtype = ds['idtype']
     n_hvg = ds['n_hvg']
     cluster_label = ds['cluster_label']
@@ -54,7 +55,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     if len(methods) <1:
         redislogger.error(job_id, "No normalization method is selected.")
         detail = 'No normalization method is selected.'
-        raise CeleryTaskException(detail)
+        redislogger.error(job_id, detail)
+        if not wf:
+            raise CeleryTaskException(detail)
     redislogger.info(job_id, f"Selected methods: {methods}")
     redislogger.info(job_id, f"Using Normalization Parameters: {parameters}")
     # Get the absolute path for the given input
@@ -146,6 +149,12 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})
+
+                        # Add preset questions for tissue and species
+                        if organ_part is not None and organ_part != "" and species is not None and species != "":
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=method, method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                            normalization_results['preset_questions'] = preset_questions
+
                         normalization_results['outputs'] = normalization_output
                         adata = None
                         
@@ -158,7 +167,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         redislogger.error(job_id, f"UMAP or clustering is failed for {method}: {e}")
                         failed_methods.append(f"UMAP or clustering is failed for {method}: {e}")
                 else:
-                    raise Exception(f'{method} is failed, no output is created.')
+                    redislogger.error(job_id, f'{method} normalization is failed, no output is created.')
+                    if not wf:
+                        raise Exception(f'{method} is failed, no output is created.')
 
                 # if os.path.exists(adata_sct_path):
                 #     adata_sct = load_anndata(adata_sct_path)
@@ -200,7 +211,9 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         "Status": "Failure"
                     }
                 )
-                raise CeleryTaskException(detail)
+                redislogger.error(job_id, detail)
+                if not wf:
+                    raise CeleryTaskException(detail)
 
     results = {
             "output": normalization_output,

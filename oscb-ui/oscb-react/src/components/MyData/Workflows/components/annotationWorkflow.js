@@ -47,6 +47,8 @@ export function AnnotationWorkFlowComponent(props) {
         obs_names: [], // Add obs_names as a dynamic option
         obs_names_ref: [], // Add obs_names as a dynamic option
         embeddings: [], // Add embeddings as a dynamic option
+        species: [],
+        organ_part: [], 
       });
 
   const navigate = useNavigate();
@@ -79,6 +81,8 @@ export function AnnotationWorkFlowComponent(props) {
       layers: [],
       obs_names: [],
       embeddings: [],
+      species: [],
+      organ_part: [],
     }));
   };
 
@@ -104,12 +108,16 @@ export function AnnotationWorkFlowComponent(props) {
       let layers = getLayersArray(selectedDatasets) || [];
       let obs_names = getObsNamesArray(selectedDatasets) || [];
       let embeddings = getEmbeddingsArray(selectedDatasets) || [];
+      let species = getSpeciesArray(selectedDatasets) || [];
+      let organ_part = getOrganPartArray(selectedDatasets) || [];
 
       setDynamicOptions((prevOptions) => ({
         ...prevOptions,
         layers: layers, // Update layers dynamically
         obs_names: obs_names, // Update obs_names dynamically
         embeddings: embeddings, // Update embeddings dynamically
+        species: species,
+        organ_part: organ_part,
       }));
     } else {
       setDynamicOptions((prevOptions) => ({
@@ -117,6 +125,8 @@ export function AnnotationWorkFlowComponent(props) {
         layers: [], // Reset layers if no datasets are selected
         obs_names: [], // Reset obs_names if no datasets are selected
         embeddings: [], // Reset embeddings if no datasets are selected
+        species: [],
+        organ_part: [],
       }));
     }
   }, [selectedDatasets]);
@@ -244,6 +254,32 @@ export function AnnotationWorkFlowComponent(props) {
     }));
   };
 
+  const getSpeciesArray = (dataMap) => {
+    let speciesArray = [];
+    Object.values(dataMap).forEach((dataset) => {
+      // console.log("dataset", dataset);
+      if (dataset.selectedSubItem?.Species) {
+        speciesArray.push(dataset.selectedSubItem.Species);
+      } else if (dataset?.Species) {
+        speciesArray.push(dataset.Species);
+      }
+    });
+    return [...new Set(speciesArray)]; // Remove duplicates
+  };
+
+  const getOrganPartArray = (dataMap) => {
+    let organPartArray = [];
+    console.log("dataMap", dataMap);
+    Object.values(dataMap).forEach((dataset) => {
+      console.log("dataset", dataset);
+      if (dataset.selectedSubItem?.["Organ Part"]) {
+        organPartArray.push(dataset.selectedSubItem["Organ Part"]);
+      } else if (dataset?.["Organ Part"]) {
+        organPartArray.push(dataset["Organ Part"]);
+      }
+    });
+    return [...new Set(organPartArray)]; // Remove duplicates
+  };
 
   const getObsNamesArray = (dataMap) => {
     let obsNamesArray = [""];
@@ -257,7 +293,6 @@ export function AnnotationWorkFlowComponent(props) {
     });
     return [...new Set(obsNamesArray)]; // Remove duplicates
   };
-
 
   const getEmbeddingsArray = (dataMap) => {
     let embeddingsArray = [""];
@@ -435,6 +470,8 @@ export function AnnotationWorkFlowComponent(props) {
             job_description = props.selectedWorkflow.charAt(0).toUpperCase() + ' workflow for ' + formData.dataset[0];
           }
         }
+        formData.species = formData.species || getSpeciesArray(selectedDatasets)[0] || '';
+        formData.organ_part = formData.organ_part || getOrganPartArray(selectedDatasets)[0] || '';
 
         console.log("Job description: ", job_description);
         console.log(props.selectedWorkflow);

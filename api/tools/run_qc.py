@@ -19,7 +19,7 @@ from utils.mongodb import generate_process_id, pp_result_exists, create_pp_resul
 from exceptions.custom_exceptions import CeleryTaskException
 from datetime import datetime
 
-def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
+def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
     pp_results = []
     process_ids = []
     qc_output = []
@@ -249,7 +249,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                                 }
                             )
                             redislogger.error(job_id, detail)
-                            raise CeleryTaskException(detail)
+                            if not wf:
+                                raise CeleryTaskException(detail)
                     
                 pp_results.append(qc_results)
                 process_ids.append(process_id)
@@ -341,7 +342,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                                 }
                             )
                             os.remove(output_path)
-                            raise CeleryTaskException(detail)
+                            if not wf:
+                                raise CeleryTaskException(detail)
                     
                 pp_results.append(qc_results)
                 process_ids.append(process_id)
@@ -415,7 +417,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     )
                     os.remove(output_path)
                     os.remove(adata_path)
-                    raise CeleryTaskException(detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
             if assay_names is None:
                 assay_names = []
             
@@ -506,7 +509,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                     os.remove(output_path)
                     os.remove(adata_path)
                     os.remove(report_path)
-                    raise CeleryTaskException(detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
                     
             pp_results.append(qc_results)
             process_ids.append(process_id)
@@ -552,7 +556,8 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0):
                         }
                     )
                     redislogger.error(job_id, detail)
-                    raise CeleryTaskException(detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
                 
             pp_results.append(qc_results)
             process_ids.append(process_id) 

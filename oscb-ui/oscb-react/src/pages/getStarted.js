@@ -19,7 +19,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
 export default function GetStarted() {
-    const [markdownText,setMarkdownText] = useState('');
+    const [markdownText, setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
 
     const handleCopy = (index) => {

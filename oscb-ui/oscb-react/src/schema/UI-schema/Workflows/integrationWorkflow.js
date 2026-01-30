@@ -1,18 +1,26 @@
 export const uiSchema = (dynamicOptions) => ({
-
   "parameters": {
     "ui:classNames": "category",
-      "species": {
-        "ui:classNames": "sub-category",
-        "ui:widget": "SelectComponent",
-        'ui:options': {
-          clearable: true ,
-          placeholder: "Select the Species type",
-          creatable: false,
-          searchable: true,
-          opts:["Human", "Mouse"]
-        }
-      },
+    "species": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
+      }
+    },
       // "idtype": {
       //   "ui:classNames": "sub-category",
       //   "ui:widget": "SelectComponent",

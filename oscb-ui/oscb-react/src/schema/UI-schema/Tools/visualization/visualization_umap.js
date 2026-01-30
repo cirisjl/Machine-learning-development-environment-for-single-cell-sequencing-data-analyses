@@ -1,11 +1,27 @@
 export const uiSchema = (dynamicOptions) => ({
 
-    "parameters": {
-      "classNames": "category",
-        "cluster_label": {
-          "classNames": "sub-category",
-          "ui:widget": "ClusterLabelInput"
-        },
+  "parameters": {
+    "classNames": "category",
+    "species": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
+      }
+    },
         "n_hvg": {
           "classNames": "sub-category",
           "ui:widget": "RangeSlider",

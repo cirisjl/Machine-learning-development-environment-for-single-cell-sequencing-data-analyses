@@ -145,8 +145,8 @@ def run_clustering(adata, layer=None, use_rep=None, resolution=0.5, random_state
         adata.obs[layer + '_louvain'] = adata_temp.obs["louvain"].copy()
         adata_temp = None
     elif layer is None and use_rep is not None: # and use_rep + '_louvain' not in adata.obs.keys():
-        leiden_key = "leiden_" + use_rep
-        louvain_key = "louvain_" + use_rep
+        leiden_key = use_rep + "_leiden"
+        louvain_key = use_rep + "_louvain"
         sc.tl.leiden(adata, key_added = leiden_key, resolution=resolution, 
                     random_state=random_state, flavor="igraph", n_iterations=2)
 

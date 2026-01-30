@@ -1,6 +1,26 @@
 export const uiSchema = (dynamicOptions) => ({
   "parameters": {
     "classNames": "category",
+    "species": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.species
+      }
+    },
+    "organ_part": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        creatable: true,
+        searchable: true,
+        opts: dynamicOptions.organ_part
+      }
+    },
     "do_umap": {
       "classNames": "sub-category",
       "ui:widget": "toggle"

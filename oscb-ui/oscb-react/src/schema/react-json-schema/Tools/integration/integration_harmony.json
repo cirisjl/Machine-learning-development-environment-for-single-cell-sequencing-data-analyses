@@ -5,6 +5,14 @@
       "type":"object",
       "title": "Parameters for Integration Process",  
       "properties": {
+        "species": {
+          "type": "string",
+          "title": "Species Type"
+        },
+        "organ_part": {
+          "type": "string",
+          "title": "Organ Part"
+        },
         "n_hvg": {
           "type": "integer",
           "title": "Number of Highly Variable Genes for Heatmap",

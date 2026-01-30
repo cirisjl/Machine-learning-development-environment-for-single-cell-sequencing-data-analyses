@@ -1,6 +1,6 @@
 import { Outlet, Link, NavLink } from "react-router-dom"
 import Authentication from "../components/Authentication/AuthForm";
-import Chatbot from "../components/RightNavigation/Chatbot";
+// import Chatbot from "../components/RightNavigation/Chatbot";
 // import SearchBox from "../components/Header/searchBar"
 import React, { useState, useEffect } from "react";
 import { deleteCookie, getCookie, isUserAuth } from "../utils/utilFunctions";
@@ -235,7 +235,6 @@ export default function RootLayout() {
                  <main>
                     <Outlet isUserLoggedIn={isUserLoggedIn} />
                  </main>
-                {isUserLoggedIn && <Chatbot />}
              </div>
          </div>
 

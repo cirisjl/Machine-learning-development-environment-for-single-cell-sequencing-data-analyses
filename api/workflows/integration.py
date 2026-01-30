@@ -108,6 +108,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
             ds['do_cluster'] = do_cluster
             ds['qc_params'] = qc_params
             ds['species'] = dss['species']
+            ds['organ_part'] = dss['organ_part']
             ds['skip_3d'] = dss['skip_3d']
             ds['skip_tsne'] = dss['skip_tsne']
             ds['n_hvg'] = n_hvg

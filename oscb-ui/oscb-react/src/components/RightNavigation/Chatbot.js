@@ -7,6 +7,15 @@ import { NODE_API_URL } from '../../constants/declarations';
 import styled from 'styled-components';
 import SingleCellLogo from '../../assets/single-cell-logo.png';
 
+import ReactMarkdown from "react-markdown"
+import 'github-markdown-css';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'
+import rehypeGithubAlerts from 'rehype-github-alert'
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+
 // --- Styled Components ---
 
 const Container = styled.div`
@@ -509,14 +518,13 @@ const Chatbot = () => {
     return savedState === 'true';
   });
   const [isDocked, setIsDocked] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
-
+  
   const PRESET_QUESTIONS = [
-    { title: "What is the cell type of cluster 1?", "prompt": "Could you please give the cell type with marker genes Cd3e, Cd3d, Cd3g and give me your reasoning?" },
-    { title: "Explain UMAP", "prompt": "Explain the UMAP plot and how it represents the single-cell data." },
-    { title: "Differential Expression", "prompt": "Perform differential expression analysis between Cluster 1 and Cluster 2." }
+    { title: "What cell type does each cluster most likely represent using layer: MAGIC?", "prompt": "Identify cell types of Aorta cells from mouse using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\nCluster 0: Rarres2, Mmp23, Col3a1, Col6a1, C1s, Gas1, Aebp1, Olfml2b, Col1a2, Htra1, Pcolce, Col5a2, Lhfp, Ddr2, Serping1, Chpf, C1ra, Col6a2, Dcn, Timp2, Ptgis, Nupr1, Ccdc80, Sod3, Col1a1, Igfbp6, Plxdc2, Lgals1, C3, Fndc1, Loxl1, Cpxm1, Cfh, C1qtnf2, C4b, Rcn3, Cercam, Mgp, Serpinf1, Tmem119, Bmp1, Srpx, Cp, Fn1, Stbd1, Olfml3, Loxl3, Chrdl1, Scd1, Eln\nCluster 1: Aqp7, Rbp7, 8430408G22Rik, Magix, C1qtnf9, Slc26a10, Car4, Pparg, Timp4, Meox2, Cd36, Fam70b, Pbld1, Itga1, Kif26a, Nepn, Cxcl12, Prdm16, Cyp1a1, Hspa12b, St6galnac2, P2ry2, Ptprr, Pkp4, Cav1, Fabp5, Cdh13, Gfod1, Apold1, AW112010, Jam2, Hey1, Cxcl9, Fam176a, Magi1, Cldn5, Gpr160, Palmd, Eepd1, Myzap, Sdpr, Aqp1, Sox17, Fmo1, Rasd1, Lipe, Rnf125, Snx32, N4bp3, Tspan7\nCluster 2: Esm1, Ehd3, Lrg1, Gpr97, Dkk2, Plvap, Igfbp3, Mcam, Ntn4, Lrrc3b, Cd1d1, Pydc3, Ica1, Lama3, Dchs1, Hapln1, Plaur, Fam40a, Klhl2, Rcsd1, Ccdc67, Fam171a1, Hps6, Oasl1, Tnfaip8l1, I830012O16Rik, Fam174b, Dcbld1, Ankrd29, 4933407C03Rik, Yes1, Cldn15, Dffb, Ppm1f, Efna1, Kctd12b, Mcat, Ada, Acta1, 2010321M09Rik, Scarf1, Tbc1d20, Mafb, Spry4, Card6, Mcm3, Tbc1d9b, Stab1, Arrdc2, Peg3\nCluster 3: Cst6, Tbx21, 4933427D14Rik, Dzip1, Fggy, Rnmtl1, Gpc1, Epb4.1l4a, 5730590G19Rik, Aass, Cenpf, Fhl2, 6330403A02Rik, S100pbp, Cd8b1, Acta2, Ccl22, Gzma, Ucp1, C3ar1, Cd96, Gm525, Hspb6, Adck3, Ccrl1, Gpd1, Ubash3a, Cd3g, Fbxw10, Palb2, Myl7, Muc5b, Akr1c12, Myoc, Tcap, Car3, Ms4a4b, Myom1, Slc43a2, Ccna2, Cenpe, Ticam1, Dscc1, 9930013L23Rik, Cd247, Ccl5, Fbxl2, Tnnt2, Has1, Myh11\nCluster 4: Tyrobp, Fcgr2b, Cd37, Cd83, Ctss, Ptpn6, Ctsc, Il10ra, Cfp, Prkcb, Cd68, Adrb2, Cyth4, H2-Aa, Epsti1, Aif1, H2-Eb1, Arhgef6, Lpxn, H2-DMa, Ly86, Laptm5, Pld4, Cd74, Sema4a, Ptprc, H2-Ab1, Ms4a6c, Bcl2a1b, Rgs14, Cd300a, Rassf4, Gm11428, Lyz2, Sh3kbp1, Lat2, Rac2, P2ry6, Itgb2, Zc3h12d, Rasal3, Hck, Ncf2, Lcp2, Plbd1, Ccl6, Lcp1, Coro1a, Tep1, Sgpl1\nCluster 5: Cyp2f2, Wfdc2, Tspan1, Krt5, Reg3g, Krt15, Bpifa1, Aqp3, Ckmt1, Ifitm1, 5330417C22Rik, Krt8, Anxa8, Ces1d, Aldh3a1, Elf3, Scgb1a1, Krt18, Fmo3, Plxnb1, Krt7, Emb, Car5b, Bpifb1, Niacr1, Aqp5, Atp1b1, Aox3, Gprc5a, Adh7, Sdc1, Ehf, Irx2, Cbr2, Ocln, Plcd3, Zbtb49, Krt17, Slc22a23, Cldn8, Acpp, Krt19, Pdgfc, Prodh, F3, Epcam, Fam187b, Tjp3, Ccdc51, Ccdc3\nCluster 6: Zfp39, Rnmtl1, Samd10, Nat9, Zfp64, 4933439C10Rik, Gbp3, Zfp747, Fabp4, 9930014A18Rik, Rnf152, Cldn5, Tbx21, Acacb, Cav1, 5730590G19Rik, Tcf7, Hist1h2be, Tm6sf2, Tox, Prodh, Cd36, Ucp1, Nqo1, Pecam1, Epb4.1l4a, Gzma, Aqp1, Cytl1, Sdcbp2, Pkn3, Slc52a2, Sdpr, Enpp6, Lyve1, Chaf1b, Akap2, Mtm1, Isl1, Fam70b, Car3, Selp, Apol9a, Clu, Myf5, Pde9a, Gata3, Mgp, Hey2, Fmo1\nCluster 7: Hba-a1, Beta-s, Apol11b, Hbb-b1, Alas2, Slc25a37, Fam46c, Isg20, Myom1, Snca, Fech, Epb4.1, Bpgm, Mkrn1, Ube2l6, 2810453I06Rik, Bco2, Pira2, Srl, Nusap1, Foxred2, Kcp, Clec4a4, Tspo2, Cd4, Melk, Col2a1, Cdc25b, Gypa, 5730469M10Rik, Eomes, Tlr12, Trim10, Car2, Ube2c, Eaf2, Mdga1, Adipoq, Cdr2, Sec1, Aldh1b1, Ms4a4b, Atad5, Scin, Coch, Col9a2, Cenpf, Traf3ip3, St8sia1, Ccndbp1\nProvide the most likely cell type for each cluster based on these marker genes and show your reasoning." },
   ];
-
+  console.log("PRESET_QUESTIONS: ", PRESET_QUESTIONS);
   useEffect(() => {
     localStorage.setItem('chatbot_minimized', isMinimized);
   }, [isMinimized]);
@@ -625,6 +633,13 @@ const Chatbot = () => {
     );
   }
 
+  const handleCopy = (index) => {
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
+  };
+
+  let codeBlockIndex = -1;
+
   return (
     <Container
       style={{
@@ -660,7 +675,7 @@ const Chatbot = () => {
       </Header>
 
       <MessagesArea>
-        {messages.length === 0 && (
+        {messages.length === 0 && PRESET_QUESTIONS && (
           <EmptyState>
             <EmptyIconWrapper>
               <FontAwesomeIcon icon={faMagic} size="lg" />
@@ -668,17 +683,19 @@ const Chatbot = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#334155' }}>How can I help you?</p>
               <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '220px', lineHeight: '1.5' }}>
-                I can answer questions about single-cell analysis, datasets, and RNA sequencing.
+                I can answer questions about single-cell sequencing analysis. This AI assistant may occasionally generate incorrect or misleading information. We are not responsible for any decisions made based on the generated content. Please verify critical information independently.
               </p>
             </div>
 
             <SuggestedQuestionsContainer>
-              {PRESET_QUESTIONS.map((q, idx) => (
+              {Array.isArray(PRESET_QUESTIONS) && PRESET_QUESTIONS.map((q, idx) => (
                 <SuggestionChip key={idx} onClick={() => setInput(q.prompt)}>
                   <FontAwesomeIcon icon={faMagic} size="xs" />
                   {q.title}
                 </SuggestionChip>
-              ))}
+                  )
+                )
+              }
             </SuggestedQuestionsContainer>
           </EmptyState>
         )}
@@ -695,7 +712,56 @@ const Chatbot = () => {
 
               {/* Bubble */}
               <Bubble $isUser={msg.role === 'user'}>
-                {msg.content}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
+                  children={msg.content}
+                  components={{
+                    code(props) {
+                      const { children, inline, className, node, ...rest } = props;
+                      const match = /language-(\w+)/.exec(className || '');
+                      const codeText = String(children).replace(/\n$/, '');
+                      if (!inline && match) {
+                        codeBlockIndex++;
+
+                        const currentIndex = codeBlockIndex;
+                        const codeText = String(children).replace(/\n$/, '');
+
+                        return (
+                          <div style={{ position: 'relative' }}>
+                            <SyntaxHighlighter
+                              {...rest}
+                              PreTag="div"
+                              children={codeText}
+                              language={match[1]}
+                              style={dark}
+                            />
+                            <CopyToClipboard text={codeText} onCopy={() => handleCopy(currentIndex)}>
+                              <button style={{
+                                position: 'absolute',
+                                top: '5px',
+                                right: '5px',
+                                background: '#333',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                padding: '5px 10px',
+                              }}>{copiedIndex === currentIndex ? 'Copied!' : 'Copy'}</button>
+                            </CopyToClipboard>
+                          </div>
+                        );
+                      }
+
+                      // Fallback for inline code or unknown language
+                      return (
+                        <code {...rest} className={className}>
+                          {children}
+                        </code>
+                      );
+                    }
+                  }}
+                />
               </Bubble>
 
               {/* User Avatar (Hidden) */}

@@ -22,7 +22,7 @@ import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import {Select, MenuItem, InputLabel } from '@mui/material';
 import TaskImageGallery from './taskImageGallery';
-
+import Chatbot from "../../RightNavigation/Chatbot";
 
 // Initialize Octokit with your GitHub personal access token
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
@@ -191,7 +191,7 @@ function TaskDetailsComponent() {
   
       try {
         const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: processIds });
-        // console.log('Process Results:', response.data);
+        console.log('Process Results:', response.data);
         const taskInfo = response.data;
         const jobId = taskInfo.job_id;
         setppJobId(jobId);
@@ -219,6 +219,8 @@ function TaskDetailsComponent() {
         if (data.task_status) {
           if (data.task_status === "SUCCESS") {
             setToolResultsFromMongo(data.task_result);
+            console.log("PP results:", data.task_result);
+            // console.log("toolResultsFromMongo:", toolResultsFromMongo);
             setLoading(false);
             setppJobId(null); // Reset ppJobId after handling
           } else if(data.task_status === "FAILURE"){
@@ -845,6 +847,8 @@ function TaskDetailsComponent() {
                         </div>
                       </>
                     )}
+
+                    {<Chatbot PRESET_QUESTIONS={result.preset_questions} />}
                   </React.Fragment>
           ))}
           </div>
@@ -852,7 +856,7 @@ function TaskDetailsComponent() {
       )}
       </div>
       <div className="right-rail">
-          <RightRail />
+        <RightRail />
       </div>
   </div>
   );
