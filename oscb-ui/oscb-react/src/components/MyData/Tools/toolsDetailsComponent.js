@@ -16,137 +16,157 @@ import UseDefaultSwitch from './components/useDefaultSwitch';
 import MultiSelectComponent from './components/multiselectComponent';
 import SelectComponent from './components/selectComponent';
 import ClusterLabelInput from './components/customInputComponent';
+import Chatbot from "../../RightNavigation/Chatbot";
 
 export default function ToolsDetailsComponent(props) {
-    const filterName = props.filter;
-    const filterCategory = props.category;
-    const [selectedDatasets, setSelectedDatasets] = useState({});
-    const [selectedRefDatasets, setSelectedRefDatasets] = useState({});
-    const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
-    const [useDefaultValue, setUseDefaultValue] = useState(false);
+  const filterName = props.filter;
+  const filterCategory = props.category;
+  const [selectedDatasets, setSelectedDatasets] = useState({});
+  const [selectedRefDatasets, setSelectedRefDatasets] = useState({});
+  const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
+  const [useDefaultValue, setUseDefaultValue] = useState(false);
 
-    const filterCategoryMap = {
-      quality_control: '/tools/qc',
-      normalization: '/tools/normalize',
-      imputation: '/tools/impute',
-      integration: '/tools/integrate',
-      annotation: '/tools/annotate',
-      formatting: '/tools/convert',
-      visualization: '/tools/reduce',
-      // Add more filter categories and their corresponding URL paths as needed
-    };
+  const filterCategoryMap = {
+    quality_control: '/tools/qc',
+    normalization: '/tools/normalize',
+    imputation: '/tools/impute',
+    integration: '/tools/integrate',
+    annotation: '/tools/annotate',
+    formatting: '/tools/convert',
+    visualization: '/tools/reduce',
+    // Add more filter categories and their corresponding URL paths as needed
+  };
 
-    const parametersKey = {
-      quality_control: 'qc_params',
-      normalization: 'normalization_params',
-      imputation: 'imputation_params',
-      integration: 'integration_params',
-      annotation: 'annotation_params',
-      visualization: 'reduction_params'
-    };
+  const parametersKey = {
+    quality_control: 'qc_params',
+    normalization: 'normalization_params',
+    imputation: 'imputation_params',
+    integration: 'integration_params',
+    annotation: 'annotation_params',
+    visualization: 'reduction_params'
+  };
 
-    const filterStaticCategoryMap = {
-      quality_control: 'Quality Control',
-      normalization: 'Normalization',
-      imputation: 'Imputation',
-      integration: 'Integration',
-      annotation: 'Annotation',
-      formatting: 'Formatting',
-      visualization: 'Visualization'
-      // Add more filter categories and their corresponding Names as needed
-    };
+  const filterStaticCategoryMap = {
+    quality_control: 'Quality Control',
+    normalization: 'Normalization',
+    imputation: 'Imputation',
+    integration: 'Integration',
+    annotation: 'Annotation',
+    formatting: 'Formatting',
+    visualization: 'Visualization'
+    // Add more filter categories and their corresponding Names as needed
+  };
 
-    console.log(filterName);
+  console.log(filterName);
 
-    let jwtToken = getCookie('jwtToken');
-    const [formData, setFormData] = useState({});
-    const [useDefault, setUseDefault] = useState(true);
-    // let useDefault = true;
-    const [filterSchema, setFilterSchema] = useState(null);
-    const [UIfilterSchema, setUIFilterSchema] = useState(null);
-    const [selectedDataset, setSelectedDataset] = useState([]);
-    const [selectedRefDataset, setSelectedRefDataset] = useState([]);
-    const [selectedOptions, setSelectedOptions] = useState([]);
-    const [formErrors, setFormErrors] = useState("");
+  let jwtToken = getCookie('jwtToken');
+  const [formData, setFormData] = useState({});
+  const [useDefault, setUseDefault] = useState(true);
+  // let useDefault = true;
+  const [filterSchema, setFilterSchema] = useState(null);
+  const [UIfilterSchema, setUIFilterSchema] = useState(null);
+  const [selectedDataset, setSelectedDataset] = useState([]);
+  const [selectedRefDataset, setSelectedRefDataset] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [formErrors, setFormErrors] = useState("");
 
-    const [loading, setLoading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-    //For dynamic Loading of the schema
-    const [layerOptions, setLayerOptions] = useState([]);
+  //For dynamic Loading of the schema
+  const [layerOptions, setLayerOptions] = useState([]);
+  const [presetQuestions, setPresetQuestions] = useState(null);
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    setPresetQuestions([
+      { title: `What is ${filterStaticCategoryMap[filterCategory]} of single-cell sequencing data analysis ?`, "prompt": `Explain ${filterStaticCategoryMap[filterCategory]} in single-cell sequencing data analysis.` },
+      { title: `What is the purpose of the ${filterStaticCategoryMap[filterCategory]} task?`, "prompt": `Explain the purpose of the ${filterStaticCategoryMap[filterCategory]} task in single-cell sequencing data analysis.` },
+      { title: `How do I interpret the results of the ${filterStaticCategoryMap[filterCategory]} task?`, "prompt": `How do I interpret the results of the ${filterStaticCategoryMap[filterCategory]} task in single-cell sequencing data analysis?` },
+      { title: `Are there any best practices for using the ${filterStaticCategoryMap[filterCategory]} task?`, "prompt": `Are there any best practices for using the ${filterStaticCategoryMap[filterCategory]} task in single-cell sequencing data analysis?` }
+    ]);
+    console.log("presetQuestions:", presetQuestions);
+  }, [filterCategory]);
 
-    const [dynamicOptions, setDynamicOptions] = useState({
-      outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
-      speciesOptions: ["human", "mouse"],
-      layers: [], // Add layers as a dynamic option
-      obs_names: [], // Add obs_names as a dynamic option
-      obs_names_ref: [], // Add obs_names as a dynamic option
-      embeddings: [], // Add embeddings as a dynamic option
-      species: [], 
-      organ_part: [], 
-    });
-    
-    const onSelectDataset = (dataset) => {
-      let datasetId = dataset.Id; 
-      let currentSelectedDatasets = { ...selectedDatasets};
+  const navigate = useNavigate();
+
+  const [dynamicOptions, setDynamicOptions] = useState({
+    outputFormatOptions: ["AnnData", "SingleCellExperiment", "Seurat", "CSV"],
+    speciesOptions: ["human", "mouse"],
+    layers: [], // Add layers as a dynamic option
+    obs_names: [], // Add obs_names as a dynamic option
+    obs_names_ref: [], // Add obs_names as a dynamic option
+    embeddings: [], // Add embeddings as a dynamic option
+    species: [], 
+    organ_part: [], 
+  });
   
-      if(currentSelectedDatasets[datasetId]) {
-        delete currentSelectedDatasets[datasetId];
-      } else {
-        if(filterCategory !== "integration") {
-          currentSelectedDatasets = {};
-        }
-        currentSelectedDatasets[datasetId] = dataset;
+  const onSelectDataset = (dataset) => {
+    let datasetId = dataset.Id; 
+    let currentSelectedDatasets = { ...selectedDatasets};
+
+    if(currentSelectedDatasets[datasetId]) {
+      delete currentSelectedDatasets[datasetId];
+    } else {
+      if(filterCategory !== "integration") {
+        currentSelectedDatasets = {};
       }
-      if(filterCategory === "quality_control") {
-        // Check if any of the selected datasets should trigger hiding for Seurat
-        const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
-          dataset.inputFiles.length === 1 &&
-          (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
-          dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
-          dataset.inputFiles[0].toLowerCase().endsWith('robj'))
-        );
-        setShouldHideForSeurat(shouldHideForSeurat);
-      }
+      currentSelectedDatasets[datasetId] = dataset;
+    }
+    if(filterCategory === "quality_control") {
+      // Check if any of the selected datasets should trigger hiding for Seurat
+      const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
+        dataset.inputFiles.length === 1 &&
+        (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
+        dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
+        dataset.inputFiles[0].toLowerCase().endsWith('robj'))
+      );
+      setShouldHideForSeurat(shouldHideForSeurat);
+    }
     setSelectedDatasets(currentSelectedDatasets)
   };
 
-    // Fetch layer options when dataset_id changes
-    useEffect(() => {
-      if (Object.keys(selectedDatasets).length > 0) {
+  // Fetch layer options when dataset_id changes
+  useEffect(() => {
+    if (Object.keys(selectedDatasets).length > 0) {
 
-        let layers = getLayersArray(selectedDatasets) || [];
-        let obs_names = getObsNamesArray(selectedDatasets) || [];
-        let embeddings = getEmbeddingsArray(selectedDatasets) || [];
-        let species = getSpeciesArray(selectedDatasets) || [];
-        let organ_part = getOrganPartArray(selectedDatasets) || [];
+      let layers = getLayersArray(selectedDatasets) || [];
+      let obs_names = getObsNamesArray(selectedDatasets) || [];
+      let embeddings = getEmbeddingsArray(selectedDatasets) || [];
+      let species = getSpeciesArray(selectedDatasets) || [];
+      let organ_part = getOrganPartArray(selectedDatasets) || [];
 
-        console.log("obs_names: ", getObsNamesArray(selectedDatasets));
-        console.log("species: ", getSpeciesArray(selectedDatasets));
-        console.log("organ_part: ", getOrganPartArray(selectedDatasets));
+      console.log("obs_names: ", getObsNamesArray(selectedDatasets));
+      console.log("species: ", getSpeciesArray(selectedDatasets));
+      console.log("organ_part: ", getOrganPartArray(selectedDatasets));
+      console.log("selectedDatasets: ", selectedDatasets);
 
-        setDynamicOptions((prevOptions) => ({
-          ...prevOptions,
-          layers: layers, // Update layers dynamically
-          obs_names: obs_names, // Update obs_names dynamically
-          embeddings: embeddings, // Update embeddings dynamically
-          species: species,
-          organ_part: organ_part, 
-        }));
-      } else {
-        setDynamicOptions((prevOptions) => ({
-          ...prevOptions,
-          layers: [], // Reset layers if no datasets are selected
-          obs_names: [], // Reset obs_names if no datasets are selected
-          embeddings: [], // Reset embeddings if no datasets are selected
-          species: [],
-          organ_part: [], 
-        }));
-      }
-    }, [selectedDatasets]);
+      setPresetQuestions(getPresetQuestions(selectedDatasets));
+      // setPresetQuestions((prevQuestions) => ({
+      //   ...prevQuestions,
+      //   ...getPresetQuestions(selectedDatasets),
+      // }));
+      console.log("presetQuestions:", presetQuestions);
+
+      setDynamicOptions((prevOptions) => ({
+        ...prevOptions,
+        layers: layers, // Update layers dynamically
+        obs_names: obs_names, // Update obs_names dynamically
+        embeddings: embeddings, // Update embeddings dynamically
+        species: species,
+        organ_part: organ_part, 
+      }));
+    } else {
+      setDynamicOptions((prevOptions) => ({
+        ...prevOptions,
+        layers: [], // Reset layers if no datasets are selected
+        obs_names: [], // Reset obs_names if no datasets are selected
+        embeddings: [], // Reset embeddings if no datasets are selected
+        species: [],
+        organ_part: [], 
+      }));
+    }
+  }, [selectedDatasets]);
 
   // Function to handle selection of sub-items
   const onSelectSubItem = (mainItem, subItem) => {
@@ -256,7 +276,7 @@ export default function ToolsDetailsComponent(props) {
   };
 
   const getObsNamesArray = (dataMap) => {
-    let obsNamesArray = [""];
+    let obsNamesArray = [null];
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
       if (dataset.selectedSubItem?.obs_names) {
@@ -270,7 +290,7 @@ export default function ToolsDetailsComponent(props) {
 
 
   const getEmbeddingsArray = (dataMap) => {
-    let embeddingsArray = [""];
+    let embeddingsArray = [null];
 
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
@@ -286,7 +306,7 @@ export default function ToolsDetailsComponent(props) {
 
 
   const getLayersArray = (dataMap) => {
-    let layersArray = [""];
+    let layersArray = [null];
 
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
@@ -298,6 +318,35 @@ export default function ToolsDetailsComponent(props) {
     });
 
     return [...new Set(layersArray)]; // Remove duplicates
+  };
+
+  const getPresetQuestions = (dataMap) => {
+    let presetQuestionsList = [];
+    Object.values(dataMap).forEach((dataset) => {
+      console.log("dataset for presetQuestions:", dataset);
+      if (dataset.selectedSubItem?.Species && dataset.selectedSubItem?.["Organ Part"] && dataset.selectedSubItem?.['Cell Count Estimate']) {
+        if (filterCategory === "quality_control") {
+          presetQuestionsList.push({ title: "What is the recommendation for **Min Genes** and **Max Genes**?", "prompt": "Suggest Min Genes and Max Genes of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+          presetQuestionsList.push({ title: "What is the recommendation for **Min Cells**?", "prompt": "Suggest Min Cells of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+          presetQuestionsList.push({ title: "What is the recommendation for **Expected Doublet Rate**?", "prompt": "Suggest Expected Doublet Rate of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        }
+  
+        presetQuestionsList.push({ title: "What is the recommendation for **n_neighbors**?", "prompt": "Suggest n_neighbors of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_pcs**?", "prompt": "Suggest n_pcs of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for Clustering **Resolution**?", "prompt": "Suggest cluster resolution of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });  
+      } else if (dataset?.Species && dataset?.["Organ Part"] && dataset?.['Cell Count Estimate']) {
+        if (filterCategory === "quality_control") {
+          presetQuestionsList.push({ title: "What is the recommendation for **Min Genes** and **Max Genes**?", "prompt": "Suggest Min Genes and Max Genes of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+          presetQuestionsList.push({ title: "What is the recommendation for **Min Cells**?", "prompt": "Suggest Min Cells of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+          presetQuestionsList.push({ title: "What is the recommendation for **Expected Doublet Rate**?", "prompt": "Suggest Expected Doublet Rate of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        }
+  
+        presetQuestionsList.push({ title: "What is the recommendation for **n_neighbors**?", "prompt": "Suggest n_neighbors of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_pcs**?", "prompt": "Suggest n_pcs of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for Clustering **Resolution**?", "prompt": "Suggest cluster resolution of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });  
+      }
+    });
+    return presetQuestionsList;
   };
 
 // Function to handle selection of sub-items
@@ -787,6 +836,7 @@ const onSelectRefSubItem = (mainItem, subItem) => {
           ) : (
             <div>No Schema for this tool.</div>
           )}
+        <Chatbot presetQuestions={presetQuestions} />
     </div>
   )
 };

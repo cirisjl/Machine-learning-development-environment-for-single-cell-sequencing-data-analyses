@@ -7,6 +7,8 @@ const SelectComponent = ({value, onChange, options}) => {
       value: option
     }));
 
+  const defaultOption = selectOptions[0]?.value === null ? null : selectOptions[0]
+
   const handleChange = selectedOption => {
     onChange(selectedOption ? selectedOption.value : null);
   };
@@ -14,7 +16,7 @@ const SelectComponent = ({value, onChange, options}) => {
   return (
     <div>
       <CreatableSelect 
-        value={selectOptions.find(option => option.value === value) || selectOptions[0] || null}
+        value={selectOptions.find(option => option.value === value) || defaultOption}
         // value={selectOptions[0] === '' ? null : selectOptions[0]}
         // defaultValue={selectOptions[0] === '' ? null : selectOptions[0]}
         onChange={handleChange}

@@ -113,7 +113,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
             ds['skip_tsne'] = dss['skip_tsne']
             ds['n_hvg'] = n_hvg
             
-            qc_results = run_qc(job_id, ds, fig_path=fig_path)
+            qc_results = run_qc(job_id, ds, fig_path=fig_path, wf=True)
             if qc_results is not None:
                 integration_inputs.append(qc_results['adata_path'])
                 process_ids.extend(qc_results["process_ids"])
@@ -125,7 +125,7 @@ def run_integration_wf(job_id, dss:dict, random_state=0):
         if len(integration_inputs) > 0 and len(integration_params["methods"]) > 0:
             dss['input'] = integration_inputs
             dss['n_hvg'] = n_hvg
-            integration_results = run_integration(job_id, dss, fig_path=fig_path)
+            integration_results = run_integration(job_id, dss, fig_path=fig_path, wf=True)
             wf_results['integration'] = integration_results["process_ids"]
             process_ids.extend(integration_results["process_ids"])
             wf_results['integration_output'] = integration_results['output']

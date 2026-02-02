@@ -9,9 +9,10 @@ export default function ToolsComponentPage() {
 
     const [selectedFilter, setSelectedFilter] = useState(null);
     const [category, setCategory] = useState(null);
+    // const [presetQuestions, setPresetQuestions] = useState(null);
 
     const handleFilterSelection = (category, filter) => {
-      setSelectedFilter(category+ "_" + filter);
+      setSelectedFilter(category + "_" + filter);
       setCategory(category);
     };
 
@@ -25,7 +26,7 @@ export default function ToolsComponentPage() {
             {/* Render the selected filter details in the middle of the page */}
             {selectedFilter && (
               <div className="filter-details-tools main-content">
-                <ToolsDetailsComponent filter={selectedFilter} category={category}/>
+            <ToolsDetailsComponent filter={selectedFilter} category={category} />
               </div>
             )}
             {!selectedFilter && (

@@ -18,6 +18,7 @@ import AlertMessageComponent from '../../../publishDatasets/components/alertMess
 import {CELERY_BACKEND_API} from '../../../../constants/declarations';
 import { useNavigate } from 'react-router-dom';
 import { isUserAuth, getCookie } from '../../../../utils/utilFunctions';
+import Chatbot from "../../../RightNavigation/Chatbot";
 
 
 export function AnnotationWorkFlowComponent(props) {
@@ -34,6 +35,7 @@ export function AnnotationWorkFlowComponent(props) {
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [ isError, setIsError ] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [presetQuestions, setPresetQuestions] = useState(null);
 
   const parametersKey = {
     quality_control: 'qc_params',
@@ -110,6 +112,8 @@ export function AnnotationWorkFlowComponent(props) {
       let embeddings = getEmbeddingsArray(selectedDatasets) || [];
       let species = getSpeciesArray(selectedDatasets) || [];
       let organ_part = getOrganPartArray(selectedDatasets) || [];
+
+      setPresetQuestions(getPresetQuestions(selectedDatasets));
 
       setDynamicOptions((prevOptions) => ({
         ...prevOptions,
@@ -282,7 +286,7 @@ export function AnnotationWorkFlowComponent(props) {
   };
 
   const getObsNamesArray = (dataMap) => {
-    let obsNamesArray = [""];
+    let obsNamesArray = [null];
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
       if (dataset.selectedSubItem?.obs_names) {
@@ -295,7 +299,7 @@ export function AnnotationWorkFlowComponent(props) {
   };
 
   const getEmbeddingsArray = (dataMap) => {
-    let embeddingsArray = [""];
+    let embeddingsArray = [null];
 
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
@@ -311,7 +315,7 @@ export function AnnotationWorkFlowComponent(props) {
 
 
   const getLayersArray = (dataMap) => {
-    let layersArray = [""];
+    let layersArray = [null];
 
     Object.values(dataMap).forEach((dataset) => {
       // console.log("dataset", dataset);
@@ -324,6 +328,30 @@ export function AnnotationWorkFlowComponent(props) {
 
     return [...new Set(layersArray)]; // Remove duplicates
     };
+
+  
+  const getPresetQuestions = (dataMap) => {
+    let presetQuestionsList = [];
+    Object.values(dataMap).forEach((dataset) => {
+      if (dataset.selectedSubItem?.Species && dataset.selectedSubItem?.["Organ Part"] && dataset.selectedSubItem?.['Cell Count Estimate']) {
+        presetQuestionsList.push({ title: "What is the recommendation for **Min Genes** and **Max Genes**?", "prompt": "Suggest Min Genes and Max Genes of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **Min Cells**?", "prompt": "Suggest Min Cells of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **Expected Doublet Rate**?", "prompt": "Suggest Expected Doublet Rate of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_neighbors**?", "prompt": "Suggest n_neighbors of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_pcs**?", "prompt": "Suggest n_pcs of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for Clustering **Resolution**?", "prompt": "Suggest cluster resolution of " + dataset.selectedSubItem?.['Cell Count Estimate'] + " " + dataset.selectedSubItem?.Species + " " + dataset.selectedSubItem?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+      }
+      else if (dataset?.Species && dataset?.["Organ Part"] && dataset?.['Cell Count Estimate']) {
+        presetQuestionsList.push({ title: "What is the recommendation for **Min Genes** and **Max Genes**?", "prompt": "Suggest Min Genes and Max Genes of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **Min Cells**?", "prompt": "Suggest Min Cells of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **Expected Doublet Rate**?", "prompt": "Suggest Expected Doublet Rate of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence quality control." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_neighbors**?", "prompt": "Suggest n_neighbors of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for **n_pcs**?", "prompt": "Suggest n_pcs of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+        presetQuestionsList.push({ title: "What is the recommendation for Clustering **Resolution**?", "prompt": "Suggest cluster resolution of " + dataset?.['Cell Count Estimate'] + " " + dataset?.Species + " " + dataset?.["Organ Part"] + " cells in single-cell RNA sequence dimension reduction and clustering." });
+      }
+    });
+    return presetQuestionsList;
+  };
 
 
   const handleSubmit = ({ formData }) => {
@@ -680,7 +708,7 @@ export function AnnotationWorkFlowComponent(props) {
             validator={validator}
         />
       </div>
-
+      <Chatbot presetQuestions={presetQuestions} />
     </div>
   )
 };

@@ -89,7 +89,7 @@ def run_clustering(job_id, ds:dict, random_state=0):
     )
 
     try:
-        qc_results = run_qc(job_id, ds, fig_path=fig_path)
+        qc_results = run_qc(job_id, ds, fig_path=fig_path, wf=True)
         if qc_results is not None:
             ds['input'] = qc_results['adata_path']
             print(qc_results['adata_path'])        
@@ -97,13 +97,13 @@ def run_clustering(job_id, ds:dict, random_state=0):
             wf_results['QC'] = qc_results["process_ids"]
             wf_results['QC_output'] = qc_results['output']
             if normalization_params["methods"] is not None:
-                normalization_results = run_normalization(job_id, ds, fig_path=fig_path)
+                normalization_results = run_normalization(job_id, ds, fig_path=fig_path, wf=True)
                 wf_results['normalization'] = normalization_results["process_ids"]
                 process_ids.extend(normalization_results["process_ids"])
                 wf_results['normalization_output'] = normalization_results['output']
                 output = normalization_results['output']
             elif imputation_params["methods"] is not None:
-                imputation_results = run_imputation(job_id, ds, fig_path=fig_path)
+                imputation_results = run_imputation(job_id, ds, fig_path=fig_path, wf=True)
                 wf_results['imputation'] = imputation_results["process_ids"]
                 process_ids.extend(imputation_results["process_ids"])
                 wf_results['imputation_output'] = imputation_results['output']

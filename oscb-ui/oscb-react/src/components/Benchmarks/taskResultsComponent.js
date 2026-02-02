@@ -11,12 +11,14 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw'
 import rehypeGithubAlerts from 'rehype-github-alert'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import Chatbot from "../RightNavigation/Chatbot";
 
 
 export default function TaskResultsComponent(task_type) {
     const [markdownText, setMarkdownText] = useState('');
     const title = task_type.task_type;
     const [copiedIndex, setCopiedIndex] = useState(null);
+    const [presetQuestions, setPresetQuestions] = useState(null);
 
     const handleCopy = (index) => {
         setCopiedIndex(index);
@@ -33,7 +35,16 @@ export default function TaskResultsComponent(task_type) {
     //         navigate('/routing');
     //     }
     // },[]);
+
     useEffect(() => {
+        setPresetQuestions([
+            { title: `What is ${ title } of single-cell sequencing data analysis ?`, "prompt": `Explain ${title} in single-cell sequencing data analysis.` },
+            { title: `What is the purpose of the ${title} task?`, "prompt": `Explain the purpose of the ${title} task in single-cell sequencing data analysis.` },
+            { title: `How do I interpret the results of the ${title} task?`, "prompt": `How do I interpret the results of the ${title} task in single-cell sequencing data analysis?` },
+            { title: `Are there any best practices for using the ${title} task?`, "prompt": `Are there any best practices for using the ${title} task in single-cell sequencing data analysis?` }
+        ]);
+        console.log("presetQuestions:", presetQuestions);
+
         async function fetchFileData() {
         try {
             const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
@@ -119,6 +130,7 @@ export default function TaskResultsComponent(task_type) {
             </div>
             <div className="right-rail">
                 <RightRail />
+                <Chatbot presetQuestions={presetQuestions} />
             </div>
         </div>
     );

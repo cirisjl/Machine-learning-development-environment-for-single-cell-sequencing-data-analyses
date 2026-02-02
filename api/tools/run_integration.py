@@ -202,7 +202,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_pca_harmony", method="t-test", groupby="X_pca_harmony_leiden", top=n_hvg)
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_pca_harmony", method="t-test", groupby="X_pca_harmony_leiden", top=n_hvg, task="Batch Integration")
                             integration_results['preset_questions'] = preset_questions
 
                         integration_output.append({f"{method}_AnnData": adata_path})
@@ -255,7 +255,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg)
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg, task="Batch Integration")
                             integration_results['preset_questions'] = preset_questions
 
                         integration_output.append({f"{method}_AnnData": adata_path})
@@ -331,7 +331,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                     
                     # Add preset questions for tissue and species
                     if organ_part is not None and organ_part != "" and species is not None and species != "":
-                        preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg, task="Batch Integration")
                         integration_results['preset_questions'] = preset_questions
 
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})

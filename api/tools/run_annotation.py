@@ -129,7 +129,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if organ_part is not None and organ_part != "" and species is not None and species != "":
                         if "leiden" not in adata.obs.columns:
                             adata = run_clustering(adata, resolution=resolution, random_state=0)
-                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg, task="Cell Type Annotation")
                         preset_questions.append(preset_question[0])
                         
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
@@ -183,7 +183,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if organ_part is not None and organ_part != "" and species is not None and species != "":
                         if "X_scVI_leiden" not in adata.obs.columns:
                             adata = run_clustering(adata, resolution=resolution, use_rep="X_scVI", random_state=0)
-                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg, task="Cell Type Annotation")
                         preset_questions.append(preset_question[0])
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
@@ -301,7 +301,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
                     if organ_part is not None and organ_part != "" and species is not None and species != "":
                         if "leiden" not in adata.obs.columns:
                             adata = run_clustering(adata, resolution=resolution, random_state=0)
-                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg)
+                        preset_question = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg, task="Cell Type Annotation")
                         preset_questions.append(preset_question[0])
                     # adata.write_h5ad(adata_path, compression='gzip')
                     # adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)

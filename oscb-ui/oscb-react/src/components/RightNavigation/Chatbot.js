@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTrash, faUser, faRobot, faDna, faRotateRight, faMagic, faMinus, faExpand, faAnchor } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faTrash, faRobot, faDownload, faRotateRight, faMagic, faMinus, faExpand, faAnchor, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { NODE_API_URL } from '../../constants/declarations';
 
 import styled from 'styled-components';
@@ -12,9 +12,14 @@ import 'github-markdown-css';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw'
+// import rehypeRaw from 'rehype-raw'
 import rehypeGithubAlerts from 'rehype-github-alert'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import { visit } from 'unist-util-visit';
 
 // --- Styled Components ---
 
@@ -216,12 +221,25 @@ const EmptyIconWrapper = styled.div`
   border: 1px solid #f0f9ff;
 `;
 
+// const SuggestedQuestionsContainer = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   gap: 8px;
+//   width: 100%;
+//   margin-top: 16px;
+// `;
+
 const SuggestedQuestionsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  margin-top: 16px;
+  gap: 10px;
+  padding: 8px 0 16px 32px; /* Indent to align with bot bubbles */
+  animation: fadeIn 0.4s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 `;
 
 const SuggestionChip = styled.button`
@@ -506,9 +524,35 @@ const ClearChatLink = styled.button`
   }
 `;
 
+const ScrollTopButton = styled.button`
+  position: absolute;
+  bottom: 80px; /* Above the input area */
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: ${props => props.theme.bg};
+  color: ${props => props.theme.subtext};
+  border: 1px solid ${props => props.theme.border};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.2s;
+  opacity: ${props => props.$visible ? 1 : 0};
+  pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+
+  &:hover {
+    color: ${props => props.theme.bubbleUser};
+    transform: translateY(-2px);
+  }
+`;
+
 // --- Component ---
 
-const Chatbot = () => {
+const Chatbot = ( presetQuestions =null ) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -520,11 +564,61 @@ const Chatbot = () => {
   const [isDocked, setIsDocked] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const textAreaRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const messagesAreaRef = useRef(null); // Attach this to your MessagesArea
+  const abortControllerRef = useRef(null);
+
+  // Function to stop the generation
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+    }
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop } = e.currentTarget;
+    setShowScrollTop(scrollTop > 300); // Show button after 300px of scrolling
+  };
+
+  const scrollToTop = () => {
+    messagesAreaRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Auto-expand textarea effect
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = 'auto';
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
   
-  const PRESET_QUESTIONS = [
-    { title: "What cell type does each cluster most likely represent using layer: MAGIC?", "prompt": "Identify cell types of Aorta cells from mouse using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\nCluster 0: Rarres2, Mmp23, Col3a1, Col6a1, C1s, Gas1, Aebp1, Olfml2b, Col1a2, Htra1, Pcolce, Col5a2, Lhfp, Ddr2, Serping1, Chpf, C1ra, Col6a2, Dcn, Timp2, Ptgis, Nupr1, Ccdc80, Sod3, Col1a1, Igfbp6, Plxdc2, Lgals1, C3, Fndc1, Loxl1, Cpxm1, Cfh, C1qtnf2, C4b, Rcn3, Cercam, Mgp, Serpinf1, Tmem119, Bmp1, Srpx, Cp, Fn1, Stbd1, Olfml3, Loxl3, Chrdl1, Scd1, Eln\nCluster 1: Aqp7, Rbp7, 8430408G22Rik, Magix, C1qtnf9, Slc26a10, Car4, Pparg, Timp4, Meox2, Cd36, Fam70b, Pbld1, Itga1, Kif26a, Nepn, Cxcl12, Prdm16, Cyp1a1, Hspa12b, St6galnac2, P2ry2, Ptprr, Pkp4, Cav1, Fabp5, Cdh13, Gfod1, Apold1, AW112010, Jam2, Hey1, Cxcl9, Fam176a, Magi1, Cldn5, Gpr160, Palmd, Eepd1, Myzap, Sdpr, Aqp1, Sox17, Fmo1, Rasd1, Lipe, Rnf125, Snx32, N4bp3, Tspan7\nCluster 2: Esm1, Ehd3, Lrg1, Gpr97, Dkk2, Plvap, Igfbp3, Mcam, Ntn4, Lrrc3b, Cd1d1, Pydc3, Ica1, Lama3, Dchs1, Hapln1, Plaur, Fam40a, Klhl2, Rcsd1, Ccdc67, Fam171a1, Hps6, Oasl1, Tnfaip8l1, I830012O16Rik, Fam174b, Dcbld1, Ankrd29, 4933407C03Rik, Yes1, Cldn15, Dffb, Ppm1f, Efna1, Kctd12b, Mcat, Ada, Acta1, 2010321M09Rik, Scarf1, Tbc1d20, Mafb, Spry4, Card6, Mcm3, Tbc1d9b, Stab1, Arrdc2, Peg3\nCluster 3: Cst6, Tbx21, 4933427D14Rik, Dzip1, Fggy, Rnmtl1, Gpc1, Epb4.1l4a, 5730590G19Rik, Aass, Cenpf, Fhl2, 6330403A02Rik, S100pbp, Cd8b1, Acta2, Ccl22, Gzma, Ucp1, C3ar1, Cd96, Gm525, Hspb6, Adck3, Ccrl1, Gpd1, Ubash3a, Cd3g, Fbxw10, Palb2, Myl7, Muc5b, Akr1c12, Myoc, Tcap, Car3, Ms4a4b, Myom1, Slc43a2, Ccna2, Cenpe, Ticam1, Dscc1, 9930013L23Rik, Cd247, Ccl5, Fbxl2, Tnnt2, Has1, Myh11\nCluster 4: Tyrobp, Fcgr2b, Cd37, Cd83, Ctss, Ptpn6, Ctsc, Il10ra, Cfp, Prkcb, Cd68, Adrb2, Cyth4, H2-Aa, Epsti1, Aif1, H2-Eb1, Arhgef6, Lpxn, H2-DMa, Ly86, Laptm5, Pld4, Cd74, Sema4a, Ptprc, H2-Ab1, Ms4a6c, Bcl2a1b, Rgs14, Cd300a, Rassf4, Gm11428, Lyz2, Sh3kbp1, Lat2, Rac2, P2ry6, Itgb2, Zc3h12d, Rasal3, Hck, Ncf2, Lcp2, Plbd1, Ccl6, Lcp1, Coro1a, Tep1, Sgpl1\nCluster 5: Cyp2f2, Wfdc2, Tspan1, Krt5, Reg3g, Krt15, Bpifa1, Aqp3, Ckmt1, Ifitm1, 5330417C22Rik, Krt8, Anxa8, Ces1d, Aldh3a1, Elf3, Scgb1a1, Krt18, Fmo3, Plxnb1, Krt7, Emb, Car5b, Bpifb1, Niacr1, Aqp5, Atp1b1, Aox3, Gprc5a, Adh7, Sdc1, Ehf, Irx2, Cbr2, Ocln, Plcd3, Zbtb49, Krt17, Slc22a23, Cldn8, Acpp, Krt19, Pdgfc, Prodh, F3, Epcam, Fam187b, Tjp3, Ccdc51, Ccdc3\nCluster 6: Zfp39, Rnmtl1, Samd10, Nat9, Zfp64, 4933439C10Rik, Gbp3, Zfp747, Fabp4, 9930014A18Rik, Rnf152, Cldn5, Tbx21, Acacb, Cav1, 5730590G19Rik, Tcf7, Hist1h2be, Tm6sf2, Tox, Prodh, Cd36, Ucp1, Nqo1, Pecam1, Epb4.1l4a, Gzma, Aqp1, Cytl1, Sdcbp2, Pkn3, Slc52a2, Sdpr, Enpp6, Lyve1, Chaf1b, Akap2, Mtm1, Isl1, Fam70b, Car3, Selp, Apol9a, Clu, Myf5, Pde9a, Gata3, Mgp, Hey2, Fmo1\nCluster 7: Hba-a1, Beta-s, Apol11b, Hbb-b1, Alas2, Slc25a37, Fam46c, Isg20, Myom1, Snca, Fech, Epb4.1, Bpgm, Mkrn1, Ube2l6, 2810453I06Rik, Bco2, Pira2, Srl, Nusap1, Foxred2, Kcp, Clec4a4, Tspo2, Cd4, Melk, Col2a1, Cdc25b, Gypa, 5730469M10Rik, Eomes, Tlr12, Trim10, Car2, Ube2c, Eaf2, Mdga1, Adipoq, Cdr2, Sec1, Aldh1b1, Ms4a4b, Atad5, Scin, Coch, Col9a2, Cenpf, Traf3ip3, St8sia1, Ccndbp1\nProvide the most likely cell type for each cluster based on these marker genes and show your reasoning." },
-  ];
-  console.log("PRESET_QUESTIONS: ", PRESET_QUESTIONS);
+  // console.log("presetQuestions: ", presetQuestions);
+  // console.log("presetQuestions?.presetQuestions: ", presetQuestions?.presetQuestions);
+  // console.log("", presetQuestions ?.presetQuestions?.presetQuestions);
+
+  const presetQuestionsList =
+    presetQuestions?.presetQuestions?.presetQuestions ||
+    presetQuestions?.presetQuestions ||
+    null;
+
+  // Load chat history from localStorage on component mount
+  useEffect(() => {
+    const storedHistory = localStorage.getItem('chatHistory');
+    if (storedHistory) {
+      setMessages(JSON.parse(storedHistory));
+    }
+  }, []);
+
+  // Save chat history to localStorage whenever messages update
+  useEffect(() => {
+    localStorage.setItem('chatHistory', JSON.stringify(messages));
+  }, [messages]);
+
   useEffect(() => {
     localStorage.setItem('chatbot_minimized', isMinimized);
   }, [isMinimized]);
@@ -535,13 +629,25 @@ const Chatbot = () => {
   const startPos = useRef({ x: 0, y: 0 });
   const startSize = useRef({ w: 0, h: 0 });
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // };
+
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Use a slight delay to ensure Markdown and Code blocks have calculated their height
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [messages, isLoading]); // Fires when user sends (loading starts) AND when AI finishes (loading ends)
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -581,10 +687,14 @@ const Chatbot = () => {
     document.body.style.userSelect = 'none';
   };
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSend = async (overrideInput = null) => {
+    const textToSend = overrideInput || input;
+    if (!textToSend.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
+    // Create new controller for this specific request
+    abortControllerRef.current = new AbortController();
+
+    const userMessage = { role: 'user', content: textToSend };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -593,24 +703,30 @@ const Chatbot = () => {
 
     try {
       const response = await axios.post(`${NODE_API_URL}/api/chat`, {
-        message: userMessage.content,
-        model: targetModel
-      });
+          message: userMessage.content,
+          model: targetModel
+        },
+        { signal: abortControllerRef.current.signal });
 
       const botMessage = { role: 'assistant', content: response.data.reply };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      console.error("Chat error:", error);
-      let messageContent = "Sorry, something went wrong. Please check your API keys in oscb-node/.env.";
+      if (axios.isCancel(error)) {
+        console.log("Request canceled by user.");
+        setMessages(prev => [...prev, "Request canceled by user."]);
+      } else {
+        console.error("Chat error:", error);
+        let messageContent = "Sorry, something went wrong. Please check your API keys in oscb-node/.env.";
 
-      if (error.response && error.response.status === 429) {
-        messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
+        if (error.response && error.response.status === 429) {
+          messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
+        }
+        const errorMessage = { role: 'assistant', content: messageContent };
+        setMessages(prev => [...prev, errorMessage]);
       }
-
-      const errorMessage = { role: 'assistant', content: messageContent };
-      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -627,7 +743,7 @@ const Chatbot = () => {
 
   if (isMinimized) {
     return (
-      <MinimizedButton onClick={() => setIsMinimized(false)} title="Open AI Assistant">
+      <MinimizedButton onClick={() => setIsMinimized(false)} title="AI Assistant">
         <img src={SingleCellLogo} alt="AI" style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
       </MinimizedButton>
     );
@@ -640,11 +756,58 @@ const Chatbot = () => {
 
   let codeBlockIndex = -1;
 
+  const handleDownloadChat = () => {
+    if (messages.length === 0) return;
+
+    // Format the messages into a text string
+    const timestamp = new Date().toLocaleString();
+    let content = `Chat Export - ${timestamp}\n`;
+    content += "=".repeat(30) + "\n\n";
+
+    messages.forEach((msg, i) => {
+      const role = msg.role === 'user' ? 'USER' : 'AI ASSISTANT';
+      content += `[${role}]:\n${msg.content}\n\n`;
+      content += "-".repeat(20) + "\n\n";
+    });
+
+    // Create a blob and trigger download
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `single-cell_analysis_chat-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Custom plugin to strip CR/LF from text nodes in the HTML tree
+  const rehypeMinifyHtml = () => {
+    return (tree) => {
+      visit(tree, 'element', (node) => {
+        // Skip processing if inside a <code> or <pre> tag
+        if (node.tagName === 'code' || node.tagName === 'pre') return;
+
+        if (node.children) {
+          node.children.forEach(child => {
+            if (child.type === 'text') {
+              child.value = child.value.replace(/[\r\n]+/gm, ' ');
+            }
+          });
+        }
+      });
+    };
+  };
+
   return (
     <Container
       style={{
-        width: isDocked ? '600px' : `${size.width}px`,
-        height: isDocked ? '500px' : `${size.height}px`,
+        // width: isDocked ? '600px' : `${size.width}px`,
+        // height: isDocked ? '500px' : `${size.height}px`,
+        width: isFullScreen ? 'calc(100% - 48px)' : isDocked ? '600px' : `${size.width}px`,
+        height: isFullScreen ? 'calc(100% - 48px)' : isDocked ? '500px' : `${size.height}px`,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // Smooth expansion
         right: isDocked ? '24px' : '24px',
         bottom: isDocked ? '0px' : '24px',
         borderBottomRightRadius: isDocked ? '0' : '16px',
@@ -671,37 +834,43 @@ const Chatbot = () => {
           <IconButton onClick={() => setIsMinimized(true)} title="Minimize">
             <FontAwesomeIcon icon={faMinus} size="sm" />
           </IconButton>
+          <IconButton onClick={() => setIsFullScreen(!isFullScreen)} title={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+            <FontAwesomeIcon icon={isFullScreen ? faAnchor : faExpand} size="sm" />
+          </IconButton>
+          <IconButton
+            onClick={handleDownloadChat}
+            title="Download Chat Transcript"
+            disabled={messages.length === 0}
+            style={{ opacity: messages.length === 0 ? 0.5 : 1 }}
+          >
+            <FontAwesomeIcon icon={faDownload} size="sm" />
+          </IconButton>
         </HeaderActions>
       </Header>
 
-      <MessagesArea>
-        {messages.length === 0 && PRESET_QUESTIONS && (
+      <MessagesArea
+        ref={messagesAreaRef}
+        onScroll={handleScroll}>
+        {messages.length === 0 && (
           <EmptyState>
             <EmptyIconWrapper>
               <FontAwesomeIcon icon={faMagic} size="lg" />
             </EmptyIconWrapper>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#334155' }}>How can I help you?</p>
-              <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '220px', lineHeight: '1.5' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '800px', lineHeight: '1.5' }}>
                 I can answer questions about single-cell sequencing analysis. This AI assistant may occasionally generate incorrect or misleading information. We are not responsible for any decisions made based on the generated content. Please verify critical information independently.
               </p>
             </div>
-
-            <SuggestedQuestionsContainer>
-              {Array.isArray(PRESET_QUESTIONS) && PRESET_QUESTIONS.map((q, idx) => (
-                <SuggestionChip key={idx} onClick={() => setInput(q.prompt)}>
-                  <FontAwesomeIcon icon={faMagic} size="xs" />
-                  {q.title}
-                </SuggestionChip>
-                  )
-                )
-              }
-            </SuggestedQuestionsContainer>
           </EmptyState>
         )}
-
+          
         {messages.map((msg, index) => (
-          <MessageRow key={index} $isUser={msg.role === 'user'}>
+          <MessageRow 
+            key={index} 
+            $isUser={msg.role === 'user'}
+            ref={index === messages.length - 1 && !isLoading ? messagesEndRef : null}
+            >
             <MessageGroup $isUser={msg.role === 'user'}>
               {/* Bot Avatar */}
               {msg.role !== 'user' && (
@@ -713,10 +882,33 @@ const Chatbot = () => {
               {/* Bubble */}
               <Bubble $isUser={msg.role === 'user'}>
                 <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
-                  children={msg.content}
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeGithubAlerts, rehypeKatex, rehypeMinifyHtml]}
+                  children={msg.content} // Reduce multiple newlines to single
                   components={{
+                    // Reduce spacing between paragraphs
+                    h1: ({ children }) => (
+                      <h1 style={{ marginTop: '0', marginBottom: '0', lineHeight: '1.2' }}>
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 style={{ marginTop: '0', marginBottom: '0', lineHeight: '1.2' }}>
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 style={{ marginTop: '0', marginBottom: '0', lineHeight: '1.2' }}>
+                        {children}
+                      </h3>
+                    ),
+                    p: ({ children }) => (
+                      <p style={{ marginTop: '0', marginBottom: '0', lineHeight: '1.2' }}>
+                        {children}
+                      </p>
+                    ),
+                    ul: ({ children }) => <ul style={{ marginTop: '0', marginBottom: '0', paddingLeft: '20px' }}>{children}</ul>,
+                    li: ({ children }) => <li style={{ marginTop: '0', lineHeight: '1.2', marginBottom: '0' }}>{children}</li>,
                     code(props) {
                       const { children, inline, className, node, ...rest } = props;
                       const match = /language-(\w+)/.exec(className || '');
@@ -763,13 +955,6 @@ const Chatbot = () => {
                   }}
                 />
               </Bubble>
-
-              {/* User Avatar (Hidden) */}
-              {msg.role === 'user' && (
-                <UserAvatarSmall>
-                  <FontAwesomeIcon icon={faUser} size="xs" />
-                </UserAvatarSmall>
-              )}
             </MessageGroup>
           </MessageRow>
         ))}
@@ -781,27 +966,75 @@ const Chatbot = () => {
                 <FontAwesomeIcon icon={faRobot} size="xs" />
               </BotAvatarSmall>
               <ThinkingBubble>
-                <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>Thinking</span>
-                <div style={{ display: 'flex', gap: '2px', marginLeft: '2px' }}>
-                  <Dot />
-                  <Dot />
-                  <Dot />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>Thinking</span>
+                    <div style={{ display: 'flex', gap: '2px' }}><Dot /><Dot /><Dot /></div>
+                  </div>
+
+                  <button
+                    onClick={handleStopGeneration}
+                    style={{
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#ef4444',
+                      borderRadius: '6px',
+                      padding: '2px 8px',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    STOP
+                  </button>
                 </div>
               </ThinkingBubble>
             </MessageGroup>
           </MessageRow>
         )}
-        <div ref={messagesEndRef} />
+
+        <ScrollTopButton
+          $visible={showScrollTop}
+          onClick={scrollToTop}
+          title="Scroll to Top"
+        >
+          <FontAwesomeIcon icon={faChevronUp} size="xs" />
+        </ScrollTopButton>
+
+        {!isLoading && (
+          <SuggestedQuestionsContainer>
+            {Array.isArray(presetQuestionsList) && presetQuestionsList.map((q, idx) => (
+              <SuggestionChip key={idx} onClick={() => { setInput(q.prompt); handleSend(q.prompt); }}>
+                <FontAwesomeIcon icon={faMagic} size="xs" />
+                <span style={{ fontWeight: 500 }}>{q.title}</span>
+              </SuggestionChip>
+            ))}
+          </SuggestedQuestionsContainer>
+        )}
+        {isLoading && ( <div ref={messagesEndRef} /> )}
       </MessagesArea>
 
       <InputArea>
         <InputWrapper>
-          <TextArea
+          {/* <TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             rows="1"
+          /> */}
+          <TextArea
+            ref={textAreaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            rows="1"
+            style={{ maxHeight: '200px', overflowY: 'auto' }} // Prevents it from taking over the screen
           />
           <TrashButton
             onClick={handleClear}
@@ -831,7 +1064,7 @@ const Chatbot = () => {
               <FontAwesomeIcon icon={faRotateRight} rotation={90} size="xs" />
             </IconWrapper>
           </SelectWrapper>
-          <Disclaimer>Powered by AI</Disclaimer>
+          <Disclaimer>Powered by AI: please use content with caution.</Disclaimer>
         </FooterRow>
       </InputArea>
     </Container >

@@ -20,6 +20,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import MarkdownNavbar from 'markdown-navbar';
 // The default style of markdown-navbar should be imported additionally
 import './navbar.css';
+import Chatbot from "../components/RightNavigation/Chatbot";
 
 
 export default function Doc() {
@@ -135,6 +136,7 @@ export default function Doc() {
             </div>
             <div className="right-rail navigation">
                 <MarkdownNavbar source={markdownText} />
+                <Chatbot presetQuestions={null} />
             </div>
         </div>
     )

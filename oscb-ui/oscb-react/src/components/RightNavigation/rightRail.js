@@ -4,7 +4,7 @@ import {getCookie } from "../../utils/utilFunctions";
 import { getStorageDetails } from '../../utils/utilFunctions';
 import {faArrowRightArrowLeft , faPlus, faCaretDown, faPen, faDatabase, faLocationDot, faArrowsRotate, faSquareCheck, faCompress, faGear, faChevronDown, faCross, faXmark, faAngleDoubleDown, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import MyJobsSideNav from "../MyData/myJobsSideNav";
-import Chatbot from "./Chatbot";
+// import Chatbot from "./Chatbot";
 
 function RightRail() {
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -72,7 +72,7 @@ function RightRail() {
         </div>
         <div className="results-window">
             <MyJobsSideNav/>
-            {isUserLoggedIn && <Chatbot />}
+            {/* {isUserLoggedIn && <Chatbot presetQuestions={presetQuestions} />} */}
         </div>
         </div>
   )

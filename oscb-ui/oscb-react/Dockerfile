@@ -1,5 +1,5 @@
 # FROM node:22.21.1
-FROM stormgod/oscb-react:0.1
+FROM stormgod/oscb-react:0.1.1
 
 # Create app directory
 WORKDIR /opt/src/app
@@ -13,7 +13,7 @@ WORKDIR /opt/src/app
 
 # RUN npm install @mui/icons-material
 # RUN npm install @mui/material @emotion/react @emotion/styled
-
+# RUN npm install react-markdown remark-math rehype-katex katex
 
 # Copy app source code
 COPY . .

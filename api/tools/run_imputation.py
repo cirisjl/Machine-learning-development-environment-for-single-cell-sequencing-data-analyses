@@ -104,7 +104,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                 # Add preset questions for tissue and species
                 if organ_part is not None and organ_part != "" and species is not None and species != "":
-                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
                     imputation_results['preset_questions'] = preset_questions
                     
                 adata = None
@@ -124,9 +124,9 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             "Status": "Failure"
                         }
                     )
-                redislogger.error(job_id, detail)
-                if not wf:
-                    raise CeleryTaskException(detail)
+                    redislogger.error(job_id, detail)
+                    if not wf:
+                        raise CeleryTaskException(detail)
                 elif 'MAGIC' not in adata.layers.keys(): 
                     try:
                         redislogger.info(job_id, "Start Magic imputation...")
@@ -152,7 +152,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
                             imputation_results['preset_questions'] = preset_questions
 
                         imputation_output.append({"MAGIC": output})
@@ -231,7 +231,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 
                 # Add preset questions for tissue and species
                 if organ_part is not None and organ_part != "" and species is not None and species != "":
-                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
                     imputation_results['preset_questions'] = preset_questions
 
                 imputation_output.append({"SAVER": output})
@@ -289,7 +289,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             
                             # Add preset questions for tissue and species
                             if organ_part is not None and organ_part != "" and species is not None and species != "":
-                                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
                                 imputation_results['preset_questions'] = preset_questions
 
                             imputation_output.append({"SAVER": output})

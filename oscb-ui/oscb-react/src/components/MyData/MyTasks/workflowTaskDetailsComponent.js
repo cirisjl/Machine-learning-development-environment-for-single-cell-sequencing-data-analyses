@@ -27,7 +27,7 @@ import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
+import Chatbot from "../../RightNavigation/Chatbot";
 
 //GitImports
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
@@ -173,7 +173,7 @@ function WorkflowTaskDetailsComponent() {
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
   const [details, setDetails] = useState({}); // Store fetched details
   const [ppJobId, setppJobId] = useState(null);
-
+  const [presetQuestions, setPresetQuestions] = useState(null);
   const [sectionsVisibility, setSectionsVisibility] = useState({
     preprocessResults: true
   });
@@ -342,6 +342,11 @@ function WorkflowTaskDetailsComponent() {
         if (data.task_status === "SUCCESS") {
           const preProcessResult = data.task_result[0];
           const processId = preProcessResult.process_id;
+          if (preProcessResult) {
+            if (preProcessResult.hasOwnProperty('preset_questions')) {
+              setPresetQuestions(preProcessResult.preset_questions);
+            }
+          }
 
           // Only set plotData if at least one plot exists
           if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
@@ -1098,6 +1103,7 @@ function WorkflowTaskDetailsComponent() {
       </div>
       <div className="right-rail">
         <RightRail />
+        <Chatbot presetQuestions={presetQuestions} />
       </div>
     </div>
   );

@@ -1488,7 +1488,7 @@ def unique_by_key(data, key):
     return result
 
 
-def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, method="t-test", groupby="leiden", top=25):
+def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, method="t-test", groupby="leiden", top=25,  task=None):
     preset_questions = []
     if layer is not None and layer in adata.layers.keys():
         sc.tl.rank_genes_groups(adata, groupby, layer=layer, method=method, use_raw=False)
@@ -1499,17 +1499,42 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
 
         # Convert the DataFrame to a dictionary
         marker_genes_dict = top_marker_df.to_dict(orient='list')
-        prompt = f"Identify cell types of {tissue} cells from {species} using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
+        prompt = f"Identify **cell types** of **{tissue}** cells from **{species}** using the following markers separately for each row. Some can be a mixture of multiple cell types.\n GeneList’:\n"
         for cluster, genes in marker_genes_dict.items():
             gene_list = ', '.join(genes)
             prompt += f"Cluster {cluster}: {gene_list}\n"
         prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
+        
+        # Results
+        if task is not None:
+            preset_question = {
+                "title": f"How do I interpret the results of the {task} task?", 
+                "prompt": f"How do I interpret the results of the {task} task in single-cell sequencing data analysis?"
+            }
+            preset_questions.append(preset_question)
 
+        # Cell types
         preset_question = {
-            "title": f"What cell type does each cluster most likely represent using layer: {layer}?", 
+            "title": f"What are the known **cell types** in **{tissue}** from **{species}**?", 
+            "prompt": f"What is the estimated proportion of each cell type in {tissue} from {species}?"
+        }
+        preset_questions.append(preset_question)
+        
+        # Cell proportions
+        preset_question = {
+            "title": f"What is the estimated **proportion** of each **cell type** in **{tissue}** from **{species}**?", 
+            "prompt": f"What is the estimated proportion of each cell type in {tissue} from {species}?"
+        }
+        preset_questions.append(preset_question)
+
+        # Annotate clusters using marker genes
+        preset_question = {
+            "title": f"What **cell type** does each cluster most likely represent using layer: **{layer}**?", 
             "prompt": prompt
         }
         preset_questions.append(preset_question)
+
+        
 
     if use_rep is not None:
         if type(use_rep) is list:

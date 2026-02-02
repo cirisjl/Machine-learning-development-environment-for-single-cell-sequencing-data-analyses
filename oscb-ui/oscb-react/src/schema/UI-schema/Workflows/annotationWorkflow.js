@@ -223,7 +223,7 @@ export const uiSchema = (dynamicOptions) => ({
             creatable: false,
             searchable: true,
             opts: [
-              "",
+              null,
               "Human_Placenta_Decidua.pkl",
               "Adult_Mouse_Gut.pkl",
               "Human_Longitudinal_Hippocampus.pkl",

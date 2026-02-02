@@ -121,7 +121,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             ds['skip_tsne'] = dss['skip_tsne']
             ds['n_hvg'] = n_hvg
             
-            qc_results = run_qc(job_id, ds, fig_path=fig_path)
+            qc_results = run_qc(job_id, ds, fig_path=fig_path, wf=True)
             if qc_results is not None:
                 qc_outputs.append(qc_results['adata_path'])
                 process_ids.extend(qc_results["process_ids"])
@@ -137,7 +137,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
         if len(qc_outputs) > 0 and len(integration_params["methods"]) > 0:
             dss['input'] = qc_outputs
             dss['n_hvg'] = n_hvg
-            integration_results = run_integration(job_id, dss, fig_path=fig_path)
+            integration_results = run_integration(job_id, dss, fig_path=fig_path, wf=True)
             wf_results['integration'] = integration_results["process_ids"]
             process_ids.extend(integration_results["process_ids"])
             wf_results['integration_output'] = integration_results['output']
@@ -166,7 +166,7 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
                 ds['n_hvg'] = n_hvg
                 ds['annotation_params'] = annotation_params
 
-                annotation_results = run_annotation(job_id, ds, fig_path=fig_path, description=f"{', '.join(annotation_params['methods'])} Annotation for {key} Integration")
+                annotation_results = run_annotation(job_id, ds, fig_path=fig_path, description=f"{', '.join(annotation_params['methods'])} Annotation for {key} Integration", wf=True)
                 ann_process_ids.extend(annotation_results["process_ids"])
                 process_ids.extend(annotation_results["process_ids"])
                 annotation_outputs.extend(annotation_results['output'])

@@ -152,7 +152,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=method, method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=method, method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Normalization")
                             normalization_results['preset_questions'] = preset_questions
 
                         normalization_results['outputs'] = normalization_output

@@ -14,6 +14,7 @@ import TaskInfoTable
 from './TaskInfoTable';
 import RightRail from '../../RightNavigation/rightRail';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import Chatbot from "../../RightNavigation/Chatbot";
 
 
 const BenchmarksViewDetailsComponent = () => {
@@ -25,6 +26,7 @@ const BenchmarksViewDetailsComponent = () => {
   const [hasMessage, setHasMessage] = useState(false);
   const [isError, setIsError] = useState(false);
   const [copiedState, setCopiedState] = useState(false);
+  const [presetQuestions, setPresetQuestions] = useState(null);
       
   const handleCopy = () => {
     setCopiedState(true);
@@ -54,6 +56,12 @@ const BenchmarksViewDetailsComponent = () => {
       axios.post(`${NODE_API_URL}/single/getBenchmarksResultsWithDatasetDetails`, { benchmarksId: id })
         .then(response => {
           setBenchmarksDetails(response.data);
+          if (response.data[0]?.task_type){
+            setPresetQuestions([
+              { title: `How do I interpret the results of the ${response.data[0]?.task_type} task?`, "prompt": `How do I interpret the results of the ${response.data[0]?.task_type} task in single-cell sequencing data analysis?` }
+            ]);
+            console.log("presetQuestions:", presetQuestions); 
+          }
           setMessage(`Successfully fetched details for the benchmarks ID - ${id}.`);
           setHasMessage(true);
           setIsError(false);
@@ -176,6 +184,7 @@ const BenchmarksViewDetailsComponent = () => {
     <div>
     {(getCookie('jwtToken') !== undefined || getCookie('jwtToken') !== '') && (<div className="right-rail">
         <RightRail />
+        <Chatbot presetQuestions={presetQuestions} />
     </div>)}
       </div>
     </div>

@@ -70,7 +70,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
             
             # Add preset questions for tissue and species
             if organ_part is not None and organ_part != "" and species is not None and species != "":
-                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=layer, method="t-test", groupby=f"{method}_leiden", top=n_hvg)
+                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=layer, method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Dimension Reduction")
                 reduction_results['preset_questions'] = preset_questions
 
             adata = None

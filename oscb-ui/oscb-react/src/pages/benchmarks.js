@@ -16,7 +16,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw'
 import rehypeGithubAlerts from 'rehype-github-alert'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-
+import Chatbot from "../components/RightNavigation/Chatbot";
 
 export default function Benchmarks() {
     const [markdownText, setMarkdownText] = useState('');
@@ -113,6 +113,7 @@ export default function Benchmarks() {
             </div>
             <div className="right-rail">
                 <RightRail />
+                <Chatbot presetQuestions={null} />
             </div>
         </div>
     )

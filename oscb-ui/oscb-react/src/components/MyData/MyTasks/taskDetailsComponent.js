@@ -24,6 +24,7 @@ import {Select, MenuItem, InputLabel } from '@mui/material';
 import TaskImageGallery from './taskImageGallery';
 import Chatbot from "../../RightNavigation/Chatbot";
 
+
 // Initialize Octokit with your GitHub personal access token
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 
@@ -127,6 +128,7 @@ function TaskDetailsComponent() {
   const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [ppJobId, setppJobId] = useState(null);
+  const [presetQuestions, setPresetQuestions] = useState(null);
 
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
       setLoadingPlot(true); // Set loading to true before making the API call
@@ -220,7 +222,12 @@ function TaskDetailsComponent() {
           if (data.task_status === "SUCCESS") {
             setToolResultsFromMongo(data.task_result);
             console.log("PP results:", data.task_result);
-            // console.log("toolResultsFromMongo:", toolResultsFromMongo);
+            if (data.task_result && data.task_result.length > 0) {
+              if (data.task_result[0].hasOwnProperty('preset_questions')) {
+                setPresetQuestions(data.task_result[0].preset_questions);
+              }
+            }
+            // console.log(presetQuestions);
             setLoading(false);
             setppJobId(null); // Reset ppJobId after handling
           } else if(data.task_status === "FAILURE"){
@@ -847,8 +854,6 @@ function TaskDetailsComponent() {
                         </div>
                       </>
                     )}
-
-                    {<Chatbot PRESET_QUESTIONS={result.preset_questions} />}
                   </React.Fragment>
           ))}
           </div>
@@ -857,6 +862,7 @@ function TaskDetailsComponent() {
       </div>
       <div className="right-rail">
         <RightRail />
+        <Chatbot presetQuestions={presetQuestions} />
       </div>
   </div>
   );
