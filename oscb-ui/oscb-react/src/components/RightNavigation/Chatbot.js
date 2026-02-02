@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faTrash, faUser, faRobot, faDna, faRotateRight, faMagic, faMinus, faExpand, faAnchor } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faTrash, faUser, faRobot, faDna, faRotateRight, faMagic, faMinus, faExpand, faAnchor, faPaperclip, faTimes, faFile, faFilePdf, faFileImage, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { NODE_API_URL } from '../../constants/declarations';
 
 import styled from 'styled-components';
@@ -345,6 +345,8 @@ const InputWrapper = styled.div`
 const TextArea = styled.textarea`
   width: 100%;
   padding: 14px 16px;
+  padding-left: ${props => props.$hasFile ? '16px' : '48px'}; /* Make space for paperclip if no file, usually paperclip is outside or inside */
+  padding-left: 48px; /* Always space for paperclip */
   padding-right: 90px;
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -366,6 +368,32 @@ const TextArea = styled.textarea`
 
   &::placeholder {
     color: #94a3b8;
+  }
+`;
+
+const AttachButton = styled.button`
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #94a3b8;
+
+  &:hover {
+    color: #0f766e;
+    background-color: #f0fdfa;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -497,6 +525,57 @@ const ClearChatLink = styled.button`
   }
 `;
 
+const FilePreviewChip = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f1f5f9;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  width: fit-content;
+  max-width: 100%;
+`;
+
+const FileIconWrapper = styled.div`
+  color: #64748b;
+`;
+
+const FileName = styled.span`
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+`;
+
+const RemoveFileButton = styled.button`
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+
+  &:hover {
+    color: #ef4444;
+  }
+`;
+
+const ImagePreview = styled.img`
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+`;
+
+
 // --- Component ---
 
 const Chatbot = () => {
@@ -504,12 +583,14 @@ const Chatbot = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gpt'); // 'gpt' or 'gemini'
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isMinimized, setIsMinimized] = useState(() => {
     const savedState = localStorage.getItem('chatbot_minimized');
     return savedState === 'true';
   });
   const [isDocked, setIsDocked] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const PRESET_QUESTIONS = [
     { title: "What is the cell type of cluster 1?", "prompt": "Could you please give the cell type with marker genes Cd3e, Cd3d, Cd3g and give me your reasoning?" },
@@ -573,20 +654,61 @@ const Chatbot = () => {
     document.body.style.userSelect = 'none';
   };
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
 
-    const userMessage = { role: 'user', content: input };
+  const removeFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const getFileIcon = (file) => {
+    if (!file) return faFile;
+    if (file.type === "application/pdf") return faFilePdf;
+    if (file.type.startsWith("image/")) return faFileImage;
+    if (file.type.startsWith("text/")) return faFileAlt;
+    return faFile;
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() && !selectedFile) return;
+
+    let userContent = input;
+    if (selectedFile) {
+      userContent += ` [Attached: ${selectedFile.name}]`;
+    }
+
+    const userMessage = { role: 'user', content: userContent };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    // Don't clear selectedFile yet, we need it for the API call
+
     setIsLoading(true);
 
     const targetModel = selectedModel; // Capture current model
+    const fileToSend = selectedFile; // Capture file
+
+    // Clear file selection UI immediately for better UX
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     try {
-      const response = await axios.post(`${NODE_API_URL}/api/chat`, {
-        message: userMessage.content,
-        model: targetModel
+      const formData = new FormData();
+      formData.append('message', input);
+      formData.append('model', targetModel);
+      if (fileToSend) {
+        formData.append('file', fileToSend);
+      }
+
+      const response = await axios.post(`${NODE_API_URL}/api/chat`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       const botMessage = { role: 'assistant', content: response.data.reply };
@@ -595,8 +717,12 @@ const Chatbot = () => {
       console.error("Chat error:", error);
       let messageContent = "Sorry, something went wrong. Please check your API keys in oscb-node/.env.";
 
-      if (error.response && error.response.status === 429) {
-        messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
+      if (error.response) {
+        if (error.response.status === 429) {
+          messageContent = "You have exceeded the API quota (Rate Limit). Please wait a moment before trying again.";
+        } else if (error.response.data && error.response.data.details) {
+          messageContent = `Error: ${error.response.data.details}`;
+        }
       }
 
       const errorMessage = { role: 'assistant', content: messageContent };
@@ -729,13 +855,41 @@ const Chatbot = () => {
       </MessagesArea>
 
       <InputArea>
+        {selectedFile && (
+          <FilePreviewChip>
+            <FileIconWrapper>
+              {selectedFile.type.startsWith('image/') ? (
+                <ImagePreview src={URL.createObjectURL(selectedFile)} alt="preview" />
+              ) : (
+                <FontAwesomeIcon icon={getFileIcon(selectedFile)} />
+              )}
+            </FileIconWrapper>
+            <FileName>{selectedFile.name}</FileName>
+            <RemoveFileButton onClick={removeFile}>
+              <FontAwesomeIcon icon={faTimes} />
+            </RemoveFileButton>
+          </FilePreviewChip>
+        )}
+
         <InputWrapper>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
+            accept=".txt,.csv,.json,.js,.py,.pdf,image/*"
+          />
+          <AttachButton onClick={() => fileInputRef.current?.click()} title="Attach file">
+            <FontAwesomeIcon icon={faPaperclip} size="sm" />
+          </AttachButton>
+
           <TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             rows="1"
+            $hasFile={!!selectedFile}
           />
           <TrashButton
             onClick={handleClear}
@@ -746,7 +900,7 @@ const Chatbot = () => {
           </TrashButton>
           <SendButton
             onClick={handleSend}
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || (!input.trim() && !selectedFile)}
           >
             <FontAwesomeIcon icon={faPaperPlane} size="sm" />
           </SendButton>
