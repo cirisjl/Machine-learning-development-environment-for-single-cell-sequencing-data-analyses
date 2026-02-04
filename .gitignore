@@ -1,7 +1,5 @@
-/mysql_db
-/uploads
-/oscb-cli/oscb/Downloads/cli/*
-/oscb-cli/oscb/Downloads/venv/*
-/oscb-ui/oscb-node/.env
-/oscb-ui/oscb-react/.env
+./oscb-cli/oscb/Downloads/cli/*
+./oscb-cli/oscb/Downloads/venv/*
+
 .env
+oscb-ui/oscb-node/.env
