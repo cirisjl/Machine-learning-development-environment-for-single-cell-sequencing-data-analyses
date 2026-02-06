@@ -44,8 +44,8 @@ def run_celltypist(adata, model_name, refs = None, ref_adata = None, labels = No
                 ref_model = celltypist.train(ref_ad, labels = labels, n_jobs = 4, use_SGD = False, feature_selection = True, top_genes = 300)
                 ref_predictions = celltypist.annotate(adata, model=ref_model, majority_voting=False)
                 ref_predictions_adata = ref_predictions.to_adata()
-                adata.obs["ref_"+name+"_label"] = ref_predictions_adata.obs.loc[adata.obs.index, "predicted_labels"]
-                adata.obs["ref_"+name+"_score"] = ref_predictions_adata.obs.loc[adata.obs.index, "conf_score"]
+                adata.obs["celltypist_ref_label"] = ref_predictions_adata.obs.loc[adata.obs.index, "predicted_labels"]
+                adata.obs["celltypist_ref_score"] = ref_predictions_adata.obs.loc[adata.obs.index, "conf_score"]
             except Exception as e:
                 print(e)
                 continue

@@ -781,7 +781,6 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
     output = os.path.abspath(path)
     method = '_' + method if method != '' else ''
     output_path = None
-    directory = output
     base_name = os.path.basename(path)
 
     if not os.path.exists(output):
@@ -810,6 +809,7 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
                 output_path = os.path.join(output, process_id, dataset + method + ".csv")
                 print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
     else:
+        directory = os.path.dirname(output)
         if format == "AnnData":
             output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
         elif format == "MuData":
@@ -1532,9 +1532,7 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
             "title": f"What **cell type** does each cluster most likely represent using layer: **{layer}**?", 
             "prompt": prompt
         }
-        preset_questions.append(preset_question)
-
-        
+        preset_questions.append(preset_question)     
 
     if use_rep is not None:
         if type(use_rep) is list:
@@ -1555,7 +1553,8 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
                     prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
 
                     preset_question = {
-                        f"What cell type does each cluster most likely represent using representation: {rep}?": prompt
+                        "title": f"What cell type does each cluster most likely represent using representation: {rep}?",
+                        "prompt": prompt
                     }
                     preset_questions.append(preset_question)
         else:
@@ -1575,7 +1574,8 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
                 prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
 
                 preset_question = {
-                    f"What cell type does each cluster most likely represent using representation: {use_rep}?": prompt
+                    "title": f"What cell type does each cluster most likely represent using representation: {use_rep}?",
+                    "prompt": prompt
                 }
                 preset_questions.append(preset_question)
 
@@ -1595,7 +1595,8 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
         prompt += "Provide the most likely cell type for each cluster based on these marker genes and show your reasoning."
 
         preset_question = {
-            "What cell type does each cluster most likely represent?": prompt
+            "title": "What cell type does each cluster most likely represent?",
+            "prompt": prompt
         }
         preset_questions.append(preset_question)
 

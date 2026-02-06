@@ -129,6 +129,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
 
         wf_results['QC'] = qc_process_ids
         wf_results['QC_output'] = qc_outputs
+
+        print(f"QC outputs: {qc_outputs}")
         
 
         # Run Integration
@@ -142,20 +144,24 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
             process_ids.extend(integration_results["process_ids"])
             wf_results['integration_output'] = integration_results['output']
             output = integration_results['output']
-            adata_outputs = integration_results['adata_path']
+            # adata_outputs = integration_results['adata_path']
             integration_outputs.update(integration_results['adata_path'])
         else:
             integration_outputs = {qc_params["methods"][i]: qc_outputs[i] for i in range(len(qc_outputs))}
+
+        print(f"Integration outputs: {integration_outputs}")
 
         # Run Annotation
         ann_process_ids = []
         annotation_outputs = []
         if len(integration_outputs) > 0 and len(annotation_params["methods"]) > 0:
             for key, value in integration_outputs.items():
+                print(f"Running annotation for integration output: {key}")
+                print(f"Input: {value}")
                 ds = {}
                 ds['userID'] = userID
                 ds['input'] = value
-                ds['output'] = dss['output']
+                ds['output'] = value
                 ds['datasetId'] = datasetIds[0]
                 ds['dataset'] = '_'.join(datasets)
                 ds['species'] = dss['species']
@@ -166,20 +172,25 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
                 ds['n_hvg'] = n_hvg
                 ds['annotation_params'] = annotation_params
 
+                print(f"Annotation params: {ds}")
+
                 annotation_results = run_annotation(job_id, ds, fig_path=fig_path, description=f"{', '.join(annotation_params['methods'])} Annotation for {key} Integration", wf=True)
                 ann_process_ids.extend(annotation_results["process_ids"])
                 process_ids.extend(annotation_results["process_ids"])
                 annotation_outputs.extend(annotation_results['output'])
+                print(f"Annotation outputs for {key}: {annotation_results['output']}")
             output = annotation_outputs
                 
         wf_results['annotation'] = ann_process_ids
         wf_results['annotation_output'] = annotation_outputs
+        print(f"Annotation outputs: {annotation_outputs}")
+        print(f"Output: {output}")
         
         results = {
             "output": output,
             # "workflow_id": workflow_id,
             "md5": md5,
-            "adata_path": adata_outputs,
+            # "adata_path": adata_outputs,
             "wf_results": wf_results,
             # "figures":fig_path, 
             "process_ids": process_ids

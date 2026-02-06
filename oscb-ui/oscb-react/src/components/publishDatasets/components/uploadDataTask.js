@@ -449,7 +449,7 @@ function getStandardFileName(fileName, fileType) {
             <div className="modal-content">
                 <div>
                     <p>
-                        Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5ad, h5mu, h5seurat, Robj, zip, gz
+                        Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5mu, h5seurat, Robj, zip, gz
                     </p>
                     <p>
                         Standard File Structure for Multi-file Datasets:
@@ -532,7 +532,7 @@ function getStandardFileName(fileName, fileType) {
       <div className="modal-uploadMyData">
         <div>
           <p>
-            Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5ad, h5mu, h5seurat, Robj, zip, gz
+            Accepted Formats for Single-file Datasets: csv, tsv, txt, txt.gz, h5ad, rds, h5, hdf5, h5mu, h5seurat, Robj, zip, gz
           </p>
           <p>
             Standard File Structure for Multi-file Datasets:

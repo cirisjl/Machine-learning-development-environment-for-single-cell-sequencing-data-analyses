@@ -4379,23 +4379,52 @@ app.post('/node/item/getDatasetInfoWithPreProcessResults', async (req, res) => {
             : db.collection(datasetCollection);
 
         // Fetch dataset details along with preprocessing results using lookup and match
+        // const datasetInfo = await collection.aggregate([
+        //     {
+        //         $match: { Id: datasetId }  // Match dataset based on datasetId
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: preProcessResultsCollection,  // Collection containing pre-process results
+        //             localField: 'process_ids',          // Array field in dataset collection
+        //             foreignField: 'process_id',         // Field in preprocessResults matching process_ids
+        //             as: 'preProcessResults'             // Output array field for pre-process results
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             datasetDetails: { $mergeObjects: "$$ROOT" },  // Get all fields from the original dataset
+        //             preProcessResults: 1,                         // Include the preProcessResults array
+        //             _id: 0,                                       // Exclude the _id field from the final result
+        //         }
+        //     }
+        // ]).toArray();
+
         const datasetInfo = await collection.aggregate([
             {
-                $match: { Id: datasetId }  // Match dataset based on datasetId
+                $match: { Id: datasetId }
             },
             {
                 $lookup: {
-                    from: preProcessResultsCollection,  // Collection containing pre-process results
-                    localField: 'process_ids',          // Array field in dataset collection
-                    foreignField: 'process_id',         // Field in preprocessResults matching process_ids
-                    as: 'preProcessResults'             // Output array field for pre-process results
+                    from: preProcessResultsCollection,
+                    let: { pids: "$process_ids" }, 
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $in: ["$process_id", "$$pids"] }
+                            }
+                        },
+                        // { $limit: 10 }, 
+                        { $project: { _id: 0, process_id: 1, description: 1, stage: 1, process: 1, method: 1, nCells: 1 } } 
+                    ],
+                    as: 'preProcessResults'
                 }
             },
             {
                 $project: {
-                    datasetDetails: { $mergeObjects: "$$ROOT" },  // Get all fields from the original dataset
-                    preProcessResults: 1,                         // Include the preProcessResults array
-                    _id: 0,                                       // Exclude the _id field from the final result
+                    datasetDetails: "$$ROOT",
+                    preProcessResults: 1,
+                    _id: 0
                 }
             }
         ]).toArray();

@@ -1,6 +1,6 @@
 {
     "storageDir": "/usr/src/app/storage/",
-    "storageAllowance": 5,
+    "storageAllowance": 100,
     "intermediateStorage": "/usr/src/app/temp/",
     "publicStorage": "/usr/src/app/storage/publicDatasets/"
 }

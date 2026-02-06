@@ -67,7 +67,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     md5 = get_md5(input)
     process_id = generate_process_id(md5, process, methods, parameters)
     # output = get_output_path(output, process_id, dataset, method='annotation')
-    adata_path = get_output_path(output, process_id, dataset)
+    adata_path = get_output_path(output, process_id, dataset, method='annotation')
 
     adata = load_anndata(input)
     if adata is None:
