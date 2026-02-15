@@ -1,0 +1,82 @@
+from tools.formating.formating import *
+import scanpy as sc
+import os
+import numpy as np
+from utils.mongodb import create_pp_results, upsert_jobs
+from utils.redislogger import *
+from datetime import datetime
+
+
+def manual_annotation(cluster_id, adata_path, layer, job_id, process_id, updatedAll, updatedChangedOnly, deleted, obsEmbedding, obsSets, zarr_path, userID):
+    redislogger.info(job_id, f"Loading AnnData ...")
+    adata = load_anndata(adata_path)
+    output = adata_path.replace("_manual_annotation", "").replace(".h5ad", "_manual_annotation.h5ad")
+    
+    redislogger.info(job_id, f"Updating cell labels ...")
+    # Process updated annotations
+    if "cell_label" in adata.obs.columns:
+        if len(updatedChangedOnly) > 0:
+            adata.obs['cell_label'] = adata.obs['cell_label'].astype('object')
+            for update in updatedChangedOnly:
+                cluster_row_id = update['Cluster']
+                new_label = update['cell_label']
+                if cluster_id in adata.obs.columns:
+                    adata.obs.loc[adata.obs[cluster_id]==cluster_row_id, 'cell_label'] = new_label
+            adata.obs['cell_label'] = adata.obs['cell_label'].astype('category')
+    elif len(updatedAll) >0:
+        adata.obs['cell_label'] = "Unknown"
+        adata.obs['cell_label'] = adata.obs['cell_label'].astype('object')
+        for update in updatedAll:
+            print(f"update: {update}")
+            cluster_row_id = update['Cluster']
+            new_label = update['cell_label']
+            if cluster_id in adata.obs.columns:
+                adata.obs.loc[adata.obs[cluster_id]==cluster_row_id, 'cell_label'] = new_label
+        adata.obs['cell_label'] = adata.obs['cell_label'].astype('category')
+
+    # Process deleted annotations
+    if len(deleted) > 0:
+        redislogger.info(job_id, f"Removing cluster(s) ...")
+        adata=adata[~adata.obs[cluster_id].isin(deleted)]
+
+    # Save adata
+    redislogger.info(job_id, f"Saving Anndata ...")
+    output_path, _ = save_anndata(adata, output, zarr=False)
+    # Update UMAP/t-SNE & adata.obs
+    redislogger.info(job_id, f"Updating UMAP & t-SNE of Anndata ...")
+    pp_results = get_updated_metadata(adata, process_id, cluster_id=cluster_id, adata_path=output, orign_adata_path=adata_path, obsEmbedding=obsEmbedding)
+    # Update zarr
+    redislogger.info(job_id, f"Updating Gene Expression panel ...")
+    zarr_path = save_zarr(adata, adata_path=adata_path, zarr_output=zarr_path, layer=layer)
+    # Update pp_results
+    create_pp_results(process_id, pp_results)
+
+    results = {
+        "job_id": job_id,         
+        "Status": 'Success',
+        "adata_path": output,
+        "output": [
+            {
+                'Manual Annotation': output
+            }
+        ],
+        "process_ids": [process_id],
+        "Completed on": datetime.now(),
+        "results": { 
+            "adata_path": output,
+            "output": [
+                {
+                    'Manual Annotation': output
+                }
+            ], 
+            "process_ids": [process_id],
+        }
+    }
+
+    # Update jobs
+    upsert_jobs(results)
+    redislogger.info(job_id, f"Manual annotation is completed successfully.")
+  
+    adata = None
+
+    return results

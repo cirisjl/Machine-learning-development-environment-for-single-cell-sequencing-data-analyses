@@ -198,7 +198,8 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                        # integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_pca_harmony", adata_path=adata_path, cluster_colname=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_pca_harmony", adata_path=adata_path, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
@@ -251,7 +252,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
                         # adata.write_h5ad(adata_path, compression='gzip')
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_scVI", adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
@@ -327,7 +328,8 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                             plot_embedding(adata, color=parameters['batch_key'], fig_path=fig_path, title=method + " Integration")
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, scanpy_cluster=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
+                    # integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, cluster_colname=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
                     
                     # Add preset questions for tissue and species
                     if organ_part is not None and organ_part != "" and species is not None and species != "":

@@ -13,7 +13,7 @@ WORKDIR /opt/src/app
 
 # RUN npm install @mui/icons-material
 # RUN npm install @mui/material @emotion/react @emotion/styled
-# RUN npm install react-markdown remark-math rehype-katex katex
+RUN npm install framer-motion react-markdown remark-math rehype-katex katex
 
 # Copy app source code
 COPY . .

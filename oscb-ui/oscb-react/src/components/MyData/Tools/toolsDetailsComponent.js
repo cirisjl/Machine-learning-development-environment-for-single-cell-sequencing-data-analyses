@@ -590,6 +590,7 @@ const onSelectRefSubItem = (mainItem, subItem) => {
                 setSuccessMessage('Form submitted successfully!');
                 setErrorMessage('');
                 navigate("/mydata/taskDetails", { state: { job_id: jobId, method: formData.method, datasetURL: formData.input, description: formData.description, process: filterStaticCategoryMap[filterCategory] } });
+                this.forceUpdate();
               })
               .catch(error => {
                 // Handle any errors that occur during the API call

@@ -80,7 +80,8 @@
      "pako": "^2.1.0",
      "react-syntax-highlighter": "^15.6.6",
      "markdown-navbar": "^1.4.0",
-     "vitessce": "*"
+     "vitessce": "*",
+     "framer-motion": "^12.34.0"
   },
   "scripts": {
     "start": "REACT_APP_HOST_URL=$HOST_URL react-scripts start",

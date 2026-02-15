@@ -761,7 +761,7 @@ Styles for Login page
 
 .comn-container-auth{
     position: absolute;
-    z-index: 999;
+    z-index: 899;
     left: 25%;
     display: flex;
     flex-direction: column;
@@ -996,7 +996,7 @@ ul.ul-suboptions li:hover {
 
 .suboptions-container {
   position: absolute;
-  z-index: 999;
+  z-index: 1999;
   background-color: white;
 }
 
@@ -1164,7 +1164,7 @@ span.sc {
 /* Alerts */
 .message-box{
   position: absolute;
-  z-index: 999;
+  z-index: 998;
   left: 35%;
   display: inline;
   flex-direction: column;
@@ -1812,7 +1812,7 @@ width
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 995;
 }
 
 .session-manager-component .modal-content {

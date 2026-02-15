@@ -209,7 +209,7 @@ const MyJobsSideNav = () => {
                                                         process: task.Process,
                                                         output: task.output,
                                                         results: task.results,
-                                                        Status: task.Status
+                                                        status: task.Status
                                                     }
                                                 });
                                             } else {
@@ -222,7 +222,7 @@ const MyJobsSideNav = () => {
                                                         process: task.Process,
                                                         output: task.output,
                                                         results: task.results,
-                                                        Status: task.Status
+                                                        status: task.Status
                                                     }
                                                 });
                                             }

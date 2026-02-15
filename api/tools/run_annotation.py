@@ -337,11 +337,13 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
         if msg is not None: redislogger.warning(job_id, msg)
     if do_cluster:
         redislogger.info(job_id, "Clustering the neighborhood graph.")
-        adata = run_clustering(adata, resolution=resolution, random_state=random_state, fig_path=fig_path)
+        adata = run_clustering(adata, resolution=resolution, random_state=random_state)
 
     adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
     dictKey = description if description else ', '.join(methodsArr) + ' Annotation'
     annotation_output.append({dictKey: adata_path})
+    seen = set()
+    annotation_output = [x for x in annotation_output if x[dictKey] not in seen and not seen.add(x[dictKey])] # Deduplicate outputs
     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
     annotation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, methodMap, parameters, md5, description=description, adata_path=adata_path, zarr_path=zarr_output, obsSets=obsSets)
     # annotation_output = [dict(fs) for fs in set(frozenset(d.items()) for d in annotation_output)]  # De-duplicate outputs

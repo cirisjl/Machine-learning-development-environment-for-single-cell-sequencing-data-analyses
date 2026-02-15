@@ -167,6 +167,23 @@ class Datasets(BaseModel):
    
 
 
+class ManualAnnotationRequest(BaseModel):
+    cluster_id: str
+    process_id: str
+    userID: Optional[str] = None
+    datasetId: Optional[str] = None
+    adata_path: str
+    description: Optional[str] = None
+    layer: Optional[str] = None
+    updatedAll: Optional[List[dict]] = []
+    updatedChangedOnly: Optional[List[dict]] = []
+    deleted: Optional[List[str]] = []
+    obsEmbedding: Optional[str] = None
+    obsSets: Optional[List[dict]] = []
+    zarr_path: Optional[str] = None
+
+
+
 class PathRequest(BaseModel):
     path: str
 

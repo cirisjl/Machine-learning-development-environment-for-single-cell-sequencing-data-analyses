@@ -1879,8 +1879,8 @@ app.post('/node/submitDatasetMetadata', async (req, res) => {
             // Update unique cell type labels to a JSON file
             // Retrieve unique values for the field "Selected Cell Types.label"
             try {
-                const uniqueCellLabelsPublic = await db.collection(datasetCollection).distinct("Selected Cell Types.label");
-                const uniqueCellLabelsUser = await db.collection(userDatasetsCollection).distinct("Selected Cell Types.label");
+                const uniqueCellLabelsPublic = await db.collection(datasetCollection).distinct("Selected Cell Types.label", { "Selected Cell Types.label": { $ne: "Unspecified" } });
+                const uniqueCellLabelsUser = await db.collection(userDatasetsCollection).distinct("Selected Cell Types.label", { "Selected Cell Types.label": { $ne: "Unspecified" } });
                 const uniqueCellLabels = [...new Set([...uniqueCellLabelsPublic, ...uniqueCellLabelsUser])];
                 const jsonString = JSON.stringify(uniqueCellLabels, null, 2);
                 fs.writeFileSync(storageDir + 'uniqueCellLabels.json', jsonString, 'utf8');

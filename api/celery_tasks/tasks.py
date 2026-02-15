@@ -10,6 +10,7 @@ from tools.run_reduction import run_reduction
 from tools.run_annotation import run_annotation
 from tools.run_conversion import run_conversion
 from tools.load_metadata import load_metadata
+from tools.run_manual_annotation import run_manual_annotation
 from benchmarks.run_benchmarks import run_benchmarks
 from benchmarks.run_data_split import run_data_split
 from benchmarks.run_subset_data import run_subset_data
@@ -131,6 +132,13 @@ def create_annotation_wf_task(self, dss_dict:dict):
     return results
 
 
+@shared_task(bind=True, name='tools:manual_annotation_task') 
+def manual_annotation_task(self, ma_dict:dict):
+    job_id = self.request.id
+    results = run_manual_annotation(job_id, ma_dict)
+    return results
+
+
 # #cli
 # @shared_task(bind=True, name='tools:create_download_dataset_task') 
 # def create_download_dataset_task(self, ds_dict:dict):
@@ -160,6 +168,7 @@ def getPreProcessResults(self, req_dict: dict):
         obs = pp_result['cell_metadata']
         pp_result['cell_metadata'] = df_to_dict(obs)
         # pp_result['obs'] = pp_result['obs']
+        print(f"obs.shape: {obs.shape}")
         
         if 'atac_cell_metadata' in pp_result.keys():
             atac_obs = pp_result['atac_cell_metadata']
@@ -171,18 +180,22 @@ def getPreProcessResults(self, req_dict: dict):
             if 'umap' in pp_result.keys():
                 pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
                 pp_result['umap'] = pp_result['umap'].tolist()
+                print(f"umap.shape: {obs.shape}")
 
             if 'umap_3d' in pp_result.keys():
                 pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
                 pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
+                print(f"umap_3d.shape: {obs.shape}")
 
             if 'tsne' in pp_result.keys():
                 pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
                 pp_result['tsne'] = pp_result['tsne'].tolist()
+                print(f"tsne.shape: {obs.shape}")
 
             if 'tsne_3d' in pp_result.keys():
                 pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
                 pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
+                print(f"tsne_3d.shape: {obs.shape}")
 
             if 'atac_umap' in pp_result.keys():
                 pp_result['atac_umap_plot'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap'], layer=pp_result['layer'])

@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
 # from api import tools
-from celery_tasks.tasks import create_qc_task, create_normalization_task, create_imputation_task, create_integration_task, create_evaluation_task, create_reduction_task, create_conversion_task, load_metadata_task, create_annotation_task
-from schemas.schemas import Dataset, Datasets, PathRequest, UMAPRequest, UploadRequest
+from celery_tasks.tasks import *
+from schemas.schemas import *
 from datetime import datetime
 from utils.mongodb import upsert_jobs
 
@@ -150,6 +150,17 @@ async def create_annotation_task_async(ds: Dataset):
     create_job(task.id, ds_dict)
 
     return JSONResponse({"job_id": task.id, "Status": "Annotation task submitted successfully"})
+
+
+@router.post("/manualannotattion")
+async def manual_annotation_task_async(ma: ManualAnnotationRequest):
+    """
+    Create a task for imputation
+    """
+    ma_dict = ma.model_dump()  # Convert the Pydantic model to a dict
+    task = manual_annotation_task.apply_async(args=[ma_dict])
+
+    return JSONResponse({"job_id": task.id, "Status": "Manual annotation task submitted successfully"})
 
 
 @router.post("/evaluate")

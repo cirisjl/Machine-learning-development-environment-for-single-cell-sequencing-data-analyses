@@ -1,7 +1,7 @@
 import { faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState, useMemo } from 'react';
-import { Button, Space, Table } from 'antd';
+import { Button, Table, Popconfirm } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import { getCookie } from '../../utils/utilFunctions';
@@ -201,10 +201,10 @@ const TaskTable = () => {
 
     const handleDelete = (jobID, pagination) => {
         console.log("Delete job: ", jobID);
-        const confirmDelete = window.confirm("Are you sure to delete this job?");
-        if (!confirmDelete) {
-            return; // If user clicks cancel, do nothing
-        }
+        // const confirmDelete = window.confirm("Are you sure to delete this job?");
+        // if (!confirmDelete) {
+        //     return; // If user clicks cancel, do nothing
+        // }
         axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobID}`)
         .then(response => {
             axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`).then(response => {
@@ -427,11 +427,14 @@ const TaskTable = () => {
             render: item => {
                 return (
                     <div className="action-buttons" style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
-                        <Button
-                            onClick={() => handleDelete(item["Job ID"], pagination)}
-                            className="action-button">
-                            <FontAwesomeIcon icon={faTrash} />
-                        </Button>
+                        <Popconfirm
+                            title={`Are you sure you want to delete this Job?`}
+                            onConfirm={() => handleDelete(item["Job ID"], pagination)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button className="action-button"> <FontAwesomeIcon icon={faTrash} /> </Button>
+                        </Popconfirm>
 
                         <Button
                             onClick={() => {
