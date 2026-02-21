@@ -3,6 +3,7 @@ from celery.result import AsyncResult
 
 from .celery_config import settings
 from constants.declarations import USER_STORAGE
+from utils.mongodb import get_job_from_db
 import os
 
 
@@ -41,31 +42,58 @@ def create_celery():
 
 #     from celery.result import AsyncResult
 
+
 def get_task_info(job_id):
     """
-    Return task information for the given job_id
+    Return task information for the given job_id, checking Celery first,
+    then falling back to the database for missing/purged tasks.
     """
     task_result = AsyncResult(job_id)
+    
+    # 1. Initialize safe defaults to avoid UnboundLocalError
+    task_status = task_result.status  # e.g., 'PENDING', 'STARTED', 'SUCCESS'
+    summary = "Processing"
+
+    print(f"Task status for job_id {job_id}: {task_status}")
+    # print(f"Task result for job_id {job_id}: {task_result.result}")
+
+    # 2. Handle terminal states (SUCCESS, FAILURE, REVOKED)
     if task_result.ready():
         if task_result.successful():
-            # Task completed successfully
-            summary = task_result.get()  # This retrieves the result returned by the task
+            summary = task_result.get()
+        elif task_result.failed():
+            # Safely format the exception and traceback
+            traceback_info = task_result.traceback or "No traceback available"
+            summary = f"{task_result.result}\n{traceback_info}"
         else:
-            # Task failed
-            if task_result.failed():
-                summary = str(task_result.result)  # Getting the exception raised in the task
-                traceback = task_result.traceback  # To get the traceback if you need detailed debug info
-                summary += "\n" + traceback
-    else:
-        summary = "Processing"
+            # Catch-all for other ready states like 'REVOKED'
+            summary = str(task_result.result)
 
-    result = {
+    # 3. Handle PENDING states (Celery defaults to PENDING for unknown IDs)
+    elif task_status == 'PENDING':
+        backend_key = task_result.backend.get_key_for_task(job_id)
+        
+        # If the task isn't actually in the Celery backend, check the DB
+        if not task_result.backend.get(backend_key):
+            results = get_job_from_db(job_id)
+            
+            # Safely check if 'results' is a valid dictionary before accessing keys
+            if results:
+                print(f"DB results for job_id {job_id}: {results.get('Status')}")
+                # print(f"DB results for job_id {job_id}: {results.get('results')}")
+                
+                task_status = results.get('Status', task_status)
+                summary = results.get('results', "No results available")
+            else:
+                task_status = "UNKNOWN"
+                summary = "Task not found in Celery backend or Database"
+
+    # 4. Return the standard dictionary
+    return {
         "job_id": job_id,
-        "task_status": task_result.status,
+        "task_status": task_status,
         "task_result": summary
     }
-    return result
-
 
 
 def get_input_path(input, userID):

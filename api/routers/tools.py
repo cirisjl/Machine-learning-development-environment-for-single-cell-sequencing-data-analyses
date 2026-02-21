@@ -155,12 +155,23 @@ async def create_annotation_task_async(ds: Dataset):
 @router.post("/manualannotattion")
 async def manual_annotation_task_async(ma: ManualAnnotationRequest):
     """
-    Create a task for imputation
+    Create a task for Manual annotation
     """
     ma_dict = ma.model_dump()  # Convert the Pydantic model to a dict
     task = manual_annotation_task.apply_async(args=[ma_dict])
 
     return JSONResponse({"job_id": task.id, "Status": "Manual annotation task submitted successfully"})
+
+
+@router.post("/outliercorrection")
+async def outlier_correction_task_async(oc: OutlierCorrectionRequest):
+    """
+    Create a task for Olutlier Correction
+    """
+    oc_dict = oc.model_dump()  # Convert the Pydantic model to a dict
+    task = outlier_correction_task.apply_async(args=[oc_dict])
+
+    return JSONResponse({"job_id": task.id, "Status": "Outlier correction task submitted successfully"})
 
 
 @router.post("/evaluate")

@@ -338,6 +338,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
     varm = None
     vitessce_config = None
     unique_cell_labels = []
+    annotation_panel = None
+    outlier_panel = None
     
     if obsSets is None:
         obsSets = []
@@ -493,6 +495,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                 counts_top_genes, columns = highest_expr_genes(adata)
                 top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
 
+            outlier_panel = create_outlier_panel(adata.obs, cluster_id=cluster_colname)
+
         if cluster_label is not None:
             if labels_pred_leiden is not None:
                 asw_score_leiden, nmi_score_leiden, ari_score_leiden = clustering_metrics(cluster_label, labels_pred_leiden, cluster_embedding)
@@ -533,9 +537,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             initialFeatureFilterPath = None
             obsEmbedding = None
             obsSets = None
-
-        # Add annotation panels for cell type labels
-        annotation_panel = create_annotation_panel(adata.obs, cluster_id=cluster_colname, ground_truth=ground_truth, label_columns=label_columns, score_columns=score_columns)
+        if process != 'QC':
+            # Add annotation panels for cell type labels
+            annotation_panel = create_annotation_panel(adata.obs, cluster_id=cluster_colname, ground_truth=ground_truth, label_columns=label_columns, score_columns=score_columns)
 
         pp_results = {
             "process_id": process_id,
@@ -579,7 +583,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "obsEmbedding": obsEmbedding,
             "obsSets": obsSets,
             # "obs":cell_metadata
-            "annotation_panel": annotation_panel
+            "annotation_panel": annotation_panel,
+            "outlier_panel": outlier_panel
             }
         
     return pp_results
@@ -1399,11 +1404,11 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
     adata = adata[:, var_index_ordering].copy()
     adata.obsm['X_hvg'] = adata[:, adata.var['highly_variable']].X.copy()
 
-    print("obsm_keys: " + str(obsm_keys))
-    print("obs_cols: " + str(obs_cols))
-
     obsm_keys = list(set(obsm_keys))
     obs_cols = list(set(obs_cols))
+
+    print("obsm_keys: " + str(obsm_keys))
+    print("obs_cols: " + str(obs_cols))
 
     adata = optimize_adata(
         adata,
@@ -1668,12 +1673,15 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
 
     if len(label_columns) > 1:
         labels_df = obs[label_columns].groupby(cluster_id).agg(lambda x: x.mode())
-        unique_labels = labels_df.stack().unique().tolist()
+        unique_labels = labels_df.astype(object).stack().unique().tolist()
         labels_df.insert(loc=1, column='majority_vote', value=labels_df.mode(axis=1)[0])
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "cell_label" not in obs.columns:
             # labels_df["cell_label"] = labels_df['majority_vote']
-            labels_df.insert(loc=0, column='cell_label', value=labels_df['majority_vote'])
+            if ground_truth is not None and ground_truth in obs.columns:
+                labels_df.insert(loc=0, column='cell_label', value=labels_df[ground_truth])
+            else:
+                labels_df.insert(loc=0, column='cell_label', value=labels_df['majority_vote'])
     else:
         labels_df = pd.DataFrame(obs[cluster_id].unique(), columns=['Cluster'])
         unique_labels = None
@@ -1693,6 +1701,48 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
     return { "cluster_id": cluster_id, "table": mapping_res_dict, "unique_labels": unique_labels, }
 
 
+def create_outlier_panel(obs, cluster_id='leiden', outlier_columns=["discard", "outlier", "mt_outlier", "doublet_class", "predicted_doublet", "clf_doublet"], score_columns=['doublet_score', 'clf_score']):
+    # Validate outlier columns and score columns
+    for outlier_column in outlier_columns.copy():
+        if outlier_column not in obs.columns:
+            outlier_columns.remove(outlier_column)
+    for score_column in score_columns.copy():
+        if score_column not in obs.columns:
+            score_columns.remove(score_column)
+
+    if len(outlier_columns) == 0:
+        return None
+
+    if cluster_id in obs.columns:
+        outlier_columns = [cluster_id] + outlier_columns
+        score_columns = [cluster_id] + score_columns
+    else:
+        return None
+
+    if len(outlier_columns) > 1:
+        outliers_columns_df = obs[outlier_columns].groupby(cluster_id).agg(lambda x: x.mode())
+        unique_labels = outliers_columns_df.stack().unique().tolist()
+        outliers_columns_df.insert(loc=1, column='majority_vote', value=outliers_columns_df.mode(axis=1)[0])
+        # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
+        if "discard" not in obs.columns:
+            outliers_columns_df.insert(loc=0, column='discard', value=outliers_columns_df['majority_vote'])
+        print("outlier columns: " + str(outlier_columns))
+
+    if len(score_columns) > 1:
+        scores_df = obs[score_columns].groupby(cluster_id).agg(lambda x: x.mean())
+        scores_df = scores_df.round(4)
+        print("score_columns: " + str(score_columns))
+
+        mapping_res = outliers_columns_df.merge(right = scores_df, left_index=True, right_index=True)
+        mapping_res.insert(0, 'Cluster', mapping_res.index)
+        mapping_res_dict = mapping_res.to_dict('list', index=True)
+    else:
+        outliers_columns_df.insert(0, 'Cluster', outliers_columns_df.index)
+        mapping_res_dict = outliers_columns_df.to_dict('list', index=True)
+
+    return { "cluster_id": cluster_id, "table": mapping_res_dict }
+
+
 def get_updated_metadata(adata, process_id, cluster_id, adata_path, orign_adata_path, obsEmbedding):
     cell_metadata = None
     obs_names = None
@@ -1702,6 +1752,7 @@ def get_updated_metadata(adata, process_id, cluster_id, adata_path, orign_adata_
     tsne_3d = None
     nCells = None
     nGenes = None
+    info = adata.__str__()
     umap_label = obsEmbedding.replace("obsm/", "")
     umap_3d_label = umap_label.replace("umap", "umap_3D")
     tsne_label = umap_label.replace("umap", "tsne")
@@ -1728,11 +1779,13 @@ def get_updated_metadata(adata, process_id, cluster_id, adata_path, orign_adata_
         return None
 
     annotation_panel = create_annotation_panel(adata.obs, cluster_id=cluster_id)
+    outlier_panel = create_outlier_panel(adata.obs, cluster_id=cluster_id)
     
     pp_results = {
             "process_id": process_id,
+            "info": info,
             "adata_path": adata_path,
-            "orign_adata_path": orign_adata_path,
+            "original_adata_path": orign_adata_path,
             "cell_metadata": cell_metadata,
             "obs_names": obs_names,
             "nCells": nCells,
@@ -1741,7 +1794,8 @@ def get_updated_metadata(adata, process_id, cluster_id, adata_path, orign_adata_
             "umap_3d": umap_3d,
             "tsne": tsne,
             "tsne_3d": tsne_3d,
-            "annotation_panel": annotation_panel
+            "annotation_panel": annotation_panel,
+            "outlier_panel": outlier_panel,
             }
 
     return pp_results

@@ -75,7 +75,7 @@ def get_pp_results(process_ids, umap=False, record_type=None):
     pp_results = None
     if not umap:
         if record_type == None:
-            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "datasetId": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "zarr_path": 1, "initialFeatureFilterPath": 1, "obsEmbedding": 1, "obsSets": 1, "genes": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1, "embeddings" : 1, "tsne": 1, "tsne_3d": 1, "atac_obs_names": 1, "atac_cell_metadata": 1, "atac_umap": 1, "atac_umap_3d": 1, "uns": 1, "obsp": 1, "varm": 1, "mod_keys": 1, "preset_questions": 1, "annotation_panel": 1}).sort("process", -1)
+            pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "datasetId": 1, "description": 1, "parameters": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "zarr_path": 1, "initialFeatureFilterPath": 1, "obsEmbedding": 1, "obsSets": 1, "genes": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1, "umap": 1, "umap_3d": 1, "highest_expr_genes": 1, "evaluation_results": 1 ,"layers" : 1, "layer" : 1, "embeddings" : 1, "tsne": 1, "tsne_3d": 1, "atac_obs_names": 1, "atac_cell_metadata": 1, "atac_umap": 1, "atac_umap_3d": 1, "uns": 1, "obsp": 1, "varm": 1, "mod_keys": 1, "preset_questions": 1, "annotation_panel": 1, "outlier_panel": 1, "output": 1}).sort("process", -1)
         elif record_type == 'table':
             pp_results = pp_results_collection.find({'process_id': { "$in": process_ids }}, { "_id": 0, "process_id": 1, "description": 1, "stage": 1, "process": 1, "method": 1, "nCells": 1, "adata_path": 1, "md5": 1, "info": 1, "cell_metadata": 1, "obs_names": 1, "default_assay": 1, "assay_names": 1,"layers" : 1, "layer" : 1, "embeddings" : 1, "uns": 1, "obsp": 1, "varm": 1, "mod_keys": 1}).sort("process", -1)
     else:
@@ -170,6 +170,13 @@ def upsert_jobs(data):
     if "_id" in data.keys(): 
         data.pop("_id")
     return
+
+
+def get_job_from_db(job_id):
+    data = jobs_collection.find_one({'job_id': job_id})
+    if data:
+        data.pop('_id', None)  # Remove the MongoDB internal _id field
+    return data
 
 
 def upsert_benchmarks(benchmarksId, results):

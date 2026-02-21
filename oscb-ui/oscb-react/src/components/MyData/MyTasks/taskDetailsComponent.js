@@ -1,40 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
-import { 
-  Container, Typography, Chip, Box, CircularProgress, Paper, Grid, TextField, Button,
-  Card, CardContent, Link, CardHeader, Select, MenuItem, InputLabel,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+import { Octokit } from "@octokit/rest";
+import axios from 'axios';
+import { ScaleLoader } from 'react-spinners';
+
+// MUI Imports
+import {
+  Container, Typography, Chip, Box, Card, CardContent, Grid,
+  TextField, Button, CardHeader, Select, MenuItem, InputLabel,
+  FormControl, Radio, RadioGroup, FormControlLabel
 } from '@mui/material';
 import { green, red, yellow } from '@mui/material/colors';
+
+// Custom/Project Imports
 import RightRail from '../../RightNavigation/rightRail';
 import LogComponent from '../../common_components/liveLogs';
-import axios from 'axios';
-import { Octokit } from "@octokit/rest";
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
-import { ScaleLoader } from 'react-spinners';
-import FormControl from '@mui/material/FormControl';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
-import { getCookie, isUserAuth, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
-//GitImports
-import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import TaskImageGallery from './taskImageGallery';
 import Chatbot from "../../RightNavigation/Chatbot";
 import AnnotationTable from './annotationPanel';
+import OutlierTable from './outlierPanel';
+import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
+import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
+import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 
-
-// Initialize Octokit with your GitHub personal access token
+// Initialize Octokit
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 
-let jwtToken = getCookie('jwtToken');
+// --- Helpers ---
 
-
-function StatusChip({ status }) {
+const StatusChip = ({ status }) => {
   const getStatusColor = () => {
-    switch (status?.toLowerCase()) { // Ensure status is defined
+    switch (status?.toLowerCase()) {
       case 'success': return green[500];
       case 'failure': return red[500];
       case 'started': return yellow[700];
@@ -42,942 +40,845 @@ function StatusChip({ status }) {
     }
   };
 
-  return status ? (
-    <Chip label={status.toUpperCase()} style={{ backgroundColor: getStatusColor(), color: '#fff' }} />
-  ) : (
-    <Chip label="In Progress" style={{ backgroundColor: yellow[700], color: '#fff' }} />
+  return (
+    <Chip
+      label={status ? status.toUpperCase() : "IN PROGRESS"}
+      style={{ backgroundColor: getStatusColor(), color: '#fff' }}
+    />
   );
-}
+};
 
-
-function getFileNameFromURL(fileUrl) {
-  if (fileUrl) {
-    try { 
-      const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
-      return filename;
-    } 
-    catch (e) { 
-      console.error(e); 
-    }
-  } else {
+const getFileNameFromURL = (fileUrl) => {
+  if (!fileUrl) return '';
+  try {
+    return fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+  } catch (e) {
+    console.error(e);
     return '';
   }
 };
 
-
-function downloadFile(fileUrl) {
+const downloadFile = (fileUrl) => {
+  const jwtToken = getCookie('jwtToken');
   const apiUrl = `${NODE_API_URL}/download`;
   const pwd = "jobResults";
 
   if (fileUrl) {
-    fetch(`${apiUrl}?fileUrl=${fileUrl}&authToken=${jwtToken}&pwd=${pwd}`)
-      .then(response => {
-        return response.blob();
-      })
+    fetch(`${apiUrl}?fileUrl=${encodeURIComponent(fileUrl)}&authToken=${encodeURIComponent(jwtToken || '')}&pwd=${pwd}`)
+      .then(response => response.blob())
       .then(blob => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        const filename = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
         link.href = url;
-        link.download = filename;
-
+        link.download = getFileNameFromURL(fileUrl);
         document.body.appendChild(link);
         link.click();
-        // Remove the link from the DOM
-        // document.body.removeChild(link);
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       })
-      .catch(error => {
-        console.error('Error downloading file:', error);
-      });
+      .catch(error => console.error('Error downloading file:', error));
   }
-}
+};
 
+// Reusable Plot Component
+const InteractivePlot = ({
+  title,
+  dimension,
+  setDimension,
+  plotType,
+  setPlotType,
+  options,
+  onOptionChange,
+  plotData2D,
+  plotData3D
+}) => {
+  return (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h5" gutterBottom align="center">{title}</Typography>
 
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 2 }}>
+        <FormControl component="fieldset">
+          <RadioGroup
+            row
+            value={dimension}
+            onChange={(e) => setDimension(e.target.value)}
+          >
+            <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+            <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+          </RadioGroup>
+        </FormControl>
+
+        <FormControl sx={{ minWidth: 150 }} size="small">
+          <InputLabel>Color</InputLabel>
+          <Select
+            value={plotType}
+            label="Color"
+            onChange={(e) => {
+              setPlotType(e.target.value);
+              onOptionChange(e.target.value);
+            }}
+          >
+            {options?.map((key, idx) => (
+              <MenuItem key={`${key}-${idx}`} value={key}>{key}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box sx={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
+        {dimension === '2D' ? (
+          plotData2D ? <ReactPlotly plot_data={plotData2D} /> : <Typography>2D Plot not available</Typography>
+        ) : (
+          plotData3D ? <ReactPlotly plot_data={plotData3D} /> : <Typography>3D Plot not available</Typography>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+// // --- Auto-reconnect WebSocket Hook (merged, replaces calling hooks inside effects) ---
+// function useAutoReconnectWebSocket(jobId, { onStatus, onLog, enabled = true, stop = false } = {}) {
+//   const wsRef = useRef(null);
+//   const webSocketLog = useRef(null);
+//   const retryRef = useRef(0);
+//   const closedByUserRef = useRef(false);
+//   const jobIdRef = useRef(jobId);
+
+//   jobIdRef.current = jobId;
+
+//   const cleanup = useCallback(() => {
+//     const ws = wsRef.current;
+//     wsRef.current = null;
+//     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+//       closedByUserRef.current = true;
+//       try { ws.close(); } catch { }
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     if (!enabled || !jobId || stop) {
+//       cleanup();
+//       return;
+//     }
+
+//     closedByUserRef.current = false;
+//     retryRef.current = 0;
+
+//     let cancelled = false;
+
+//     const connect = () => {
+//       if (cancelled) return;
+//       if (!jobIdRef.current) return;
+
+//       const ws = new WebSocket(`${WEB_SOCKET_URL}/taskCurrentStatus/${jobIdRef.current}`);
+//       wsRef.current = ws;
+//       console.log("Connecting to WebSocket:", ws.url);
+
+//       ws.onopen = () => {
+//         retryRef.current = 0;
+//       };
+
+//       ws.onmessage = (event) => {
+//         // Heuristic: logs are usually plain text; status is JSON
+//         // You can tighten this by routing to separate endpoints, but this keeps your existing behavior.
+//         const text = event?.data;
+
+//         // Try JSON first
+//         try {
+//           const data = JSON.parse(text);
+//           onStatus?.({ data, rawEvent: event });
+//           return;
+//         } catch {
+//           // Not JSON => treat as log line
+//           onLog?.(event);
+//         }
+//       };
+
+//       ws.onerror = () => {
+//         // error will usually be followed by close
+//       };
+
+//       ws.onclose = () => {
+//         if (cancelled) return;
+//         if (closedByUserRef.current) return;
+//         if (!enabled || stop) return;
+
+//         // exponential backoff with jitter, capped
+//         retryRef.current += 1;
+//         const base = Math.min(15000, 500 * Math.pow(2, Math.min(6, retryRef.current)));
+//         const jitter = Math.floor(Math.random() * 250);
+//         const delay = base + jitter;
+
+//         setTimeout(() => {
+//           if (!cancelled && enabled && !stop && jobIdRef.current) connect();
+//         }, delay);
+//       };
+//     };
+
+//     connect();
+
+//     return () => {
+//       cancelled = true;
+//       cleanup();
+//     };
+//   }, [jobId, enabled, stop, cleanup, onStatus, onLog]);
+// }
+
+// --- Main Component ---
 function TaskDetailsComponent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { job_id, method, datasetURL, description, process, output, results, status } = location.state || {};
-  const searchParams = new URLSearchParams(location.search);
-  // const resultsPath = searchParams.get('results_path');
-  // const taskTitle = searchParams.get('description');
-  const [taskStatus, setTaskStatus] = useState(null); // Set to null initially
-  const [taskOutput, setTaskOutput] = useState(null); // Set to null initially
+
+  // State from router
+  const routerState = location.state || {};
+  const {
+    job_id: routerJobId,
+    status: routerStatus,
+    output: routerOutput,
+    description,
+    datasetURL,
+    process,
+    method,
+  } = routerState;
+
+  // Local state (init from router state)
+  const [jobId, setJobId] = useState(routerJobId || null);
+  const [taskStatus, setTaskStatus] = useState(routerStatus || null);
+  const [taskOutput, setTaskOutput] = useState(routerOutput || null);
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingPlot, setLoadingPlot] = useState(false);
+
+  // Data State
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
+  const [taskResult, setTaskResult] = useState(null);
+  const [processIds, setProcessIds] = useState([]);
+  const [presetQuestions, setPresetQuestions] = useState(null);
+
+  // User/Auth State
   const [uName, setUName] = useState(null);
   const [uIat, setUIat] = useState(null);
-  const [taskResult, setTaskResult] = useState("");
-  const [message, setMessage] = useState('');
-  const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [isError, setIsError] = useState(false);
+
+  // Plot State
+  const [plotData, setPlotData] = useState(null); // UMAP
+  const [tsnePlotData, setTsnePlotData] = useState(null); // t-SNE
+  const [atacPlotData, setAtacPlotData] = useState(null); // ATAC
+
+  // UI Controls
   const [plotDimension, setPlotDimension] = useState('2D');
+  const [clusteringPlotType, setClusteringPlotType] = useState('');
+
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
-  const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+
   const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
-  const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
-  const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
+  const [atacClusteringPlotType, setAtacClusteringPlotType] = useState('');
 
-  const [userComment, setUserComment] = useState(''); // State for user comment
-  const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
-  const [isSent, setIsSent] = useState(false); // State to disable button after success
+  // Feedback State
+  const [userComment, setUserComment] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSent, setIsSent] = useState(false);
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
-  const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
-  let plotLoaded = false;
-  const [clusteringPlotType, setClusteringPlotType] = useState('');
-  const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
-  const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
+
+  // Alert State
+  const [message, setMessage] = useState('');
+  const [hasMessage, setHasMessage] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  // PP socket
   const [ppJobId, setppJobId] = useState(null);
-  const [presetQuestions, setPresetQuestions] = useState(null);
-  const [annotationPanel, setAnnotationPanel] = useState(null);
-  const [processId, setProcessId] = useState([]);
+  const [ppStarted, setPpStarted] = useState(false);
 
-  console.log("Location state: ", location.state);
-  console.log("status: ", status);
-  const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
-      setLoadingPlot(true); // Set loading to true before making the API call
-  
-      const selectedCellType = null
-  
-        try {
-          let plot = null;
-          let plot_3d = null;
-          cell_metadata = gunzipDict(cell_metadata);
+  const isTerminalState = useCallback((s) => ["success", "failure"].includes((s || '').toLowerCase()), []);
+  const isJobFinished = useMemo(() => isTerminalState(taskStatus), [taskStatus, isTerminalState]);
+  const activeWsJobId = useMemo(() => (jobId && !isJobFinished) ? jobId : null, [jobId, isJobFinished]);
 
-          if (twoDArray) {
-            plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);
-          }
-          if (threeDArray) {
-            plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3, plotName);
-          }
+  // Sync router state on mount (and when route changes with new state)
+  useEffect(() => {
+    if (!routerState) return;
 
-          // If the plotName is 'tsne', we can handle it here if needed
-          if (plotName === 'tsne') {
-            if (plot || plot_3d) {
-              // If tsne plots are available, we can set them in the plotData state
-              setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
-            }
-          } else if (plotName === 'umap') {
-            if (plot || plot_3d) {
-              // If umap plots are available, we can set them in the plotData state
-              setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
-            }
-          } else if (plotName === 'atac_umap') {
-            if (plot || plot_3d) {
-              // If ATAC umap plots are available, we can set them in the plotData state
-              setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching plot data:', error);
-          alert(`Error fetching plot data: ${error}`);
-        } finally {
-          setLoadingPlot(false);
-        }
-    };
+    setJobId(routerJobId || null);
+    setTaskStatus(routerStatus || null);
+    setTaskOutput(routerOutput || null);
 
-    // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
-    const createMarkup = (logs) => {
-      return { __html: logs };
-    };
-
-    const cardStyle = {
-      height: '100%', // Makes the cards take the full height of their container
-      display: 'flex', // Allows child items to be flex items
-      flexDirection: 'column', // Stacks child items vertically
-    };
-  
-    const cardContentStyle = {
-      flexGrow: 1, // Allows the content to expand and fill the space
-      overflow: 'auto' // Adds scroll for overflow content
-    };
-
-    const cardContentStyleNoScroll = {
-      flexGrow: 1, // Allows the content to expand and fill the space
-      overflowX: 'hidden' // Adds scroll for overflow content
-    };
-
-    const fetchProcessResults = async (processIds) => {
-      if (!processIds.length) return;
-  
+    const fetchUserInfo = async () => {
+      const jwtToken = getCookie('jwtToken');
+      if (!jwtToken) return;
       try {
-        const response = await axios.post(`${CELERY_BACKEND_API}/getPreProcessResults`, { process_ids: processIds });
-        console.log('Process Results:', response.data);
-        const taskInfo = response.data;
-        const jobId = taskInfo.job_id;
-        setppJobId(jobId);
-        // setToolResultsFromMongo(response.data);
-        // setLoading(false);
-      } catch (error) {
-        console.error('There was a problem with the axios operation:', error.response ? error.response.data : error.message);
-        setLoading(false);
-        setLoadingPlot(false);
-        setHasMessage(true);
-        setMessage("Failed to retrieve pre-processed results from MongoDB");
-        setIsError(true);
+        const response = await fetch(NODE_API_URL + "/protected", {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        const data = await response.json();
+        if (data?.authData) {
+          setUName(data.authData.username);
+          setUIat(data.authData.iat);
+        }
+      } catch (e) {
+        console.error(e);
       }
     };
-  
-  // WebSocket listener
-    useEffect(() => {
-      if (!ppJobId) return;
-  
-      const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
-      // console.log("Connecting to WebSocket for pre-process results:", statusUrl);
-      const ws = new WebSocket(statusUrl);
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.task_status) {
-          if (data.task_status === "SUCCESS") {
-            setToolResultsFromMongo(data.task_result);
-            console.log("PP results: ", data.task_result);
-            if (data.task_result && data.task_result.length > 0) {
-              if (data.task_result[0].hasOwnProperty('preset_questions')) {
-                setPresetQuestions(data.task_result[0].preset_questions);
-              }
-              if (data.task_result[0].hasOwnProperty('annotation_panel')) {
-                setAnnotationPanel(data.task_result[0].annotation_panel);
-                setProcessId(data.task_result[0].process_id);
-              }
-            }
-            // console.log(presetQuestions);
-            setLoading(false);
-            setppJobId(null); // Reset ppJobId after handling
-        } else if (data.task_status === "FAILURE") {
-            setMessage("Loading pre-process results is Failed");
-            setHasMessage(true);
-            setIsError(true);
-            setLoading(false);
-            setLoadingPlot(false);
-            setppJobId(null); // Reset ppJobId after handling
-          }
-        }
-      };
-      ws.onerror = (err) => {
-        setMessage("Loading pre-process results is Failed");
-        setHasMessage(true);
-        setIsError(true);
-        setLoading(false);
-        setLoadingPlot(false);
-        console.error("WebSocket error:", err);
-        setppJobId(null); // Reset ppJobId after handling
-      }
-      ws.onclose = () => console.log("WebSocket closed.");
-  
-      return () => ws.close();
-    }, [ppJobId]);
 
-  const handleStatusMessage = (event) => {
+    fetchUserInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routerJobId]);
+
+  // Reset when a NEW job id is set (either from router or tool submit)
+  useEffect(() => {
+    if (!jobId) return;
+
+    setToolResultsFromMongo([]);
+    setTaskResult(null);
+    setProcessIds([]);
+    setppJobId(null);
+    setPpStarted(false);
+
+    setLoading(true);
+    setLoadingPlot(false);
+    setLiveLogs("");
+
+    setPlotData(null);
+    setTsnePlotData(null);
+    setAtacPlotData(null);
+    console.log("Resetting state for new jobId:", jobId);
+    console.log("Current routerJobId:", routerJobId);
+    console.log("Current activeWsJobId:", activeWsJobId);
+  }, [jobId]);
+
+  const fetchPlotData = useCallback(async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
+    setLoadingPlot(true);
+    const selectedCellType = null;
+
     try {
-      const data = JSON.parse(event.data);
-      console.log("Status message received:", event.data);
-      console.log("Current status state:", status);
-      console.log("data.task_status:", data.task_status);
-      console.log("plotLoaded:", plotLoaded);
-      
-      if (status?.toLowerCase() === "success" || status?.toLowerCase() === "failure") {
-        setTaskStatus(status);
-        if (status?.toLowerCase() === "success" && !plotLoaded) {
-          // if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
-          if (results.process_ids) {
-            console.log("results: ", results)
-            setTaskResult(results);
-            fetchProcessResults(results.process_ids);
-            plotLoaded = true;
-          } else {
-            setLoading(false);
-            setLoadingPlot(false);
-          }
-        } else {
-          setLoading(false);
-        }     
-      } else if (data.task_status) {
-        setTaskStatus(data.task_status);
-        if (data.task_status?.toLowerCase() === "success" || data.task_status?.toLowerCase() === "failure") {
-          if (data.task_status?.toLowerCase() === "success" && !plotLoaded) {
-            if (data.task_result.process_ids) {
-              console.log("data.task_result: ", data.task_result)
-              fetchProcessResults(data.task_result.process_ids);
-              plotLoaded = true;
-            } else {
-              setLoading(false);
-              setLoadingPlot(false);
-            }
+      let plot = null;
+      let plot_3d = null;
+      const inflated = gunzipDict(cell_metadata);
 
-            if (data.task_result.output) {
-              setTaskOutput(data.task_result.output);
-            }
-          } else {
-            setLoading(false);
-            setLoadingPlot(false);
-          } 
-        }
-      } else {
-        setLoading(false);
-        setLoadingPlot(false);
+      if (twoDArray) plot = plotUmapObs(inflated, twoDArray, plotType, [], selectedCellType, 2, plotName);
+      if (threeDArray) plot_3d = plotUmapObs(inflated, threeDArray, plotType, [], selectedCellType, 3, plotName);
+
+      if (plotName === 'tsne') {
+        if (plot || plot_3d) setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+      } else if (plotName === 'umap') {
+        if (plot || plot_3d) setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+      } else if (plotName === 'atac_umap') {
+        if (plot || plot_3d) setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
       }
     } catch (error) {
+      console.error('Error fetching plot data:', error);
+      alert(`Error fetching plot data: ${error}`);
+    } finally {
+      setLoadingPlot(false);
+    }
+  }, []);
+
+  const handleStatusMessage = useCallback(({ data }) => {
+    console.log("WS message received", data);
+    console.log("taskStatus:", taskStatus);
+    console.log("routerStatus:", routerStatus);
+    console.log("routerJobId:", routerJobId);
+    console.log("jobId:", jobId);
+    console.log("activeWsJobId:", activeWsJobId);
+    console.log("isJobFinished:", isJobFinished);
+
+    const currentStatus = routerJobId !== activeWsJobId ? data?.task_status : routerStatus || data?.task_status || taskStatus;
+    console.log("Determined currentStatus:", currentStatus);
+
+    if (!currentStatus) return;
+
+    setTaskStatus(currentStatus);
+
+    const lower = currentStatus.toLowerCase();
+    if (!isTerminalState(lower)) return;
+
+    if (lower === "success") {
+      const resultData = data?.task_result; // NO fallback to router state
       setLoading(false);
       setLoadingPlot(false);
-      console.error("Error parsing status message:", error);
-    }
-  };
 
+      if (resultData?.process_ids?.length) {
+        setTaskResult(resultData);
+        setProcessIds(resultData.process_ids);
+      } 
+
+      if (resultData?.output) {
+        setTaskOutput(resultData.output);
+        console.log("Task output in handleStatusMessage:", resultData.output);
+      }
+    } else {
+      setLoading(false);
+      setLoadingPlot(false);
+    }
+  }, [isTerminalState, routerStatus, taskStatus]);
+
+  const handleLogMessage = useCallback((event) => {
+    setLiveLogs((prev) => prev + event.data);
+    const logsElement = document.getElementById("_live_logs");
+    if (logsElement) logsElement.scrollTop = logsElement.scrollHeight;
+  }, []);
+
+  // // MAIN auto-reconnect WS (stops automatically when terminal)
+  // useAutoReconnectWebSocket(activeWsJobId, {
+  //   onStatus: handleStatusMessage,
+  //   onLog: handleLogMessage,
+  //   enabled: !!activeWsJobId,
+  //   stop: !activeWsJobId,
+  // });
+
+  useWebSocket(activeWsJobId, handleStatusMessage, handleLogMessage, setLoading)
+
+  // Fetch initial snapshot (helps if you refresh page mid-run)
   useEffect(() => {
-    async function fetchFiles() {
-      if (status?.toLowerCase() === "success" && output) {
-        setTaskOutput(output);
-      }
-      else {
-        try {
-          const taskInfoResponse = await fetch(`${CELERY_BACKEND_API}/task/${job_id}`);
-          const taskInfoData = await taskInfoResponse.json();
-          console.log("taskInfoData", taskInfoData);
-          setTaskResult(taskInfoData.task_result);
-          console.log("taskInfoData.task_result", taskInfoData.task_result);
-          // if (taskInfoData.task_result.output) {
-          //   setTaskOutput(taskInfoData.task_result.output);
-          // }
+    if (!jobId) return;
 
-          if (jwtToken) {
-            fetch(NODE_API_URL + "/protected", { //to get username, id
-              method: 'GET',
-              credentials: 'include',
-              headers: { 'Authorization': `Bearer ${jwtToken}` },
-            })
-              .then((response) => response.json())
-              .then((data) => {
+    const fetchJobData = async () => {
+      try {
+        const response = await fetch(`${CELERY_BACKEND_API}/task/${jobId}`);
+        const data = await response.json();
+        console.log("Initial job data fetched in handleStatusMessage:", data);
 
-                if (data.authData !== null) {
-                  // console.log("userdata: ", data.authData);
-                  setUName(data.authData.username);
-                  setUIat(data.authData.iat);
-                }
-              })
-              .catch((error) => {
-                console.error(error);
-              })
+        if (data?.task_status) setTaskStatus(data.task_status);
+        if (data?.task_result) {
+          setTaskResult(data.task_result);
+          if (data.task_result?.output) setTaskOutput(data.task_result.output);
+          if (data.task_result?.process_ids?.length) {
+            setProcessIds(data.task_result.process_ids);
+            console.log("Process IDs found on initial fetch:", data.task_result.process_ids);
+          } 
+          if (isTerminalState(data?.task_status)) {
+            setLoading(false);
           }
-        } catch (error) {
-          console.error('Error fetching task status:', error);
         }
+      } catch (e) {
+        setLoading(false);
+        console.error("Error fetching task:", e);
       }
-    }
-    fetchFiles();
-  }, [job_id, status]);
-
-  // useEffect(() => {
-  //   if (taskStatus?.toLowerCase() === "success" || taskStatus?.toLowerCase() === "failure") {
-  //     setLoading(false);
-  //   }
-  // }, [taskStatus]);
-
-  const handleDelete = () => {
-      console.log("Delete job: ", job_id);
-      const confirmDelete = window.confirm("Are you sure to delete this job?");
-      if (!confirmDelete) {
-        return; // If user clicks cancel, do nothing
-      }
-      axios.post(`${CELERY_BACKEND_API}/job/revoke/${job_id}`)
-      .then(response => {
-        axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`).then(response => {
-          console.log('Job is deleted successfully');
-          navigate('/myJobs');
-        })
-          .catch(error => {
-            console.error('Error deleting job:', error);
-          });
-      })
-      .catch(error => {
-        console.error('Error deleting job:', error);
-      });
     };
 
-  const handleLogMessage = (event) => {
-    setLiveLogs((prevLogs) => prevLogs + event.data);
-    // Auto-scroll to the bottom of the logs
-    const logsElement = document.getElementById("_live_logs");
-    if (logsElement) {
-      logsElement.scrollTop = logsElement.scrollHeight;
-    }
-  };
-  
-  const saveErrorLogData = async () => {
-    try {
-      const response = await axios.post(`${NODE_API_URL}/errorlogdata`, {
-        name: uName,
-        id: uIat,
-        taskResult: taskResult,
-        taskStatus: taskStatus,
-        job_id: job_id,
-        userComments: userComment
-      });
+    fetchJobData();
+  }, [jobId]);
 
-      if (response.status === 200) {
-        setCommentSuccessMessage('Feedback sent successfully.');
-        setIsSaving(false);
-        setIsSent(true);
-        setShowErrorLog(false); // Hide the error log card
-      } else {
-        setCommentSuccessMessage('Failed to send feedback.');
-        setIsSaving(false);
-      }
-    } catch (error) {
-      console.error('Error saving comment:', error);
-      setCommentSuccessMessage('Failed to send feedback.');
-      setIsSaving(false);
-    }
-  };
+  // Kick off preprocess results job once per processIds
+  useEffect(() => {
+    if (!processIds.length || ppStarted) return;
 
-  const createGitHubIssue = async () => {
-    try {
-      const response = await octokit.issues.create({
-        //owner: 'SAYEERA', // Replace with your GitHub username
-        //repo: 'issues-list', // Replace with your repository name
-        owner: owner,
-        repo: repo,
-        title: `Issue for Job ID: ${job_id}`,
-        body: `
-            User Name:${uName}
-            User ID: ${uIat}
-            Job Result: ${taskResult}
-            Job Status: ${taskStatus}
-            Job ID: ${job_id}
-            User Comments: ${userComment}
-        `
-      });
-      console.log("Git response: ", response);
-      if (response.status === 201) {
-        console.log('GitHub issue created successfully:', response.data.html_url);
-      } else {
-        console.error('Failed to create GitHub issue:', response);
+    const fetchProcessResults = async () => {
+      try {
+        const response = await axios.post(
+          `${CELERY_BACKEND_API}/getPreProcessResults`,
+          { process_ids: processIds }
+        );
+        const data = response.data;
+        console.log("Preprocess results response:", data);
+        setppJobId(data.job_id);
+        setPpStarted(true);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error creating GitHub issue:', error);
+    };
+
+    fetchProcessResults();
+  }, [processIds, ppStarted]);
+
+  // PP auto-reconnect WS
+  const handlePpStatus = useCallback(({ data }) => {
+    console.log("PP WS message received", data);
+    if (data?.task_status === "SUCCESS") {
+      const resultArr = Array.isArray(data.task_result) ? data.task_result : [];
+      setToolResultsFromMongo(resultArr);
+      if (resultArr?.[0]?.preset_questions) setPresetQuestions(resultArr[0].preset_questions);
+      if (resultArr?.[0]?.output) setTaskOutput(resultArr[0].output);
+
+      setLoading(false);
+      setppJobId(null);
+      // setProcessIds([]);
+      // setPpStarted(false);
+    } else if (data?.task_status === "FAILURE") {
+      console.error("PP Task Failed");
+      setHasMessage(true);
+      setMessage("Pre-process task failed.");
+      setIsError(true);
+      setLoading(false);
+      // setppJobId(null);
+      // setPpStarted(false);
     }
+  }, []);
+
+  // useAutoReconnectWebSocket(ppJobId, {
+  //   onStatus: handlePpStatus,
+  //   enabled: !!ppJobId,
+  //   stop: !ppJobId,
+  // });
+
+  useWebSocket(ppJobId, handlePpStatus, handleLogMessage, setLoading)
+
+  // --- Actions ---
+  const handleDelete = () => {
+    if (!window.confirm("Are you sure to delete this job?")) return;
+
+    axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobId}`)
+      .then(() => axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobId}`))
+      .then(() => navigate('/myJobs'))
+      .catch(error => console.error('Error deleting job:', error));
   };
 
   const handleSaveComment = async () => {
     setIsSaving(true);
     setIsSent(false);
-    await saveErrorLogData();
-    await createGitHubIssue();
+
+    try {
+      await axios.post(`${NODE_API_URL}/errorlogdata`, {
+        name: uName,
+        id: uIat,
+        taskResult,
+        taskStatus,
+        job_id: routerJobId,
+        userComments: userComment
+      });
+
+      await octokit.issues.create({
+        owner,
+        repo,
+        title: `Issue for Job ID: ${routerJobId}`,
+        body: `User: ${uName}\nJob ID: ${routerJobId}\nStatus: ${taskStatus}\nComment: ${userComment}`
+      });
+
+      setCommentSuccessMessage('Feedback sent successfully.');
+      setIsSent(true);
+    } catch (error) {
+      console.error('Error saving comment:', error);
+      setCommentSuccessMessage('Failed to send feedback.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAnnotationSubmit = (annotationData) => {
-    if (annotationData.deleted && annotationData.updated && annotationData.deleted.length === 0 && annotationData.updated.length === 0) {
-      setMessage("No data to submit");
+  const handleToolSubmit = async (data, endpoint) => {
+    const root = Array.isArray(toolResultsFromMongo) ? toolResultsFromMongo[0] : null;
+
+    const commonData = {
+      ...data,
+      cluster_id: root?.[endpoint === 'outliercorrection' ? 'outlier_panel' : 'annotation_panel']?.cluster_id,
+      process_id: root?.process_id,
+      job_id: routerJobId,
+      obsSets: root?.obsSets,
+      obsEmbedding: root?.obsEmbedding,
+      adata_path: root?.adata_path,
+      zarr_path: root?.zarr_path,
+      layer: root?.layer,
+      datasetId: root?.datasetId,
+      userID: uName,
+    };
+
+    console.log(`Submitting data to ${endpoint}:`, commonData);
+
+    try {
+      const response = await axios.post(`${CELERY_BACKEND_API}/tools/${endpoint}`, commonData);
+
+      // Start NEW job cycle
+      console.log("Tool submission response:", response.data);
+      setJobId(response.data.job_id);
+
+      // hard reset derived states (jobId effect will also reset)
+      setToolResultsFromMongo([]);
+      setProcessIds([]);
+      setppJobId(null);
+      setPpStarted(false);
+
+      setTaskOutput(null);
+      setTaskResult(null);
+      setTaskStatus(null);
+
+      setLoading(true);
+    } catch (error) {
+      console.error('Error submitting tool data:', error);
       setHasMessage(true);
-      return;
-    }
-
-    annotationData.cluster_id = annotationPanel?.cluster_id;
-    annotationData.process_id = processId; // Attach process_id to the annotation data
-    annotationData.job_id = job_id; // Attach job_id to the annotation data
-    // annotationData.userID = uIat; // Attach user_id to the annotation data
-    annotationData.obsSets = toolResultsFromMongo[0]?.obsSets; // Attach obsSets to the annotation data
-    annotationData.obsEmbedding = toolResultsFromMongo[0]?.obsEmbedding; // Attach obsEmbedding to the annotation data
-    annotationData.adata_path = toolResultsFromMongo[0]?.adata_path; // Attach adata_path to the annotation data
-    annotationData.zarr_path = toolResultsFromMongo[0]?.zarr_path;
-    annotationData.layer = toolResultsFromMongo[0]?.layer;
-    annotationData.datasetId = toolResultsFromMongo[0]?.datasetId;
-    annotationData.description = "Manual Annotation for " + annotationData.datasetId;
-
-    // Here you can handle the submitted annotation data, e.g., send it to the backend or update the state
-    console.log("Received annotation data from AnnotationTable:", annotationData);
-
-    // Verify the authenticity of the user
-    isUserAuth(jwtToken)
-    .then((authData) => {
-      if (authData.isAuth) {
-        annotationData.userID = authData.username; // Attach user_id to the annotation data
-        fetch(CELERY_BACKEND_API + "/tools/manualannotattion/", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(annotationData),
-        })
-        .then(response => {
-          // Check the status code
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Error while making a call to the celery Tools API');
-          }
-        })
-        .then(response => {                
-          // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
-          const jobId = response.job_id;
-          setLoading(false);
-          // navigate(0); 
-          navigate("/mydata/taskDetails", { state: { job_id: jobId, method: "Manual Annotation", datasetURL: annotationData.adata_path, description: annotationData.description, process: "Annotation" } });
-          // window.location.reload(); 
-          // navigate(0); 
-        })
-        .catch(error => {
-          // Handle any errors that occur during the API call
-          console.error("Form submission error:", error);
-          setLoading(false);
-          setLoadingPlot(false);
-          setHasMessage(true);
-          setMessage("An error occurred while submitting the form.");
-          setIsError(true);
-        });
-      } else {
-        console.warn("Unauthorized - please login first to continue");
-        navigate("/routing");
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      setLoading(false);
-      setLoadingPlot(false);
-      setHasMessage(true);
-      setMessage("An error occurred while submitting the form.");
+      setMessage(`Failed to submit ${endpoint} data.`);
       setIsError(true);
-    });
-  }
+      setLoading(false);
+    }
+  };
 
-  // Use the WebSocket hook
-  useWebSocket(job_id, handleStatusMessage, handleLogMessage);
+  const commonCardStyle = { height: '100%', display: 'flex', flexDirection: 'column' };
+  const commonContentStyle = { flexGrow: 1, overflow: 'auto' };
 
   return (
-
     <div className="task-details-container eighty-twenty-grid">
-
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />}
+      {hasMessage && (
+        <AlertMessageComponent
+          message={message}
+          setHasMessage={setHasMessage}
+          setMessage={setMessage}
+          isError={isError}
+        />
+      )}
 
       <div className="main-content">
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Box display="flex" justifyContent="center">
-            <Typography variant="h4" gutterBottom component="div">
-                Job Details for Job ID: {job_id || 'Loading ...'}
-            </Typography>
+          <Box display="flex" justifyContent="center" mb={2}>
+            <Typography variant="h4">Job Details for Job ID: {jobId || 'Loading ...'}</Typography>
           </Box>
-          
+
           <Grid container spacing={3}>
+            {/* Card 1: Dataset Info */}
             <Grid item xs={12} md={6}>
-              <Card raised sx={cardStyle}>
+              <Card raised sx={commonCardStyle}>
                 <CardHeader title="Dataset Information" />
-                <CardContent sx={cardContentStyle}>
+                <CardContent sx={commonContentStyle}>
                   <Typography variant="subtitle1"><strong>Job Description:</strong></Typography>
                   <Typography variant="body1" gutterBottom>{description || 'Not available'}</Typography>
+
                   <Typography variant="subtitle1"><strong>Dataset:</strong></Typography>
-                  <Typography variant="body1" gutterBottom>
-                    { /* <Button onClick={downloadFile(datasetURL)}>
-                      {getFileNameFromURL(datasetURL) || 'Not available'}
-                    </Button> */ }
-                    {datasetURL && Array.isArray(datasetURL) ?
-                      (datasetURL.map((inpput, index) => (
-                          <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
-                            {getFileNameFromURL(inpput) || 'Not available'}
-                          </a>
-                        ))
-                      ) :
-                      (<a download onClick={() => { downloadFile(datasetURL) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
-                        {getFileNameFromURL(datasetURL) || 'Not available'}
-                      </a>)
-                    }
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card raised sx={cardStyle}>
-                <CardHeader title="Execution Details" />
-                <CardContent sx={cardContentStyle}>
-                  <Grid container spacing={2}> {/* Create a Grid container to layout details side by side */}
-                  <Grid item xs={6}>
-                      <Typography variant="subtitle1" gutterBottom><strong>Process:</strong></Typography>
-                      <Typography variant="body1">{process || 'Not available'}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="subtitle1" gutterBottom><strong>Method:</strong></Typography>
-                      {
-                        method && Array.isArray(method) ? (method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) :
-                        (typeof (method) !== 'string' && Object.keys(method).length > 0 ? (
-                          Object.entries(method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>)))
-                          : (<Typography variant="body1">{method}</Typography>))
-                      }
-                    </Grid>
-                    <Grid item xs={6}> 
-                      <Typography variant="subtitle1" gutterBottom><strong>Status:</strong></Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <StatusChip status={taskStatus} />
-                      </Box>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="subtitle1" gutterBottom><strong>Action:</strong></Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={handleDelete}
-                          // sx={{ mt: 2 }}
+                  <Box>
+                    {(datasetURL ? (Array.isArray(datasetURL) ? datasetURL : [datasetURL]) : []).map((url, i) => (
+                      <div key={i}>
+                        <a
+                          style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
+                          onClick={() => downloadFile(url)}
                         >
-                          {(status && (status.toLowerCase() === "success" || status.toLowerCase() === "failure")) ? 'Delete' : 'Terminate'}
-                        </Button>
-                      </Box>
-                    </Grid>
-                </Grid>
+                          {getFileNameFromURL(url) || 'Download File'}
+                        </a>
+                      </div>
+                    ))}
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
 
-
-            {(status?.toLowerCase() !== "success" && status?.toLowerCase() !== "failure") && <Grid item xs={12}  >
-              <Card raised sx={cardStyle}>
-                <CardHeader title="Live Logs" />
-                <CardContent sx={cardContentStyle}>
-                  <LogComponent wsLogs={liveLogs} />
+            {/* Card 2: Execution Details */}
+            <Grid item xs={12} md={6}>
+              <Card raised sx={commonCardStyle}>
+                <CardHeader title="Execution Details" />
+                <CardContent sx={commonContentStyle}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1"><strong>Process:</strong></Typography>
+                      <Typography variant="body1">{process || 'N/A'}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1"><strong>Method:</strong></Typography>
+                        {
+                          method && Array.isArray(method) ? (method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) :
+                            (typeof (method) !== 'string' && Object.keys(method).length > 0 ? (
+                              Object.entries(method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>)))
+                              : (<Typography variant="body1">{method}</Typography>))
+                        }
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1"><strong>Status:</strong></Typography>
+                      <StatusChip status={taskStatus} />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle1"><strong>Action:</strong></Typography>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={handleDelete}
+                      >
+                        {isTerminalState(taskStatus) ? 'Delete' : 'Terminate'}
+                      </Button>
+                    </Grid>
+                  </Grid>
                 </CardContent>
               </Card>
-            </Grid>}
+            </Grid>
 
-            {taskStatus?.toLowerCase() === "success" && taskOutput && (
-              <Grid item xs={12}  >
-                <Card raised sx={cardStyle}>
+            {/* Live Logs (Only if not done) */}
+            {!isTerminalState(taskStatus) && (
+              <Grid item xs={12}>
+                <Card raised sx={commonCardStyle}>
+                  <CardHeader title="Live Logs" />
+                  <CardContent sx={commonContentStyle}>
+                    <LogComponent wsLogs={liveLogs} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
+            {/* Results Section */}
+            {String(taskStatus || '').toLowerCase() === "success" && taskOutput && (
+              <Grid item xs={12}>
+                <Card raised sx={commonCardStyle}>
                   <CardHeader title="Task Results" />
-                  <CardContent sx={cardContentStyle}>
-                    {
-                      taskOutput.map((output, index) => (
-                        Object.keys(output).map((key) => (
-                          <><Typography variant="subtitle1"><strong>{key}: </strong></Typography>
-                            <Typography variant="body1" gutterBottom>
-                              {<a download onClick={() => { downloadFile(output[key]); }} style={{ marginLeft: '10px', textAlign: 'center' }}>
-                                   {getFileNameFromURL(output[key]) || 'Not available'}
-                              </a>}
-                            </Typography></>
-                        ))
-                      )
-                    )}
-                    {taskResult && taskResult.figures && (
-                      <div>
+                  <CardContent sx={commonContentStyle}>
+                    {Array.isArray(taskOutput) && taskOutput.map((out, idx) => (
+                      <Box key={idx} mb={1}>
+                        {Object.entries(out || {}).map(([key, val]) => (
+                          <div key={key}>
+                            <Typography variant="subtitle1" display="inline"><strong>{key}: </strong></Typography>
+                            <a
+                              style={{ cursor: 'pointer', color: '#1976d2' }}
+                              onClick={() => downloadFile(val)}
+                            >
+                              {getFileNameFromURL(val)}
+                            </a>
+                          </div>
+                        ))}
+                      </Box>
+                    ))}
+                    {taskResult?.figures && (
+                      <Box mt={2}>
                         <Typography variant="subtitle1"><strong>Figures: </strong></Typography>
                         <TaskImageGallery figures={taskResult.figures} />
-                      </div>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
               </Grid>
             )}
 
-            {/* {showErrorLog && (    */}
-            {taskStatus?.toLowerCase() === "failure" && (
+            {/* Error Feedback */}
+            {String(taskStatus || '').toLowerCase() === "failure" && (
               <Grid item xs={12}>
-                <Card raised sx={cardStyle}>
+                <Card raised sx={commonCardStyle}>
                   <CardHeader title="Error Feedback" />
-                  <CardContent sx={cardContentStyle}>
-                    <Typography variant="subtitle1"><strong>User Name:</strong> {uName}</Typography>
-                    <Typography variant="subtitle1"><strong>User ID:</strong> {uIat}</Typography>
-                    { /*<Typography variant="subtitle1"><strong>Task Result:</strong> {taskResult}</Typography>*/}
-                    <Typography variant="subtitle1"><strong>Job Status:</strong> {taskStatus}</Typography>
-                    <Typography variant="subtitle1"><strong>Job ID:</strong> {job_id}</Typography>
-                    <Typography variant="subtitle1"><strong>User Comments:</strong></Typography>
+                  <CardContent sx={commonContentStyle}>
+                    <Typography><strong>User:</strong> {uName}</Typography>
+                    <Typography><strong>Job ID:</strong> {routerJobId}</Typography>
                     <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      variant="outlined"
+                      fullWidth multiline rows={4} variant="outlined" sx={{ mt: 2 }}
                       value={userComment}
                       onChange={(e) => setUserComment(e.target.value)}
                       placeholder="Enter your comments here."
                     />
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant="contained" sx={{ mt: 2 }}
                       onClick={handleSaveComment}
-                      disabled={isSaving || isSent} // Disable button if saving
-                      sx={{ mt: 2 }}
+                      disabled={isSaving || isSent}
                     >
-                      {isSaving ? 'Sending' : 'Send Feedback'}
+                      {isSaving ? 'Sending...' : 'Send Feedback'}
                     </Button>
                     {commentSuccessMessage && (
-                      <Typography variant="body1" color="success.main" sx={{ mt: 2 }}>
-                        {commentSuccessMessage}
-                      </Typography>
+                      <Typography color="success.main" sx={{ mt: 1 }}>{commentSuccessMessage}</Typography>
                     )}
                   </CardContent>
                 </Card>
               </Grid>
             )}
-
           </Grid>
         </Container>
 
-      {loading ? (
-        <div className="spinner-container">
-          <ScaleLoader color="#36d7b7" loading={loading} />
-        </div>
-      ) : (
-          toolResultsFromMongo && (
-          <div align="center"> 
-          {
-            toolResultsFromMongo.map((result, index) => (
-              <React.Fragment key={index}>
-                    {(result.umap_plot || result.umap_plot_3d) && (
-                      <>
-                        <h2>UMAP</h2>
-                        <div style={{ alignItems: 'center' }}>
-                          <FormControl>
-                            {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
-                            <RadioGroup
-                              row
-                              aria-labelledby="demo-row-radio-buttons-group-label"
-                              name="row-radio-buttons-group"
-                              value={plotDimension}
-                              onChange={(event) => setPlotDimension(event.target.value)}
-                            >
-                              <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                              <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                            </RadioGroup>
-                          </FormControl>
-
-                            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                              <InputLabel id="plot-options-label">Color</InputLabel>
-                              <Select
-                                labelId="plot-options-label"
-                                id="plot-options"
-                                value={clusteringPlotType}
-                                onChange={(event) => {
-                                  const selectedPlotType = event.target.value;
-                                  setClusteringPlotType(selectedPlotType);
-                                  fetchPlotData(selectedPlotType, result.obs, result.umap, result.umap_3d, "umap"); // Call the javascript function as soon as the selection changes
-                                }}
-                              >
-
-                                {Array.isArray(result.obs_names) && (
-                                  result.obs_names.map((key, idx) => (
-                                    <MenuItem key={idx} value={key}>{key}</MenuItem>
-                                  ))
-                                )}
-                              </Select>
-                            </FormControl>
-                        </div>
-                      
-                      {plotDimension === '2D' ? (
-                        plotData?.umap_plot || result.umap_plot ? (
-                          <>
-                            <ReactPlotly plot_data={plotData?.umap_plot || result.umap_plot} />
-                          </>
-                        ) : (
-                          <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
-                        )
-                      ) : plotDimension === '3D' ? (
-                        plotData?.umap_plot_3d || result.umap_plot_3d ? (
-                          <>
-                            <ReactPlotly plot_data={plotData?.umap_plot_3d || result.umap_plot_3d} />
-                          </>
-                        ) : (
-                          <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
-                        )
-                      ) : null}
-                      </>
-                    )}
-
-                {(result.atac_umap_plot || result.atac_umap_plot_3d) && (
-                  <>
-                    <h2>ATAC UMAP Plot</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '16px' }}>
-                      {/* Radio buttons */}
-                      <div>
-                        <label>
-                          <input
-                            type="radio"
-                            value="2D"
-                            checked={atacPlotDimension === "2D"}
-                            onChange={(e) => setAtacPlotDimension(e.target.value)}
-                          />
-                          2D
-                        </label>
-                        <label style={{ marginLeft: '8px' }}>
-                          <input
-                            type="radio"
-                            value="3D"
-                            checked={atacPlotDimension === "3D"}
-                            onChange={(e) => setAtacPlotDimension(e.target.value)}
-                          />
-                          3D
-                        </label>
-                      </div>
-
-                      <select
-                        value={clusteringAtacPlotType}
-                        onChange={(e) => {
-                          const selectedPlotType = e.target.value;
-                          setAtacClusteringPlotType(selectedPlotType);
-                          fetchPlotData(selectedPlotType, result.atac_obs, result.atac_umap, result.atac_umap_3d, "atac_umap");
-                        }}
-                        style={{
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: '1px solid #ccc',
-                          backgroundColor: '#fff',
-                          fontSize: '14px',
-                          fontFamily: 'Arial, sans-serif',
-                          outline: 'none',
-                          transition: 'border-color 0.2s, box-shadow 0.2s',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                          cursor: 'pointer',
-                          minWidth: '150px',
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#1976d2';
-                          e.target.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.2)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#ccc';
-                          e.target.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-                        }}
-                      >
-
-                        {Array.isArray(result.atac_obs_names) && (
-                          result.atac_obs_names.map((key, idx) => (
-                            <option key={key} value={key}>
-                              {key}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    {atacPlotDimension === '2D' ? (
-                      atacPlotData?.atac_umap_plot || result.atac_umap_plot ? (
-                        <>
-                          <ReactPlotly plot_data={atacPlotData?.atac_umap_plot || result.atac_umap_plot} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
-                      )
-                    ) : atacPlotDimension === '3D' ? (
-                      atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d ? (
-                        <>
-                          <ReactPlotly plot_data={atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d} />
-                        </>
-                      ) : (
-                        <div style={{ textAlign: 'center', width: '100%' }}>ATAC 3D UMAP plot does not exist.</div>
-                      )
-                    ) : null}
-
-                  </>
-                )}
-
-                {(result.tsne_plot || result.tsne_plot_3d) && (
-                <>
-                <h2>t-SNE</h2>
-                  <div style={{ alignItems: 'center' }}>
-                    <FormControl>
-                      {/* <FormLabel id="demo-row-radio-buttons-group-label">Dimension</FormLabel> */}
-                      <RadioGroup
-                        row
-                        aria-labelledby="demo-row-radio-buttons-group-label"
-                        name="row-radio-buttons-group"
-                        value={tsnePlotDimension}
-                        onChange={(event) => setTsnePlotDimension(event.target.value)}
-                      >
-                        <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                        <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                      </RadioGroup>
-                    </FormControl>
-
-                      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                        <InputLabel id="plot-options-label">Color</InputLabel>
-                        <Select
-                          labelId="plot-options-label"
-                          id="plot-options"
-                          value={tsneClusteringPlotType}
-                          onChange={(event) => {
-                            const selectedPlotType = event.target.value;
-                            setTsneClusteringPlotType(selectedPlotType);
-                            fetchPlotData(selectedPlotType, result.obs, result.tsne, result.tsne_3d, "tsne"); // Call the javascript function as soon as the selection changes
-                          }}
-                        >
-
-                          {Array.isArray(result.obs_names) && (
-                            result.obs_names.map((key, idx) => (
-                              <MenuItem key={idx} value={key}>{key}</MenuItem>
-                            ))
-                          )}
-                        </Select>
-                      </FormControl>
-                  </div>
-                
-                {tsnePlotDimension === '2D' ? (
-                  tsnePlotData?.tsne_plot || result.tsne_plot ? (
-                    <>
-                      <ReactPlotly plot_data={tsnePlotData?.tsne_plot || result.tsne_plot} />
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center', width: '100%' }}>2D t-SNE plot does not exist.</div>
-                  )
-                ) : tsnePlotDimension === '3D' ? (
-                  tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d ? (
-                    <>
-                      <ReactPlotly plot_data={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d} />
-                    </>
-                  ) : (
-                    <div style={{ textAlign: 'center', width: '100%' }}>3D t-SNE plot does not exist.</div>
-                  )
-                ) : null}
-                </>
-              )}
-              {result.violin_plot && (
-                <>
-                  <h2>Violin</h2>
-                  <ReactPlotly plot_data={result.violin_plot} />
-                </>
-              )}
-              {result.scatter_plot && (
-                <>
-                  <h2>Scatter</h2>
-                  <ReactPlotly plot_data={result.scatter_plot} />
-                </>
-              )}
-              {result.highest_expr_genes_plot && (
-                <>
-                  <h2>Highest expression Genes</h2>
-                  <ReactPlotly plot_data={result.highest_expr_genes_plot} />
-                </>
-              )}
-              {result.zarr_path && (
-                <>
-                  <h2>Gene Expression</h2>
-                  <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
-                    <ShowVitessce
-                      processId={result.process_id}
-                      description={result.description}
-                      zarrPath={result.zarr_path}
-                      initialFeatureFilterPath={result.initialFeatureFilterPath}
-                      obsEmbedding={result.obsEmbedding}
-                      obsSets={result.obsSets}
-                    />
-                  </div>
-                </>
-              )}
-              
-                { annotationPanel && (
-                <Grid item xs={12} sx={{ marginTop: 4 }}>
-                  <Card raised sx={cardStyle}>
-                    <CardHeader title="Manual Annotation" />
-                    <CardContent sx={cardContentStyle}>
-                      <AnnotationTable data={annotationPanel?.table || []} cellTypeOptions={annotationPanel?.unique_labels || []} onSubmit={handleAnnotationSubmit}/> 
-                  </CardContent>
-                </Card>
-              </Grid> )}
-            </React.Fragment>
-          ))}
+        {/* Dynamic Plots & Analysis Tools */}
+        {loading ? (
+          <div className="spinner-container">
+            <ScaleLoader color="#36d7b7" loading={loading} />
           </div>
-      )
-      )}
+        ) : (
+          Array.isArray(toolResultsFromMongo) && toolResultsFromMongo.length > 0 && (
+            <div align="center">
+              {toolResultsFromMongo.map((result, index) => (
+                <React.Fragment key={index}>
+                  {/* UMAP */}
+                  {(result.umap_plot || result.umap_plot_3d) && (
+                    <InteractivePlot
+                      title="UMAP"
+                      dimension={plotDimension}
+                      setDimension={setPlotDimension}
+                      plotType={clusteringPlotType}
+                      setPlotType={setClusteringPlotType}
+                      options={result.obs_names}
+                      onOptionChange={(val) => fetchPlotData(val, result.obs, result.umap, result.umap_3d, "umap")}
+                      plotData2D={plotData?.umap_plot || result.umap_plot}
+                      plotData3D={plotData?.umap_plot_3d || result.umap_plot_3d}
+                    />
+                  )}
+
+                  {/* ATAC UMAP */}
+                  {(result.atac_umap_plot || result.atac_umap_plot_3d) && (
+                    <InteractivePlot
+                      title="ATAC UMAP"
+                      dimension={atacPlotDimension}
+                      setDimension={setAtacPlotDimension}
+                      plotType={atacClusteringPlotType}
+                      setPlotType={setAtacClusteringPlotType}
+                      options={result.atac_obs_names}
+                      onOptionChange={(val) => fetchPlotData(val, result.atac_obs, result.atac_umap, result.atac_umap_3d, "atac_umap")}
+                      plotData2D={atacPlotData?.atac_umap_plot || result.atac_umap_plot}
+                      plotData3D={atacPlotData?.atac_umap_plot_3d || result.atac_umap_plot_3d}
+                    />
+                  )}
+
+                  {/* t-SNE */}
+                  {(result.tsne_plot || result.tsne_plot_3d) && (
+                    <InteractivePlot
+                      title="t-SNE"
+                      dimension={tsnePlotDimension}
+                      setDimension={setTsnePlotDimension}
+                      plotType={tsneClusteringPlotType}
+                      setPlotType={setTsneClusteringPlotType}
+                      options={result.obs_names}
+                      onOptionChange={(val) => fetchPlotData(val, result.obs, result.tsne, result.tsne_3d, "tsne")}
+                      plotData2D={tsnePlotData?.tsne_plot || result.tsne_plot}
+                      plotData3D={tsnePlotData?.tsne_plot_3d || result.tsne_plot_3d}
+                    />
+                  )}
+
+                  {/* Static plots */}
+                  {result.violin_plot && <><Typography variant="h5">Violin</Typography><ReactPlotly plot_data={result.violin_plot} /></>}
+                  {result.scatter_plot && <><Typography variant="h5">Scatter</Typography><ReactPlotly plot_data={result.scatter_plot} /></>}
+                  {result.highest_expr_genes_plot && <><Typography variant="h5">Highest Expression Genes</Typography><ReactPlotly plot_data={result.highest_expr_genes_plot} /></>}
+
+                  {/* Vitessce */}
+                  {result.zarr_path && (
+                    <>
+                      <Typography variant="h5" sx={{ mt: 4 }}>Gene Expression</Typography>
+                      <Box sx={{ width: '100%', height: '920px' }}>
+                        <ShowVitessce
+                          processId={result.process_id}
+                          description={result.description}
+                          zarrPath={result.zarr_path}
+                          initialFeatureFilterPath={result.initialFeatureFilterPath}
+                          obsEmbedding={result.obsEmbedding}
+                          obsSets={result.obsSets}
+                        />
+                      </Box>
+                    </>
+                  )}
+
+                  {/* Tool Panels */}
+                  {process === "Quality Control" && result?.outlier_panel && (
+                    <Grid item xs={12} sx={{ mt: 4 }}>
+                      <Card raised sx={commonCardStyle}>
+                        <CardHeader title="Outlier Correction" />
+                        <CardContent sx={commonContentStyle}>
+                          <OutlierTable
+                            key={result.job_id || `outlier-${index}`}
+                            data={result.outlier_panel.table || []}
+                            onSubmit={(data) => handleToolSubmit(data, 'outliercorrection')}
+                          />
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )}
+
+                  {process !== "Quality Control" && result?.annotation_panel && (
+                    <Grid item xs={12} sx={{ mt: 4 }}>
+                      <Card raised sx={commonCardStyle}>
+                        <CardHeader title="Manual Annotation" />
+                        <CardContent sx={commonContentStyle}>
+                          <AnnotationTable
+                            key={result.job_id || `annotation-${index}`}
+                            data={result.annotation_panel.table || []}
+                            cellTypeOptions={result.annotation_panel.unique_labels || []}
+                            onSubmit={(data) => handleToolSubmit(data, 'manualannotattion')}
+                          />
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )
+        )}
       </div>
+
       <div className="right-rail">
         <RightRail />
         <Chatbot presetQuestions={presetQuestions} />
       </div>
-  </div>
+    </div>
   );
 }
 

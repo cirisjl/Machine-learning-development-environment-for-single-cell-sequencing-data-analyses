@@ -7,10 +7,19 @@ from utils.redislogger import *
 from datetime import datetime
 
 
-def manual_annotation(cluster_id, adata_path, layer, job_id, process_id, updatedAll, updatedChangedOnly, deleted, obsEmbedding, obsSets, zarr_path, userID):
+def manual_annotation(cluster_id, adata_path, layer, job_id, origin_job_id, process_id, updatedAll, updatedChangedOnly, deleted, obsEmbedding, obsSets, zarr_path, userID):
     redislogger.info(job_id, f"Loading AnnData ...")
     adata = load_anndata(adata_path)
     output = adata_path.replace("_manual_annotation", "").replace(".h5ad", "_manual_annotation.h5ad")
+    # Check if 'cell_label' is in obsSets, if not, add it
+    if not any(item['name'] == 'cell_label' for item in obsSets):
+        obsSets.append({
+            'name': 'cell_label',
+            'path': 'obs/cell_label'
+        })
+    # Update obsSets to obs_cols for later use
+    obs_cols = []
+    if len(obsSets) > 0: obs_cols = [item['path'].replace("obs/", "") for item in obsSets if item['name'] != "Cluster"]
     
     redislogger.info(job_id, f"Updating cell labels ...")
     # Process updated annotations
@@ -45,19 +54,29 @@ def manual_annotation(cluster_id, adata_path, layer, job_id, process_id, updated
     # Update UMAP/t-SNE & adata.obs
     redislogger.info(job_id, f"Updating UMAP & t-SNE of Anndata ...")
     pp_results = get_updated_metadata(adata, process_id, cluster_id=cluster_id, adata_path=output, orign_adata_path=adata_path, obsEmbedding=obsEmbedding)
+    pp_results['output'] = [
+            {
+                'Manual Annotation': output,
+                "Original Anndata": adata_path,
+            }
+        ]
     # Update zarr
     redislogger.info(job_id, f"Updating Gene Expression panel ...")
-    zarr_path = save_zarr(adata, adata_path=adata_path, zarr_output=zarr_path, layer=layer)
+    zarr_path = save_zarr(adata, adata_path=output, layer=layer, obs_cols=obs_cols)
+    pp_results['zarr_path'] = zarr_path
+    pp_results['obsSets'] = obsSets
     # Update pp_results
     create_pp_results(process_id, pp_results)
 
     results = {
-        "job_id": job_id,         
+        "job_id": origin_job_id,         
         "Status": 'Success',
         "adata_path": output,
+        # "original_adata_path": adata_path,
         "output": [
             {
-                'Manual Annotation': output
+                'Manual Annotation': output,
+                "Original Anndata": adata_path.replace("_manual_annotation", ""),
             }
         ],
         "process_ids": [process_id],
@@ -66,7 +85,8 @@ def manual_annotation(cluster_id, adata_path, layer, job_id, process_id, updated
             "adata_path": output,
             "output": [
                 {
-                    'Manual Annotation': output
+                    'Manual Annotation': output,
+                    "Original Anndata": adata_path.replace("_manual_annotation", ""),
                 }
             ], 
             "process_ids": [process_id],
@@ -76,6 +96,7 @@ def manual_annotation(cluster_id, adata_path, layer, job_id, process_id, updated
     # Update jobs
     upsert_jobs(results)
     redislogger.info(job_id, f"Manual annotation is completed successfully.")
+    results["job_id"] = job_id
   
     adata = None
 

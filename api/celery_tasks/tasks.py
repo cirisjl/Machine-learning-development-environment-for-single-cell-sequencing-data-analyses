@@ -11,6 +11,7 @@ from tools.run_annotation import run_annotation
 from tools.run_conversion import run_conversion
 from tools.load_metadata import load_metadata
 from tools.run_manual_annotation import run_manual_annotation
+from tools.run_outlier_correction import run_outlier_correction
 from benchmarks.run_benchmarks import run_benchmarks
 from benchmarks.run_data_split import run_data_split
 from benchmarks.run_subset_data import run_subset_data
@@ -22,6 +23,8 @@ from tools.formating.formating import df_to_dict
 from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
 from urllib.parse import quote
 import json
+from fastapi import HTTPException, WebSocketException
+
 # from oscb_cli.runDownloadDataset import run_download_dataset
 
 
@@ -135,7 +138,16 @@ def create_annotation_wf_task(self, dss_dict:dict):
 @shared_task(bind=True, name='tools:manual_annotation_task') 
 def manual_annotation_task(self, ma_dict:dict):
     job_id = self.request.id
+    # self.update_state(state='PROCESSING')
     results = run_manual_annotation(job_id, ma_dict)
+    return results
+
+
+@shared_task(bind=True, name='tools:outlier_correction_task') 
+def outlier_correction_task(self, oc_dict:dict):
+    job_id = self.request.id
+    # self.update_state(state='PROCESSING')
+    results = run_outlier_correction(job_id, oc_dict)
     return results
 
 

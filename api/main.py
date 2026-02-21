@@ -1,6 +1,6 @@
 import time
 import uvicorn as uvicorn
-from fastapi import FastAPI, WebSocket, Request, Query, HTTPException, WebSocketException
+from fastapi import FastAPI, WebSocket, Request, Query, HTTPException, WebSocketException, WebSocketDisconnect
 from celery.result import AsyncResult
 from celery.app.control import Control
 import asyncio
@@ -19,7 +19,8 @@ from utils.redislogger import *
 # from tools.visualization.plot import plot_UMAP_obs, plot_violin, plot_scatter, plot_highest_expr_genes
 # from schemas.schemas import ProcessResultsRequest
 # from dash_app.dashboard import is_valid_query_param, get_dash_layout
-
+from fastapi.concurrency import run_in_threadpool
+import logging
 
 def create_app() -> FastAPI:
     current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
@@ -68,28 +69,46 @@ async def add_process_time_header(request, call_next):
 
 
 @app.websocket("/wsapi/{request_type}/{job_id}")
-async def websocket_endpoint(websocket: WebSocket, request_type:str, job_id: str):
+async def websocket_endpoint(websocket: WebSocket, request_type: str, job_id: str):
     await websocket.accept()
+    
+    # Early exit for unsupported request types
+    if request_type not in ['taskCurrentStatus', 'log']:
+        await websocket.send_json({"error": f"Unsupported request_type: {request_type}"})
+        await websocket.close(code=1003) # 1003: Unsupported Data
+        return
+
     try:
         while True:
             if request_type == 'taskCurrentStatus':
-                result = get_task_info(job_id)
+                # Run the synchronous DB/Celery calls in a threadpool so it doesn't block FastAPI
+                result = await run_in_threadpool(get_task_info, job_id)
                 await websocket.send_json(result)
+                
+                # Optional: break the loop if the task is finished to save resources
+                if result.get("task_status") in ['SUCCESS', 'FAILURE', 'REVOKED']:
+                    break
+
             elif request_type == 'log':
-                # Retrieve the last_read_index for the job_id, default to 0 if not found
                 last_read_index = last_read_indices.get(job_id, 0)
                 logs, last_read_index = await log_reader(job_id, last_read_index)
-                # Update the last_read_index in memory
+                
                 last_read_indices[job_id] = last_read_index
-                await websocket.send_text(logs)
+                if logs: # Only send if there are actually new logs to reduce network spam
+                    await websocket.send_text(logs)
+            
             await asyncio.sleep(3)
+
+    except WebSocketDisconnect:
+        # This is the expected exception when a client closes the browser/connection
+        logging.info(f"Client disconnected from {request_type} stream for job {job_id}.")
     except Exception as e:
-        print('Cannot call "send" once a close message has been sent.')
+        # Catch and log real errors (DB crashes, missing files, etc.)
+        logging.error(f"Unexpected error in websocket for job {job_id}: {str(e)}")
     finally: 
-        # Remove the entry from the dictionary when the connection is closed
+        # Clean up memory
         if request_type == 'log' and job_id in last_read_indices:
             del last_read_indices[job_id]
-        # await websocket.close()
 
         
 # @app.websocket("/{request_type}/{job_idsCommaSeparated}")

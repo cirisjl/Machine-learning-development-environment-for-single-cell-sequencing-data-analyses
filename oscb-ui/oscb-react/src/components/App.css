@@ -1163,10 +1163,11 @@ span.sc {
     
 /* Alerts */
 .message-box{
+  display: flex;
   position: absolute;
-  z-index: 998;
+  z-index: 9998;
   left: 35%;
-  display: inline;
+  /* display: inline; */
   flex-direction: column;
   justify-content: center;
   align-items: center;

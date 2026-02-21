@@ -1,4 +1,4 @@
-// AnnotationTable with confirmed delete and undo (reverse) support
+// OutlierTable with confirmed delete and undo (reverse) support
 import React, { useMemo, useState } from "react";
 import { Table, Button, Popconfirm, message, Modal, Tooltip } from "antd";
 import CreatableSelect from "react-select/creatable";
@@ -13,7 +13,7 @@ const ellipsisStyle = {
     whiteSpace: "normal",
 };
 
-export default function AnnotationTable({ data = [], cellTypeOptions = [], onSubmit }) {
+export default function OutlierTable({ data = [], options = [ true, false ], onSubmit }) {
     // ---- utilities ----
     const toRows = (obj) => {
         const keys = Object.keys(obj);
@@ -28,15 +28,24 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
     const safeData = Array.isArray(data) ? data : [];
 
     const [tableData, setTableData] = useState(
-        safeData.map((row) => ({ ...row, __originalCellType: row.cell_label }))
+        safeData.map((row) => ({ ...row, __original: row.discard, __originalOutlier: row.outlier }))
     );
     const [deletedRows, setDeletedRows] = useState([]); // store deleted row objects
 
-    const handleCellTypeChange = (selectedOption, record) => {
+    const handleDiscardChange = (selectedOption, record) => {
         const newValue = selectedOption ? selectedOption.value : null;
         setTableData((prev) =>
             prev.map((row) =>
-                row.Cluster === record.Cluster ? { ...row, cell_label: newValue } : row
+                row.Cluster === record.Cluster ? { ...row, discard: newValue } : row
+            )
+        );
+    };
+
+    const handleOutlierChange = (selectedOption, record) => {
+        const newValue = selectedOption ? selectedOption.value : null;
+        setTableData((prev) =>
+            prev.map((row) =>
+                row.Cluster === record.Cluster ? { ...row, outlier: newValue } : row
             )
         );
     };
@@ -69,25 +78,39 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
             okText: 'Yes',
             cancelText: 'No',
             onOk: () => {
-                // Include ALL current cell_label values
-                const updatedAll = tableData.map((r) => ({
+                // Include ALL current discard values
+                const updatedDiscardAll = tableData.map((r) => ({
                     Cluster: r.Cluster,
-                    cell_label: r.cell_label,
+                    discard: r.discard,
                 }));
 
-                // Include ONLY changed cell_label values
-                const updatedChangedOnly = tableData
-                    .filter((r) => r.cell_label !== r.__originalCellType)
+                // Include ONLY changed discard values
+                const updatedDiscardChangedOnly = tableData
+                    .filter((r) => r.discard !== r.__original)
                     .map((r) => ({
                         Cluster: r.Cluster,
-                        cell_label: r.cell_label,
+                        discard: r.discard,
+                    }));
+
+                const updatedOutlierAll = tableData.map((r) => ({
+                    Cluster: r.Cluster,
+                    outlier: r.outlier,
+                }));
+
+                const updatedOutlierChangedOnly = tableData
+                    .filter((r) => r.outlier !== r.__originalOutlier)
+                    .map((r) => ({
+                        Cluster: r.Cluster,
+                        outlier: r.outlier,
                     }));
 
                 const deleted = deletedRows.map((r) => r.Cluster);
 
                 const payload = {
-                    updatedAll,
-                    updatedChangedOnly,
+                    updatedDiscardAll,
+                    updatedDiscardChangedOnly,
+                    updatedOutlierAll,
+                    updatedOutlierChangedOnly,
                     deleted,
                 };
 
@@ -100,14 +123,14 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
     const columns = useMemo(() => {
         if (!tableData.length) return [];
 
-        const keys = Object.keys(tableData[0] || {}).filter((k) => k !== "__originalCellType" && k !== "key");
+        const keys = Object.keys(tableData[0] || {}).filter((k) => k !== "__original" && k !== "__originalOutlier" && k !== "key");
 
         const cols = keys.map((key) => {
             const uniqueValues = [...new Set(tableData.map((r) => r[key]))]
                 .filter((v) => v !== undefined && v !== null);
             // if (key === "key") return null; // fully hide key column
 
-            if (key === "cell_label") {
+            if (key === "discard") {
                 return {
                     title: key,
                     dataIndex: key,
@@ -118,11 +141,29 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
                     sorter: (a, b) => String(a[key] ?? "").localeCompare(String(b[key] ?? "")),
                     render: (_, record) => (
                         <CreatableSelect
-                            value={record.cell_label ? { label: record.cell_label, value: record.cell_label } : null}
-                            options={Array.isArray(cellTypeOptions) ? cellTypeOptions.map((o) => ({ label: o, value: o })) : []}
-                            onChange={(v) => handleCellTypeChange(v, record)}
-                            isClearable
-                            isSearchable
+                            value={record.discard !== undefined && record.discard !== null ? { label: String(record.discard), value: record.discard } : null}
+                            options={Array.isArray(options) ? options.map((o) => ({ label: String(o), value: o })) : []}
+                            onChange={(v) => handleDiscardChange(v, record)}
+                            menuPortalTarget={document.body}
+                        />
+                    ),
+                };
+            }
+
+            if (key === "outlier") {
+                return {
+                    title: key,
+                    dataIndex: key,
+                    // fixed: 'start',
+                    filters: uniqueValues.map((v) => ({ text: String(v), value: v })),
+                    onFilter: (value, record) => record[key] === value,
+                    minWidth: 200,
+                    sorter: (a, b) => String(a[key] ?? "").localeCompare(String(b[key] ?? "")),
+                    render: (_, record) => (
+                        <CreatableSelect
+                            value={record.outlier !== undefined && record.outlier !== null ? { label: String(record.outlier), value: record.outlier } : null}
+                            options={Array.isArray(options) ? options.map((o) => ({ label: String(o), value: o })) : []}
+                            onChange={(v) => handleOutlierChange(v, record)}
                             menuPortalTarget={document.body}
                         />
                     ),
@@ -155,7 +196,7 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
             };
         }).filter(Boolean);
 
-        // Reorder important columns: Cluster (1st), cell_type (2nd), cell_label (3rd if exists)
+        // Reorder important columns: Cluster (1st), cell_type (2nd), discard (3rd if exists)
         const getIndex = (name) => cols.findIndex((c) => c.dataIndex === name);
 
         const moveTo = (name, position) => {
@@ -167,7 +208,8 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
         };
 
         moveTo("Cluster", 0);
-        moveTo("cell_label", 1);
+        moveTo("discard", 1);
+        moveTo("outlier", 2);
 
         cols.unshift({
             title: "Operation",
@@ -186,7 +228,7 @@ export default function AnnotationTable({ data = [], cellTypeOptions = [], onSub
         });
 
         return cols;
-    }, [tableData, cellTypeOptions]);
+    }, [tableData, options]);
 
     return (
         <>
