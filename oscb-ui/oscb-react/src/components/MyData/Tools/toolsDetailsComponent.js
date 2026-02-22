@@ -18,6 +18,7 @@ import SelectComponent from './components/selectComponent';
 import ClusterLabelInput from './components/customInputComponent';
 import Chatbot from "../../RightNavigation/Chatbot";
 
+
 export default function ToolsDetailsComponent(props) {
   const filterName = props.filter;
   const filterCategory = props.category;

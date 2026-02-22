@@ -1414,7 +1414,8 @@ Updates Page */
     margin-right: 5px;
   }
   .inputData-management .icons-wrap-input svg{
-    background-color: rgb(218, 236, 248);
+    /* background-color: rgb(218, 236, 248); */
+    background-color: rgba(218, 236, 248, 0);
   }
 
   /* .inputData-management .icons-wrap-input{

@@ -242,7 +242,11 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                           <div className='study-keyword-search'>
                             <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
                             <div>
-                              <form onSubmit={handleSearchSubmit}>
+                              <form onSubmit={handleSearchSubmit} style={{
+                                display: 'flex',       // Puts children in a row
+                                alignItems: 'center',  // Centers them vertically
+                                gap: '8px'             // Adds a small space between the input and button
+                              }}>
                                 <input
                                     type="text"
                                     autoComplete="off"
@@ -251,7 +255,11 @@ const DatasetSelectionDialog = ({onSelect, multiple, onClose , isVisible, select
                                     value={globalSearchTerm}
                                     onChange={(e) => setGlobalSearchTerm(e.target.value)}
                                 />
-                                
+                                <button type="submit" aria-label="Search" style={{ cursor: "pointer" }}> 
+                                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                  </svg>
+                                </button>
                                 {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                     <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
                                 </svg>     */}

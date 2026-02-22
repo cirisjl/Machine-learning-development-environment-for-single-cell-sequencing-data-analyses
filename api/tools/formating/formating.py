@@ -1421,7 +1421,10 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
 
     # Write out to Zarr
     # Vitessce expects a specific hierarchy. This helper makes it compatible.
-    adata.write_zarr(zarr_output, chunks=(adata.n_obs, adata.n_vars))
+    try:
+        adata.write_zarr(zarr_output)
+    except Exception as e:
+        print("Zarr output failed: " + str(e))
     # adata = None  # Free up memory
     
     return zarr_output
@@ -1695,7 +1698,8 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
         mapping_res.insert(0, 'Cluster', mapping_res.index)
         mapping_res_dict = mapping_res.to_dict('list', index=True)
     else:
-        labels_df.insert(0, 'Cluster', labels_df.index)
+        if "Cluster" not in labels_df.columns:
+            labels_df.insert(0, 'Cluster', labels_df.index)
         mapping_res_dict = labels_df.to_dict('list', index=True)
 
     return { "cluster_id": cluster_id, "table": mapping_res_dict, "unique_labels": unique_labels, }
