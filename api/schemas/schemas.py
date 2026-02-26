@@ -168,7 +168,7 @@ class Datasets(BaseModel):
 
 
 class ManualAnnotationRequest(BaseModel):
-    job_id: str
+    job_id: Optional[str] = None
     cluster_id: str
     process_id: str
     userID: Optional[str] = None

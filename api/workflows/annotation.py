@@ -183,8 +183,8 @@ def run_annotation_wf(job_id, dss:dict, random_state=0):
                 
         wf_results['annotation'] = ann_process_ids
         wf_results['annotation_output'] = annotation_outputs
-        print(f"Annotation outputs: {annotation_outputs}")
-        print(f"Output: {output}")
+        # print(f"Annotation outputs: {annotation_outputs}")
+        # print(f"Output: {output}")
         
         results = {
             "output": output,

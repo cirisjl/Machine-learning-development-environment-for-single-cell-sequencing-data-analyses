@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 import {
@@ -33,6 +33,8 @@ import Chatbot from "../../RightNavigation/Chatbot";
 import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
 import { Select, MenuItem, InputLabel } from '@mui/material';
 import TaskImageGallery from './taskImageGallery';
+import AnnotationTable from './annotationPanel';
+import OutlierTable from './outlierPanel';
 
 
 // Initialize Octokit with your GitHub personal access token
@@ -137,6 +139,62 @@ function downloadFile(fileUrl) {
   }
 }
 
+// Reusable Plot Component
+const InteractivePlot = ({
+  title,
+  dimension,
+  setDimension,
+  plotType,
+  setPlotType,
+  options,
+  onOptionChange,
+  plotData2D,
+  plotData3D
+}) => {
+  return (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h5" gutterBottom align="center">{title}</Typography>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 2 }}>
+        <FormControl component="fieldset">
+          <RadioGroup
+            row
+            value={dimension}
+            onChange={(e) => setDimension(e.target.value)}
+          >
+            <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
+            <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
+          </RadioGroup>
+        </FormControl>
+
+        <FormControl sx={{ minWidth: 150 }} size="small">
+          <InputLabel>Color</InputLabel>
+          <Select
+            value={plotType}
+            label="Color"
+            onChange={(e) => {
+              setPlotType(e.target.value);
+              onOptionChange(e.target.value);
+            }}
+          >
+            {options?.map((key, idx) => (
+              <MenuItem key={`${key}-${idx}`} value={key}>{key}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box sx={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
+        {dimension === '2D' ? (
+          plotData2D ? <ReactPlotly plot_data={plotData2D} /> : <Typography>2D Plot not available</Typography>
+        ) : (
+          plotData3D ? <ReactPlotly plot_data={plotData3D} /> : <Typography>3D Plot not available</Typography>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
 
 function WorkflowTaskDetailsComponent() {
   const location = useLocation();
@@ -153,30 +211,39 @@ function WorkflowTaskDetailsComponent() {
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [isError, setIsError] = useState(false);
+
+  // Plot State
+  const [plotData, setPlotData] = useState(null); // UMAP
+  const [tsnePlotData, setTsnePlotData] = useState(null); // t-SNE
+  const [atacPlotData, setAtacPlotData] = useState(null); // ATAC
+
+  // UI Controls
   const [plotDimension, setPlotDimension] = useState('2D');
+  const [clusteringPlotType, setClusteringPlotType] = useState('');
+
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
-  const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
+
   const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
-  const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
-  const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
+  const [atacClusteringPlotType, setAtacClusteringPlotType] = useState('');
 
   const [userComment, setUserComment] = useState(''); // State for user comment
   const [isSaving, setIsSaving] = useState(false); // State to indicate save operation
   const [isSent, setIsSent] = useState(false); // State to disable button after success
   const [commentSuccessMessage, setCommentSuccessMessage] = useState('');
   const [showErrorLog, setShowErrorLog] = useState(true); // State to show/hide the error log card
-  let plotLoaded = false;
-  const [clusteringPlotType, setClusteringPlotType] = useState('');
-  const [plotData, setPlotData] = useState(null); // State to store the fetched plot data
+
   const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
   const [details, setDetails] = useState({}); // Store fetched details
   const [ppJobId, setppJobId] = useState(null);
   const [presetQuestions, setPresetQuestions] = useState(null);
+  const [activePreProcessResults, setActivePreProcessResults] = useState(null);
   const [sectionsVisibility, setSectionsVisibility] = useState({
     preprocessResults: true
   });
+  const isTerminalState = useCallback((s) => ["success", "failure"].includes((s || '').toLowerCase()), []);
+  const isJobFinished = useMemo(() => isTerminalState(taskStatus), [taskStatus, isTerminalState]);
 
   const [expanded, setExpanded] = useState(false);
 
@@ -187,47 +254,33 @@ function WorkflowTaskDetailsComponent() {
     }));
   };
 
-  const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
-    setLoadingPlot(true); // Set loading to true before making the API call
-
-    const selectedCellType = null
-
-    try {
-      let plot = null;
-      let plot_3d = null;
-      cell_metadata = gunzipDict(cell_metadata);
-
-      if (twoDArray) {
-        plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType, 2, plotName);
-      }
-      if (threeDArray) {
-        plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType, 3, plotName);
-      }
-
-      // If the plotName is 'tsne', we can handle it here if needed
-      if (plotName === 'tsne') {
-        if (plot || plot_3d) {
-          // If tsne plots are available, we can set them in the plotData state
-          setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+  const fetchPlotData = useCallback(async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
+      setLoadingPlot(true);
+      const selectedCellType = null;
+  
+      try {
+        let plot = null;
+        let plot_3d = null;
+        const inflated = gunzipDict(cell_metadata);
+  
+        if (twoDArray) plot = plotUmapObs(inflated, twoDArray, plotType, [], selectedCellType, 2, plotName);
+        if (threeDArray) plot_3d = plotUmapObs(inflated, threeDArray, plotType, [], selectedCellType, 3, plotName);
+  
+        if (plotName === 'tsne') {
+          if (plot || plot_3d) setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+        } else if (plotName === 'umap') {
+          if (plot || plot_3d) setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+        } else if (plotName === 'atac_umap') {
+          if (plot || plot_3d) setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
         }
-      } else if (plotName === 'umap') {
-        if (plot || plot_3d) {
-          // If umap plots are available, we can set them in the plotData state
-          setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
-        }
-      } else if (plotName === 'atac_umap') {
-        if (plot || plot_3d) {
-          // If ATAC umap plots are available, we can set them in the plotData state
-          setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
-        }
+      } catch (error) {
+        console.error('Error fetching plot data:', error);
+        alert(`Error fetching plot data: ${error}`);
+      } finally {
+        setLoadingPlot(false);
       }
-    } catch (error) {
-      console.error('Error fetching plot data:', error);
-      alert(`Error fetching plot data: ${error}`);
-    } finally {
-      setLoadingPlot(false);
-    }
-  };
+    }, []);
+
 
   // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
   const createMarkup = (logs) => {
@@ -330,126 +383,48 @@ function WorkflowTaskDetailsComponent() {
     });
   };
 
-  // WebSocket listener
-  useEffect(() => {
-    if (!ppJobId) return;
+  const handleStatusMessage = useCallback(({ data }) => {
+    console.log("WS message received", data);
+    console.log("taskStatus:", taskStatus);
 
-    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
-    const ws = new WebSocket(statusUrl);
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.task_status) {
-        if (data.task_status === "SUCCESS") {
-          const preProcessResult = data.task_result[0];
-          const processId = preProcessResult.process_id;
-          if (preProcessResult) {
-            if (preProcessResult.hasOwnProperty('preset_questions')) {
-              setPresetQuestions(preProcessResult.preset_questions);
-            }
-          }
+    const currentStatus = status || data?.task_status || taskStatus;
+    console.log("Determined currentStatus:", currentStatus);
+    
+    if (!currentStatus) return;
+    setTaskStatus(currentStatus);
 
-          // Only set plotData if at least one plot exists
-          if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
-            setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
-          } else {
-            setPlotData(null);
-          }
-          
-          if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
-            setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
-          } else {
-            setAtacPlotData(null);
-          }
-          
-          // Only set plotData if at least one plot exists
-          if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
-            setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
-          } else {
-            setTsnePlotData(null);
-          }
-          
-          // Store the fetched data for the current process_id
-          setDetails((prevDetails) => ({
-            ...prevDetails,
-            [processId]: preProcessResult, // Store fetched data for the corresponding process_id
-          }));
-          setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
-          setppJobId(null); // Reset ppJobId after handling
+    const lower = currentStatus.toLowerCase();
+    if (!isTerminalState(lower)) return;
 
-        } else if (data.task_status === "FAILURE") {
-          setMessage("Loading pre-process results is Failed");
-          setHasMessage(true);
-          setIsError(true);
-          setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
-          setLoading(false);
-          setLoadingPlot(false);
-          setppJobId(null); // Reset ppJobId after handling
-        } 
+    if (lower === "success") {
+      if (results.process_ids) {
+        console.log("results: ", results)
+        setTaskResult(results);
+        fetchProcessResults(results.process_ids, "table");
+      } else if (data.task_result.process_ids){
+        const resultData = data?.task_result; // NO fallback to router state
+        setLoading(false);
+        setLoadingPlot(false);
+        
+        console.log("data.task_result: ", resultData)
+        fetchProcessResults(resultData.process_ids, "table");
+
+        if (resultData.output) {
+          setTaskOutput(resultData.output);
+          setTaskResult(resultData);
+          console.log("Task output in handleStatusMessage:", resultData.output);
+        }
+      }else {
+        setLoading(false);
+        setLoadingPlot(false);
       }
-    };
-    ws.onerror = (err) => {
-      setMessage("Loading pre-process results is Failed");
-      setHasMessage(true);
-      setIsError(true);
-      setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+
+      
+    } else {
       setLoading(false);
       setLoadingPlot(false);
-      console.error("WebSocket error:", err);
-      setppJobId(null); // Reset ppJobId after handling
     }
-    ws.onclose = () => console.log("WebSocket closed.");
-
-    return () => ws.close();
-  }, [ppJobId]);
-
-  const handleStatusMessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (status?.toLowerCase() === "success" || status?.toLowerCase() === "failure") {
-        setTaskStatus(status);
-        if (status?.toLowerCase() === "success" && !plotLoaded) {
-          // if (results.process_ids && (process === "Quality Control" || process === "Normalization" || process === "Visualization")) {
-          if (results.process_ids) {
-            console.log("results: ", results)
-            setTaskResult(results);
-            fetchProcessResults(results.process_ids, "table");
-            plotLoaded = true;
-          } else {
-            setLoading(false);
-            setLoadingPlot(false);
-          }
-        } else {
-          setLoading(false);
-        }
-      } else if (data.task_status) {
-        setTaskStatus(data.task_status);
-        if (data.task_status?.toLowerCase() === "success" || data.task_status?.toLowerCase() === "failure") {
-          if (data.task_status?.toLowerCase() === "success" && !plotLoaded) {
-            if (data.task_result.process_ids) {
-              console.log("data.task_result: ", data.task_result)
-              fetchProcessResults(data.task_result.process_ids, "table");
-              plotLoaded = true;
-            } else {
-              setLoading(false);
-              setLoadingPlot(false);
-            }
-
-            if (data.task_result.output) {
-              setTaskOutput(data.task_result.output);
-              setTaskResult(data.task_result);
-            }
-          } else {
-            setLoading(false);
-            setLoadingPlot(false);
-          }
-        }
-      }
-    } catch (error) {
-      setLoading(false);
-      setLoadingPlot(false);
-      console.error("Error parsing status message:", error);
-    }
-  };
+  }, [isTerminalState, status, taskStatus]);
 
   useEffect(() => {
     async function fetchFiles() {
@@ -467,43 +442,40 @@ function WorkflowTaskDetailsComponent() {
           // if (taskInfoData.task_result.output) {
           //   setTaskOutput(taskInfoData.task_result.output);
           // }
-
-          if (jwtToken) {
-            fetch(NODE_API_URL + "/protected", { //to get username, id
-              method: 'GET',
-              credentials: 'include',
-              headers: { 'Authorization': `Bearer ${jwtToken}` },
-            })
-              .then((response) => response.json())
-              .then((data) => {
-
-                if (data.authData !== null) {
-                  // console.log("userdata: ", data.authData);
-                  setUName(data.authData.username);
-                  setUIat(data.authData.iat);
-                }
-              })
-              .catch((error) => {
-                console.error(error);
-              })
-          }
         } catch (error) {
           console.error('Error fetching task status:', error);
         }
       }
     }
+
+    const fetchUserInfo = async () => {
+      const jwtToken = getCookie('jwtToken');
+      if (!jwtToken) return;
+      try {
+        const response = await fetch(NODE_API_URL + "/protected", {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        const data = await response.json();
+        if (data?.authData) {
+          setUName(data.authData.username);
+          setUIat(data.authData.iat);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchUserInfo();
     fetchFiles();
   }, [job_id]);
 
 
-  const handleLogMessage = (event) => {
-    setLiveLogs((prevLogs) => prevLogs + event.data);
-    // Auto-scroll to the bottom of the logs
-    const logsElement = document.getElementById("_live_logs");
-    if (logsElement) {
-      logsElement.scrollTop = logsElement.scrollHeight;
-    }
-  };
+  const handleLogMessage = useCallback((event) => {
+      setLiveLogs((prev) => prev + event.data);
+      const logsElement = document.getElementById("_live_logs");
+      if (logsElement) logsElement.scrollTop = logsElement.scrollHeight;
+    }, []);
+
 
   const saveErrorLogData = async () => {
     try {
@@ -531,6 +503,132 @@ function WorkflowTaskDetailsComponent() {
       setIsSaving(false);
     }
   };
+
+  // WebSocket listener
+  useEffect(() => {
+    if (!ppJobId) return;
+
+    const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${ppJobId}`;
+    const ws = new WebSocket(statusUrl);
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.task_status) {
+        if (data.task_status === "SUCCESS") {
+          const preProcessResult = data.task_result[0];
+          console.log("Pre-process result received from WebSocket:", preProcessResult);
+          const processId = preProcessResult.process_id;
+          if (preProcessResult) {
+            if (preProcessResult.hasOwnProperty('preset_questions')) {
+              setPresetQuestions(preProcessResult.preset_questions);
+            }
+          }
+
+          // Only set plotData if at least one plot exists
+          if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+            setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
+          } else {
+            setPlotData(null);
+          }
+
+          if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
+            setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
+          } else {
+            setAtacPlotData(null);
+          }
+
+          // Only set plotData if at least one plot exists
+          if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+            setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
+          } else {
+            setTsnePlotData(null);
+          }
+
+          // Store the fetched data for the current process_id
+          setDetails((prevDetails) => ({
+            ...prevDetails,
+            [processId]: preProcessResult, // Store fetched data for the corresponding process_id
+          }));
+          setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
+          setppJobId(null); // Reset ppJobId after handling
+
+        } else if (data.task_status === "FAILURE") {
+          setMessage("Loading pre-process results is Failed");
+          setHasMessage(true);
+          setIsError(true);
+          setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+          setLoading(false);
+          setLoadingPlot(false);
+          setppJobId(null); // Reset ppJobId after handling
+        }
+      }
+    };
+    ws.onerror = (err) => {
+      setMessage("Loading pre-process results is Failed");
+      setHasMessage(true);
+      setIsError(true);
+      setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+      setLoading(false);
+      setLoadingPlot(false);
+      console.error("WebSocket error:", err);
+      setppJobId(null); // Reset ppJobId after handling
+    }
+    ws.onclose = () => console.log("WebSocket closed.");
+
+    return () => ws.close();
+  }, [ppJobId]);
+
+  // PP auto-reconnect WS
+    const handlePpStatus = useCallback(({ data }) => {
+      console.log("PP WS message received", data);
+      if (data?.task_status === "SUCCESS") {
+        const preProcessResult = data.task_result[0];
+        setActivePreProcessResults(preProcessResult);
+        console.log("Pre-process result received from WebSocket:", preProcessResult);
+        if (preProcessResult?.preset_questions) setPresetQuestions(preProcessResult.preset_questions);
+        if (preProcessResult?.output) setTaskOutput(preProcessResult.output);
+
+        const processId = preProcessResult.process_id;
+        
+        // Only set plotData if at least one plot exists
+        if (preProcessResult.umap_plot || preProcessResult.umap_plot_3d) {
+          setPlotData({ umap_plot: preProcessResult.umap_plot, umap_plot_3d: preProcessResult.umap_plot_3d })
+        } else {
+          setPlotData(null);
+        }
+
+        if (preProcessResult.atac_umap_plot || preProcessResult.atac_umap_plot_3d) {
+          setAtacPlotData({ atac_umap_plot: preProcessResult.atac_umap_plot, atac_umap_plot_3d: preProcessResult.atac_umap_plot_3d })
+        } else {
+          setAtacPlotData(null);
+        }
+
+        // Only set plotData if at least one plot exists
+        if (preProcessResult.tsne_plot || preProcessResult.tsne_plot_3d) {
+          setTsnePlotData({ tsne_plot: preProcessResult.tsne_plot, tsne_plot_3d: preProcessResult.tsne_plot_3d })
+        } else {
+          setTsnePlotData(null);
+        }
+
+        // Store the fetched data for the current process_id
+        setDetails((prevDetails) => ({
+          ...prevDetails,
+          [processId]: preProcessResult, // Store fetched data for the corresponding process_id
+        }));
+        setExpandLoading((prevLoading) => ({ ...prevLoading, [processId]: false }));
+        setppJobId(null); // Reset ppJobId after handling
+
+      } else if (data?.task_status === "FAILURE") {
+        console.error("PP Task Failed");
+        setMessage("Loading pre-process results is Failed");
+        setHasMessage(true);
+        setIsError(true);
+        setExpandLoading((prevLoading) => ({ ...prevLoading, [details.processId]: false }));
+        setLoading(false);
+        setLoadingPlot(false);
+        setppJobId(null); // Reset ppJobId after handling
+      }
+    }, []);
+
 
   const createGitHubIssue = async () => {
     try {
@@ -567,8 +665,46 @@ function WorkflowTaskDetailsComponent() {
     await createGitHubIssue();
   };
 
+  const handleToolSubmit = async (data, endpoint) => {
+    const root = activePreProcessResults;
+    const commonData = {
+      ...data,
+      cluster_id: root?.[endpoint === 'outliercorrection' ? 'outlier_panel' : 'annotation_panel']?.cluster_id,
+      process_id: root?.process_id,
+      description: `Manual ${endpoint === 'outliercorrection' ? 'Outlier Correction' : 'Annotation'} for ${root?.datasetId}`,
+      job_id: null,
+      obsSets: root?.obsSets,
+      obsEmbedding: root?.obsEmbedding,
+      adata_path: root?.adata_path,
+      zarr_path: root?.zarr_path,
+      layer: root?.layer,
+      datasetId: root?.datasetId,
+      userID: uName,
+    };
+    console.log("Tool submission response:", commonData);
+
+    try {
+      const response = await axios.post(`${CELERY_BACKEND_API}/tools/${endpoint}`, commonData);
+      // Start NEW job cycle
+      console.log("Tool submission response:", response.data);
+      const newJobId = response.data.job_id;
+      navigate("/mydata/taskDetails", { state: { job_id: newJobId, method: "Manual Annotation", datasetURL: commonData.adata_path, description: commonData.description, process: "Annotation" } });
+    } catch (error) {
+      console.error('Error submitting tool data:', error);
+      setHasMessage(true);
+      setMessage(`Failed to submit ${endpoint} data.`);
+      setIsError(true);
+      setLoading(false);
+    }
+  };
+
+  const commonCardStyle = { height: '100%', display: 'flex', flexDirection: 'column' };
+  const commonContentStyle = { flexGrow: 1, overflow: 'auto' };
+
   // Use the WebSocket hook
-  useWebSocket(job_id, handleStatusMessage, handleLogMessage);
+  useWebSocket(job_id, handleStatusMessage, handleLogMessage, setLoading);
+
+  useWebSocket(ppJobId, handlePpStatus, handleLogMessage, setLoading)
 
   return (
 
@@ -797,7 +933,6 @@ function WorkflowTaskDetailsComponent() {
                                           )}
                                         </Descriptions.Item>
 
-
                                         <Descriptions.Item label="Files">
                                           <div>
                                             {details[preProcessResult.process_id].adata_path && (
@@ -839,244 +974,102 @@ function WorkflowTaskDetailsComponent() {
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                         <p>Plots:</p>
                                         <React.Fragment key="plots">
+                                          {/* UMAP */}
                                           {(details[preProcessResult.process_id].umap_plot || details[preProcessResult.process_id].umap_plot_3d) && (
-                                            <>
-                                              <h2>UMAP Plot</h2>
-                                              <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <FormControl>
-                                                  <RadioGroup
-                                                    row
-                                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                                    name="row-radio-buttons-group"
-                                                    value={plotDimension}
-                                                    onChange={(event) => setPlotDimension(event.target.value)}
-                                                  >
-                                                    <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                                                    <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                                                  </RadioGroup>
-                                                </FormControl>
-
-                                                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                                  <InputLabel id="plot-options-label">Color</InputLabel>
-                                                  <Select
-                                                    labelId="plot-options-label"
-                                                    id="plot-options"
-                                                    value={clusteringPlotType}
-                                                    onChange={(event) => {
-                                                      const selectedPlotType = event.target.value;
-                                                      setClusteringPlotType(selectedPlotType);
-                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d, "umap"); // Call the API as soon as the selection changes
-                                                    }}
-                                                  >
-                                                    {Array.isArray(details[preProcessResult.process_id].obs_names) && (
-                                                      details[preProcessResult.process_id].obs_names.map((key, idx) => (
-                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
-                                                      ))
-                                                    )}
-                                                  </Select>
-                                                </FormControl>
-
-                                              </div>
-                                              {loadingPlot ? (
-                                                <div>Loading plot data...</div>
-                                              ) : plotData ? (
-                                                <>
-                                                  {plotDimension === '2D' ? (
-                                                    plotData && plotData.umap_plot ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={plotData.umap_plot} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
-                                                    )
-                                                  ) : plotDimension === '3D' ? (
-                                                    plotData && plotData.umap_plot_3d ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={plotData.umap_plot_3d} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
-                                                    )
-                                                  ) : null}
-                                                </>
-                                              ) : (
-                                                <div>No plot data available</div>
-                                              )}
-
-                                            </>
+                                            <InteractivePlot
+                                              title="UMAP"
+                                              dimension={plotDimension}
+                                              setDimension={setPlotDimension}
+                                              plotType={clusteringPlotType}
+                                              setPlotType={setClusteringPlotType}
+                                              options={details[preProcessResult.process_id].obs_names}
+                                              onOptionChange={(val) => fetchPlotData(val, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].umap, details[preProcessResult.process_id].umap_3d, "umap")}
+                                              plotData2D={plotData?.umap_plot || details[preProcessResult.process_id].umap_plot}
+                                              plotData3D={plotData?.umap_plot_3d || details[preProcessResult.process_id].umap_plot_3d}
+                                            />
                                           )}
-
+                                          
+                                          {/* ATAC UMAP */}
                                           {(details[preProcessResult.process_id].atac_umap_plot || details[preProcessResult.process_id].atac_umap_plot_3d) && (
-                                            <>
-                                              <h2>ATAC UMAP Plot</h2>
-                                              <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <FormControl>
-                                                  <RadioGroup
-                                                    row
-                                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                                    name="row-radio-buttons-group"
-                                                    value={plotDimension}
-                                                    onChange={(event) => setAtacPlotDimension(event.target.value)}
-                                                  >
-                                                    <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                                                    <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                                                  </RadioGroup>
-                                                </FormControl>
-
-                                                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                                  <InputLabel id="plot-options-label">Color</InputLabel>
-                                                  <Select
-                                                    labelId="plot-options-label"
-                                                    id="plot-options"
-                                                    value={clusteringAtacPlotType}
-                                                    onChange={(event) => {
-                                                      const selectedPlotType = event.target.value;
-                                                      setAtacClusteringPlotType(selectedPlotType);
-                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].atac_obs, details[preProcessResult.process_id].atac_umap, details[preProcessResult.process_id].atac_umap_3d, "atac_umap"); // Call the API as soon as the selection changes
-                                                    }}
-                                                  >
-                                                    {Array.isArray(details[preProcessResult.process_id].atac_obs_names) && (
-                                                      details[preProcessResult.process_id].atac_obs_names.map((key, idx) => (
-                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
-                                                      ))
-                                                    )}
-                                                  </Select>
-                                                </FormControl>
-
-                                              </div>
-                                              {loadingPlot ? (
-                                                <div>Loading plot data...</div>
-                                              ) : atacPlotData ? (
-                                                <>
-                                                  {atacPlotDimension === '2D' ? (
-                                                    atacPlotData && atacPlotData.atac_umap_plot ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={atacPlotData.atac_umap_plot} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>2D UMAP plot does not exist.</div>
-                                                    )
-                                                  ) : atacPlotDimension === '3D' ? (
-                                                    atacPlotData && atacPlotData.atac_umap_plot_3d ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={atacPlotData.atac_umap_plot_3d} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>3D UMAP plot does not exist.</div>
-                                                    )
-                                                  ) : null}
-                                                </>
-                                              ) : (
-                                                <div>No plot data available</div>
-                                              )}
-
-                                            </>
+                                            <InteractivePlot
+                                              title="ATAC UMAP"
+                                              dimension={atacPlotDimension}
+                                              setDimension={setAtacPlotDimension}
+                                              plotType={atacClusteringPlotType}
+                                              setPlotType={setAtacClusteringPlotType}
+                                              options={details[preProcessResult.process_id].atac_obs_names}
+                                              onOptionChange={(val) => fetchPlotData(val, details[preProcessResult.process_id].atac_obs, details[preProcessResult.process_id].atac_umap, details[preProcessResult.process_id].atac_umap_3d, "atac_umap")}
+                                              plotData2D={atacPlotData?.atac_umap_plot || details[preProcessResult.process_id].atac_umap_plot}
+                                              plotData3D={atacPlotData?.atac_umap_plot_3d || details[preProcessResult.process_id].atac_umap_plot_3d}
+                                            />
                                           )}
-
+                                          {/* t-SNE */}
                                           {(details[preProcessResult.process_id].tsne_plot || details[preProcessResult.process_id].tsne_plot_3d) && (
-                                            <>
-                                              <h2>tsne Plot</h2>
-                                              <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <FormControl>
-                                                  <RadioGroup
-                                                    row
-                                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                                    name="row-radio-buttons-group"
-                                                    value={tsnePlotDimension}
-                                                    onChange={(event) => setTsnePlotDimension(event.target.value)}
-                                                  >
-                                                    <FormControlLabel value="2D" control={<Radio color="secondary" />} label="2D" />
-                                                    <FormControlLabel value="3D" control={<Radio color="secondary" />} label="3D" />
-                                                  </RadioGroup>
-                                                </FormControl>
+                                            <InteractivePlot
+                                              title="t-SNE"
+                                              dimension={tsnePlotDimension}
+                                              setDimension={setTsnePlotDimension}
+                                              plotType={tsneClusteringPlotType}
+                                              setPlotType={setTsneClusteringPlotType}
+                                              options={details[preProcessResult.process_id].obs_names}
+                                              onOptionChange={(val) => fetchPlotData(val, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].tsne, details[preProcessResult.process_id].tsne_3d, "tsne")}
+                                              plotData2D={tsnePlotData?.tsne_plot || details[preProcessResult.process_id].tsne_plot}
+                                              plotData3D={tsnePlotData?.tsne_plot_3d || details[preProcessResult.process_id].tsne_plot_3d}
+                                            />
+                                          )}
 
-                                                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                                  <InputLabel id="plot-options-label">Color</InputLabel>
-                                                  <Select
-                                                    labelId="plot-options-label"
-                                                    id="plot-options"
-                                                    value={tsneClusteringPlotType}
-                                                    onChange={(event) => {
-                                                      const selectedPlotType = event.target.value;
-                                                      setTsneClusteringPlotType(selectedPlotType);
-                                                      fetchPlotData(selectedPlotType, details[preProcessResult.process_id].obs, details[preProcessResult.process_id].tsne, details[preProcessResult.process_id].tsne_3d, "tsne"); // Call the API as soon as the selection changes
-                                                    }}
-                                                  >
-                                                    {Array.isArray(details[preProcessResult.process_id].obs_names) && (
-                                                      details[preProcessResult.process_id].obs_names.map((key, idx) => (
-                                                        <MenuItem key={idx} value={key}>{key}</MenuItem>
-                                                      ))
-                                                    )}
-                                                  </Select>
-                                                </FormControl>
+                                          {/* Static plots */}
+                                          {details[preProcessResult.process_id].violin_plot && <><Typography variant="h5">Violin</Typography><ReactPlotly plot_data={details[preProcessResult.process_id].violin_plot} /></>}
+                                          {details[preProcessResult.process_id].scatter_plot && <><Typography variant="h5">Scatter</Typography><ReactPlotly plot_data={details[preProcessResult.process_id].scatter_plot} /></>}
+                                          {details[preProcessResult.process_id].highest_expr_genes_plot && <><Typography variant="h5">Highest Expression Genes</Typography><ReactPlotly plot_data={details[preProcessResult.process_id].highest_expr_genes_plot} /></>}
 
-                                              </div>
-                                              {loadingPlot ? (
-                                                <div>Loading plot data...</div>
-                                              ) : tsnePlotData ? (
-                                                <>
-                                                  {tsnePlotDimension === '2D' ? (
-                                                    tsnePlotData && tsnePlotData.tsne_plot ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={tsnePlotData.tsne_plot} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>2D t-SNE plot does not exist.</div>
-                                                    )
-                                                  ) : tsnePlotDimension === '3D' ? (
-                                                    tsnePlotData && tsnePlotData.tsne_plot_3d ? (
-                                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                        <ReactPlotly plot_data={tsnePlotData.tsne_plot_3d} />
-                                                      </div>
-                                                    ) : (
-                                                      <div style={{ textAlign: 'center', width: '100%' }}>3D t-SNE plot does not exist.</div>
-                                                    )
-                                                  ) : null}
-                                                </>
-                                              ) : (
-                                                <div>No plot data available</div>
-                                              )}
-
-                                            </>
-                                          )}
-                                          {details[preProcessResult.process_id].violin_plot && (
-                                            <>
-                                              <h2>Violin Plot</h2>
-                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                <ReactPlotly plot_data={details[preProcessResult.process_id].violin_plot} />
-                                              </div>
-                                            </>
-                                          )}
-                                          {details[preProcessResult.process_id].scatter_plot && (
-                                            <>
-                                              <h2>Scatter Plot</h2>
-                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                <ReactPlotly plot_data={details[preProcessResult.process_id].scatter_plot} />
-                                              </div>
-                                            </>
-                                          )}
-                                          {details[preProcessResult.process_id].highest_expr_genes_plot && (
-                                            <>
-                                              <h2>Highest Expression Genes Plot</h2>
-                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                                <ReactPlotly plot_data={details[preProcessResult.process_id].highest_expr_genes_plot} />
-                                              </div>
-                                            </>
-                                          )}
+                                          {/* Vitessce */}
                                           {details[preProcessResult.process_id].zarr_path && (
                                             <>
-                                              <h2>Gene Expression</h2>
-                                              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '920px' }}>
-                                                  <ShowVitessce 
-                                                    processId={details[preProcessResult.process_id].process_id}
-                                                    description={details[preProcessResult.process_id].description}
-                                                    zarrPath={details[preProcessResult.process_id].zarr_path}
-                                                    initialFeatureFilterPath={details[preProcessResult.process_id].initialFeatureFilterPath}
-                                                    obsEmbedding={details[preProcessResult.process_id].obsEmbedding}
-                                                    obsSets={details[preProcessResult.process_id].obsSets} 
-                                                  />
-                                              </div>
+                                              <Typography variant="h5" sx={{ mt: 4 }}>Gene Expression</Typography>
+                                              <Box sx={{ width: '100%', height: '920px' }}>
+                                                <ShowVitessce
+                                                  processId={details[preProcessResult.process_id].process_id}
+                                                  description={details[preProcessResult.process_id].description}
+                                                  zarrPath={details[preProcessResult.process_id].zarr_path}
+                                                  initialFeatureFilterPath={details[preProcessResult.process_id].initialFeatureFilterPath}
+                                                  obsEmbedding={details[preProcessResult.process_id].obsEmbedding}
+                                                  obsSets={details[preProcessResult.process_id].obsSets}
+                                                />
+                                              </Box>
                                             </>
+                                          )}
+
+                                          {/* Tool Panels */}
+                                          {process === "Quality Control" && details[preProcessResult.process_id]?.outlier_panel && (
+                                            <Grid item xs={12} sx={{ mt: 4 }}>
+                                              <Card raised sx={commonCardStyle}>
+                                                <CardHeader title="Outlier Correction" />
+                                                <CardContent sx={commonContentStyle}>
+                                                  <OutlierTable
+                                                    key={details[preProcessResult.process_id].job_id || `outlier-${index}`}
+                                                    data={details[preProcessResult.process_id].outlier_panel.table || []}
+                                                    onSubmit={(data) => handleToolSubmit(data, 'outliercorrection')}
+                                                  />
+                                                </CardContent>
+                                              </Card>
+                                            </Grid>
+                                          )}
+
+                                          {process !== "Quality Control" && details[preProcessResult.process_id]?.annotation_panel && (
+                                            <Grid item xs={12} sx={{ mt: 4 }}>
+                                              <Card raised sx={commonCardStyle}>
+                                                <CardHeader title="Manual Annotation" />
+                                                <CardContent sx={commonContentStyle}>
+                                                  <AnnotationTable
+                                                    key={details[preProcessResult.process_id].job_id || `annotation-${index}`}
+                                                    data={details[preProcessResult.process_id].annotation_panel.table || []}
+                                                    cellTypeOptions={details[preProcessResult.process_id].annotation_panel.unique_labels || []}
+                                                    onSubmit={(data) => handleToolSubmit(data, 'manualannotattion')}
+                                                  />
+                                                </CardContent>
+                                              </Card>
+                                            </Grid>
                                           )}
                                         </React.Fragment>
                                       </div>

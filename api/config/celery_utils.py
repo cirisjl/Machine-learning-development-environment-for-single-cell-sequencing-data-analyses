@@ -54,9 +54,6 @@ def get_task_info(job_id):
     task_status = task_result.status  # e.g., 'PENDING', 'STARTED', 'SUCCESS'
     summary = "Processing"
 
-    print(f"Task status for job_id {job_id}: {task_status}")
-    # print(f"Task result for job_id {job_id}: {task_result.result}")
-
     # 2. Handle terminal states (SUCCESS, FAILURE, REVOKED)
     if task_result.ready():
         if task_result.successful():

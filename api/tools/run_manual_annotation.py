@@ -23,36 +23,53 @@ def run_manual_annotation(job_id, ma:dict):
     zarr_path = ma['zarr_path']
     origin_job_id = ma['job_id']
 
-    upsert_jobs(
-        {
-            "job_id": origin_job_id, 
-            # "Category": 'tools',
-            # "Method": ["Manual Annotation"],
-            # "Process": 'Annotation',
-            "modified_by": userID,
-            # "datasetId": datasetId,
-            # "Description": description,
-            # "datasetURL": adata_path,
-            "Status": "Processing",
-            "Modified on": datetime.now(), 
-            # "origin_job_id": origin_job_id
-        }
-    )
+    if origin_job_id is None:
+        upsert_jobs(
+            {
+                "job_id": job_id, 
+                "Category": 'tools',
+                "Method": ["Manual Annotation"],
+                "Process": 'Annotation',
+                "created_by": userID,
+                "datasetId": datasetId,
+                "Description": description,
+                "datasetURL": adata_path,
+                "Status": "Processing",
+                "Created on": datetime.now(), 
+            }
+        )
+    else:
+        upsert_jobs(
+            {
+                "job_id": origin_job_id, 
+                # "Category": 'tools',
+                # "Method": ["Manual Annotation"],
+                # "Process": 'Annotation',
+                "modified_by": userID,
+                # "datasetId": datasetId,
+                # "Description": description,
+                # "datasetURL": adata_path,
+                "Status": "Processing",
+                "Modified on": datetime.now(), 
+                # "origin_job_id": origin_job_id
+            }
+        )
 
     try: 
         resutls = manual_annotation(cluster_id, adata_path, layer, job_id, origin_job_id,process_id, updatedAll, updatedChangedOnly, deleted, obsEmbedding, obsSets, zarr_path, userID)
 
         return resutls["results"]
-        
+
     except Exception as e:
         details = f"Manual Annotation is failed: {e}"
         redislogger.error(job_id, details)
-        # upsert_jobs(
-        #     {
-        #         "job_id": job_id, 
-        #         "results": details,
-        #         "Completed on": datetime.now(),
-        #         "Status": "Failure"
-        #     }
-        # )
+        if origin_job_id is None:
+            upsert_jobs(
+                {
+                    "job_id": job_id, 
+                    "results": details,
+                    "Completed on": datetime.now(),
+                    "Status": "Failure"
+                }
+            )
         raise CeleryTaskException(details)

@@ -93,6 +93,9 @@ def manual_annotation(cluster_id, adata_path, layer, job_id, origin_job_id, proc
         }
     }
 
+    if origin_job_id is None:
+        results["job_id"] = job_id
+
     # Update jobs
     upsert_jobs(results)
     redislogger.info(job_id, f"Manual annotation is completed successfully.")

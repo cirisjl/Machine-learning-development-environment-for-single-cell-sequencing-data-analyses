@@ -42,7 +42,7 @@ const StatusChip = ({ status }) => {
 
   return (
     <Chip
-      label={status ? status.toUpperCase() : "IN PROGRESS"}
+      label={status ? status.toUpperCase() : "PROCESSING"}
       style={{ backgroundColor: getStatusColor(), color: '#fff' }}
     />
   );

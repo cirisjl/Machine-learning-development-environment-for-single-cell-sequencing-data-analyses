@@ -352,38 +352,40 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         sce_size = file_size(sce_path)
 
     if adata is not None and isinstance(adata, AnnData):
-        if use_rep is not None and use_rep+'_leiden' in adata.obs.keys():
-            cluster_colname = use_rep + '_leiden'
-            if use_rep+'_leiden' in adata.obs.keys() and use_rep+'_umap' in adata.obsm.keys():
-                    labels_pred_leiden = adata.obs[use_rep+'_leiden']
-            if use_rep+'_louvain' in adata.obs.keys() and use_rep+'_umap' in adata.obsm.keys():
-                labels_pred_louvain = adata.obs[use_rep+'_louvain']
-                cluster_embedding = adata.obsm[use_rep+'_umap']
-                obsEmbedding = 'obsm/' + use_rep + '_umap'
+        if use_rep is not None and f'{use_rep}_leiden' in adata.obs.keys():
+            cluster_colname = f'{use_rep}_leiden'
+            if f'{use_rep}_leiden' in adata.obs.keys() and f'{use_rep}_umap' in adata.obsm.keys():
+                    labels_pred_leiden = adata.obs[f'{use_rep}_leiden']
+            if f'{use_rep}_louvain' in adata.obs.keys() and f'{use_rep}_umap' in adata.obsm.keys():
+                labels_pred_louvain = adata.obs[f'{use_rep}_louvain']
+                cluster_embedding = adata.obsm[f'{use_rep}_umap']
+                obsEmbedding = f'obsm/{use_rep}_umap'
         elif layer is None:
             layer = "X"
             if 'leiden' in adata.obs.keys(): 
                 obsSets.append({"name":"Cluster", "path":"obs/leiden"})
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
-                if 'leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                if 'leiden' in adata.obs.keys() and f'{layer}_umap' in adata.obsm.keys():
                     labels_pred_leiden = adata.obs['leiden']
-                if 'louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
+                if 'louvain' in adata.obs.keys() and f'{layer}_umap' in adata.obsm.keys():
                     labels_pred_louvain = adata.obs['louvain']
-                cluster_embedding = adata.obsm[layer+'_umap']
-                obsEmbedding = 'obsm/' + layer + '_umap'
+                cluster_embedding = adata.obsm[f'{layer}_umap']
+            if 'X_umap' in adata.obsm.keys():
+                obsEmbedding = 'obsm/X_umap'
         else:
-            cluster_colname = layer + '_leiden'
-            if layer+'_leiden' in adata.obs.keys():
-                obsSets.append({"name":"Cluster", "path":"obs/" + layer + "_leiden"})
+            cluster_colname = f'{layer}_leiden'
+            if f'{layer}_leiden' in adata.obs.keys():
+                obsSets.append({"name":"Cluster", "path":f"obs/{layer}_leiden"})
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
-                if layer+'_leiden' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
-                    labels_pred_leiden = adata.obs[layer+'_leiden']
-                if layer+'_louvain' in adata.obs.keys() and layer+'_umap' in adata.obsm.keys():
-                    labels_pred_louvain = adata.obs[layer+'_louvain']
-                cluster_embedding = adata.obsm[layer+'_umap']
-                obsEmbedding = 'obsm/' + layer + '_umap'
+                if f'{layer}_leiden' in adata.obs.keys() and f'{layer}_umap' in adata.obsm.keys():
+                    labels_pred_leiden = adata.obs[f'{layer}_leiden']
+                if f'{layer}_louvain' in adata.obs.keys() and f'{layer}_umap' in adata.obsm.keys():
+                    labels_pred_louvain = adata.obs[f'{layer}_louvain']
+                cluster_embedding = adata.obsm[f'{layer}_umap']
+            if f'{layer}_umap' in adata.obsm.keys():
+                obsEmbedding = f'obsm/{layer}_umap'
 
         # Retrieve unique cell type labels
         try:
@@ -397,7 +399,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
         if len(unique_cell_labels) > 0:
             for label in unique_cell_labels:
                 if label in adata.obs.columns:
-                    obsSets.append({"name": label, "path": "obs/" + label})
+                    obsSets.append({"name": label, "path": f"obs/{label}"})
 
         # if('cluster.ids' in adata.obs.keys()):
         #     cluster_colname = 'cluster.ids'
@@ -466,25 +468,27 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             embeddings.append(name)
         
         if layer != 'Pearson_residuals': # Normalize Pearson_residuals may create NaN values, which could not work with PCA
-            if layer+'_umap' in adata.obsm.keys() and cluster_colname in adata.obs.keys():
-                umap = json_numpy.dumps(adata.obsm[layer+'_umap'])
+            if layer is None: 
+                layer = "X"
+            if f'{layer}_umap' in adata.obsm.keys() and cluster_colname in adata.obs.keys():
+                umap = json_numpy.dumps(adata.obsm[f'{layer}_umap'])
                 # umap_plot = plot_UMAP(adata, layer=layer, clustering_plot_type=cluster_colname)
-            elif layer+'_umap' in adata.obsm.keys():
-                umap = json_numpy.dumps(adata.obsm[layer+'_umap'])
+            elif f'{layer}_umap' in adata.obsm.keys():
+                umap = json_numpy.dumps(adata.obsm[f'{layer}_umap'])
                 # umap_plot = plot_UMAP(adata, layer=layer)
             
-            if layer+'_umap_3D' in adata.obsm.keys() and cluster_colname in adata.obs.keys():
-                umap_3d = json_numpy.dumps(adata.obsm[layer+'_umap_3D'])
+            if f'{layer}_umap_3D' in adata.obsm.keys() and cluster_colname in adata.obs.keys():
+                umap_3d = json_numpy.dumps(adata.obsm[f'{layer}_umap_3D'])
                 # umap_plot_3d = plot_UMAP(adata, layer=layer, clustering_plot_type=cluster_colname, n_dim=3)
-            elif layer+'_umap_3D' in adata.obsm.keys():
-                umap_3d = json_numpy.dumps(adata.obsm[layer+'_umap_3D'])
+            elif f'{layer}_umap_3D' in adata.obsm.keys():
+                umap_3d = json_numpy.dumps(adata.obsm[f'{layer}_umap_3D'])
                 # umap_plot_3d = plot_UMAP(adata, layer=layer, n_dim=3)
 
-            if layer+'_tsne' in adata.obsm.keys():
-                tsne = json_numpy.dumps(adata.obsm[layer+'_tsne'])
+            if f'{layer}_tsne' in adata.obsm.keys():
+                tsne = json_numpy.dumps(adata.obsm[f'{layer}_tsne'])
             
-            if layer+'_tsne_3D' in adata.obsm.keys():
-                tsne_3d = json_numpy.dumps(adata.obsm[layer+'_tsne_3D'])
+            if f'{layer}_tsne_3D' in adata.obsm.keys():
+                tsne_3d = json_numpy.dumps(adata.obsm[f'{layer}_tsne_3D'])
 
         if process == 'QC':
             # violin_plot = gzip_str(plot_violin(adata))
@@ -494,8 +498,11 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             if nCells < 12000: # If the dataset is too large, then skip the highest expressed genes plot
                 counts_top_genes, columns = highest_expr_genes(adata)
                 top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
-
-            outlier_panel = create_outlier_panel(adata.obs, cluster_id=cluster_colname)
+            try:
+                outlier_panel = create_outlier_panel(adata.obs, cluster_id=cluster_colname)
+            except Exception as e:
+                print(f"Error creating outlier panel: {e}")
+                outlier_panel = None
 
         if cluster_label is not None:
             if labels_pred_leiden is not None:
@@ -796,7 +803,7 @@ def detect_delimiter(file_path):
 
 def get_output_path(path, process_id='', dataset=None, method='', format="AnnData", compress=False):
     output = os.path.abspath(path)
-    method = '_' + method if method != '' else ''
+    method = f'_{method}' if method != '' else ''
     output_path = None
     base_name = os.path.basename(path)
 
@@ -807,39 +814,39 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
         if dataset is None:
             dataset = base_name
         if format == "AnnData":
-            output_path = os.path.join(output, process_id, dataset + method + ".h5ad")
+            output_path = os.path.join(output, process_id, f'{dataset}_{method}.h5ad')
             print("The output path is a directory, adding output file " + dataset + method + ".h5ad to the path.")
         elif format == "MuData":
-            output_path = os.path.join(output, process_id, dataset + method + ".h5mu")
+            output_path = os.path.join(output, process_id, f'{dataset}_{method}.h5mu')
             print("The output path is a directory, adding output file " + dataset + method + ".h5mu to the path.")
         elif format == "SingleCellExperiment":
-            output_path = os.path.join(output, process_id, dataset + method + ".rds")
+            output_path = os.path.join(output, process_id, f'{dataset}_{method}.rds')
             print("The output path is a directory, adding output file " + dataset + method + ".rds to the path.")
         elif format == "Seurat":
-            output_path = os.path.join(output, process_id, dataset + method + ".h5seurat")
+            output_path = os.path.join(output, process_id, f'{dataset}_{method}.h5seurat')
             print("The output path is a directory, adding output file " + dataset + method + ".h5seurat to the path.")
         elif format == "CSV":
             if compress == True:
-                output_path = os.path.join(output, process_id, dataset + method + ".csv.gz")
+                output_path = os.path.join(output, process_id, f'{dataset}{method}.csv.gz')
                 print("The output path is a directory, adding output file " + dataset + method + ".csv.gz to the path.")
             else:
-                output_path = os.path.join(output, process_id, dataset + method + ".csv")
-                print("The output path is a directory, adding output file " + dataset + method + ".csv to the path.")
+                output_path = os.path.join(output, process_id, f'{dataset}_{method}.csv')
+                print(f"The output path is a directory, adding output file {dataset}_{method}.csv to the path.")
     else:
         directory = os.path.dirname(output)
         if format == "AnnData":
-            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5ad"))
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.h5ad"))
         elif format == "MuData":
-            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5mu"))
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.h5mu"))
         elif format == "SingleCellExperiment":
-            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".rds"))
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.rds"))
         elif format == "Seurat":
-            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".h5seurat"))
+            output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.h5seurat"))
         elif format == "CSV":
             if compress == True:
-                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv.gz"))
+                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.csv.gz"))
             else:
-                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], method + ".csv"))
+                output_path = os.path.join(directory, process_id, base_name.replace(os.path.splitext(output)[-1], f"_{method}.csv"))
 
     if not os.path.exists(os.path.dirname(output_path)):
         os.makedirs(os.path.dirname(output_path))
@@ -852,13 +859,13 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
 
 def get_report_path(dataset, output, method):
     output = os.path.abspath(output)
-    method = '_' + method if method else ''
+    method = f'_{method}' if method else ''
     report_path = None
 
     if not os.path.exists(os.path.dirname(output)):
         os.makedirs(os.path.dirname(output))
 
-    report_path = output.replace(os.path.splitext(output)[-1], method + "_report.html")
+    report_path = output.replace(os.path.splitext(output)[-1], f"{method}_report.html")
     
     return report_path
 
@@ -867,7 +874,7 @@ def get_scvi_path(adata_path, task = None):
     if task is None:
         return os.path.join(os.path.dirname(os.path.abspath(adata_path)), '/scvi_model')
     else:
-        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), '/' + task + '_model')
+        return os.path.join(os.path.dirname(os.path.abspath(adata_path)), f'/{task}_model')
 
 
 def list_py_to_r(list):
@@ -900,7 +907,7 @@ def read_text_replace_invalid(file_path, delimiter):
     if file_path.endswith(".gz"):
         file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
         # Create the new file path with a .txt extension
-        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        new_file_path = os.path.join(os.path.dirname(file_path), f"{file_name_without_extension}.txt")
         convert_gz_to_txt(file_path, new_file_path)
         df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
     else:
@@ -916,7 +923,7 @@ def read_text(file_path):
         file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
 
         # Create the new file path with a .txt extension
-        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        new_file_path = os.path.join(os.path.dirname(file_path), f"{file_name_without_extension}.txt")
         convert_gz_to_txt(file_path, new_file_path)
 
         df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
@@ -932,7 +939,7 @@ def load_invalid_adata(file_path, replace_nan):
         file_name_without_extension = os.path.splitext(os.path.basename(file_path))[0]
 
         # Create the new file path with a .txt extension
-        new_file_path = os.path.join(os.path.dirname(file_path), file_name_without_extension + '.txt')
+        new_file_path = os.path.join(os.path.dirname(file_path), f"{file_name_without_extension}.txt")
         convert_gz_to_txt(file_path, new_file_path)
         df = pd.read_csv(new_file_path, sep="\t", on_bad_lines='skip', index_col=0)
     else:
@@ -1326,13 +1333,13 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
     # print("obsm_keys: " + str(obsm_keys))
     # print("obs_cols: " + str(obs_cols))
     # print("adata.obs.columns: " + str(adata.obs.columns))
-    if layer is not None and layer+'_leiden' in adata.obs.columns:
-        obs_cols.append(layer+'_leiden')
+    if layer is not None and f'{layer}_leiden' in adata.obs.columns:
+        obs_cols.append(f'{layer}_leiden')
     elif 'leiden' in adata.obs.columns:
         obs_cols.append('leiden')
 
-    if layer is not None and layer+'_umap' in adata.obsm.keys():
-        obsm_keys.append(layer+'_umap')
+    if layer is not None and f'{layer}_umap' in adata.obsm.keys():
+        obsm_keys.append(f'{layer}_umap')
     elif 'X_umap' in adata.obsm.keys():
         obsm_keys.append('X_umap')
 
@@ -1374,7 +1381,7 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
         adata.X[np.isinf(adata.X)] = 0
         sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     except Exception as e:
-        print("Highly variable gene selection failed: " + str(e))
+        print(f"Highly variable gene selection failed: {e}")
         print("Log1p normalize count matrix and try again...")
         adata.X[np.isnan(adata.X)] = 0
         adata.X[np.isinf(adata.X)] = 0
@@ -1407,8 +1414,8 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
     obsm_keys = list(set(obsm_keys))
     obs_cols = list(set(obs_cols))
 
-    print("obsm_keys: " + str(obsm_keys))
-    print("obs_cols: " + str(obs_cols))
+    print(f"obsm_keys: {obsm_keys}")
+    print(f"obs_cols: {obs_cols}")
 
     adata = optimize_adata(
         adata,
@@ -1424,7 +1431,7 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
     try:
         adata.write_zarr(zarr_output)
     except Exception as e:
-        print("Zarr output failed: " + str(e))
+        print(f"Zarr output failed: {e}")
     # adata = None  # Free up memory
     
     return zarr_output
@@ -1474,7 +1481,7 @@ def create_pseudo_replicates(adata, batch_key, num):
             # rep_adata = sc.AnnData(X = samp_cell_subset[indices[i]].X.sum(axis = 0),
             #                        var = samp_cell_subset[indices[i]].var[[]])
             rep_adata = samp_cell_subset[samp_cell_subset.obs_names.isin(pseudo_rep)]
-            rep_adata.obs['sample'] = sample + '_' + str(i + 1)
+            rep_adata.obs['sample'] = f"{sample}_{i + 1}"
             # rep_adata.obs['condition'] = samp_cell_subset.obs['condition'].iloc[0]
             rep_adata.obs['replicate'] = i + 1
 
@@ -1628,8 +1635,8 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
     unique_cell_labels = []
     obs_cols = []
 
-    print("label columns: " + str(label_columns))
-    print("score columns: " + str(score_columns))
+    print(f"label columns: {label_columns}")
+    print(f"score columns: {score_columns}")
 
     # Validate label and score columns
     for label_column in label_columns.copy():
@@ -1639,8 +1646,8 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
         if score_column not in obs.columns:
             score_columns.remove(score_column)
     
-    print("Valid label columns: " + str(label_columns))
-    print("Valid score columns: " + str(score_columns))
+    print(f"Valid label columns: {label_columns}")
+    print(f"Valid score columns: {score_columns}")
 
     # Add ground truth and cluster id at the front if they exist
     if ground_truth is not None and ground_truth in obs.columns:
@@ -1676,7 +1683,6 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
 
     if len(label_columns) > 1:
         labels_df = obs[label_columns].groupby(cluster_id).agg(lambda x: x.mode())
-        unique_labels = labels_df.astype(object).stack().unique().tolist()
         labels_df.insert(loc=1, column='majority_vote', value=labels_df.mode(axis=1)[0])
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "cell_label" not in obs.columns:
@@ -1685,6 +1691,11 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
                 labels_df.insert(loc=0, column='cell_label', value=labels_df[ground_truth])
             else:
                 labels_df.insert(loc=0, column='cell_label', value=labels_df['majority_vote'])
+        try:
+            unique_labels = labels_df.astype(object).stack().unique().tolist()
+        except Exception as e:
+            print(f"Error getting unique labels: {e}")
+            unique_labels = labels_df["cell_label"].unique().tolist()         
     else:
         labels_df = pd.DataFrame(obs[cluster_id].unique(), columns=['Cluster'])
         unique_labels = None
@@ -1725,17 +1736,18 @@ def create_outlier_panel(obs, cluster_id='leiden', outlier_columns=["discard", "
 
     if len(outlier_columns) > 1:
         outliers_columns_df = obs[outlier_columns].groupby(cluster_id).agg(lambda x: x.mode())
-        unique_labels = outliers_columns_df.stack().unique().tolist()
+        unique_labels = [False, True]      
+        
         outliers_columns_df.insert(loc=1, column='majority_vote', value=outliers_columns_df.mode(axis=1)[0])
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "discard" not in obs.columns:
             outliers_columns_df.insert(loc=0, column='discard', value=outliers_columns_df['majority_vote'])
-        print("outlier columns: " + str(outlier_columns))
+        print(f"outlier columns: {outlier_columns}")
 
     if len(score_columns) > 1:
         scores_df = obs[score_columns].groupby(cluster_id).agg(lambda x: x.mean())
         scores_df = scores_df.round(4)
-        print("score_columns: " + str(score_columns))
+        print(f"score_columns: {score_columns}")
 
         mapping_res = outliers_columns_df.merge(right = scores_df, left_index=True, right_index=True)
         mapping_res.insert(0, 'Cluster', mapping_res.index)
