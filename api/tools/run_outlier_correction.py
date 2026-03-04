@@ -108,6 +108,7 @@ def run_outlier_correction(job_id, oc:dict):
         zarr_path = save_zarr(adata, adata_path=output, layer=layer, obs_cols=obs_cols)
         pp_results['zarr_path'] = zarr_path
         pp_results['obsSets'] = obsSets
+        pp_results['created_by'] = userID
         # Update pp_results
         create_pp_results(process_id, pp_results)
 

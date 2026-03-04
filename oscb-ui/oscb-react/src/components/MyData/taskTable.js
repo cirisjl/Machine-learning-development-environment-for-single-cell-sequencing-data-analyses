@@ -113,7 +113,8 @@ const TaskTable = () => {
         setLoading(true);
         try{
             const response = await fetch(`${NODE_API_URL}/getJobs?q=${searchQuery}&page=${currentPage}`,
-                {method: 'POST',
+                {
+                    method: 'POST',
                     headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwtToken}`,
@@ -207,7 +208,15 @@ const TaskTable = () => {
         // }
         axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobID}`)
         .then(response => {
-            axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`).then(response => {
+            axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`,
+                },
+            }
+            ).then(response => {
                 console.log('Job is deleted successfully');
                 fetchJobs(pagination.current, globalSearchTerm);
             })

@@ -27,6 +27,7 @@ import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 
 // Initialize Octokit
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
+const jwtToken = getCookie('jwtToken');
 
 // --- Helpers ---
 
@@ -59,7 +60,6 @@ const getFileNameFromURL = (fileUrl) => {
 };
 
 const downloadFile = (fileUrl) => {
-  const jwtToken = getCookie('jwtToken');
   const apiUrl = `${NODE_API_URL}/download`;
   const pwd = "jobResults";
 
@@ -302,7 +302,6 @@ function TaskDetailsComponent() {
     setTaskOutput(routerOutput || null);
 
     const fetchUserInfo = async () => {
-      const jwtToken = getCookie('jwtToken');
       if (!jwtToken) return;
       try {
         const response = await fetch(NODE_API_URL + "/protected", {
@@ -517,7 +516,14 @@ function TaskDetailsComponent() {
     if (!window.confirm("Are you sure to delete this job?")) return;
 
     axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobId}`)
-      .then(() => axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobId}`))
+      .then(() => axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
+        }))
       .then(() => navigate('/myJobs'))
       .catch(error => console.error('Error deleting job:', error));
   };

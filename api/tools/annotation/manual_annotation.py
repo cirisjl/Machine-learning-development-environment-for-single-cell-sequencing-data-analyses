@@ -66,6 +66,7 @@ def manual_annotation(cluster_id, adata_path, layer, job_id, origin_job_id, proc
     pp_results['zarr_path'] = zarr_path
     pp_results['obsSets'] = obsSets
     # Update pp_results
+    pp_results['created_by'] = userID
     create_pp_results(process_id, pp_results)
 
     results = {

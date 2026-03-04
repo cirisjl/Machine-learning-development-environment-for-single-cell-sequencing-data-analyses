@@ -15,6 +15,7 @@ const multer = require("multer");
 const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const hostIp = process.env.SSH_CONNECTION.split(' ')[2];
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
@@ -1653,34 +1654,167 @@ app.post('/node/getJobs', verifyJWTToken, async (req, res) => {
     }
 });
 
-
-app.delete('/node/deleteJob', async (req, res) => {
-    const jobID = req.query.jobID;
-    console.log("jobID: ", jobID);
-
-    if (!jobID) {
-        return res.status(400).json({ error: 'Job ID is required' });
+const getProcessFolder = (filePath, processId) => {
+    if (!filePath) return null;
+    const normalizedPath = path.normalize(filePath);
+    const processIdIndex = normalizedPath.lastIndexOf(processId);
+    if (processIdIndex !== -1) {
+        return normalizedPath.substring(0, processIdIndex + processId.length);
     }
+    return null;
+};
 
+const emptyDirectory = async (dirPath) => {
+    try {
+        if (await fs.pathExists(dirPath)) {
+            await fs.emptyDir(dirPath);
+            console.log(`Emptied contents of directory: ${dirPath}`);
+        }
+    } catch (error) {
+        console.error(`Error emptying folder ${dirPath}:`, error);
+    }
+};
+
+async function cleanUpJobData(jobId, username) {
     const client = new MongoClient(mongoUrl);
 
     try {
         await client.connect();
         const db = client.db(dbName);
-        const collection = db.collection(jobsCollection);
 
-        const result = await collection.deleteOne({ job_id: jobID });
+        const jobsCollection = db.collection('jobs');
+        const ppResultsCollection = db.collection('pp_results');
+        const datasetsCollection = db.collection('datasets');
+        const userDatasetsCollection = db.collection('user_datasets');
+        const largeDocsCollection = db.collection('large_documents');
+
+        // 1. Verify Job Ownership
+        const job = await jobsCollection.findOne(
+            { job_id: jobId, created_by: username },
+            { projection: { process_ids: 1, _id: 0 } }
+        );
+
+        if (!job || !job.process_ids || job.process_ids.length === 0) {
+            console.log(`Job ID ${jobId} not found, does not belong to user, or has no process_ids. Aborting.`);
+            return false;
+        }
+
+        const originalProcessIds = job.process_ids;
+
+        // 2. Verify pp_results Ownership
+        const ppDocs = await ppResultsCollection.find(
+            { process_id: { $in: originalProcessIds }, created_by: username },
+            { projection: { process_id: 1, adata_path: 1, zarr_path: 1, _id: 0 } }
+        ).toArray();
+
+        const validProcessIds = ppDocs.map(doc => doc.process_id);
+
+        if (validProcessIds.length === 0) {
+            console.log(`None of the process_ids belong to user '${username}'. Skipping.`);
+        }
+
+        // ==========================================
+        // NEW STEP: Filter out Shared process_ids
+        // ==========================================
+        const otherJobs = await jobsCollection.find(
+            {
+                job_id: { $ne: jobId }, // Exclude the current job
+                process_ids: { $in: validProcessIds } // Look for jobs sharing these IDs
+            },
+            { projection: { process_ids: 1, _id: 0 } }
+        ).toArray();
+
+        const sharedProcessIds = new Set();
+        otherJobs.forEach(otherJob => {
+            if (otherJob.process_ids) {
+                otherJob.process_ids.forEach(pid => sharedProcessIds.add(pid));
+            }
+        });
+
+        // Keep only the process_ids that are NOT in the shared set
+        const processIdsToDelete = validProcessIds.filter(pid => !sharedProcessIds.has(pid));
+
+        if (processIdsToDelete.length === 0) {
+            console.log(`All process_ids are being used by other jobs. Nothing to delete. Skipping.`);
+        }
+
+        console.log(`Safe to delete process_ids: ${processIdsToDelete.join(', ')}`);
+
+        // 3. File System Cleanup (Using ONLY processIdsToDelete)
+        const foldersToClean = new Set();
+        ppDocs.forEach(doc => {
+            if (processIdsToDelete.includes(doc.process_id)) {
+                if (doc.adata_path) {
+                    const folder = getProcessFolder(doc.adata_path, doc.process_id);
+                    if (folder) foldersToClean.add(folder);
+                }
+                if (doc.zarr_path) {
+                    const folder = getProcessFolder(doc.zarr_path, doc.process_id);
+                    if (folder) foldersToClean.add(folder);
+                }
+            }
+        });
+
+        console.log(`Found ${foldersToClean.size} folders to clear on the file system.`);
+        for (const folder of foldersToClean) {
+            await emptyDirectory(folder);
+        }
+
+        // 4. Database Cleanup
+        const processIdRegexes = processIdsToDelete.map(id => new RegExp(`^${escapeRegex(id)}`));
+
+        const [
+            deletePpResults, updateDatasets, updateUserDatasets, deleteLargeDocs
+        ] = await Promise.all([
+            ppResultsCollection.deleteMany({ process_id: { $in: processIdsToDelete } }),
+            datasetsCollection.updateMany({ process_ids: { $in: processIdsToDelete } }, { $pullAll: { process_ids: processIdsToDelete } }),
+            userDatasetsCollection.updateMany({ process_ids: { $in: processIdsToDelete } }, { $pullAll: { process_ids: processIdsToDelete } }),
+            largeDocsCollection.deleteMany({ document_id: { $in: processIdRegexes } })
+        ]);
+
+        console.log(`Deleted ${deletePpResults.deletedCount} documents from 'pp_results'.`);
+        console.log(`Updated ${updateDatasets.modifiedCount} documents in 'datasets'.`);
+        console.log(`Updated ${updateUserDatasets.modifiedCount} documents in 'user_datasets'.`);
+        console.log(`Deleted ${deleteLargeDocs.deletedCount} documents from 'large_documents'.`);
+
+        // 5. After cleaning up related pp_results, delete the job document from the jobs collection
+        const result = await jobsCollection.deleteOne({ job_id: jobId, created_by: username });
 
         if (result.deletedCount === 0) {
+            return false;
+        } else {
+            return true;
+        }
+
+    } catch (error) {
+        console.error("Error during cleanup operation:", error);
+    } finally {
+        await client.close();
+    }
+}
+
+app.delete('/node/deleteJob', verifyJWTToken, async (req, res) => {
+    const jobID = req.query.jobID;
+    const username = req.user.username;
+    console.log("jobID: ", jobID);
+    console.log("username: ", username);
+
+    if (!jobID) {
+        return res.status(400).json({ error: 'Job ID is required' });
+    }
+
+    try {
+        result = await cleanUpJobData(jobID, username);
+
+        if (result === false) {
             return res.status(404).json({ error: 'Document not found' });
         } else {
             res.status(200).json({ message: 'Job is deleted successfully' });
         }
     } catch (err) {
         res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-        await client.close();
-    }
+        console.error('Error deleting job:', err);
+    } 
 });
 
 

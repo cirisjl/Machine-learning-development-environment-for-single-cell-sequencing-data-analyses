@@ -123,6 +123,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
             redislogger.info(job_id, qc_results['info'])
             qc_results['datasetId'] = datasetId
             qc_output.append({'AnnData': adata_path})
+            qc_output['created_by'] = userID
             create_pp_results(process_id, qc_results)  # Insert pre-process results to database
         process_ids.append(process_id)
 
@@ -204,6 +205,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         scanpy_results = None
                         redislogger.info(job_id, qc_results['info'])
                         qc_results['datasetId'] = datasetId
+                        qc_output['created_by'] = userID
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                     else:
                         # Run Scanpy QC 
@@ -236,7 +238,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             scanpy_results = None
                             redislogger.info(job_id, qc_results['info'])
                             qc_results['datasetId'] = datasetId
-                            
+                            qc_output['created_by'] = userID
                             create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                         except Exception as e:
                             detail = f"Error during scanpy QC: {str(e)}"
@@ -295,6 +297,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         dropkick_results = None
                         redislogger.info(job_id, qc_results['info'])
                         qc_results['datasetId'] = datasetId
+                        qc_output['created_by'] = userID
                         create_pp_results(process_id, qc_results) # Insert pre-process results to database
                     else:
                         try:
@@ -329,6 +332,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             dropkick_results = None
                             redislogger.info(job_id, qc_results['info'])
                             qc_results['datasetId'] = datasetId
+                            qc_output['created_by'] = userID
                             create_pp_results(process_id, qc_results) # Insert pre-process results to database
                         except Exception as e:
                             detail = f"Error during Dropkick_QC: {str(e)}"
@@ -402,6 +406,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         if os.path.exists(adata_path): qc_output.append({'Anndata': adata_path})
                         if os.path.exists(output_path): qc_output.append({'Seurat': output_path})
                         qc_results['datasetId'] = datasetId
+                        qc_output['created_by'] = userID
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                         adata = None      
                 except Exception as e:
@@ -494,6 +499,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                     adata = None
                     redislogger.info(job_id, qc_results['info'])
                     qc_results['datasetId'] = datasetId
+                    qc_output['created_by'] = userID
                     create_pp_results(process_id, qc_results)  # Insert pre-process results to database            
                 except Exception as e:
                     detail = f"Error during Bioconductor QC: {str(e)}"
@@ -543,7 +549,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                     mdata = None
                     redislogger.info(job_id, qc_results['info'])
                     qc_results['datasetId'] = datasetId
-                    
+                    qc_output['created_by'] = userID
                     create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                 except Exception as e:
                     detail = f"Error during muon QC: {str(e)}"

@@ -110,6 +110,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 adata = None
                 redislogger.info(job_id, "AnnData object for MAGIC imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
+                imputation_results['created_by'] = userID
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
                 process_ids.append(process_id)
             else:
@@ -180,6 +181,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
 
             imputation_results['datasetId'] = datasetId
+            imputation_results['created_by'] = userID
             create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)
@@ -240,6 +242,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                 adata = None
                 redislogger.info(job_id, "AnnData object for SAVER imputation is saved successfully")
                 imputation_results['datasetId'] = datasetId
+                imputation_results['created_by'] = userID
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
                 process_ids.append(process_id)
             else:
@@ -326,6 +329,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     redislogger.warning(job_id, "'SAVER' layer already exists.")
                     imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output, layer='SAVER')
                 imputation_results['datasetId'] = datasetId
+                imputation_results['created_by'] = userID
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database
 
         pp_results.append(imputation_results)

@@ -852,6 +852,7 @@ def get_output_path(path, process_id='', dataset=None, method='', format="AnnDat
         os.makedirs(os.path.dirname(output_path))
     
     output_path = output_path.replace(" ", "_")
+    output_path = output_path.replace("__", "_")
     print(output_path)
 
     return output_path

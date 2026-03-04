@@ -354,6 +354,7 @@ def run_annotation(job_id, ds:dict, fig_path=None, description=None, show_error=
     process_ids = list(set(process_ids)) # De-duplicate process_ids
 
     annotation_results['datasetId'] = datasetId
+    annotation_results['created_by'] = userID
     create_pp_results(process_id, annotation_results)  # Insert pre-process results to database
     pp_results.append(annotation_results)
     

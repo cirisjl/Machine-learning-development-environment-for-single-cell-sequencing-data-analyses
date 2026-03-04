@@ -213,6 +213,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
 
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
+                        integration_results['created_by'] = userID
                         create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
                         process_ids.append(process_id) 
 
@@ -265,6 +266,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         adata = None
                         redislogger.info(job_id, integration_results['info'])
                         integration_results['datasetIds'] = datasetIds
+                        integration_results['created_by'] = userID
                         create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
                         process_ids.append(process_id)
 
@@ -345,6 +347,7 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                     adata = None
                     redislogger.info(job_id, integration_results['info'])
                     integration_results['datasetIds'] = datasetIds
+                    integration_results['created_by'] = userID
                     create_pp_results(process_id, integration_results)  # Insert pre-process results to database 
                     process_ids.append(process_id) 
 

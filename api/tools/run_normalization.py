@@ -161,6 +161,7 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         # pp_results.append(normalization_results)
                         process_ids.append(process_id)
                         normalization_results['datasetId'] = datasetId
+                        normalization_results['created_by'] = userID
                         create_pp_results(process_id, normalization_results)  # Insert pre-process results to database
                         adata_paths.append(adata_path)
                     except Exception as e:

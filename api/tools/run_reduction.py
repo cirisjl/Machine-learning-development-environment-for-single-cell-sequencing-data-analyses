@@ -75,6 +75,7 @@ def run_reduction(job_id, ds:dict, show_error=True, random_state=0):
 
             adata = None
             reduction_results['datasetId'] = datasetId
+            reduction_results['created_by'] = userID
             create_pp_results(process_id, reduction_results)  # Insert pre-process results to database
             redislogger.info(job_id, "AnnData object for UMAP & t-SNE reduction is saved successfully")
         except Exception as e:

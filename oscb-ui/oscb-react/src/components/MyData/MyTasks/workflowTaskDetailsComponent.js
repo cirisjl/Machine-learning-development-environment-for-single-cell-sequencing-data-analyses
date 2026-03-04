@@ -33,7 +33,7 @@ import AnnotationTable from './annotationPanel';
 import OutlierTable from './outlierPanel';
 
 const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
-let jwtToken = getCookie('jwtToken');
+const jwtToken = getCookie('jwtToken');
 
 // --- Styled Components ---
 const Accordion = styled((props) => (
@@ -357,7 +357,14 @@ export default function WorkflowTaskDetailsComponent() {
   const handleDelete = () => {
     if (!window.confirm("Are you sure to delete this job?")) return;
     axios.post(`${CELERY_BACKEND_API}/job/revoke/${job_id}`)
-      .then(() => axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`))
+      .then(() => axios.delete(`${NODE_API_URL}/deleteJob?jobID=${job_id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`,
+          },
+        }))
       .then(() => navigate('/myJobs'))
       .catch(error => console.error('Error deleting job:', error));
   };
