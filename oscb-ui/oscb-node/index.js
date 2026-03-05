@@ -4462,32 +4462,168 @@ app.post("/node/projects/:id/removeMember", async (req, res) => {
 });
 
 
-app.delete('/node/deleteDataset', async (req, res) => {
-    const { id } = req.body;
-    console.log("id in delete", id);
-
-    if (!id) {
-        return res.status(400).json({ error: 'ID is required' });
-    }
-
+async function deleteDatasetAndRelatedData(Id, username) {
     const client = new MongoClient(mongoUrl);
 
     try {
         await client.connect();
         const db = client.db(dbName);
-        const collection = db.collection(datasetCollection);
 
-        const result = await collection.deleteOne({ Id: id });
+        // Initialize Collections
+        const datasetsCollection = db.collection('datasets');
+        const userDatasetsCollection = db.collection('user_datasets');
+        const jobsCollection = db.collection('jobs');
+        const ppResultsCollection = db.collection('pp_results');
+        const largeDocsCollection = db.collection('large_documents');
+        const benchmarksCollection = db.collection('benchmarks');
+        const bmResultsCollection = db.collection('bm_results');
 
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ error: 'Document not found' });
+        // 1. Determine which collection to use based on the prefix
+        const isUserDataset = Id.startsWith("U-");
+        const targetCollection = isUserDataset ? userDatasetsCollection : datasetsCollection;
+        const collectionName = isUserDataset ? 'user_datasets' : 'datasets';
+
+        console.log(`Searching for Dataset ID '${Id}' in '${collectionName}'...`);
+
+        // 2. Query the Dataset to get process_ids and adata_path
+        const dataset = await targetCollection.findOne(
+            { Id: Id, Owner: username },
+            { projection: { process_ids: 1, adata_path: 1, inputFiles: 1, _id: 0 } }
+        );
+
+        if (!dataset) {
+            console.log(`Dataset ID '${Id}' not found or does not belong to user '${username}'. Aborting.`);
+            return;
+        }
+
+        const processIds = dataset.process_ids || [];
+        const datasetAdataPath = dataset.adata_path;
+        const datasetInputFiles = dataset.inputFiles || [];
+
+        console.log(`Found dataset with ${processIds.length} process_ids.`);
+
+        // ==========================================
+        // 3. FILE SYSTEM CLEANUP
+        // ==========================================
+
+        // A. Delete the dataset's main adata_path file
+        if (datasetAdataPath) {
+            try {
+                if (await fs.pathExists(datasetAdataPath)) {
+                    await fs.remove(datasetAdataPath); // fs.remove handles both files and directories seamlessly
+                    console.log(`Deleted dataset file: ${datasetAdataPath}`);
+                }
+            } catch (err) {
+                console.error(`Failed to delete dataset file ${datasetAdataPath}:`, err);
+            }
+        }
+
+        if (datasetInputFiles.length > 0) {
+            for (const filePath of datasetInputFiles) {
+                try {
+                    if (await fs.pathExists(filePath)) {
+                        await fs.remove(filePath);
+                        console.log(`Deleted input file: ${filePath}`);
+                    }
+                } catch (err) {
+                    console.error(`Failed to delete input file ${filePath}:`, err);
+                }
+            }
+        }
+
+        // B. Find folders associated with process_ids in pp_results
+        if (processIds.length > 0) {
+            const ppDocs = await ppResultsCollection.find(
+                { process_id: { $in: processIds } },
+                { projection: { process_id: 1, adata_path: 1, zarr_path: 1, _id: 0 } }
+            ).toArray();
+
+            const foldersToClean = new Set();
+            ppDocs.forEach(doc => {
+                const pid = doc.process_id;
+                if (doc.adata_path) {
+                    const folder = getProcessFolder(doc.adata_path, pid);
+                    if (folder) foldersToClean.add(folder);
+                }
+                if (doc.zarr_path) {
+                    const folder = getProcessFolder(doc.zarr_path, pid);
+                    if (folder) foldersToClean.add(folder);
+                }
+            });
+
+            console.log(`Found ${foldersToClean.size} related process_id folders to clear.`);
+            for (const folder of foldersToClean) {
+                await emptyDirectory(folder);
+            }
+        }
+
+        // ==========================================
+        // 4. DATABASE CLEANUP
+        // ==========================================
+
+        const processIdRegexes = processIds.map(id => new RegExp(`^${escapeRegex(id)}`));
+        const datasetIdRegex = new RegExp(`^${escapeRegex(Id)}$`);
+
+        // Execute all database deletions concurrently
+        const [
+            deleteDataset,
+            deleteJobs,
+            deleteBenchmarks,
+            deleteBmResults,
+            deletePpResults,
+            deleteLargeDocs
+        ] = await Promise.all([
+            targetCollection.deleteOne({ Id: Id, Owner: username }),
+            jobsCollection.deleteMany({ datasetId: Id }),
+            benchmarksCollection.deleteMany({ datasetId: Id }),
+            bmResultsCollection.deleteMany({ benchmarksId: { $regex: datasetIdRegex, $options: 'i' } }),
+            processIds.length > 0 ? ppResultsCollection.deleteMany({ process_id: { $in: processIds } }) : { deletedCount: 0 },
+            processIds.length > 0 ? largeDocsCollection.deleteMany({ document_id: { $in: processIdRegexes } }) : { deletedCount: 0 }
+        ]);
+
+        console.log(`\n--- Deletion Summary ---`);
+        console.log(`Deleted ${deleteDataset.deletedCount} document from '${collectionName}'.`);
+        console.log(`Deleted ${deleteJobs.deletedCount} documents from 'jobs'.`);
+        console.log(`Deleted ${deleteBenchmarks.deletedCount} documents from 'benchmarks'.`);
+        console.log(`Deleted ${deleteBmResults.deletedCount} documents from 'bm_results'.`);
+        console.log(`Deleted ${deletePpResults.deletedCount} documents from 'pp_results'.`);
+        console.log(`Deleted ${deleteLargeDocs.deletedCount} documents from 'large_documents'.`);
+        console.log(`------------------------\n`);
+
+        if (deleteDataset.deletedCount === 0) {
+            return false; // Indicate that no dataset was deleted (either not found or not owned by user)
         } else {
-            res.status(200).json({ message: 'Document deleted successfully' });
+            return true; // Indicate successful deletion
+        }
+
+    } catch (error) {
+        console.error("Error during dataset deletion operation:", error);
+    } finally {
+        await client.close();
+    }
+}
+
+app.delete('/node/deleteDataset', verifyJWTToken, async (req, res) => {
+    const Id = req.query.datasetId;
+    const username = req.user.username;
+    console.log("datasetId: ", Id);
+    console.log("username: ", username);
+
+    if (!Id) {
+        return res.status(400).json({ error: 'Dataset ID is required' });
+    }
+
+    try {
+        result = await deleteDatasetAndRelatedData(Id, username);
+
+        if (result === false) {
+            return res.status(404).json({ error: 'Dataset not found.' });
+        } else {
+            res.status(200).json({ message: `${Id} is deleted successfully.` });
         }
     } catch (err) {
         res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
-        await client.close();
+        console.error('Error deleting dataset:', err);
     }
 });
 

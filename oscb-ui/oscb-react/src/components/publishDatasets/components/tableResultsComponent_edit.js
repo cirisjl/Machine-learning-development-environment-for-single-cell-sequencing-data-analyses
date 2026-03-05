@@ -361,24 +361,24 @@ const clearMessageAfterTimeout = () => {
   }
 
   const  handleDelete= (dataset,id)=>{
-  console.log("IN making of delete dataset",id);
-  console.log("dataset",dataset);
-  const confirmDelete = window.confirm("Are you sure you want to delete this dataset?");
-  if (!confirmDelete) {
-      return; // If user clicks cancel, do nothing
-  }
-  axios.delete(`${NODE_API_URL}/deleteDataset`, { data: { id: dataset } })
-    .then(response => {
-      console.log('Dataset deleted successfully');
-      const updatedData = newData.filter(item => item.Id !== dataset);
-      console.log("check delete",updatedData);
-            updateData(updatedData);
-    })
-    .catch(error => {
-      console.error('Error deleting dataset:', error);
-    });
-    console.log("newData",newData)
-  }
+    console.log("IN making of delete dataset",id);
+    console.log("dataset",dataset);
+    const confirmDelete = window.confirm("Are you sure you want to delete this dataset?");
+    if (!confirmDelete) {
+        return; // If user clicks cancel, do nothing
+    }
+    axios.delete(`${NODE_API_URL}/deleteDataset`, { data: { id: dataset } })
+      .then(response => {
+        console.log('Dataset deleted successfully');
+        const updatedData = newData.filter(item => item.Id !== dataset);
+        console.log("check delete",updatedData);
+          updateData(updatedData);
+      })
+      .catch(error => {
+        console.error('Error deleting dataset:', error);
+      });
+      console.log("newData",newData)
+    }
 
     const handlecloseView=()=>{
       setx(false);

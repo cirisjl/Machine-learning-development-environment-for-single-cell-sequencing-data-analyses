@@ -15,7 +15,7 @@ import { CELERY_BACKEND_API } from '../../../constants/declarations'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
-const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagination, onSelectSubItem, username = null, isAdmin = false, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
+const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets, multiple, pagination, onSelectSubItem, username = null, isAdmin = false, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
     const [copiedState, setCopiedState] = useState(false);
@@ -144,11 +144,6 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
         window.open(`/mydata/edit-dataset-info?datasetId=${datasetId}`, '_blank');
     };
 
-    const handleDelete = (datasetId) => {
-        console.log("Delete dataset Id: ", datasetId);
-        // Implement your visualization logic here
-    };
-
     const columns = React.useMemo(() => {
         if (data.length === 0) {
             return [];
@@ -203,7 +198,7 @@ const ResultsTable = ({ data, onSelectDataset, selectedDatasets, multiple, pagin
                     </button> )}
 
                     {username && (isAdmin || username === item["Owner"]) && showEdit && showDelete && ( <button
-                        onClick={() => handleDelete(item["Id"], item)}
+                        onClick={() => onDeleteDataset(item["Id"], item)}
                         className="action-button">
                         <FontAwesomeIcon icon={faTrash} />
                     </button> )}
