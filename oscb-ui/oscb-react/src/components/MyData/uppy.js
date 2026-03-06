@@ -46,11 +46,11 @@ export default function UppyUploader(props) {
         autoProceed: false,
         allowMultipleUploads: true,
         restrictions: {
-            maxFileSize: freeSpace * 1024 * 1024 * 1024,
+            maxFileSize: publicDatasetFlag ? null : freeSpace * 1024 * 1024 * 1024,
             maxNumberOfFiles: 5,
-            maxTotalFileSize: freeSpace * 1024 * 1024 * 1024,
+            maxTotalFileSize: publicDatasetFlag ? null : freeSpace * 1024 * 1024 * 1024,
         },
-        debug: true,
+        debug: false,
     });
     uppy.use(GoogleDrive, {
         companionUrl: `${UPPY_API_URL}`,

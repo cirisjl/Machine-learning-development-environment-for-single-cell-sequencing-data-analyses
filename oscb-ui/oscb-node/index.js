@@ -1125,6 +1125,7 @@ app.delete('/node/deleteFiles', async (req, res) => {
     const { fileList } = req.body;
     const { authToken } = req.query;
     const { pwd } = req.query
+    const isAdmin = req.query.isAdmin;
     const uname = getUserFromToken(authToken);
     if (uname === 'Unauthorized') {
         return res.status(403).json('Unauthorized');
