@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography,
   CircularProgress,
   Accordion,
   AccordionSummary,
@@ -12,7 +11,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import close_icon from '../../assets/close_icon_u86.svg';
 import close_icon_hover from '../../assets/close_icon_u86_mouseOver.svg';
 import styled from 'styled-components';
@@ -29,7 +28,7 @@ export function Preview(props) {
   const [loadedHtmlContent, setLoadedHtmlContent] = useState({});
   let jwtToken = getCookie('jwtToken');
   const [datasets, setDatasets] = useState([]);
-  const [ message, setMessage ] = useState(props.message);
+  const [message, setMessage] = useState(props.message);
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [datasetToDelete, setDatasetToDelete] = useState('');
   const [isDeleteConfBoxOpen, setIsDeleteConfBoxOpen] = useState(false);
@@ -149,13 +148,13 @@ export function Preview(props) {
             <p>{message}</p>
           </div>
         </div>)}
-      {isDeleteConfBoxOpen && datasetToDelete!=='' && (
+      {isDeleteConfBoxOpen && datasetToDelete !== '' && (
         <div className='login-container comn-container-auth'>
           <div className='clear-icon'>
             <img src={hovered ? close_icon_hover : close_icon} alt="close-icon" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleCrossButtonClick} />
           </div>
           <div className='inner-container-auth'>
-            <p>Are you sure you want to delete this dataset? <br/><br/> <NavLink className="span-class-link" onClick={handleDeleteConfirmClick}>Yes</NavLink>&nbsp;&nbsp;<NavLink className="span-class-link" onClick={handleCrossButtonClick}>No</NavLink></p>
+            <p>Are you sure you want to delete this dataset? <br /><br /> <NavLink className="span-class-link" onClick={handleDeleteConfirmClick}>Yes</NavLink>&nbsp;&nbsp;<NavLink className="span-class-link" onClick={handleCrossButtonClick}>No</NavLink></p>
           </div>
         </div>
       )}
@@ -173,7 +172,7 @@ export function Preview(props) {
                     <MyDeleteIcon onClick={(event) => {
                       event.stopPropagation();
                       setDatasetToDelete(dataset.title);
-                      }} />
+                    }} />
                   </div>
                   <h3>Title: {dataset.title}</h3>
                   <p>Reference: {dataset.reference}</p>

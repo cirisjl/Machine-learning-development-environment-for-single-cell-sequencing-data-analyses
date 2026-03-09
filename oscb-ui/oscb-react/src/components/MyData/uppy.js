@@ -15,7 +15,7 @@ import { NODE_API_URL, UPPY_API_URL } from '../../constants/declarations'
 
 export default function UppyUploader(props) {
 
-    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setFileError ,setTaskData } = props;
+    const { isUppyModalOpen, setIsUppyModalOpen, pwd, authToken, freeSpace, publicDatasetFlag, toPublishDataset, setTaskData } = props;
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export default function UppyUploader(props) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    
+
     const uppy = new Uppy({
         id: 'fileUploader',
         autoProceed: false,
@@ -71,8 +71,8 @@ export default function UppyUploader(props) {
     });
 
     uppy.on('complete', (result) => {
-         console.log('Upload complete! We’ve uploaded these files:', result.successful);
-         let filenames = result.successful.map(file => file.name);
+        console.log('Upload complete! We’ve uploaded these files:', result.successful);
+        let filenames = result.successful.map(file => file.name);
         if (toPublishDataset) {
             setTaskData((prevTaskData) => ({
                 ...prevTaskData,
@@ -82,8 +82,8 @@ export default function UppyUploader(props) {
                 },
             }));
         }
-      });
- 
+    });
+
     if (isUppyModalOpen && !toPublishDataset)
         return (<div className="uppy-modal">
             <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
@@ -103,11 +103,11 @@ export default function UppyUploader(props) {
         </div>
         )
 
-        if(toPublishDataset) {
-            return (<div className='uppy-comp'>
-                <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
-            </div>)
-        }
+    if (toPublishDataset) {
+        return (<div className='uppy-comp'>
+            <Dashboard uppy={uppy} plugins={['GoogleDrive', 'OneDrive', 'Dropbox', 'Url']} />
+        </div>)
+    }
 }
 
 

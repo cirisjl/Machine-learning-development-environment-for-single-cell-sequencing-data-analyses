@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCookie } from '../../utils/utilFunctions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faDownload , faSquarePollVertical } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faDownload, faSquarePollVertical } from '@fortawesome/free-solid-svg-icons';
 import FilePreviewModal from './filePreviewModal';
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL } from '../../constants/declarations'
@@ -86,8 +86,9 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
           >
             <span style={{ marginRight: '10px', flex: '1' }}>{file.name}</span>
             {file.name.endsWith('.h5ad') && (
-              <a
-                onClick={() => {
+              <a href="#"
+                onClick={(e) => {
+                  e.preventDefault();
                   handlePreviewClick(file.name);
                 }}
                 target="_blank"
@@ -98,8 +99,9 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
                 Visualize
               </a>
             )}
-            <a
-              onClick={() => {
+            <a href="#"
+              onClick={(e) => {
+                e.preventDefault();
                 handlePreviewClick(file.name);
               }}
               target="_blank"
@@ -109,9 +111,10 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
               <FontAwesomeIcon icon={faEye} style={{ marginRight: '5px' }} />
               Preview
             </a>
-            <a
+            <a href="#"
               download
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 downloadFile(file.name);
               }}
               style={{ marginLeft: '10px', textAlign: 'center' }}

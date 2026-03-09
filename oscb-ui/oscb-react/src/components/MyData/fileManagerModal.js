@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowAltCircleUp, faCheck, faDatabase, faDownload, faFile, faFolder, faPencil, faPlus, faRefresh, faTrash, faTurnUp, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowAltCircleUp, faCheck, faDatabase, faDownload, faFile, faFolder, faPlus, faRefresh, faTrash, faTurnUp, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from 'react';
 import './ModalWindow.css';
 import UppyUploader from "./uppy";
@@ -7,7 +7,7 @@ import { red } from "@mui/material/colors";
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL } from '../../constants/declarations'
 
-export default function FileManagerModal({ setEnabledCheckboxes, setFileToPreview, tempFileList, fileNames, dirNames, jwtToken, fetchDirContents, pwd, setPwd, setPreviewBoxOpen, selectedFiles, setSelectedFiles, setErrorMessage, setTempFileList, enabledCheckboxes, toggleModal, isAdminuser, publicDatasetFlag}) {
+export default function FileManagerModal({ setEnabledCheckboxes, setFileToPreview, tempFileList, fileNames, dirNames, jwtToken, fetchDirContents, pwd, setPwd, setPreviewBoxOpen, selectedFiles, setSelectedFiles, setErrorMessage, setTempFileList, enabledCheckboxes, toggleModal, isAdminuser, publicDatasetFlag }) {
 
     const [isUppyModalOpen, setIsUppyModalOpen] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState(null);
@@ -97,7 +97,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                 if (!errorHandled && error.message === 'Please log in first') {
                     navigate('/routing');
                     return;
-                } else if (!errorHandled && error.message === 'Unable to rename. File or Folder being used by dataset.'){
+                } else if (!errorHandled && error.message === 'Unable to rename. File or Folder being used by dataset.') {
                     setErrorMessage('Unable to rename. File or Folder being used by dataset.')
                     return;
                 }
@@ -267,7 +267,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
             </button></div>
         <div className="modal-content" style={{ overflowX: "hidden", overflowY: "hidden" }}>
             <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
-                <div style={{ paddingLeft: '2%'}}>Path: {pwd} </div>
+                <div style={{ paddingLeft: '2%' }}>Path: {pwd} </div>
             </div>
             <div className="modal-item" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: 10 }}>
                 <div style={{ paddingLeft: '15%', width: "45%" }}>Name</div>
@@ -301,7 +301,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                             />
                         ) : (
                             <div style={{ paddingLeft: '6%', width: "40%", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                <a style={{ color: "black", textDecoration: "none" }} title={dir.name} onClick={() => { fetchDirContents(dir.name); }}>
+                                <a href="#" style={{ color: "black", textDecoration: "none" }} title={dir.name} onClick={(e) => { e.preventDefault(); fetchDirContents(dir.name); }}>
                                     {dir.name}
                                 </a>
                             </div>
@@ -378,7 +378,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         <div style={{ paddingTop: "7px" }}><button className="fileManagerButton" onClick={() => { setPwd('/'); setSelectedFiles(tempFileList); toggleModal(); }} ><FontAwesomeIcon icon={faCheck} style={{ fontWeight: "bold" }} /> Select Files</button>&nbsp;&nbsp;
             <button className="fileManagerButton" onClick={() => { setIsUppyModalOpen(!isUppyModalOpen) }} > <FontAwesomeIcon icon={faArrowAltCircleUp} /> Upload Files </button>&nbsp;&nbsp;
             {isUppyModalOpen && (
-                <UppyUploader isUppyModalOpen={isUppyModalOpen} setIsUppyModalOpen={setIsUppyModalOpen} pwd={pwd} authToken={jwtToken} freeSpace={totalStorage - usedStorage} publicDatasetFlag={publicDatasetFlag}/>
+                <UppyUploader isUppyModalOpen={isUppyModalOpen} setIsUppyModalOpen={setIsUppyModalOpen} pwd={pwd} authToken={jwtToken} freeSpace={totalStorage - usedStorage} publicDatasetFlag={publicDatasetFlag} />
             )}
             <button className="fileManagerButton" onClick={async () => {
                 await setTempFileList([]); setSelectedFiles([]); toggleModal(); setPwd('/')

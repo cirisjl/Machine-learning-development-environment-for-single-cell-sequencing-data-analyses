@@ -3,9 +3,7 @@ import axios from 'axios';
 import ReactMarkdown from "react-markdown"
 import 'github-markdown-css';
 // import LeftNav from "../components/LeftNavigation/leftNav";
-import gfm from "remark-gfm";
 // import rehypeRaw from 'rehype-raw'
-import remarkImgToJsx from "remark-unwrap-images";
 // import rehypeSanitize from 'rehype-sanitize'
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
@@ -32,31 +30,31 @@ export default function GetStarted() {
 
     useEffect(() => {
         async function fetchFileData() {
-        try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=getstarted");
-            const data = response.data.data;
-            
-            if(data.length === 1) {
-                const fileMappingObject = data[0];
-                const fileID = fileMappingObject.fileID;
-                if(fileID !== null) {
-                    fetch(DIRECTUS_URL + "/assets/" + fileID)
-                    .then(response => response.text())
-                    .then(data => setMarkdownText(data))
-                    .catch(error => console.error('Error retrieving markdown:', error));
+            try {
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=getstarted");
+                const data = response.data.data;
+
+                if (data.length === 1) {
+                    const fileMappingObject = data[0];
+                    const fileID = fileMappingObject.fileID;
+                    if (fileID !== null) {
+                        fetch(DIRECTUS_URL + "/assets/" + fileID)
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
+                    }
                 }
+
+            } catch (error) {
+                console.error('Error retrieving data:', error);
             }
-            
-          } catch (error) {
-            console.error('Error retrieving data:', error);
-          }
         }
-        
+
         fetchFileData();
-      }, []);
-    
-    return(
-        
+    }, []);
+
+    return (
+
         <div className="getStarted-container">
 
             <div className="left-nav">
@@ -72,7 +70,6 @@ export default function GetStarted() {
                         code(props) {
                             const { children, inline, className, node, ...rest } = props;
                             const match = /language-(\w+)/.exec(className || '');
-                            const codeText = String(children).replace(/\n$/, '');
                             if (!inline && match) {
                                 codeBlockIndex++;
 
@@ -120,10 +117,10 @@ export default function GetStarted() {
                 <RightRail />
             </div>
 
-            <div style={{display: 'none'}}>
+            <div style={{ display: 'none' }}>
                 <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=fcfafa&w=a&t=tt&d=lOyy3dFp22wbqbeXPEE1e2nJSb_u_4KqYJPohHA8M4I&co=d8e1e8&cmo=f4acba&cmn=ff5353&ct=494545'></script>
-            </div>  
-            
+            </div>
+
         </div>
     )
 }

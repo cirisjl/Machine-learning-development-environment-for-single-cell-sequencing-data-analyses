@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useWebSocket from './useWebSocket';
 import {
@@ -27,7 +27,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Chatbot from "../../RightNavigation/Chatbot";
 
 // GitImports & Constants
-import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 import TaskImageGallery from './taskImageGallery';
 import AnnotationTable from './annotationPanel';
 import OutlierTable from './outlierPanel';
@@ -103,9 +103,9 @@ const downloadFile = (fileUrl) => {
 
 // Reusable Download Link Component to prevent repetitive a-tags
 const DownloadLink = ({ url, label }) => (
-  <a
+  <a href="#"
     download
-    onClick={() => downloadFile(url)}
+    onClick={(e) => { e.preventDefault(); downloadFile(url); }}
     style={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue', marginLeft: '10px' }}
   >
     {label || getFileNameFromURL(url) || 'Not available'}

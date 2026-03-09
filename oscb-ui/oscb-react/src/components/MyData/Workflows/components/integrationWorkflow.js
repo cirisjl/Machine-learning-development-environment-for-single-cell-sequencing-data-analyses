@@ -14,7 +14,7 @@ import ClusterLabelInput from '../../Tools/components/customInputComponent';
 import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import AlertMessageComponent from '../../../publishDatasets/components/alertMessageComponent';
-import {CELERY_BACKEND_API} from '../../../../constants/declarations';
+import { CELERY_BACKEND_API } from '../../../../constants/declarations';
 import { useNavigate } from 'react-router-dom';
 import { isUserAuth, getCookie } from '../../../../utils/utilFunctions';
 import Chatbot from "../../../RightNavigation/Chatbot";
@@ -23,12 +23,11 @@ import Chatbot from "../../../RightNavigation/Chatbot";
 export function IntegrationWorkFlowComponent(props) {
   const [selectedDatasets, setSelectedDatasets] = useState({});
   const [formErrors, setFormErrors] = useState("");
-  const [value, setValue] = useState("");
   const [formData, setFormData] = useState({});
 
-  const [ message, setMessage ] = useState('');
+  const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
-  const [ isError, setIsError ] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [presetQuestions, setPresetQuestions] = useState(null);
 
@@ -39,16 +38,16 @@ export function IntegrationWorkFlowComponent(props) {
   };
 
   const [dynamicOptions, setDynamicOptions] = useState({
-        layers: [], // Add layers as a dynamic option
-        obs_names: [], // Add obs_names as a dynamic option
-        embeddings: [], // Add embeddings as a dynamic option
-        species: [],
-        organ_part: [], 
-      });
+    layers: [], // Add layers as a dynamic option
+    obs_names: [], // Add obs_names as a dynamic option
+    embeddings: [], // Add embeddings as a dynamic option
+    species: [],
+    organ_part: [],
+  });
 
   const navigate = useNavigate();
 
-  const extractDir =  (inputFile) => {
+  const extractDir = (inputFile) => {
     const fileLocParts = inputFile.split('/');
     fileLocParts.pop(); // Remove the file name from the array
     const output = fileLocParts.join('/'); // Join the remaining parts with '/'
@@ -60,15 +59,11 @@ export function IntegrationWorkFlowComponent(props) {
     // Add more filter categories and their corresponding URL paths as needed
   };
 
-  const handleChange = (event) => {
-      setValue(event.target.value);
-    };
-
   const onDeleteDataset = (id) => {
-    const currentSelectedDatasets = { ...selectedDatasets};
-    
+    const currentSelectedDatasets = { ...selectedDatasets };
+
     if (currentSelectedDatasets[id]) {
-        delete currentSelectedDatasets[id];
+      delete currentSelectedDatasets[id];
     }
     setSelectedDatasets(currentSelectedDatasets);
     setDynamicOptions((prevOptions) => ({
@@ -82,17 +77,17 @@ export function IntegrationWorkFlowComponent(props) {
   };
 
   const onSelectDataset = (dataset) => {
-      let datasetId = dataset.Id; 
-      let currentSelectedDatasets = { ...selectedDatasets};
-  
-      if(currentSelectedDatasets[datasetId]) {
-        delete currentSelectedDatasets[datasetId];
-      } else {
-        // if(props.selectedWorkflow !== "integration") {
-        //   currentSelectedDatasets = {};
-        // }
-        currentSelectedDatasets[datasetId] = dataset;
-      }
+    let datasetId = dataset.Id;
+    let currentSelectedDatasets = { ...selectedDatasets };
+
+    if (currentSelectedDatasets[datasetId]) {
+      delete currentSelectedDatasets[datasetId];
+    } else {
+      // if(props.selectedWorkflow !== "integration") {
+      //   currentSelectedDatasets = {};
+      // }
+      currentSelectedDatasets[datasetId] = dataset;
+    }
     setSelectedDatasets(currentSelectedDatasets)
   };
 
@@ -130,50 +125,50 @@ export function IntegrationWorkFlowComponent(props) {
 
 
   const widgets = {
-      SelectComponent: SelectComponent,
-      geneRangeSlider: GeneRangeSlider,
-      MultiSelectComponent: MultiSelectComponent,
-      toggle: (props) => (
-        <Toggle
-          checked={props.value}
-          onChange={(e) => props.onChange(e.target.checked)}
-        />
-      ),
-      GeneRangeSlider: GeneRangeSlider,
-      RangeSlider: RangeSlider,
-      SwitchComponent: SwitchComponent,
-      ClusterLabelInput: ClusterLabelInput,
-      UseDefaultSwitch: UseDefaultSwitch
-    };
+    SelectComponent: SelectComponent,
+    geneRangeSlider: GeneRangeSlider,
+    MultiSelectComponent: MultiSelectComponent,
+    toggle: (props) => (
+      <Toggle
+        checked={props.value}
+        onChange={(e) => props.onChange(e.target.checked)}
+      />
+    ),
+    GeneRangeSlider: GeneRangeSlider,
+    RangeSlider: RangeSlider,
+    SwitchComponent: SwitchComponent,
+    ClusterLabelInput: ClusterLabelInput,
+    UseDefaultSwitch: UseDefaultSwitch
+  };
 
-    // Function to handle selection of sub-items
+  // Function to handle selection of sub-items
   const onSelectSubItem = (mainItem, subItem) => {
-      const mainItemId = mainItem.Id;
-      let currentSelectedDatasets = { ...selectedDatasets };
-    
-      // Check if the main item is already selected
-      if (currentSelectedDatasets[mainItemId]) {
-          // If sub-item is already selected, deselect it
-          if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
-              delete currentSelectedDatasets[mainItemId];
-          } else {
-              // Update the selected main item with the selected sub-item
-              currentSelectedDatasets[mainItemId] = {
-                  ...mainItem,
-                  selectedSubItem: subItem
-              };
-          }
+    const mainItemId = mainItem.Id;
+    let currentSelectedDatasets = { ...selectedDatasets };
+
+    // Check if the main item is already selected
+    if (currentSelectedDatasets[mainItemId]) {
+      // If sub-item is already selected, deselect it
+      if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id === subItem.process_id) {
+        delete currentSelectedDatasets[mainItemId];
       } else {
-          // Select the main item and the sub-item
-          currentSelectedDatasets = {
-              [mainItemId]: {
-                  ...mainItem,
-                  selectedSubItem: subItem
-              }
-          };
+        // Update the selected main item with the selected sub-item
+        currentSelectedDatasets[mainItemId] = {
+          ...mainItem,
+          selectedSubItem: subItem
+        };
       }
-      setSelectedDatasets(currentSelectedDatasets);
-    };
+    } else {
+      // Select the main item and the sub-item
+      currentSelectedDatasets = {
+        [mainItemId]: {
+          ...mainItem,
+          selectedSubItem: subItem
+        }
+      };
+    }
+    setSelectedDatasets(currentSelectedDatasets);
+  };
 
   const getSpeciesArray = (dataMap) => {
     let speciesArray = [];
@@ -245,9 +240,9 @@ export function IntegrationWorkFlowComponent(props) {
     });
 
     return [...new Set(layersArray)]; // Remove duplicates
-    };
-  
-  
+  };
+
+
   const getPresetQuestions = (dataMap) => {
     let presetQuestionsList = [];
     Object.values(dataMap).forEach((dataset) => {
@@ -273,12 +268,12 @@ export function IntegrationWorkFlowComponent(props) {
 
 
   const handleSubmit = ({ formData }) => {
-      formData = formData.parameters;
-      console.log("In submit function");
-      console.log("Submitted data:", formData);
-      console.log(selectedDatasets);
-      // Verify the authenticity of the user
-      isUserAuth(getCookie('jwtToken'))
+    formData = formData.parameters;
+    console.log("In submit function");
+    console.log("Submitted data:", formData);
+    console.log(selectedDatasets);
+    // Verify the authenticity of the user
+    isUserAuth(getCookie('jwtToken'))
       .then((authData) => {
         if (authData.isAuth) {
           // Prepare the data to send. For workflow we only use a single dataset for Integration.
@@ -299,7 +294,7 @@ export function IntegrationWorkFlowComponent(props) {
             console.log("Failed to submit the form.");
           }
 
-          if(Object.keys(selectedDatasets).length > 0) {
+          if (Object.keys(selectedDatasets).length > 0) {
             const datasetsArray = Object.values(selectedDatasets);
             const titlesArray = datasetsArray.map(dataset => dataset.Title);
             const idsArray = datasetsArray.map(dataset => dataset.Id);
@@ -335,7 +330,7 @@ export function IntegrationWorkFlowComponent(props) {
               }
             });
             methodMap["Quality Control"] = method;
-          } 
+          }
           if (formData["integration_params"] && formData["integration_params"].methods) {
             let method = "";
             // iterate methods array inside integration_params and add it to methods string with comma delimiter
@@ -347,7 +342,7 @@ export function IntegrationWorkFlowComponent(props) {
               }
             });
             methodMap["Integration"] = method;
-          } 
+          }
 
           console.log("Method map: ", methodMap);
           let job_description = "";
@@ -375,61 +370,61 @@ export function IntegrationWorkFlowComponent(props) {
             },
             body: JSON.stringify(formData),
           })
-          .then(response => {
-            // Check the status code
-            if (response.ok) {
-              return response.json();
-            } else {
-              throw new Error('Error while making a call to the celery Tools API');
-            }
-          })
-          .then(response => {
+            .then(response => {
+              // Check the status code
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Error while making a call to the celery Tools API');
+              }
+            })
+            .then(response => {
 
-            const jobId = response.job_id;
-            console.log(jobId);
+              const jobId = response.job_id;
+              console.log(jobId);
 
-            setHasMessage(true);
-            setMessage(response.status ? response.status : "Job Successfully Submitted.");
-            setIsError(false);
-            navigate("/mydata/workflowTaskDetails", { state: { job_id: jobId, methodMap: methodMap, datasetURL: formData.input, description: job_description, process: props.selectedWorkflow } });
-            // let datasetName = "";
-            // if (typeof formData.dataset === 'string') {
-            //   datasetName = formData.dataset
-            // } else if (Array.isArray(formData.dataset)) {
-            //   if (formData.dataset.length > 1) {
-            //     datasetName = formData.dataset.join('_');
-            //   } else if (formData.dataset.length === 1) {
-            //     datasetName = formData.dataset[0];
-            //   }
-            // }
+              setHasMessage(true);
+              setMessage(response.status ? response.status : "Job Successfully Submitted.");
+              setIsError(false);
+              navigate("/mydata/workflowTaskDetails", { state: { job_id: jobId, methodMap: methodMap, datasetURL: formData.input, description: job_description, process: props.selectedWorkflow } });
+              // let datasetName = "";
+              // if (typeof formData.dataset === 'string') {
+              //   datasetName = formData.dataset
+              // } else if (Array.isArray(formData.dataset)) {
+              //   if (formData.dataset.length > 1) {
+              //     datasetName = formData.dataset.join('_');
+              //   } else if (formData.dataset.length === 1) {
+              //     datasetName = formData.dataset[0];
+              //   }
+              // }
 
-            //   // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
-            //   const taskId = response.task_id;
-            //   let method = "";
+              //   // After a successfull task creation, store the intermediate task information in the mongoDB task_results collection
+              //   const taskId = response.task_id;
+              //   let method = "";
 
-            //   if(filterCategory === "reduction") {
-            //     method = "Reduction";
-            //   } else if(filterCategory === "formatting") {
-            //     method = "Formatting";
-            //   } else if(parametersKey[filterCategory]) {
-            //     method = formData[parametersKey[filterCategory]].methods[0];
-            //   } else {
-            //     method = formData.methods[0];
-            //   }
+              //   if(filterCategory === "reduction") {
+              //     method = "Reduction";
+              //   } else if(filterCategory === "formatting") {
+              //     method = "Formatting";
+              //   } else if(parametersKey[filterCategory]) {
+              //     method = formData[parametersKey[filterCategory]].methods[0];
+              //   } else {
+              //     method = formData.methods[0];
+              //   }
 
-            //   const output = formData.output;
+              //   const output = formData.output;
 
-            //   // Make API call to store the task information
-            //   const requestBody = {
-            //     datasetTitle: formData.dataset,
-            //     taskId: taskId,
-            //     method: method,
-            //     datasetURL: formData.input,
-            //     tool: filterCategory,
-            //     outputPath: output,
-            //     Owner: authData.username,
-            //     status: 'Processing'
-            //   };
+              //   // Make API call to store the task information
+              //   const requestBody = {
+              //     datasetTitle: formData.dataset,
+              //     taskId: taskId,
+              //     method: method,
+              //     datasetURL: formData.input,
+              //     tool: filterCategory,
+              //     outputPath: output,
+              //     Owner: authData.username,
+              //     status: 'Processing'
+              //   };
 
               // fetch(`${SERVER_URL}/createTask`, {
               //   method: 'POST',
@@ -465,15 +460,15 @@ export function IntegrationWorkFlowComponent(props) {
               //   setMessage('An error occurred while submitting the form: ' + error.message);
               //   setIsError(true);
               // });
-          })
-          .catch(error => {
-            // Handle any errors that occur during the API call
-            console.error("Form submission error:", error);
-            setLoading(false);
-            setHasMessage(true);
-            setMessage("Form submission error:", error);
-            setIsError(true);
-          });
+            })
+            .catch(error => {
+              // Handle any errors that occur during the API call
+              console.error("Form submission error:", error);
+              setLoading(false);
+              setHasMessage(true);
+              setMessage("Form submission error:", error);
+              setIsError(true);
+            });
         } else {
           console.warn("Unauthorized - please login first to continue");
           navigate("/routing");
@@ -484,36 +479,36 @@ export function IntegrationWorkFlowComponent(props) {
         setMessage("An error occurred while submitting the form.");
         setIsError(true);
       });
-    };
+  };
 
   return (
     <div className='tools-container workflow-container common-class-tools-and-workflows'>
 
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />}
 
       <div className="separator heading">
-        <div className="stripe"></div> 
-          <h2 className="h-sm font-weight-bold">
-            Datasets 
-          </h2> 
+        <div className="stripe"></div>
+        <h2 className="h-sm font-weight-bold">
+          Datasets
+        </h2>
         <div className="stripe"></div>
       </div>
 
       <div>
         <InputDataComponent formErrors={formErrors} filterCategory={props.selectedWorkflow} selectedDatasets={selectedDatasets}
-            onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem}/>
+          onSelectDataset={onSelectDataset} onDeleteDataset={onDeleteDataset} onSelectSubItem={onSelectSubItem} />
       </div>
 
       <div className="form-component">
         <Form
-            schema = {Schema}
-            uiSchema={uiSchema(dynamicOptions)}
-            widgets={widgets}
-            formData={formData}
-            onChange={({ formData }) => setFormData(formData)}
-            onSubmit={handleSubmit}
-            onError={(errors) => console.log("Form errors:", errors)}
-            validator={validator}
+          schema={Schema}
+          uiSchema={uiSchema(dynamicOptions)}
+          widgets={widgets}
+          formData={formData}
+          onChange={({ formData }) => setFormData(formData)}
+          onSubmit={handleSubmit}
+          onError={(errors) => console.log("Form errors:", errors)}
+          validator={validator}
         />
       </div>
       <Chatbot presetQuestions={presetQuestions} />

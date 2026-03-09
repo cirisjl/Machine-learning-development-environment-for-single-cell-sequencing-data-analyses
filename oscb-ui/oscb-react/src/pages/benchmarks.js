@@ -5,8 +5,7 @@ import 'github-markdown-css';
 // import rehypeRaw from 'rehype-raw'
 // import rehypeSanitize from 'rehype-sanitize'
 // import LeftNav from "../components/LeftNavigation/leftNav";
-import gfm from "remark-gfm";
-import remarkImgToJsx from "remark-unwrap-images";
+
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 // import { getCookie } from "../utils/utilFunctions";
@@ -22,7 +21,7 @@ export default function Benchmarks() {
     const [markdownText, setMarkdownText] = useState('');
     // let jwtToken = getCookie('jwtToken');
     const [copiedIndex, setCopiedIndex] = useState(null);
-    
+
     const handleCopy = (index) => {
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
@@ -32,43 +31,42 @@ export default function Benchmarks() {
 
     useEffect(() => {
         async function fetchFileData() {
-        try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=benchmarks");
-            const data = response.data.data;
-            
-            if(data.length === 1) {
-                const fileMappingObject = data[0];
-                const fileID = fileMappingObject.fileID;
-                if(fileID !== null) {
-                    fetch(DIRECTUS_URL + "/assets/" + fileID)
-                    .then(response => response.text())
-                    .then(data => setMarkdownText(data))
-                    .catch(error => console.error('Error retrieving markdown:', error));
+            try {
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=benchmarks");
+                const data = response.data.data;
+
+                if (data.length === 1) {
+                    const fileMappingObject = data[0];
+                    const fileID = fileMappingObject.fileID;
+                    if (fileID !== null) {
+                        fetch(DIRECTUS_URL + "/assets/" + fileID)
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
+                    }
                 }
+
+            } catch (error) {
+                console.error('Error retrieving data:', error);
             }
-            
-          } catch (error) {
-            console.error('Error retrieving data:', error);
-          }
         }
-        
+
         fetchFileData();
-      }, []);
-    
-    return(
+    }, []);
+
+    return (
         <div className="benchmarks-container">
-            <div className="left-nav">  
+            <div className="left-nav">
             </div>
             <div className='main-content'>
-                <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]} 
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
                     children={markdownText}
                     components={{
                         code(props) {
                             const { children, inline, className, node, ...rest } = props;
                             const match = /language-(\w+)/.exec(className || '');
-                            const codeText = String(children).replace(/\n$/, '');
                             if (!inline && match) {
                                 codeBlockIndex++;
 
@@ -115,6 +113,6 @@ export default function Benchmarks() {
                 <RightRail />
                 <Chatbot presetQuestions={null} />
             </div>
-        </div>
+        </div >
     )
 }

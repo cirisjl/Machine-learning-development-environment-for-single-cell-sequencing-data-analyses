@@ -12,7 +12,7 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails
-  } from '@mui/material';
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { NODE_API_URL, WEB_SOCKET_URL } from '../../constants/declarations'
 
@@ -23,20 +23,12 @@ const MyJobsSideNav = () => {
     let jwtToken = getCookie('jwtToken');
     const navigate = useNavigate();
 
-    const timestampScheme = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-    };
-
     useEffect(() => {
         if (jwtToken && expanded) {
             const fetchTasks = async () => {
                 const response = await fetch(`${NODE_API_URL}/getJobs?top=5`,
-                    { method: 'POST',
+                    {
+                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${jwtToken}`,
@@ -93,6 +85,7 @@ const MyJobsSideNav = () => {
             };
             fetchTasks();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [changesFound, expanded]);
 
     // const updateTaskStatus = async (jobIds, status) => {
@@ -141,38 +134,38 @@ const MyJobsSideNav = () => {
                     <div className="content">
                         <div style={{ maxHeight: '360px', overflow: 'auto' }}>
 
-                        {tasks && tasks.length === 0 ? (
-                            <div>
+                            {tasks && tasks.length === 0 ? (
                                 <div>
-                                    <div role="alert" aria-live="polite" aria-atomic="true" className="alert m-2 alert-info">
-                                        <h4 className="mb-1">
-                                            <FontAwesomeIcon icon={faInfoCircle} />
-                                            <span>Your job list is empty.</span>
-                                        </h4> 
-                            </div>
-                            </div>
-                            </div>
-                        ) : (
-                            <ul>
-                            {tasks.map((task, index) => (
-                                <div key={tasks.job_id}>
-                                    <Accordion key={tasks.job_id}>
-                                      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
-                                        <div className="panel-summary">
-                                            <div className='task-summary'>
-                                                <div className='display-flex'>
-                                                    {task.Status === 'Success' ? (
-                                                        <CheckCircleIcon style={{ color: 'green' }} />
-                                                    ) : task.Status === 'Failure' ? (
-                                                        <CancelIcon style={{ color: 'red' }} />
-                                                    ) : (
-                                                        <HourglassEmptyIcon style={{ color: 'gray' }} />
-                                                    )}
-                                                    <p><TextWithEllipsis text={task.Description} maxLength={23} /></p>
-                                                </div>
-                                                    <span className='time-stamp-display'>- {moment.utc(task['Created on']).local().format("YYYY-MM-DD HH:mm:ss")}</span>
-                                            </div>
-                                        {/* <li style={{
+                                    <div>
+                                        <div role="alert" aria-live="polite" aria-atomic="true" className="alert m-2 alert-info">
+                                            <h4 className="mb-1">
+                                                <FontAwesomeIcon icon={faInfoCircle} />
+                                                <span>Your job list is empty.</span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <ul>
+                                    {tasks.map((task, index) => (
+                                        <div key={tasks.job_id}>
+                                            <Accordion key={tasks.job_id}>
+                                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel-content" id="panel-header">
+                                                    <div className="panel-summary">
+                                                        <div className='task-summary'>
+                                                            <div className='display-flex'>
+                                                                {task.Status === 'Success' ? (
+                                                                    <CheckCircleIcon style={{ color: 'green' }} />
+                                                                ) : task.Status === 'Failure' ? (
+                                                                    <CancelIcon style={{ color: 'red' }} />
+                                                                ) : (
+                                                                    <HourglassEmptyIcon style={{ color: 'gray' }} />
+                                                                )}
+                                                                <p><TextWithEllipsis text={task.Description} maxLength={23} /></p>
+                                                            </div>
+                                                            <span className='time-stamp-display'>- {moment.utc(task['Created on']).local().format("YYYY-MM-DD HH:mm:ss")}</span>
+                                                        </div>
+                                                        {/* <li style={{
                                     backgroundColor: 'transparent', // Set initial background color
                                     transition: 'background-color 0.3s', // Add transition effect
                                     cursor: 'pointer' // Show pointer cursor on hover
@@ -180,7 +173,7 @@ const MyJobsSideNav = () => {
                                     onMouseEnter={(e) => { e.target.style.backgroundColor = '#f2f2f2' }} // Change background color on hover
                                     onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent' }} // Revert back to initial background color on mouse leave 
                                     key={index}> */}
-                                      {/* <a
+                                                        {/* <a
                                         href={`/resultfiles?jobId=${task.job_id}&results_path=${task.results_path}`}
                                         style={{ textDecoration: 'none', color: 'inherit' }}
                                     > 
@@ -193,52 +186,53 @@ const MyJobsSideNav = () => {
                                     )}
                                     &nbsp;{task.job_id}
                                     </a> */}
-                                {/* </li> */}
+                                                        {/* </li> */}
+                                                    </div>
+                                                </AccordionSummary>
+                                                <AccordionDetails>
+                                                    <a href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            if (task.Category && task.Category.toLowerCase() === 'workflow') {
+                                                                navigate("/mydata/workflowTaskDetails", {
+                                                                    state: {
+                                                                        job_id: task.job_id,
+                                                                        methodMap: task.Method,
+                                                                        datasetURL: task.datasetURL,
+                                                                        description: task.Description,
+                                                                        process: task.Process,
+                                                                        output: task.output,
+                                                                        results: task.results,
+                                                                        status: task.Status
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                navigate("/mydata/taskDetails", {
+                                                                    state: {
+                                                                        job_id: task.job_id,
+                                                                        method: task.Method,
+                                                                        datasetURL: task.datasetURL,
+                                                                        description: task.Description,
+                                                                        process: task.Process,
+                                                                        output: task.output,
+                                                                        results: task.results,
+                                                                        status: task.Status
+                                                                    }
+                                                                });
+                                                            }
+                                                        }}
+                                                        // href={`/mydata/taskDetails?jobId=${task.job_id}`}
+                                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                                    >
+                                                        <span className='font-size'><b>Task Id</b> - {task.job_id}</span>
+                                                    </a>
+                                                </AccordionDetails>
+                                            </Accordion>
                                         </div>
-                                      </AccordionSummary>
-                                      <AccordionDetails>
-                                      <a
-                                        onClick={() => {
-                                            if (task.Category && task.Category.toLowerCase() === 'workflow') {
-                                                navigate("/mydata/workflowTaskDetails", {
-                                                    state: {
-                                                        job_id: task.job_id,
-                                                        methodMap: task.Method,
-                                                        datasetURL: task.datasetURL,
-                                                        description: task.Description,
-                                                        process: task.Process,
-                                                        output: task.output,
-                                                        results: task.results,
-                                                        status: task.Status
-                                                    }
-                                                });
-                                            } else {
-                                                navigate("/mydata/taskDetails", {
-                                                    state: {
-                                                        job_id: task.job_id,
-                                                        method: task.Method,
-                                                        datasetURL: task.datasetURL,
-                                                        description: task.Description,
-                                                        process: task.Process,
-                                                        output: task.output,
-                                                        results: task.results,
-                                                        status: task.Status
-                                                    }
-                                                });
-                                            }
-                                            }}
-                                        // href={`/mydata/taskDetails?jobId=${task.job_id}`}
-                                        style={{ textDecoration: 'none', color: 'inherit' }}
-                                     > 
-                                        <span className='font-size'><b>Task Id</b> - {task.job_id}</span>
-                                      </a>
-                                      </AccordionDetails>
-                                    </Accordion>
-                                </div>
-                            ))
-                            }
-                        </ul>
-                        )}
+                                    ))
+                                    }
+                                </ul>
+                            )}
                         </div>
                     </div>
                 )}

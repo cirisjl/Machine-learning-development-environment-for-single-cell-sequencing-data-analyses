@@ -10,7 +10,7 @@ import 'github-markdown-css';
 import LeftNav from "../components/LeftNavigation/leftnavDoc";
 // import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
-import { getCookie } from "../utils/utilFunctions";
+
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import remarkGfm from 'remark-gfm';
@@ -24,10 +24,10 @@ import Chatbot from "../components/RightNavigation/Chatbot";
 
 
 export default function Doc() {
-    const [markdownText,setMarkdownText] = useState('');
+    const [markdownText, setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
     const [uniqueFilter, setUniqueFilter] = useState("");
-    
+
     const handleFilterSelection = (filter) => {
         setUniqueFilter(filter);
         console.log(filter);
@@ -39,43 +39,42 @@ export default function Doc() {
     };
 
     let codeBlockIndex = -1;
-    let jwtToken = getCookie('jwtToken');
 
     useEffect(() => {
         async function fetchFileData() {
-        try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + uniqueFilter.replace(/ /g, "_"));
-            const data = response.data.data;
-            
-            if(data.length === 1) {
-                const fileMappingObject = data[0];
-                const fileID = fileMappingObject.fileID;
-                if(fileID !== null) {
-                    fetch(DIRECTUS_URL + "/assets/" + fileID)
-                    .then(response => response.text())
-                    .then(data => setMarkdownText(data))
-                    .catch(error => console.error('Error retrieving markdown:', error));
+            try {
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + uniqueFilter.replace(/ /g, "_"));
+                const data = response.data.data;
+
+                if (data.length === 1) {
+                    const fileMappingObject = data[0];
+                    const fileID = fileMappingObject.fileID;
+                    if (fileID !== null) {
+                        fetch(DIRECTUS_URL + "/assets/" + fileID)
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
+                    }
                 }
+
+            } catch (error) {
+                console.error('Error retrieving data:', error);
             }
-            
-          } catch (error) {
-            console.error('Error retrieving data:', error);
-          }
         }
-        
+
         if (uniqueFilter !== "") {
             fetchFileData();
         }
     }, [uniqueFilter]);
-    
-    return(
+
+    return (
         <div className="doc-container">
             <div className="left-nav">
                 <LeftNav uniqueFilter={uniqueFilter} setUniqueFilter={setUniqueFilter} handleFilterSelection={handleFilterSelection} />
             </div>
             <div className='main-content'>
                 {/* Render the selected filter details in the middle of the page */}
-                {markdownText!=="" && (
+                {markdownText !== "" && (
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
@@ -84,7 +83,6 @@ export default function Doc() {
                             code(props) {
                                 const { children, inline, className, node, ...rest } = props;
                                 const match = /language-(\w+)/.exec(className || '');
-                                const codeText = String(children).replace(/\n$/, '');
                                 if (!inline && match) {
                                     codeBlockIndex++;
 
@@ -132,7 +130,7 @@ export default function Doc() {
                         <p>Please select a <strong>Topic</strong> from left.</p>
                     </div>
                 )}
-                
+
             </div>
             <div className="right-rail navigation">
                 <MarkdownNavbar source={markdownText} />

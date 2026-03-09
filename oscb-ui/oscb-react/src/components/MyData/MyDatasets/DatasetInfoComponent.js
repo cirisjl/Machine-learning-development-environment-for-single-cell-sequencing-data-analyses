@@ -45,82 +45,82 @@ const DatasetInfoComponent = () => {
   const [expandLoading, setExpandLoading] = useState({}); // Store loading states for each accordion
   const [ppJobId, setppJobId] = useState(null);
   const [copiedState, setCopiedState] = useState(false);
-    
+
   const handleCopy = () => {
     setCopiedState(true);
     setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
   };
 
   const fetchPlotData = async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
-      setLoadingPlot(true); // Set loading to true before making the API call
-      // const worker = new Worker(new URL("./../../utils/worker.js", import.meta.url));
-      // Access the first element of the datasetDetails array
-      const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
-      if (!selectedCellType || !selectedCellType.label) {
-        throw new Error("Selected Cell Type or label is missing");
+    setLoadingPlot(true); // Set loading to true before making the API call
+    // const worker = new Worker(new URL("./../../utils/worker.js", import.meta.url));
+    // Access the first element of the datasetDetails array
+    const selectedCellType = datasetDetails[0]?.datasetDetails?.['Selected Cell Types'];
+    if (!selectedCellType || !selectedCellType.label) {
+      throw new Error("Selected Cell Type or label is missing");
+    }
+
+    try {
+      let plot = null;
+      let plot_3d = null;
+
+      cell_metadata = gunzipDict(cell_metadata);
+      // console.log("cell_metadata after gunzip:", cell_metadata);
+      // console.log("twoDArray:", twoDArray);
+
+      if (twoDArray) {
+        plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
+        // worker.postMessage({ obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
+        // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
       }
-  
-      try {
-        let plot = null;
-        let plot_3d = null;
-
-        cell_metadata = gunzipDict(cell_metadata);
-        // console.log("cell_metadata after gunzip:", cell_metadata);
-        // console.log("twoDArray:", twoDArray);
-
-        if (twoDArray) {
-          plot = plotUmapObs(cell_metadata, twoDArray, plotType, [], selectedCellType.label, 2, plotName);
-          // worker.postMessage({ obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
-          // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 2, plotName: plotName });
-        }
-        if (threeDArray) {
-          // worker.postMessage({ obs: cell_metadata, umap: threeDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
-          // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
-          plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType.label, 3, plotName);
-        }
-
-        // worker.onmessage = (event) => {
-        //   console.log("event.data from worker:", event.data);
-        //   if (twoDArray) {
-        //     plot = event.data;
-        //     console.log("从 Worker 收到2D的结果:", event.data);
-        //   }
-        //   if (threeDArray) {
-        //     plot_3d = event.data;
-        //     console.log("从 Worker 收到3D的结果:", event.data);
-        //   }
-        // };
-
-        // If the plotName is 'tsne', we can handle it here if needed
-        if (plotName === 'tsne') {
-          if (plot || plot_3d) {
-            // If tsne plots are available, we can set them in the plotData state
-            setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
-          }
-        } else if (plotName === 'umap') {
-          if (plot || plot_3d) {
-            // If umap plots are available, we can set them in the plotData state
-            setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
-          }
-        } else if (plotName === 'atac_umap') {
-          if (plot || plot_3d) {
-            // If ATAC umap plots are available, we can set them in the plotData state
-            setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching plot data:', error);
-        alert(`Error fetching plot data: ${error}`);
-      } finally {
-        setLoadingPlot(false);
+      if (threeDArray) {
+        // worker.postMessage({ obs: cell_metadata, umap: threeDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
+        // console.log("发送给 Worker 的数据:", { obs: cell_metadata, umap: twoDArray, clustering_plot_type: plotType, selected_cell_intersection: [], annotation: selectedCellType.label, n_dim: 3, plotName: plotName });
+        plot_3d = plotUmapObs(cell_metadata, threeDArray, plotType, [], selectedCellType.label, 3, plotName);
       }
 
-      // return () => {
-      //   worker.terminate();
+      // worker.onmessage = (event) => {
+      //   console.log("event.data from worker:", event.data);
+      //   if (twoDArray) {
+      //     plot = event.data;
+      //     console.log("从 Worker 收到2D的结果:", event.data);
+      //   }
+      //   if (threeDArray) {
+      //     plot_3d = event.data;
+      //     console.log("从 Worker 收到3D的结果:", event.data);
+      //   }
       // };
 
-    };
-    
+      // If the plotName is 'tsne', we can handle it here if needed
+      if (plotName === 'tsne') {
+        if (plot || plot_3d) {
+          // If tsne plots are available, we can set them in the plotData state
+          setTsnePlotData({ tsne_plot: plot, tsne_plot_3d: plot_3d });
+        }
+      } else if (plotName === 'umap') {
+        if (plot || plot_3d) {
+          // If umap plots are available, we can set them in the plotData state
+          setPlotData({ umap_plot: plot, umap_plot_3d: plot_3d });
+        }
+      } else if (plotName === 'atac_umap') {
+        if (plot || plot_3d) {
+          // If ATAC umap plots are available, we can set them in the plotData state
+          setAtacPlotData({ atac_umap_plot: plot, atac_umap_plot_3d: plot_3d });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching plot data:', error);
+      alert(`Error fetching plot data: ${error}`);
+    } finally {
+      setLoadingPlot(false);
+    }
+
+    // return () => {
+    //   worker.terminate();
+    // };
+
+  };
+
 
   //  // Function to make an API call based on the dropdown option and dimension
   // const fetchPlotData = async (plotType, cell_metadata, umap, umap_3d) => {
@@ -269,7 +269,7 @@ const DatasetInfoComponent = () => {
           // setLoading(false);
           setppJobId(null); // Reset ppJobId after handling
 
-        } else if(data.task_status === "FAILURE"){
+        } else if (data.task_status === "FAILURE") {
           setMessage("Loading pre-process results is Failed");
           setHasMessage(true);
           setIsError(true);
@@ -291,6 +291,7 @@ const DatasetInfoComponent = () => {
     ws.onclose = () => console.log("WebSocket closed.");
 
     return () => ws.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ppJobId]);
 
   const [sectionsVisibility, setSectionsVisibility] = useState({
@@ -481,9 +482,9 @@ const DatasetInfoComponent = () => {
                                               {details[preProcessResult.process_id].adata_path && (
                                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                                   <span style={{ marginRight: '8px' }}>AnnData File:</span>
-                                                  <a
+                                                  <a href="#"
                                                     download
-                                                    onClick={() => { downloadFile(details[preProcessResult.process_id]["adata_path"]) }}
+                                                    onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["adata_path"]) }}
                                                     style={{
                                                       cursor: 'pointer',
                                                       textDecoration: 'underline',
@@ -497,9 +498,9 @@ const DatasetInfoComponent = () => {
                                               {details[preProcessResult.process_id].seurat_path && (
                                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                                   <span style={{ marginRight: '8px' }}>Seurat File:</span>
-                                                  <a
+                                                  <a href="#"
                                                     download
-                                                    onClick={() => { downloadFile(details[preProcessResult.process_id]["seurat_path"]) }}
+                                                    onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["seurat_path"]) }}
                                                     style={{
                                                       cursor: 'pointer',
                                                       textDecoration: 'underline',
@@ -559,7 +560,7 @@ const DatasetInfoComponent = () => {
                                                   <div>Loading plot data...</div>
                                                 ) : plotData ? (
                                                   <>
-                                                   {plotDimension === '2D' ? (
+                                                    {plotDimension === '2D' ? (
                                                       plotData && plotData.umap_plot ? (
                                                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                                           <ReactPlotly plot_data={plotData.umap_plot} />
@@ -693,7 +694,7 @@ const DatasetInfoComponent = () => {
                                                   <div>Loading plot data...</div>
                                                 ) : tsnePlotData ? (
                                                   <>
-                                                   {tsnePlotDimension === '2D' ? (
+                                                    {tsnePlotDimension === '2D' ? (
                                                       tsnePlotData && tsnePlotData.tsne_plot ? (
                                                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                                                           <ReactPlotly plot_data={tsnePlotData.tsne_plot} />

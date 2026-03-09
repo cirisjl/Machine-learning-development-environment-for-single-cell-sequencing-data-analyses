@@ -1,14 +1,14 @@
-import React , { useState }from 'react';
-import {NavLink} from "react-router-dom";
+import React, { useState } from 'react';
+import { NavLink } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL } from '../../constants/declarations'
 
 
-function Signup (props){
+function Signup(props) {
 
   const navigate = useNavigate();
 
-  const [isSignedUp, setIsSignedUp] = useState(false);
+
 
   const [formData, setFormData] = useState({
     email: '',
@@ -58,25 +58,25 @@ function Signup (props){
 
     // Submit the form if there are no errors
     if (Object.keys(newErrors).length === 0) {
-        fetch(`${NODE_API_URL}/signup`, {
+      fetch(`${NODE_API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
           password: formData.password,
-            }),
+        }),
         credentials: "include"
       })
         .then(response => response.json())
         .then(data => {
           if (data.status === 200) {
-            setIsSignedUp(true);
+
             navigate("/getStarted");
             window.location.reload();
           } else {
             setErrorMessage(data.message);
-          } 
+          }
         })
         .catch(error => {
           setErrorMessage("An error occurred during Sign Up.");
@@ -87,14 +87,14 @@ function Signup (props){
   return (
     <div className='signup-container comn-container-auth'>
       <div className='inner-container-auth'>
-          <h1>Sign Up</h1>
-          <p></p>
-        
+        <h1>Sign Up</h1>
+        <p></p>
+
         {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" value={formData.email} className="form-input" onChange={handleChange}  autoComplete="email" placeholder="Email"/>
+            <input type="email" id="email" name="email" value={formData.email} className="form-input" onChange={handleChange} autoComplete="email" placeholder="Email" />
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
           <div>
@@ -109,7 +109,7 @@ function Signup (props){
           </div>
           <div>
             <label htmlFor="confirmPassword">Confirm Password:</label>
-            <input type="password" name="confirmPassword" id="confirmPassword" value={formData.confirmPassword} autoComplete="new-password" className="form-input" onChange={handleChange} placeholder="Confirm Password"/>
+            <input type="password" name="confirmPassword" id="confirmPassword" value={formData.confirmPassword} autoComplete="new-password" className="form-input" onChange={handleChange} placeholder="Confirm Password" />
             {errors.confirmPassword && <span className="error">{errors.confirmPassword}</span>}
           </div>
           <button type="submit" className='btn-widget'>Signup</button>
@@ -117,9 +117,9 @@ function Signup (props){
         <p>
           Already have an account? <NavLink to="/login" className="span-class-link">Log in</NavLink>
         </p>
-        </div>
-</div>
-);
+      </div>
+    </div>
+  );
 };
 
 export default Signup;

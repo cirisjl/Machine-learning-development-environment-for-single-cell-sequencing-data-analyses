@@ -2,7 +2,7 @@
 import DatasetTable from "../../components/MyData/datasetTable";
 import RightRail from "../../components/RightNavigation/rightRail";
 import StorageChart from "../../components/MyData/storageChart";
-import { getCookie, isUserAuth} from "../../utils/utilFunctions";
+import { getCookie, isUserAuth } from "../../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
@@ -11,7 +11,7 @@ export default function MyData() {
 
     const navigate = useNavigate();
     const filterCategory = null;
-    const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
+
     const [selectedDatasets, setSelectedDatasets] = useState({});
     const [username, setUsername] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -28,6 +28,7 @@ export default function MyData() {
                 setIsAdmin(authData.isAdmin);
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onSelectDataset = (dataset) => {
@@ -43,47 +44,40 @@ export default function MyData() {
             currentSelectedDatasets[datasetId] = dataset;
         }
         if (filterCategory === "quality_control") {
-            // Check if any of the selected datasets should trigger hiding for Seurat
-            const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
-                dataset.inputFiles.length === 1 &&
-                (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
-                    dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
-                    dataset.inputFiles[0].toLowerCase().endsWith('robj'))
-            );
-            setShouldHideForSeurat(shouldHideForSeurat);
+            // Do nothing
         }
         setSelectedDatasets(currentSelectedDatasets)
     };
 
-  // Function to handle selection of sub-items
-  const onSelectSubItem = (mainItem, subItem) => {
-    const mainItemId = mainItem.Id;
-    let currentSelectedDatasets = { ...selectedDatasets };
-  
-    // Check if the main item is already selected
-    if (currentSelectedDatasets[mainItemId]) {
-        // If sub-item is already selected, deselect it
-        if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
-            delete currentSelectedDatasets[mainItemId];
+    // Function to handle selection of sub-items
+    const onSelectSubItem = (mainItem, subItem) => {
+        const mainItemId = mainItem.Id;
+        let currentSelectedDatasets = { ...selectedDatasets };
+
+        // Check if the main item is already selected
+        if (currentSelectedDatasets[mainItemId]) {
+            // If sub-item is already selected, deselect it
+            if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id === subItem.process_id) {
+                delete currentSelectedDatasets[mainItemId];
+            } else {
+                // Update the selected main item with the selected sub-item
+                currentSelectedDatasets[mainItemId] = {
+                    ...mainItem,
+                    selectedSubItem: subItem
+                };
+            }
         } else {
-            // Update the selected main item with the selected sub-item
-            currentSelectedDatasets[mainItemId] = {
-                ...mainItem,
-                selectedSubItem: subItem
+            // Select the main item and the sub-item
+            currentSelectedDatasets = {
+                [mainItemId]: {
+                    ...mainItem,
+                    selectedSubItem: subItem
+                }
             };
         }
-    } else {
-        // Select the main item and the sub-item
-        currentSelectedDatasets = {
-            [mainItemId]: {
-                ...mainItem,
-                selectedSubItem: subItem
-            }
-        };
-    }
-  
-    setSelectedDatasets(currentSelectedDatasets);
-  };
+
+        setSelectedDatasets(currentSelectedDatasets);
+    };
 
     return (
         <div className="page-container">

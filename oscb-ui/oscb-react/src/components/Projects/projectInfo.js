@@ -14,10 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import { Close as CloseIcon, PersonAdd, Delete } from "@mui/icons-material";
-import {NODE_API_URL} from '../../constants/declarations'; 
+import { NODE_API_URL } from '../../constants/declarations';
 import { isUserAuth, getCookie } from "../../utils/utilFunctions";
 import { useNavigate } from "react-router-dom";
-import useUserAuthCheck from "../common_components/userAuthCheckComponent";
+// Removed useUserAuthCheck import
 
 const ProjectAdminPanel = () => {
   const [projects, setProjects] = useState([]);
@@ -34,13 +34,13 @@ const ProjectAdminPanel = () => {
   const fetchProjects = async (username) => {
     setLoading(true);
     try {
-        const res = await fetch(`${NODE_API_URL}/projects/list`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, adminPage: true }),
-    });
+      const res = await fetch(`${NODE_API_URL}/projects/list`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, adminPage: true }),
+      });
       const data = await res.json();
       setProjects(data);
     } catch (err) {
@@ -50,21 +50,21 @@ const ProjectAdminPanel = () => {
   };
 
 
-      useEffect(() => {
-        isUserAuth(getCookie('jwtToken'))
-        .then((authData) => {
-          if (authData.isAuth) {
-            console.log("User is admin and has access to this page");
-            setCurrentUser(authData.username);
-            fetchProjects(authData.username);
-          }  else {
-            navigate("/routing");
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      }, []); 
+  useEffect(() => {
+    isUserAuth(getCookie('jwtToken'))
+      .then((authData) => {
+        if (authData.isAuth) {
+          console.log("User is admin and has access to this page");
+          setCurrentUser(authData.username);
+          fetchProjects(authData.username);
+        } else {
+          navigate("/routing");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
 
   // Create new project
   const createProject = async () => {

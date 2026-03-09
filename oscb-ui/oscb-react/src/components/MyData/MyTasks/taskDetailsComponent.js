@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Octokit } from "@octokit/rest";
 import axios from 'axios';
@@ -22,7 +22,7 @@ import Chatbot from "../../RightNavigation/Chatbot";
 import AnnotationTable from './annotationPanel';
 import OutlierTable from './outlierPanel';
 import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
-import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL, owner, repo } from '../../../constants/declarations';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 
 // Initialize Octokit
@@ -397,7 +397,7 @@ function TaskDetailsComponent() {
       if (resultData?.process_ids?.length) {
         setTaskResult(resultData);
         setProcessIds(resultData.process_ids);
-      } 
+      }
 
       if (resultData?.output) {
         setTaskOutput(resultData.output);
@@ -407,6 +407,7 @@ function TaskDetailsComponent() {
       setLoading(false);
       setLoadingPlot(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTerminalState, routerStatus, taskStatus]);
 
   const handleLogMessage = useCallback((event) => {
@@ -442,7 +443,7 @@ function TaskDetailsComponent() {
           if (data.task_result?.process_ids?.length) {
             setProcessIds(data.task_result.process_ids);
             console.log("Process IDs found on initial fetch:", data.task_result.process_ids);
-          } 
+          }
           if (isTerminalState(data?.task_status)) {
             setLoading(false);
           }
@@ -638,9 +639,9 @@ function TaskDetailsComponent() {
                   <Box>
                     {(datasetURL ? (Array.isArray(datasetURL) ? datasetURL : [datasetURL]) : []).map((url, i) => (
                       <div key={i}>
-                        <a
+                        <a href="#"
                           style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
-                          onClick={() => downloadFile(url)}
+                          onClick={(e) => { e.preventDefault(); downloadFile(url); }}
                         >
                           {getFileNameFromURL(url) || 'Download File'}
                         </a>
@@ -663,12 +664,12 @@ function TaskDetailsComponent() {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle1"><strong>Method:</strong></Typography>
-                        {
-                          method && Array.isArray(method) ? (method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) :
-                            (typeof (method) !== 'string' && Object.keys(method).length > 0 ? (
-                              Object.entries(method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>)))
-                              : (<Typography variant="body1">{method}</Typography>))
-                        }
+                      {
+                        method && Array.isArray(method) ? (method.map((value, index) => (<Typography variant="body1">{value}</Typography>))) :
+                          (typeof (method) !== 'string' && Object.keys(method).length > 0 ? (
+                            Object.entries(method).map(([key, value]) => (<Typography variant="body1" key={key}>{key}: {value}</Typography>)))
+                            : (<Typography variant="body1">{method}</Typography>))
+                      }
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle1"><strong>Status:</strong></Typography>
@@ -713,9 +714,9 @@ function TaskDetailsComponent() {
                         {Object.entries(out || {}).map(([key, val]) => (
                           <div key={key}>
                             <Typography variant="subtitle1" display="inline"><strong>{key}: </strong></Typography>
-                            <a
+                            <a href="#"
                               style={{ cursor: 'pointer', color: '#1976d2' }}
-                              onClick={() => downloadFile(val)}
+                              onClick={(e) => { e.preventDefault(); downloadFile(val); }}
                             >
                               {getFileNameFromURL(val)}
                             </a>

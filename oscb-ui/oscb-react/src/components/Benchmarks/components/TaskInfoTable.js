@@ -8,9 +8,9 @@ const TaskInfoTable = ({ detail, downloadFile, getFileNameFromURL }) => {
       <Descriptions.Item label="Dataset ID">{detail.datasetId}</Descriptions.Item>
       <Descriptions.Item label="Task Type">{detail.task_type}</Descriptions.Item>
       <Descriptions.Item label="AnnData Path">
-        <a
+        <a href="#"
           download
-          onClick={() => { downloadFile(detail.adata_path) }}
+          onClick={(e) => { e.preventDefault(); downloadFile(detail.adata_path) }}
           style={{
             textAlign: 'center',
             cursor: 'pointer',
