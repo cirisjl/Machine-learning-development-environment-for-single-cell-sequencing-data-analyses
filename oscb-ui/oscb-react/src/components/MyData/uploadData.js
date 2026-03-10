@@ -58,6 +58,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const [fileNames, setFileNames] = useState([]);
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    const [isAdminuser, setIsAdminuser] = useState(false);
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -169,7 +170,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             .then(async (authData) => {
                 console.log(authData)
                 if (authData.isAuth) {
-                    // setIsAdminUser(authData.isAdmin);
+                    setIsAdminuser(authData.isAdmin);
 
                     try {
                         const userProjects = await fetchUserProjectsList(authData.username);
@@ -1025,7 +1026,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                             onChange={handleAssaySelection}
                                         />
                                         <div className='next-upon-success'>
-                                            <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>Next</button>
+                                            <button type="submit" className="btn btn-info button" disabled={isButtonDisabled} onClick={handleAssaySelectionSubmit}>Next</button>
                                         </div>
                                     </div>
                                 )
@@ -1035,7 +1036,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
                         {!taskData.upload.displayAssayNames && (
                             <div className='next-upon-success'>
-                                <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
+                                <button type="submit" className="btn btn-info button" disabled={isButtonDisabled} onClick={handleSubmit}>Next</button>
                             </div>
                         )}
 
