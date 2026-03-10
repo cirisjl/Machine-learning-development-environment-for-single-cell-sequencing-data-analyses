@@ -64,6 +64,7 @@ const ProjectAdminPanel = () => {
       .catch((error) => {
         console.error(error);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Create new project

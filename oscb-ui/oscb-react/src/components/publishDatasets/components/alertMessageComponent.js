@@ -11,6 +11,7 @@ function AlertMessageComponent({ message, setHasMessage, setMessage, isError }) 
     }, 5000);
     // Return a cleanup function to cancel the timeout when the component unmounts
     return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
 
 

@@ -21,11 +21,13 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
       setFiles(data.Files);
     }
     fetchFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   useEffect(() => {
     if (!jwtToken || jwtToken === '')
       navigate('/routing');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jwtToken]);
 
   const handlePreviewClick = async (fileName) => {
@@ -86,42 +88,37 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
           >
             <span style={{ marginRight: '10px', flex: '1' }}>{file.name}</span>
             {file.name.endsWith('.h5ad') && (
-              <a href="#"
+              <button type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   handlePreviewClick(file.name);
                 }}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ marginLeft: '10px', textAlign: 'center' }}
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
               >
                 <FontAwesomeIcon icon={faSquarePollVertical} style={{ marginRight: '5px' }} />
                 Visualize
-              </a>
+              </button>
             )}
-            <a href="#"
+            <button type="button"
               onClick={(e) => {
                 e.preventDefault();
                 handlePreviewClick(file.name);
               }}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ marginLeft: '10px', textAlign: 'center' }}
+              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
             >
               <FontAwesomeIcon icon={faEye} style={{ marginRight: '5px' }} />
               Preview
-            </a>
-            <a href="#"
-              download
+            </button>
+            <button type="button"
               onClick={(e) => {
                 e.preventDefault();
                 downloadFile(file.name);
               }}
-              style={{ marginLeft: '10px', textAlign: 'center' }}
+              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
             >
               <FontAwesomeIcon icon={faDownload} style={{ marginRight: '5px' }} />
               Download
-            </a>
+            </button>
           </div>
         ))}
       </div>

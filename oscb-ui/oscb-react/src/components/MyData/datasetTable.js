@@ -36,16 +36,6 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
   const [appliedFilters, setAppliedFilters] = useState([]);
 
-  // Function to reset all state variables
-  const resetState = () => {
-    setFilters({});
-    setResults([]);
-    setPagination({});
-    setActiveFilters({});
-    setGlobalSearchTerm('');
-    setAppliedFilters([]);
-  };
-
   const handleCreateDataset = () => {
     navigate("/mydata/upload-data/");
   }
@@ -99,6 +89,7 @@ const DatasetTable = ({ onSelect, isVisible, selectedDatasets, fromToolsPage, on
 
   useEffect(() => {
     fetchData(1, activeFilters, globalSearchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkedState]);
 
   useEffect(() => {

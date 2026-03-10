@@ -23,7 +23,7 @@ export function Preview(props) {
   const navigate = useNavigate();
   const [htmlContent, setHtmlContent] = useState('');
   const [loadedPanels, setLoadedPanels] = useState([]);
-  const [expandedPanels, setExpandedPanels] = useState([]);
+  const [, setExpandedPanels] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadedHtmlContent, setLoadedHtmlContent] = useState({});
   let jwtToken = getCookie('jwtToken');
@@ -54,7 +54,7 @@ export function Preview(props) {
   const handleDeleteConfirmClick = async (event) => {
     if (jwtToken) {
       const deleteDataset = async () => {
-        const response = await axios.delete(NODE_API_URL + `/deleteDataset?authToken=${jwtToken}&dataset=${datasetToDelete}`);
+        await axios.delete(NODE_API_URL + `/deleteDataset?authToken=${jwtToken}&dataset=${datasetToDelete}`);
         setMessage('Dataset deleted successfully.');
       };
       await deleteDataset();
@@ -68,6 +68,7 @@ export function Preview(props) {
 
   useEffect(() => {
     setIsDeleteConfBoxOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datasetToDelete])
 
   useEffect(() => {
@@ -77,6 +78,7 @@ export function Preview(props) {
     }, 5000);
     // Return a cleanup function to cancel the timeout when the component unmounts
     return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
 
   const handlePanelExpanded = (path, files) => {
@@ -138,6 +140,7 @@ export function Preview(props) {
     } else {
       navigate("/routing");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jwtToken, navigate, deleteToggle]);
 
   return (

@@ -6,7 +6,7 @@ import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import InputDataComponent from './inputDataCollection';
 import InputRefDataComponent from './inputRefDataCollection';
-import { CELERY_BACKEND_API, NODE_API_URL, defaultValues, defaultQcParams, defaultNormalizationParams, defaultReductionParams } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, defaultQcParams, defaultNormalizationParams, defaultReductionParams } from '../../../constants/declarations';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GeneRangeSlider from './components/geneRangeSlider';
@@ -64,14 +64,12 @@ export default function ToolsDetailsComponent(props) {
   // let useDefault = true;
   const [filterSchema, setFilterSchema] = useState(null);
   const [UIfilterSchema, setUIFilterSchema] = useState(null);
-  const [selectedDataset, setSelectedDataset] = useState([]);
-  const [selectedRefDataset, setSelectedRefDataset] = useState([]);
+  const [, setSelectedDataset] = useState([]);
+  const [, setSelectedRefDataset] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   //For dynamic Loading of the schema
-  const [layerOptions, setLayerOptions] = useState([]);
   const [presetQuestions, setPresetQuestions] = useState(null);
-  const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
   const [selectedRefDatasets, setSelectedRefDatasets] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -115,13 +113,6 @@ export default function ToolsDetailsComponent(props) {
     }
     if (filterCategory === "quality_control") {
       // Check if any of the selected datasets should trigger hiding for Seurat
-      const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
-        dataset.inputFiles.length === 1 &&
-        (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
-          dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
-          dataset.inputFiles[0].toLowerCase().endsWith('robj'))
-      );
-      setShouldHideForSeurat(shouldHideForSeurat);
     }
     setSelectedDatasets(currentSelectedDatasets)
   };

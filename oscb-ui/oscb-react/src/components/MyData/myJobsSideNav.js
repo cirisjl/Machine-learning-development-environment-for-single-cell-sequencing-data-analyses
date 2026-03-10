@@ -190,7 +190,7 @@ const MyJobsSideNav = () => {
                                                     </div>
                                                 </AccordionSummary>
                                                 <AccordionDetails>
-                                                    <a href="#"
+                                                    <button type="button"
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             if (task.Category && task.Category.toLowerCase() === 'workflow') {
@@ -222,10 +222,10 @@ const MyJobsSideNav = () => {
                                                             }
                                                         }}
                                                         // href={`/mydata/taskDetails?jobId=${task.job_id}`}
-                                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                                        style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', textAlign: 'left' }}
                                                     >
                                                         <span className='font-size'><b>Task Id</b> - {task.job_id}</span>
-                                                    </a>
+                                                    </button>
                                                 </AccordionDetails>
                                             </Accordion>
                                         </div>

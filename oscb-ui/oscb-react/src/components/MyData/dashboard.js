@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCookie, isUserAuth } from '../../utils/utilFunctions';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { FLASK_BACKEND_API } from '../../constants/declarations'
 
@@ -28,6 +28,7 @@ export default function FlaskDashboard(props) {
         console.error(error);
       }
       );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -36,7 +37,7 @@ export default function FlaskDashboard(props) {
         <div dangerouslySetInnerHTML={{ __html: dashApp }} />
       )} */}
       {flaskURL && (
-        <iframe src={flaskURL} // Replace this with the Flask app URL
+        <iframe title="Flask Dashboard" src={flaskURL} // Replace this with the Flask app URL
           width="100%"
           height="100vh"
           id="dashFrame"

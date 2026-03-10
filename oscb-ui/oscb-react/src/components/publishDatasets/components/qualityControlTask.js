@@ -60,7 +60,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
   const [atacPlotDimension, setAtacPlotDimension] = useState('2D');
   const [clusteringAtacPlotType, setAtacClusteringPlotType] = useState('');
   const [atacPlotData, setAtacPlotData] = useState(null); // State to store the fetched plot data
-  const [loadingPlot, setLoadingPlot] = useState(false); // State to handle loading spinner
+  const [, setLoadingPlot] = useState(false); // State to handle loading spinner
   const [tsnePlotDimension, setTsnePlotDimension] = useState('2D');
   const [tsneClusteringPlotType, setTsneClusteringPlotType] = useState('');
   const [tsnePlotData, setTsnePlotData] = useState(null); // State to store the fetched plot data
@@ -203,6 +203,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
     ws.onclose = () => console.log("WebSocket closed.");
 
     return () => ws.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ppJobId]);
 
   const runQualityControl = async (skipQualityControl) => {
@@ -301,6 +302,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       setLoading(false);
       closeWebSockets();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
 
   useEffect(() => {
@@ -342,6 +344,7 @@ function QualityControlTaskComponent({ setTaskStatus, taskData, setTaskData, set
       .catch((error) => {
         console.error(error);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAssaySelection = selectedOption => {

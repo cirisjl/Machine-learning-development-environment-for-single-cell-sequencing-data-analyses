@@ -87,6 +87,7 @@ const DatasetSelectionDialog = ({ onSelect, multiple, onClose, isVisible, select
 
   useEffect(() => {
     fetchData(1, activeFilters, globalSearchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkedState]);
 
   useEffect(() => {

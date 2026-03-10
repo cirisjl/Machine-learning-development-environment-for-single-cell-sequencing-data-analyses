@@ -103,13 +103,12 @@ const downloadFile = (fileUrl) => {
 
 // Reusable Download Link Component to prevent repetitive a-tags
 const DownloadLink = ({ url, label }) => (
-  <a href="#"
-    download
+  <button type="button"
     onClick={(e) => { e.preventDefault(); downloadFile(url); }}
-    style={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue', marginLeft: '10px' }}
+    style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textDecoration: 'underline', color: 'blue', marginLeft: '10px' }}
   >
     {label || getFileNameFromURL(url) || 'Not available'}
-  </a>
+  </button>
 );
 
 const InteractivePlot = ({ title, dimension, setDimension, plotType, setPlotType, options, onOptionChange, plotData2D, plotData3D }) => (

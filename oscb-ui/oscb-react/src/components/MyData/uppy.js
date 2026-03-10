@@ -23,6 +23,7 @@ export default function UppyUploader(props) {
             width: window.innerWidth,
             height: window.innerHeight,
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [window.innerWidth, window.innerHeight]);
 
 
@@ -38,6 +39,7 @@ export default function UppyUploader(props) {
 
         // Cleanup function that removes the event listener
         return () => window.removeEventListener('resize', handleResize);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 

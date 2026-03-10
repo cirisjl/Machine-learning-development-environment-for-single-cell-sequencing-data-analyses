@@ -38,7 +38,7 @@ const TaskTable = () => {
     //     setFilteredInfo({});
     //     console.log('Cleared filters', filteredInfo);
     // };
-    
+
     // const clearAll = () => {
     //     setFilteredInfo({});
     //     setSortedInfo({});
@@ -107,17 +107,17 @@ const TaskTable = () => {
         pageSize: 10, // default number of rows per page
         pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
         showSizeChanger: true, // show the dropdown to select page size
-        });
+    });
 
     const fetchJobs = async (currentPage, searchQuery) => {
         setLoading(true);
-        try{
+        try {
             const response = await fetch(`${NODE_API_URL}/getJobs?q=${searchQuery}&page=${currentPage}`,
                 {
                     method: 'POST',
                     headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`,
                     },
                 }
             );
@@ -190,9 +190,10 @@ const TaskTable = () => {
         }
     };
 
-    useEffect(() => {   
+    useEffect(() => {
         fetchJobs(pagination.current, globalSearchTerm);
-    }, []); 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleSearchSubmit = (event) => {
         event.preventDefault();
@@ -207,26 +208,26 @@ const TaskTable = () => {
         //     return; // If user clicks cancel, do nothing
         // }
         axios.post(`${CELERY_BACKEND_API}/job/revoke/${jobID}`)
-        .then(response => {
-            axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`,
-                },
-            }
-            ).then(response => {
-                console.log('Job is deleted successfully');
-                fetchJobs(pagination.current, globalSearchTerm);
+            .then(response => {
+                axios.delete(`${NODE_API_URL}/deleteJob?jobID=${jobID}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwtToken}`,
+                        },
+                    }
+                ).then(response => {
+                    console.log('Job is deleted successfully');
+                    fetchJobs(pagination.current, globalSearchTerm);
+                })
+                    .catch(error => {
+                        console.error('Error deleting job:', error);
+                    });
             })
-                .catch(error => {
-                    console.error('Error deleting job:', error);
-                });
-        })
-        .catch(error => {
-            console.error('Error deleting job:', error);
-        });
+            .catch(error => {
+                console.error('Error deleting job:', error);
+            });
     };
 
     const columns = useMemo(() => {
@@ -398,7 +399,7 @@ const TaskTable = () => {
                         {stringToDate(value)}
                     </div>
                 )
-            },  
+            },
             {
                 title: 'Status',
                 key: 'Status',
@@ -425,7 +426,7 @@ const TaskTable = () => {
                         )}
                     </div>
                 )
-            },    
+            },
         ];
 
         const actionColumn = {
@@ -484,12 +485,14 @@ const TaskTable = () => {
         };
 
         return [...baseColumns, actionColumn];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [jobs, pagination]);
 
     useEffect(() => {
         if (!jwtToken)
-            navigate('/routing');       
+            navigate('/routing');
         fetchJobs(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [changesFound]);
 
 
@@ -520,101 +523,101 @@ const TaskTable = () => {
         return (
             <><h1 style={{ textAlign: "left" }}>My Jobs</h1>
 
-            <div className='study-keyword-search'>
-                <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
-                <div>
-                    <p><form onSubmit={handleSearchSubmit} style={{
-                        display: 'flex',       // Puts children in a row
-                        alignItems: 'center',  // Centers them vertically
-                        gap: '8px'             // Adds a small space between the input and button
+                <div className='study-keyword-search'>
+                    <span className="text-search search-title">Search by text <FontAwesomeIcon icon={faQuestionCircle} /></span>
+                    <div>
+                        <p><form onSubmit={handleSearchSubmit} style={{
+                            display: 'flex',       // Puts children in a row
+                            alignItems: 'center',  // Centers them vertically
+                            gap: '8px'             // Adds a small space between the input and button
                         }}>
-                        <input
-                            type="text"
-                            autoComplete="off"
-                            className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
-                            placeholder="Search..."
-                            value={globalSearchTerm}
-                            onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                        />
-                        <button type="submit" aria-label="Search" style={{ cursor: "pointer" }}>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                            </svg>
-                        </button>
-                        {/* <button type="submit">Search</button> */}
-                        { /* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                            <input
+                                type="text"
+                                autoComplete="off"
+                                className="w-full dark:bg-gray-950 pl-8 form-input-alt h-9 pr-3 focus:shadow-xl"
+                                placeholder="Search..."
+                                value={globalSearchTerm}
+                                onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                            />
+                            <button type="submit" aria-label="Search" style={{ cursor: "pointer" }}>
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                </svg>
+                            </button>
+                            {/* <button type="submit">Search</button> */}
+                            { /* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                             <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
                         </svg> */}
-                    </form></p>
+                        </form></p>
+                    </div>
                 </div>
-            </div>
 
-            <div className='table-results'>
-                {/* <Space style={{ marginBottom: 16 }}>
+                <div className='table-results'>
+                    {/* <Space style={{ marginBottom: 16 }}>
                     <Button onClick={clearFilters}>Clear filters</Button>  
                     <Button onClick={clearAll}>Clear filters and sorters</Button>
                 </Space> */}
 
-                {loading ? ( 
-                    <div className="spinner-container">
-                        <ScaleLoader color="#36d7b7" loading={loading} />
-                    </div>
-                    ) : jobs && jobs.length > 0 ? (                
-                    <Table
-                        className="table-container"
-                        columns={columns}
-                        dataSource={jobs}
-                        rowKey="job_id"
-                        pagination={pagination}
-                        onChange={handleChange}
-                        showSorterTooltip={{ target: 'sorter-icon' }}
-                        onRow={(record,) => {
-                            return {
-                                onDoubleClick: () => { 
-                                    if (record["Category"] && record["Category"].toLowerCase() === 'workflow') {
-                                        navigate("/mydata/workflowTaskDetails", {
-                                            state: {
-                                                job_id: record["job_id"],
-                                                methodMap: record["Method"],
-                                                datasetURL: record["datasetURL"],
-                                                description: record["Description"],
-                                                process: record["Process"],
-                                                output: record["output"],
-                                                results: record["results"],
-                                                status: record["Status"]
-                                            }
-                                        });
-                                    } else {
-                                        navigate("/mydata/taskDetails", {
-                                            state: {
-                                                job_id: record["job_id"],
-                                                method: record["Method"],
-                                                datasetURL: record["datasetURL"],
-                                                description: record["Description"],
-                                                process: record["Process"],
-                                                output: record["output"],
-                                                results: record["results"],
-                                                status: record["Status"]
-                                            }
-                                        });
+                    {loading ? (
+                        <div className="spinner-container">
+                            <ScaleLoader color="#36d7b7" loading={loading} />
+                        </div>
+                    ) : jobs && jobs.length > 0 ? (
+                        <Table
+                            className="table-container"
+                            columns={columns}
+                            dataSource={jobs}
+                            rowKey="job_id"
+                            pagination={pagination}
+                            onChange={handleChange}
+                            showSorterTooltip={{ target: 'sorter-icon' }}
+                            onRow={(record,) => {
+                                return {
+                                    onDoubleClick: () => {
+                                        if (record["Category"] && record["Category"].toLowerCase() === 'workflow') {
+                                            navigate("/mydata/workflowTaskDetails", {
+                                                state: {
+                                                    job_id: record["job_id"],
+                                                    methodMap: record["Method"],
+                                                    datasetURL: record["datasetURL"],
+                                                    description: record["Description"],
+                                                    process: record["Process"],
+                                                    output: record["output"],
+                                                    results: record["results"],
+                                                    status: record["Status"]
+                                                }
+                                            });
+                                        } else {
+                                            navigate("/mydata/taskDetails", {
+                                                state: {
+                                                    job_id: record["job_id"],
+                                                    method: record["Method"],
+                                                    datasetURL: record["datasetURL"],
+                                                    description: record["Description"],
+                                                    process: record["Process"],
+                                                    output: record["output"],
+                                                    results: record["results"],
+                                                    status: record["Status"]
+                                                }
+                                            });
+                                        }
                                     }
-                                }
-                            };
-                        }}
-                    />) : (
+                                };
+                            }}
+                        />) : (
                         <div>
                             <p>No job found.</p>
                         </div>
                     )}
-                <div className="pagination-info">
-                    <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
-                    <span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>remove</strong> jobs.</span><br/>
-                    <span>
-                        * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view job details
-                    </span>
-                </div>
+                    <div className="pagination-info">
+                        <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
+                        <span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>remove</strong> jobs.</span><br />
+                        <span>
+                            * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view job details
+                        </span>
+                    </div>
 
-            </div>
+                </div>
             </>
         );
 };

@@ -482,33 +482,39 @@ const DatasetInfoComponent = () => {
                                               {details[preProcessResult.process_id].adata_path && (
                                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                                   <span style={{ marginRight: '8px' }}>AnnData File:</span>
-                                                  <a href="#"
-                                                    download
+                                                  <button type="button"
                                                     onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["adata_path"]) }}
                                                     style={{
+                                                      background: 'none',
+                                                      border: 'none',
+                                                      padding: 0,
+                                                      font: 'inherit',
                                                       cursor: 'pointer',
                                                       textDecoration: 'underline',
                                                       color: 'blue'
                                                     }}
                                                   >
                                                     {getFileNameFromURL(details[preProcessResult.process_id]["adata_path"]) || 'Not available'}
-                                                  </a>
+                                                  </button>
                                                 </div>
                                               )}
                                               {details[preProcessResult.process_id].seurat_path && (
                                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                                   <span style={{ marginRight: '8px' }}>Seurat File:</span>
-                                                  <a href="#"
-                                                    download
+                                                  <button type="button"
                                                     onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["seurat_path"]) }}
                                                     style={{
+                                                      background: 'none',
+                                                      border: 'none',
+                                                      padding: 0,
+                                                      font: 'inherit',
                                                       cursor: 'pointer',
                                                       textDecoration: 'underline',
                                                       color: 'blue'
                                                     }}
                                                   >
                                                     {getFileNameFromURL(details[preProcessResult.process_id]["seurat_path"]) || 'Not available'}
-                                                  </a>
+                                                  </button>
                                                 </div>
                                               )}
                                             </div>

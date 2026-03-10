@@ -17,25 +17,25 @@ function LeftNav({ activeTask, setActiveTask, taskStatus, taskData, setTaskData,
     // Add other task builder tasks here
   ];
 
-    // New tasks for the uploadMydata flow
-    const uploadMydataTasks = [
-      { id: 1, name: 'Data Upload', completed: taskStatus[1] },
-      { id: 2, name: 'Metadata', completed: taskStatus[2] },
-      // Add other uploadMydata tasks here
-    ];
+  // New tasks for the uploadMydata flow
+  const uploadMydataTasks = [
+    { id: 1, name: 'Data Upload', completed: taskStatus[1] },
+    { id: 2, name: 'Metadata', completed: taskStatus[2] },
+    // Add other uploadMydata tasks here
+  ];
 
-   // Determine which set of tasks to use based on the current flow
-   let tasks;
-   switch (flow) {
-     case 'taskBuilder':
-       tasks = tbTasks;
-       break;
-     case 'uploadMyData':
-       tasks = uploadMydataTasks;
-       break;
-     default:
-       tasks = uploadTasks;
-   }
+  // Determine which set of tasks to use based on the current flow
+  let tasks;
+  switch (flow) {
+    case 'taskBuilder':
+      tasks = tbTasks;
+      break;
+    case 'uploadMyData':
+      tasks = uploadMydataTasks;
+      break;
+    default:
+      tasks = uploadTasks;
+  }
   // const tasks = flow === 'taskBuilder' ? tbTasks : uploadTasks;
 
   const handleTaskClick = (task) => {
@@ -53,17 +53,16 @@ function LeftNav({ activeTask, setActiveTask, taskStatus, taskData, setTaskData,
       <ul>
         {tasks.map((task) => (
           <li key={task.id}
-          className={`${
-            task.id === activeTask ? 'active' : ''
-          } ${task.completed ? 'completed' : 'disable-click'}`}
+            className={`${task.id === activeTask ? 'active' : ''
+              } ${task.completed ? 'completed' : 'disable-click'}`}
           >
-            <a
-              href="#"
-              onClick={() => handleTaskClick(task)}
+            <button
+              onClick={(e) => { e.preventDefault(); handleTaskClick(task); }}
               className={task.completed ? 'completed' : ''}
+              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', color: 'inherit' }}
             >
               {task.name}
-            </a>
+            </button>
           </li>
         ))}
       </ul>

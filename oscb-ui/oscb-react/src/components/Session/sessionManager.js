@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { getCookie, isUserAuth } from '../../utils/utilFunctions';
 import { NODE_API_URL } from '../../constants/declarations'
@@ -34,7 +34,7 @@ const SessionReminder = () => {
         return () => clearInterval(countdownInterval);
     }, [isModalOpen, token]);
 
-    const extendSession = async () => {
+    const extendSession = useCallback(async () => {
         isUserAuth(getCookie('jwtToken'))
             .then((authData) => {
                 if (authData.isAuth) {
@@ -66,7 +66,7 @@ const SessionReminder = () => {
             .catch((error) => {
                 console.error('Error checking user authentication:', error);
             });
-    };
+    }, []);
 
     useEffect(() => {
         if (!token) return;

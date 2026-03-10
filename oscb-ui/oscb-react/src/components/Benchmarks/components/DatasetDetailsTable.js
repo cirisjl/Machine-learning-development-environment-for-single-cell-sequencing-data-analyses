@@ -63,17 +63,21 @@ const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL 
       <Descriptions.Item label="Source"><a href={datasetDetails["Source"]?.label}>{datasetDetails["Source"]?.label}</a></Descriptions.Item>
       <Descriptions.Item label="Submission Date">{datasetDetails["Submission Date"]}</Descriptions.Item>
       <Descriptions.Item label="AnnData File">
-        <a href="#"
-          download
+        <button
+          type="button"
           onClick={(e) => { e.preventDefault(); downloadFile(datasetDetails["adata_path"]) }}
           style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            font: 'inherit',
             textAlign: 'center',
             cursor: 'pointer',
             textDecoration: 'underline',
             color: 'blue'
           }}>
           {getFileNameFromURL(datasetDetails["adata_path"]) || 'Not available'}
-        </a>
+        </button>
       </Descriptions.Item>
     </Descriptions>
   );

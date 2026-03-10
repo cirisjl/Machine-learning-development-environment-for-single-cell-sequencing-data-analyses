@@ -150,6 +150,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
           });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -167,6 +168,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       }
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
 
 

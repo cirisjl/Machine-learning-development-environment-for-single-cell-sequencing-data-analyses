@@ -28,14 +28,8 @@ export function IntegrationWorkFlowComponent(props) {
   const [message, setMessage] = useState('');
   const [hasMessage, setHasMessage] = useState(message !== '' && message !== undefined);
   const [isError, setIsError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [presetQuestions, setPresetQuestions] = useState(null);
-
-  const parametersKey = {
-    quality_control: 'qc_params',
-    integration: 'integration_params',
-    visualization: 'reduction_params'
-  };
 
   const [dynamicOptions, setDynamicOptions] = useState({
     layers: [], // Add layers as a dynamic option

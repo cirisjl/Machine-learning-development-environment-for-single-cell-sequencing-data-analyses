@@ -247,7 +247,7 @@ function TaskDetailsComponent() {
   const [taskOutput, setTaskOutput] = useState(routerOutput || null);
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingPlot, setLoadingPlot] = useState(false);
+  const [, setLoadingPlot] = useState(false);
 
   // Data State
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
@@ -341,6 +341,7 @@ function TaskDetailsComponent() {
     console.log("Resetting state for new jobId:", jobId);
     console.log("Current routerJobId:", routerJobId);
     console.log("Current activeWsJobId:", activeWsJobId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   const fetchPlotData = useCallback(async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
@@ -455,6 +456,7 @@ function TaskDetailsComponent() {
     };
 
     fetchJobData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   // Kick off preprocess results job once per processIds
@@ -639,12 +641,12 @@ function TaskDetailsComponent() {
                   <Box>
                     {(datasetURL ? (Array.isArray(datasetURL) ? datasetURL : [datasetURL]) : []).map((url, i) => (
                       <div key={i}>
-                        <a href="#"
-                          style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
+                        <button type="button"
+                          style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
                           onClick={(e) => { e.preventDefault(); downloadFile(url); }}
                         >
                           {getFileNameFromURL(url) || 'Download File'}
-                        </a>
+                        </button>
                       </div>
                     ))}
                   </Box>
@@ -714,12 +716,12 @@ function TaskDetailsComponent() {
                         {Object.entries(out || {}).map(([key, val]) => (
                           <div key={key}>
                             <Typography variant="subtitle1" display="inline"><strong>{key}: </strong></Typography>
-                            <a href="#"
-                              style={{ cursor: 'pointer', color: '#1976d2' }}
+                            <button type="button"
+                              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', color: '#1976d2', textDecoration: 'underline' }}
                               onClick={(e) => { e.preventDefault(); downloadFile(val); }}
                             >
                               {getFileNameFromURL(val)}
-                            </a>
+                            </button>
                           </div>
                         ))}
                       </Box>

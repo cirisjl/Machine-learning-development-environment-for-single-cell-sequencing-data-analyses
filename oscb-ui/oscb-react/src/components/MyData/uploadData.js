@@ -42,7 +42,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const [sampleValue, setSampleValue] = useState('');
     const [pwd, setPwd] = useState('/');
     let jwtToken = getCookie('jwtToken');
-    const [formData, setFormData] = useState({});
+    const [, setFormData] = useState({});
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [enabledCheckboxes, setEnabledCheckboxes] = useState([]);
     const [tempFileList, setTempFileList] = useState([]);
@@ -52,14 +52,14 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const location = useLocation();
     let mode = location.state?.mode || '';
     let formInfo = location.state?.formInfo || '';
-    const [currentFileList, setCurrentFileList] = useState(formInfo?.files?.map(file => file.file_loc) || []);
+    const [currentFileList] = useState(formInfo?.files?.map(file => file.file_loc) || []);
     const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
     const [fileToPreview, setFileToPreview] = useState(null);
     const [fileNames, setFileNames] = useState([]);
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
-    const [isAdminuser, setIsAdminUser] = useState(false);
+
     const [isLoading, setIsLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
     const [jobId, setjobId] = useState('');
@@ -184,6 +184,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                 }
             })
             .catch((error) => console.error(error));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -198,6 +199,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             }
         };
         hookForUpdate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -214,25 +216,10 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             const parts = file.split('/');
             return parts[parts.length - 1];
         }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
-    const SubmitButton = ({ disabled, onClick }) => {
-        const handleClick = () => {
-            setIsButtonDisabled(true);
-            onClick();
-        };
 
-        return (
-            <button
-                type="submit"
-                onClick={handleClick}
-                disabled={isButtonDisabled || disabled}
-                style={{ cursor: "pointer" }}
-            >
-                Submit
-            </button>
-        );
-    };
 
     const toggleSwitchForPublicDatasets = () => {
         setPublicdataset((prevState) => !prevState)
@@ -543,6 +530,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             setIsLoading(false);
             closeWebSockets();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentStatus]);
 
     const handleSubmit = (event) => {

@@ -24,6 +24,7 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         }
         else
             navigate('/routing');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isUppyModalOpen]);
 
     const handleFileClick = async (fileName) => {
@@ -31,27 +32,14 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
         setPreviewBoxOpen(true);
     };
 
-    const handleRenameIcon = (id) => {
-        fileNames.map((item, index) => {
-            if (`f${index}` === id) {
-                setSelectedItemId(id);
-            }
-        });
-        dirNames.map((item, index) => {
-            if (`d${index}` === id) {
-                setSelectedItemId(id);
-            }
-        });
-    }
-
     const handleUpdateText = (id, newText) => {
-        fileNames.map((file, index) => {
+        fileNames.forEach((file, index) => {
             if (`f${index}` === id) {
                 renameFileOrDir(file.name, newText);
             }
             fetchDirContents();
         });
-        dirNames.map((dir, index) => {
+        dirNames.forEach((dir, index) => {
             if (`d${index}` === id) {
                 renameFileOrDir(dir.name, newText);
             }
@@ -301,9 +289,9 @@ export default function FileManagerModal({ setEnabledCheckboxes, setFileToPrevie
                             />
                         ) : (
                             <div style={{ paddingLeft: '6%', width: "40%", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                <a href="#" style={{ color: "black", textDecoration: "none" }} title={dir.name} onClick={(e) => { e.preventDefault(); fetchDirContents(dir.name); }}>
+                                <button type="button" style={{ background: "none", border: "none", padding: 0, font: "inherit", color: "black", textDecoration: "none", cursor: "pointer" }} title={dir.name} onClick={(e) => { e.preventDefault(); fetchDirContents(dir.name); }}>
                                     {dir.name}
-                                </a>
+                                </button>
                             </div>
                         )}
                         <div style={{ paddingLeft: '4%', width: "25%" }}>Folder</div>
