@@ -24,8 +24,8 @@ import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import { FormControl, InputLabel } from '@mui/material';
-import { NODE_API_URL, FLASK_BACKEND_API } from '../../constants/declarations'
+import { FormControl } from '@mui/material';
+import { NODE_API_URL } from '../../constants/declarations'
 // import schema from "../../schema/react-json-schema/uploadDataSchema.json";
 // import RightRail from "../RightNavigation/rightRail";
 // import updateSchema from "./../updateDataSchema.json";
@@ -42,7 +42,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const [sampleValue, setSampleValue] = useState('');
     const [pwd, setPwd] = useState('/');
     let jwtToken = getCookie('jwtToken');
-    const [formData, setFormData] = useState({});
+    const [, setFormData] = useState({});
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [enabledCheckboxes, setEnabledCheckboxes] = useState([]);
     const [tempFileList, setTempFileList] = useState([]);
@@ -52,14 +52,15 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     const location = useLocation();
     let mode = location.state?.mode || '';
     let formInfo = location.state?.formInfo || '';
-    const [currentFileList, setCurrentFileList] = useState(formInfo?.files?.map(file => file.file_loc) || []);
+    const [currentFileList] = useState(formInfo?.files?.map(file => file.file_loc) || []);
     const [previewBoxOpen, setPreviewBoxOpen] = useState(false);
     const [fileToPreview, setFileToPreview] = useState(null);
     const [fileNames, setFileNames] = useState([]);
     const [dirNames, setDirNames] = useState([]);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    const [isAdminuser, setIsAdminuser] = useState(false);
     const [publicdataset, setPublicdataset] = useState(taskData?.upload?.makeItpublic);
-    const [isAdminuser, setIsAdminUser] = useState(false);
+
     const [isLoading, setIsLoading] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(null); // Set to null initially
     const [jobId, setjobId] = useState('');
@@ -81,7 +82,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
     };
 
     const handleProjectChange = (project_name) => {
-        setSelectedUserProject(project_name);    
+        setSelectedUserProject(project_name);
     };
 
     const handleProjectFocus = () => {
@@ -94,7 +95,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                     console.error("Error fetching user projects:", fetchErr);
                 }
             })
-            .catch((error) => console.error(error)); 
+            .catch((error) => console.error(error));
     }
 
     const handleStatusMessage = (event) => {
@@ -169,10 +170,10 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             .then(async (authData) => {
                 console.log(authData)
                 if (authData.isAuth) {
-                    // setIsAdminUser(authData.isAdmin);
-                    
+                    setIsAdminuser(authData.isAdmin);
+
                     try {
-                        const userProjects =await fetchUserProjectsList(authData.username);
+                        const userProjects = await fetchUserProjectsList(authData.username);
                         setUserProjectsList(userProjects);
                     } catch (fetchErr) {
                         console.error("Error fetching user projects:", fetchErr);
@@ -184,6 +185,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                 }
             })
             .catch((error) => console.error(error));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -198,6 +200,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             }
         };
         hookForUpdate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -214,25 +217,10 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             const parts = file.split('/');
             return parts[parts.length - 1];
         }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
-    const SubmitButton = ({ disabled, onClick }) => {
-        const handleClick = () => {
-            setIsButtonDisabled(true);
-            onClick();
-        };
 
-        return (
-            <button
-                type="submit"
-                onClick={handleClick}
-                disabled={isButtonDisabled || disabled}
-                style={{ cursor: "pointer" }}
-            >
-                Submit
-            </button>
-        );
-    };
 
     const toggleSwitchForPublicDatasets = () => {
         setPublicdataset((prevState) => !prevState)
@@ -413,69 +401,69 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
         //     setActiveTask(2);
         // } else {
 
-            // Construct your API payload
-            let payload = {
-                fileDetails: taskData.upload.inputUpdatedFiles,
-                userID : taskData.upload.authToken
-            };
+        // Construct your API payload
+        let payload = {
+            fileDetails: taskData.upload.inputUpdatedFiles,
+            userID: taskData.upload.authToken
+        };
 
-            // Include assay_name in the payload only if it is not null
-            if (taskData.upload.selectedAssayName) {
-                payload.assay_name = taskData.upload.selectedAssayName;
-            }
+        // Include assay_name in the payload only if it is not null
+        if (taskData.upload.selectedAssayName) {
+            payload.assay_name = taskData.upload.selectedAssayName;
+        }
 
-            // const response = await axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload));
-            // const taskInfo = response.data;
-            // const jobId = taskInfo.job_id;
-            // setjobId(jobId);
+        // const response = await axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload));
+        // const taskInfo = response.data;
+        // const jobId = taskInfo.job_id;
+        // setjobId(jobId);
 
-            // Make the API call
-            axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
-                .then(response => {
-                    console.log(response.data);
-                    let data = response.data;
-                    const jobId = data.job_id;
-                    setjobId(jobId);
-                    // Handle your response here
-                    // console.log(response.data);
-                    // let data = response.data;
-                    // setTaskData(prevTaskData => ({
-                    //     ...prevTaskData,
-                    //     upload: {
-                    //         ...prevTaskData.upload,
-                    //         final_files: {
-                    //             ...prevTaskData.upload.final_files,
-                    //             inputFiles: data.inputfile,
-                    //             adata_path: data.adata_path,
-                    //             format: data.format,
-                    //             default_assay: data.default_assay,
-                    //             cell_metadata: data.cell_metadata,
-                    //             cell_metadata_head: data.cell_metadata_head,
-                    //             obs_names: data.obs_names,
-                    //             nCells: data.nCells,
-                    //             nGenes: data.nGenes,
-                    //             layers: data.layers,
-                    //             info: data.info,
-                    //             adata_size: data.adata_size,
-                    //             embeddings: data.embeddings,
-                    //             status: 'completed',
-                    //         },
-                    //     },
-                    // }));
+        // Make the API call
+        axios.post(`${CELERY_BACKEND_API}/tools/metadata`, payload)
+            .then(response => {
+                console.log(response.data);
+                let data = response.data;
+                const jobId = data.job_id;
+                setjobId(jobId);
+                // Handle your response here
+                // console.log(response.data);
+                // let data = response.data;
+                // setTaskData(prevTaskData => ({
+                //     ...prevTaskData,
+                //     upload: {
+                //         ...prevTaskData.upload,
+                //         final_files: {
+                //             ...prevTaskData.upload.final_files,
+                //             inputFiles: data.inputfile,
+                //             adata_path: data.adata_path,
+                //             format: data.format,
+                //             default_assay: data.default_assay,
+                //             cell_metadata: data.cell_metadata,
+                //             cell_metadata_head: data.cell_metadata_head,
+                //             obs_names: data.obs_names,
+                //             nCells: data.nCells,
+                //             nGenes: data.nGenes,
+                //             layers: data.layers,
+                //             info: data.info,
+                //             adata_size: data.adata_size,
+                //             embeddings: data.embeddings,
+                //             status: 'completed',
+                //         },
+                //     },
+                // }));
 
-                    // setTaskStatus((prevTaskStatus) => ({
-                    //     ...prevTaskStatus,
-                    //     1: true, // Mark Task 1 as completed
-                    // }));
+                // setTaskStatus((prevTaskStatus) => ({
+                //     ...prevTaskStatus,
+                //     1: true, // Mark Task 1 as completed
+                // }));
 
-                    // //The current task is finished, so make the next task active
-                    // setActiveTask(2);
-                    // setIsLoading(false);
-                })
-                .catch(error => {
-                    console.error('There was an error with the conversion:', error);
-                    setIsLoading(false);
-                });
+                // //The current task is finished, so make the next task active
+                // setActiveTask(2);
+                // setIsLoading(false);
+            })
+            .catch(error => {
+                console.error('There was an error with the conversion:', error);
+                setIsLoading(false);
+            });
         // }
     };
 
@@ -483,19 +471,19 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
         if (currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
             if (currentStatus === "SUCCESS") {
                 if (metadataResult.task_result.assay_names && metadataResult.task_result.assay_names.length > 1) {
-                        setTaskData(prevTaskData => ({
-                            ...prevTaskData,
-                            upload: {
-                                ...prevTaskData.upload,
-                                displayAssayNames: true,
-                                assayNames: metadataResult.task_result.assay_names,
-                                default_assay: metadataResult.task_result.default_assay,
-                                inputUpdatedFiles: metadataResult.task_result.inputfile,
-                                project_name: selectedUserProject
-                            },
-                        }));
+                    setTaskData(prevTaskData => ({
+                        ...prevTaskData,
+                        upload: {
+                            ...prevTaskData.upload,
+                            displayAssayNames: true,
+                            assayNames: metadataResult.task_result.assay_names,
+                            default_assay: metadataResult.task_result.default_assay,
+                            inputUpdatedFiles: metadataResult.task_result.inputfile,
+                            project_name: selectedUserProject
+                        },
+                    }));
                 }
-                 else {
+                else {
                     setTaskData(prevTaskData => ({
                         ...prevTaskData,
                         upload: {
@@ -543,6 +531,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
             setIsLoading(false);
             closeWebSockets();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentStatus]);
 
     const handleSubmit = (event) => {
@@ -980,13 +969,13 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div className="publish-dataset-div">
                             <React.Fragment>
                                 <ToggleSwitch label="Do you want to publish this dataset as public dataset ?" toggleSwitchForPublicDatasets={toggleSwitchForPublicDatasets} defaultValue={taskData.upload.makeItpublic} />
                             </React.Fragment>
                         </div>
-            
+
                         <br />
                         {/* <h2 style={{ textAlign: "left" }}><span>Parameters</span></h2>
 
@@ -1016,7 +1005,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                 </Link>
                                 <br />
                             </Box>
-                            
+
                         </div>
 
                         {
@@ -1037,7 +1026,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
                                             onChange={handleAssaySelection}
                                         />
                                         <div className='next-upon-success'>
-                                            <button type="submit" className="btn btn-info button" onClick={handleAssaySelectionSubmit}>Next</button>
+                                            <button type="submit" className="btn btn-info button" disabled={isButtonDisabled} onClick={handleAssaySelectionSubmit}>Next</button>
                                         </div>
                                     </div>
                                 )
@@ -1047,7 +1036,7 @@ export default function UploadData({ taskStatus, setTaskStatus, taskData, setTas
 
                         {!taskData.upload.displayAssayNames && (
                             <div className='next-upon-success'>
-                                <button type="submit" className="btn btn-info button" onClick={handleSubmit}>Next</button>
+                                <button type="submit" className="btn btn-info button" disabled={isButtonDisabled} onClick={handleSubmit}>Next</button>
                             </div>
                         )}
 

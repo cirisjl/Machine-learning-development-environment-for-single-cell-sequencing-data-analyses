@@ -1696,8 +1696,14 @@ async function cleanUpJobData(jobId, username) {
         );
 
         if (!job || !job.process_ids || job.process_ids.length === 0) {
-            console.log(`Job ID ${jobId} not found, does not belong to user, or has no process_ids. Aborting.`);
-            return false;
+            console.log(`Job ID ${jobId} not found, does not belong to user ${username}, or has no process_ids. Aborting.`);
+            console.log(`Deleting job ${jobId}...`);
+            const res = await jobsCollection.deleteOne({ job_id: jobId, created_by: username });
+            if (res.deletedCount === 0) {
+                return false;
+            } else {
+                return true;
+            }
         }
 
         const originalProcessIds = job.process_ids;

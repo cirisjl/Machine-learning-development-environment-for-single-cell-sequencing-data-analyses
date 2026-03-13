@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 const TextWithEllipsis = ({ text, maxLength }) => {
 
@@ -6,9 +6,9 @@ const TextWithEllipsis = ({ text, maxLength }) => {
 
   return (
     <div className="text-container">
-        <div className="text-content" title={text}>
-            {displayText}{text.length > maxLength && <span className="ellipsis"> ...</span>}
-        </div>
+      <div className="text-content" title={text}>
+        {displayText}{text.length > maxLength && <span className="ellipsis"> ...</span>}
+      </div>
     </div>
   );
 };

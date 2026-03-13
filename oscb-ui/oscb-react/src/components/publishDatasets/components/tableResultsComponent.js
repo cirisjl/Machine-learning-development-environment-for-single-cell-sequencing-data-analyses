@@ -1,6 +1,6 @@
 import { faEdit, faEye, faTrash, faClipboard } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 // import { useTable, useRowSelect } from 'react-table';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -15,11 +15,11 @@ import { CELERY_BACKEND_API } from '../../../constants/declarations'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
-const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets, multiple, pagination, onSelectSubItem, username = null, isAdmin = false, enableClick=true, showCheckbox=true, showEdit=true, showDelete=true }) => {
+const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets, multiple, pagination, onSelectSubItem, username = null, isAdmin = false, enableClick = true, showCheckbox = true, showEdit = true, showDelete = true }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [subItemsData, setSubItemsData] = useState({});
     const [copiedState, setCopiedState] = useState(false);
-    
+
     const handleCopy = () => {
         setCopiedState(true);
         setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
@@ -31,12 +31,12 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
         pageSize: 10, // default number of rows per page
         pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
         showSizeChanger: true, // show the dropdown to select page size
-      });
+    });
 
     // Handle pagination change (page number and page size)
     const handleTableChange = (pagination) => {
         setPagination({
-        ...pagination,
+            ...pagination,
         });
     };
 
@@ -133,7 +133,7 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
             'Source': false,
         });
     };
-    
+
     const handleVisualize = (datasetId) => {
         console.log("Dataset Id: ", datasetId);
         window.open(`/mydata/view-dataset-info?datasetId=${datasetId}`, '_blank');
@@ -150,87 +150,88 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
         }
 
         const baseColumns = Object.keys(data[0])
-        .filter(key => visibleColumns[key])
-        .map(key => ({
-            title: key,
-            dataIndex: key,
-            key: key,
-            sorter: (a, b) => sortColumn(a, b, key),
-            render: value => {
-                let res = '';
-                if (value && typeof value === 'object' && value.label) {
-                    res = value.label;
-                } else {
-                    res = value;
-                }
-                return(
-                    <div 
-                        data-title={res} 
-                        className="cell-ellipsis"
-                        title={res}
+            .filter(key => visibleColumns[key])
+            .map(key => ({
+                title: key,
+                dataIndex: key,
+                key: key,
+                sorter: (a, b) => sortColumn(a, b, key),
+                render: value => {
+                    let res = '';
+                    if (value && typeof value === 'object' && value.label) {
+                        res = value.label;
+                    } else {
+                        res = value;
+                    }
+                    return (
+                        <div
+                            data-title={res}
+                            className="cell-ellipsis"
+                            title={res}
                         >
-                        {res}
-                    </div>
-                )
-                
-            }
-        }));
+                            {res}
+                        </div>
+                    )
+
+                }
+            }));
 
         const actionColumn = {
             title: 'Actions',
             key: 'actions',
             render: item => {
-                return(
-                <div className="action-buttons">
-                    {showCheckbox && ( <input
-                        type="checkbox"
-                        style={{ cursor:'pointer' }}
-                        onChange={() => onSelectDataset(item)}
-                        checked={!!selectedDatasets[item["Id"]]}
+                return (
+                    <div className="action-buttons">
+                        {showCheckbox && (<input
+                            type="checkbox"
+                            style={{ cursor: 'pointer' }}
+                            onChange={() => onSelectDataset(item)}
+                            checked={!!selectedDatasets[item["Id"]]}
                         // disabled={showCheckbox}
                         // disabled={isDisabled() && !isSelected(item["Id"])} // Disable if multiple is false and a dataset is already selecte
-                    /> )}
-                    {username && username === item["Owner"] && showEdit && ( <button
-                        onClick={() => handleEdit(item["Id"])}
-                        // disabled={showEdit}
-                        className="action-button">
-                        <FontAwesomeIcon icon={faEdit} />
-                    </button> )}
+                        />)}
+                        {username && username === item["Owner"] && showEdit && (<button
+                            onClick={() => handleEdit(item["Id"])}
+                            // disabled={showEdit}
+                            className="action-button">
+                            <FontAwesomeIcon icon={faEdit} />
+                        </button>)}
 
-                    {username && (isAdmin || username === item["Owner"]) && showEdit && showDelete && ( <button
-                        onClick={() => onDeleteDataset(item["Id"], item)}
-                        className="action-button">
-                        <FontAwesomeIcon icon={faTrash} />
-                    </button> )}
+                        {username && (isAdmin || username === item["Owner"]) && showEdit && showDelete && (<button
+                            onClick={() => onDeleteDataset(item["Id"], item)}
+                            className="action-button">
+                            <FontAwesomeIcon icon={faTrash} />
+                        </button>)}
 
-                    <CopyToClipboard text={item["Id"]} onCopy={() => handleCopy()}>
-                        <button className="action-button">
-                            <FontAwesomeIcon icon={faClipboard} />
+                        <CopyToClipboard text={item["Id"]} onCopy={() => handleCopy()}>
+                            <button className="action-button">
+                                <FontAwesomeIcon icon={faClipboard} />
+                            </button>
+                        </CopyToClipboard>
+
+                        <button
+                            onClick={() => handleVisualize(item["Id"])}
+                            className="action-button">
+                            <FontAwesomeIcon icon={faEye} />
                         </button>
-                    </CopyToClipboard>
-                    
-                    <button
-                        onClick={() => handleVisualize(item["Id"])}
-                        className="action-button">
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
 
-                    
-                </div>
+
+                    </div>
                 );
             }
         };
         return [actionColumn, ...baseColumns];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, selectedDatasets, visibleColumns]);
 
     const fetchSubItems = async (process_ids) => {
         const process_ids_key = process_ids.join(',');
-        
+
         // Check if data already exists for this process_ids_key
         if (subItemsData[process_ids_key]) {
             return; // Data already exists, no need to fetch again
         }
-    
+
         try {
             const response = await axios.post(CELERY_BACKEND_API + '/getPreProcessResultsMain', { process_ids: process_ids, record_type: "table" });
             setSubItemsData(prevData => ({
@@ -241,7 +242,7 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
             console.error("Error fetching sub-items:", error);
         }
     };
-    
+
 
     const expandedRowRender = (record) => {
 
@@ -281,10 +282,10 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
                 title: 'Action',
                 key: 'operation',
                 render: (text, subRecord) => (
-                    showCheckbox && <Checkbox 
-                    onChange={() => onSelectSubItem(record, subRecord)} 
-                    // disabled={showCheckbox}
-                    checked={selectedDatasets[record.Id]?.selectedSubItem?.process_id === subRecord.process_id}
+                    showCheckbox && <Checkbox
+                        onChange={() => onSelectSubItem(record, subRecord)}
+                        // disabled={showCheckbox}
+                        checked={selectedDatasets[record.Id]?.selectedSubItem?.process_id === subRecord.process_id}
                     />
                 ),
             },
@@ -317,32 +318,32 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
                     keepMounted
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
-                    style={{height: "400px" }} // Adjusts the vertical position
+                    style={{ height: "400px" }} // Adjusts the vertical position
                     anchorOrigin={{
-                        vertical: 'bottom', 
-                        horizontal: 'right', 
-                      }}
-                      transformOrigin={{
-                        vertical: 'top', 
+                        vertical: 'bottom',
                         horizontal: 'right',
-                      }}
-                      getContentAnchorEl={null} // This will make anchorOrigin work as expected
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }}
+                    getContentAnchorEl={null} // This will make anchorOrigin work as expected
                 >
                     <FormGroup>
                         {Object.keys(visibleColumns).map((column) => (
-                           <MenuItem key={column} onClick={(event) => event.stopPropagation()}>
-                           <FormControlLabel
-                               control={
-                                   <Checkbox
-                                       checked={visibleColumns[column]}
-                                       onChange={() => toggleColumnVisibility(column)}
-                                       onClick={(event) => event.stopPropagation()} // Prevent triggering the menu item's onClick
-                                   />
-                               }
-                               label={column}
-                               // Remove the onClick here to avoid overriding Checkbox's behavior
-                           />
-                       </MenuItem>
+                            <MenuItem key={column} onClick={(event) => event.stopPropagation()}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={visibleColumns[column]}
+                                            onChange={() => toggleColumnVisibility(column)}
+                                            onClick={(event) => event.stopPropagation()} // Prevent triggering the menu item's onClick
+                                        />
+                                    }
+                                    label={column}
+                                // Remove the onClick here to avoid overriding Checkbox's behavior
+                                />
+                            </MenuItem>
                         ))}
                         {/* Reset Menu Item */}
                         <MenuItem onClick={resetColumnVisibility}>
@@ -362,7 +363,7 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
                 onRow={(record) => {
                     return {
                         onDoubleClick: () => {
-                            if(enableClick){
+                            if (enableClick) {
                                 window.open(`/mydata/view-dataset-info?datasetId=${record['Id']}`, '_blank');
                             }
                         }
@@ -376,18 +377,18 @@ const ResultsTable = ({ data, onSelectDataset, onDeleteDataset, selectedDatasets
                     rowExpandable: (record) => Array.isArray(record.process_ids) && record.process_ids.length > 0,
                 }}
             />
-            { <div className="pagination-info">
+            {<div className="pagination-info">
                 <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
-                <span>* Click <strong>+</strong> to expand a row and view the detailed outputs of each processed result.</span><br/>
+                <span>* Click <strong>+</strong> to expand a row and view the detailed outputs of each processed result.</span><br />
                 {showEdit && (<span>* Click <FontAwesomeIcon icon={faEdit} /> to <strong>Edit</strong> dataset.<br /></span>)}
                 {showDelete && (<span>* Click <FontAwesomeIcon icon={faTrash} /> to <strong>Delete</strong> dataset.<br /></span>)}
-                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Dataset ID</strong>.</span><br/>
+                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Dataset ID</strong>.</span><br />
                 <span>* Click <FontAwesomeIcon icon={faEye} /> </span>
                 {enableClick && (
                     <span> or <strong>double-click</strong> the row </span>
                 )}
                 <span>to view details.</span>
-            </div> }
+            </div>}
         </div>
     );
 };

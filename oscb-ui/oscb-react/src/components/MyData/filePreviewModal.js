@@ -179,13 +179,14 @@ export default function FilePreviewModal({ selectedFile, setPreviewBoxOpen, jobI
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                     );
-                } 
+                }
             } catch (error) {
                 console.error('Error fetching file:', error);
             }
         };
 
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFile]);
 
     if (jwtToken)

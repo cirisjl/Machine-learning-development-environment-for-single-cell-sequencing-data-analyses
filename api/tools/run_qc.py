@@ -40,6 +40,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
     benchmarks_data = False
     description = "QC for Benchmarks"
     zarr_output = None
+    obs_cols = None
+    cluster_colname = ds['cluster_colname']
+    if cluster_colname is not None and cluster_colname.strip() != "":
+        obs_cols = [cluster_colname]
 
     if datasetId is not None:
         description = f"QC for Benchmarks for {datasetId}"
@@ -112,11 +116,11 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
 
             redislogger.info(job_id, "Saving AnnData object.")
             # adata.write_h5ad(output_path, compression='gzip')
-            output_path, zarr_output = save_anndata(adata, output_path, zarr=True, n_hvg=n_hvg)
+            output_path, zarr_output = save_anndata(adata, output_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
             adata_path = output_path
             
             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-            qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, zarr_path=zarr_output)
+            qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
             nCells = qc_results["nCells"]
             
             adata = None
@@ -194,10 +198,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         redislogger.info(job_id, "Saving AnnData object.")
                         scanpy_results.X = scanpy_results.layers["raw_counts"].copy()
                         # scanpy_results.write_h5ad(output_path, compression='gzip')
-                        output_path, zarr_output = save_anndata(scanpy_results, output_path, zarr=True, n_hvg=n_hvg)
+                        output_path, zarr_output = save_anndata(scanpy_results, output_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, n_top_genes=parameters['n_top_genes'], zarr_path=zarr_output)
+                        qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, n_top_genes=parameters['n_top_genes'], cluster_colname=cluster_colname, zarr_path=zarr_output)
                         nCells = qc_results["nCells"]
                         
                         qc_output.append({'AnnData': output_path})
@@ -214,7 +218,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             redislogger.info(job_id, "Start scanpy QC...")
                             scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'], species=species)
                             # scanpy_results.write_h5ad(output_path, compression='gzip')
-                            save_anndata(scanpy_results, output_path)
+                            # save_anndata(scanpy_results, output_path)
 
                             if do_umap:
                                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -227,10 +231,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             redislogger.info(job_id, "Saving AnnData object.")
                             scanpy_results.X = scanpy_results.layers["raw_counts"].copy()
                             # scanpy_results.write_h5ad(output_path, compression='gzip')
-                            output_path, zarr_output = save_anndata(scanpy_results, output_path, zarr=True, n_hvg=n_hvg)
+                            output_path, zarr_output = save_anndata(scanpy_results, output_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                            qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, zarr_path=zarr_output)
+                            qc_results = get_metadata_from_anndata(scanpy_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
                             nCells = qc_results["nCells"]
                             
                             qc_output.append({'AnnData': output_path})
@@ -286,10 +290,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         redislogger.info(job_id, "Saving AnnData object.")
                         dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                         # dropkick_results.write_h5ad(output_path, compression='gzip')
-                        output_path, zarr_output = save_anndata(dropkick_results, output_path, zarr=True, n_hvg=n_hvg)
+                        output_path, zarr_output = save_anndata(dropkick_results, output_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, zarr_path=zarr_output)
+                        qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
                         nCells = qc_results["nCells"]
                         
                         qc_output.append({'AnnData': output_path})
@@ -305,7 +309,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             adata = load_anndata(input_path, raw=True)
                             dropkick_results = run_dropkick_qc(adata, job_id, n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'], n_hvg=parameters['n_top_genes'], random_state=random_state)
                             # dropkick_results.write_h5ad(output_path, compression='gzip')
-                            save_anndata(dropkick_results, output_path)
+                            # save_anndata(dropkick_results, output_path)
 
                             if do_umap:
                                 redislogger.info(job_id, "Computing PCA, neighborhood graph, tSNE, UMAP, and 3D UMAP")
@@ -321,10 +325,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             # redislogger.info(job_id, output_path)
                             dropkick_results.X = dropkick_results.layers["raw_counts"].copy()
                             # dropkick_results.write_h5ad(output_path, compression='gzip')
-                            output_path, zarr_output = save_anndata(dropkick_results, output_path, zarr=True, n_hvg=n_hvg)
+                            output_path, zarr_output = save_anndata(dropkick_results, output_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                            qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, zarr_path=zarr_output)
+                            qc_results = get_metadata_from_anndata(dropkick_results, pp_stage, process_id, process, method, parameters, md5, adata_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
                             nCells = qc_results["nCells"]
                             
                             adata_path = output_path
@@ -395,10 +399,10 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                             redislogger.info(job_id, "Clustering the neighborhood graph.")
                             adata = run_clustering(adata, resolution=parameters['resolution'], random_state=random_state)
                         adata.X = adata.layers["raw_counts"].copy()
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path, zarr_path=zarr_output)
+                        qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, seurat_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
                         nCells = qc_results["nCells"]
                         redislogger.info(job_id, qc_results['info'])
                         # adata.write_h5ad(adata_path, compression='gzip')
@@ -485,12 +489,12 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         #                 copy=True, maxiter=None)
                         # adata.obsm["X_umap_3D"] = adata_3D.obsm["X_umap"]
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg)
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
                     else:
                         raise ValueError("AnnData file does not exist due to the failure of Bioconductor QC.")
                     
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                    qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path, zarr_path=zarr_output)
+                    qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path, cluster_colname=cluster_colname, zarr_path=zarr_output)
                     nCells = qc_results["nCells"]
                     if os.path.exists(adata_path): qc_output.append({'Anndata': adata_path})
                     if os.path.exists(output_path): qc_output.append({'SingleCellExperiment': output_path})

@@ -1,15 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { CELERY_BACKEND_API, NODE_API_URL } from '../../../constants/declarations';
-import {  ScaleLoader } from 'react-spinners';
+import { ScaleLoader } from 'react-spinners';
 import AlertMessageComponent from './alertMessageComponent';
 import BenchmarksPlots from './benchmarksPlots';
 import useWebSocket from '../../MyData/MyTasks/useWebSocket';
-import { Typography,Paper, Grid, Card, CardContent,CardHeader } from '@mui/material';
+import { Typography, Card, CardContent } from '@mui/material';
 import LogComponent from '../../common_components/liveLogs';
 import axios from 'axios';
 
 
-function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask  }) {
+function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActiveTask, activeTask }) {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -28,7 +28,7 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
       console.log('Benchmarks Results:', response.data);
       const benchmarksResults = response.data;
       if (Array.isArray(benchmarksResults)) {
-    
+
         // Update the benchmarks section in taskData with the received results
         setTaskData((prevTaskData) => ({
           ...prevTaskData,
@@ -72,13 +72,13 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     setActiveTask(6);
   };
 
-  
+
   const handleStatusMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
       if (data.task_status) {
         setCurrentStatus(data.task_status);
-        if(data.task_status === "SUCCESS" || data.task_status === "FAILURE"){
+        if (data.task_status === "SUCCESS" || data.task_status === "FAILURE") {
           setCeleryTaskResults(data);
         }
       }
@@ -97,96 +97,95 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
     }
   };
 
-      // A utility function to safely sanitize logs before using dangerouslySetInnerHTML
-      const createMarkup = (logs) => {
-        return { __html: logs };
-      };
 
-      const { closeWebSockets } = useWebSocket(jobId, handleStatusMessage, handleLogMessage, setLoading);
+
+  const { closeWebSockets } = useWebSocket(jobId, handleStatusMessage, handleLogMessage, setLoading);
 
   useEffect(() => {
-    if(taskData.benchmarks.status !== 'completed') {
+    if (taskData.benchmarks.status !== 'completed') {
 
-    if (taskData.task_builder && taskData.task_builder.selectedDatasets) {
-      setLoading(true);
+      if (taskData.task_builder && taskData.task_builder.selectedDatasets) {
+        setLoading(true);
 
-      const selectedDatasets  = taskData.task_builder.selectedDatasets;
+        const selectedDatasets = taskData.task_builder.selectedDatasets;
 
-      let body = Object.entries(selectedDatasets).map(([key, dataset], index) => ({
-        benchmarksId: dataset.taskType.value + "-" + dataset.Id,
-        datasetId: dataset.Id,
-        userID: dataset.Owner,
-        task_type: dataset.taskType.label,
-        // adata_path: dataset.dataSplit.adataPath,
-        adata_path: dataset.adata_path,
-        label: dataset?.taskLabel?.label || '',
-        ccc_target: dataset?.cccTarget?.label || '',
-        batch_key: dataset?.batch_key?.label || '',
-        bm_traj: dataset?.BMTraj?.label || '',
-        origin_group: dataset?.originGroup?.label || '',
-        celltypist_model: dataset?.celltypist_model?.label || '',
-        SingleR_ref: dataset?.SingleR_ref?.map(item => item.label) || [],
-        mod1: dataset?.mod1?.label || '',
-        mod2: dataset?.mod2?.label || '',
-        species: dataset?.Species?.label.toLowerCase() || 'mouse',
-      }));
-      const postBody = body[0];
+        let body = Object.entries(selectedDatasets).map(([key, dataset], index) => ({
+          benchmarksId: dataset.taskType.value + "-" + dataset.Id,
+          datasetId: dataset.Id,
+          userID: dataset.Owner,
+          task_type: dataset.taskType.label,
+          // adata_path: dataset.dataSplit.adataPath,
+          adata_path: dataset.adata_path,
+          label: dataset?.taskLabel?.label || '',
+          ccc_target: dataset?.cccTarget?.label || '',
+          batch_key: dataset?.batch_key?.label || '',
+          bm_traj: dataset?.BMTraj?.label || '',
+          origin_group: dataset?.originGroup?.label || '',
+          celltypist_model: dataset?.celltypist_model?.label || '',
+          SingleR_ref: dataset?.SingleR_ref?.map(item => item.label) || [],
+          mod1: dataset?.mod1?.label || '',
+          mod2: dataset?.mod2?.label || '',
+          species: dataset?.Species?.label.toLowerCase() || 'mouse',
+        }));
+        const postBody = body[0];
 
-    fetch(`${CELERY_BACKEND_API}/benchmarks/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postBody),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          const jobId = data.job_id;
-          setjobId(jobId);
+        fetch(`${CELERY_BACKEND_API}/benchmarks/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(postBody),
         })
-        .catch((error) => {
-          console.error('Error during API call:', error);
-          setMessage(`Error during API call: ${error}`);
-          setHasMessage(true);
-          setIsError(true);
-          setLoading(false);
-        });
+          .then((response) => response.json())
+          .then((data) => {
+            const jobId = data.job_id;
+            setjobId(jobId);
+          })
+          .catch((error) => {
+            console.error('Error during API call:', error);
+            setMessage(`Error during API call: ${error}`);
+            setHasMessage(true);
+            setIsError(true);
+            setLoading(false);
+          });
+      }
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if(currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
+    if (currentStatus === "SUCCESS" || currentStatus === "FAILURE") {
       closeWebSockets(); // Close WebSockets when task is done
-      if(currentStatus === "SUCCESS") {
+      if (currentStatus === "SUCCESS") {
         fetchBenchmarksResults(celeryTaskResults.task_result.benchmarksId);
         setMessage("Benchmarks Process is Successful");
         setHasMessage(true);
         setIsError(false);
-      } else if(currentStatus === "FAILURE"){
+      } else if (currentStatus === "FAILURE") {
         setMessage("Benchmarks Process is Failed");
         setHasMessage(true);
         setIsError(true);
       }
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStatus]); // Empty dependency array ensures this runs on mount and unmount only
 
 
   return (
     <div className='benchmarks-task'>
-      
-      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage = {setMessage} isError={isError}/>}
 
-      <LogComponent wsLogs = {wsLogs}/>
-        
+      {hasMessage && <AlertMessageComponent message={message} setHasMessage={setHasMessage} setMessage={setMessage} isError={isError} />}
+
+      <LogComponent wsLogs={wsLogs} />
+
       {loading ? (
-              <div className="spinner-container">
-                <ScaleLoader color="#36d7b7" loading={loading} />
-              </div>
-            ) : (
-              <>
-               {/* Iterate over benchmarks_results and call BenchmarksPlot */}
+        <div className="spinner-container">
+          <ScaleLoader color="#36d7b7" loading={loading} />
+        </div>
+      ) : (
+        <>
+          {/* Iterate over benchmarks_results and call BenchmarksPlot */}
           {taskData.benchmarks &&
             taskData.benchmarks.benchmarks_results &&
             taskData.benchmarks.benchmarks_results.map((result, index) => (
@@ -200,23 +199,23 @@ function BenchmarksTaskComponent({ setTaskStatus, taskData, setTaskData, setActi
                     />
                   </CardContent>
                 </Card>
-             </React.Fragment>
+              </React.Fragment>
             ))}
-            
+
           <div className='navigation-buttons'>
-                <div className="previous">
-                  <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
-                    Previous
-                  </button>
-                </div>
-                <div className="next-upon-success">
-                  <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
-                    Next
-                  </button>
-                </div>
-              </div>
-          </>
-        )}
+            <div className="previous">
+              <button type="submit" className="btn btn-info button" onClick={() => setActiveTask(activeTask - 1)}>
+                Previous
+              </button>
+            </div>
+            <div className="next-upon-success">
+              <button type="submit" className="btn btn-info button" onClick={handleTaskCompletion}>
+                Next
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

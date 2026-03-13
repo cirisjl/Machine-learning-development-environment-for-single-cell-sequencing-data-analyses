@@ -191,6 +191,11 @@
               "type": "integer",
               "title": "Number of Highly Variable Genes for Heatmap",
               "default": 50
+            },
+            "cluster_colname": {
+              "type": "string",
+              "title": "Cluster Column Name",
+              "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
             }
           }
         }

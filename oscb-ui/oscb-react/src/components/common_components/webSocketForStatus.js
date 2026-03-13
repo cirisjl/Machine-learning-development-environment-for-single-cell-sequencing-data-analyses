@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { WEB_SOCKET_URL } from '../../constants/declarations';
 
-function useWebSocketToCheckStatus(jobId, onStatusMessage,setLoading) {
+function useWebSocketToCheckStatus(jobId, onStatusMessage, setLoading) {
   const webSocketStatus = useRef(null);
 
   useEffect(() => {
@@ -19,8 +19,8 @@ function useWebSocketToCheckStatus(jobId, onStatusMessage,setLoading) {
     webSocketStatus.current.onerror = error => {
       setLoading(false);
       console.error('WebSocket Status Error:', error);
-  };
-      webSocketStatus.current.onclose = () => console.log('WebSocket for status closed:', jobId);
+    };
+    webSocketStatus.current.onclose = () => console.log('WebSocket for status closed:', jobId);
 
     return () => {
       // Cleanup on unmount or jobId change
@@ -29,6 +29,7 @@ function useWebSocketToCheckStatus(jobId, onStatusMessage,setLoading) {
         webSocketStatus.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   const closeWebSockets = () => {

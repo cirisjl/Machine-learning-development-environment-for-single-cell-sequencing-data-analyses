@@ -33,12 +33,12 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
         pageSize: 10, // default number of rows per page
         pageSizeOptions: ['5', '10', '20', '50'], // options for the number of rows per page
         showSizeChanger: true, // show the dropdown to select page size
-      });
+    });
 
     // Handle pagination change (page number and page size)
     const handleTableChange = (pagination) => {
         setPagination({
-        ...pagination,
+            ...pagination,
         });
     };
 
@@ -155,8 +155,8 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                         res = value;
                     }
                     return (
-                        <div 
-                            data-title={res} 
+                        <div
+                            data-title={res}
                             className="cell-ellipsis"
                             title={res}
                         >
@@ -196,7 +196,8 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
         };
 
         return [actionColumn, ...baseColumns];
-    }, [data, selectedDatasets, visibleColumns]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, visibleColumns]);
 
     return (
         <div>
@@ -264,7 +265,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
                 onChange={handleTableChange}
                 onRow={(record,) => {
                     return {
-                        onDoubleClick: () => { 
+                        onDoubleClick: () => {
                             window.open(`/benchmarks/viewDetails?benchmarksId=${record['Benchmarks ID']}`, '_blank');
                         }
                     };
@@ -272,7 +273,7 @@ const TreeTable = ({ data, onSelectDataset, selectedDatasets, multiple, paginati
             />
             <div className="pagination-info">
                 <span>* Click the <strong>column headers</strong> to apply <strong>*filters</strong> or <strong>sort</strong> the table.</span><br />
-                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Benchmarks ID</strong>.</span><br/>
+                <span>* Click <FontAwesomeIcon icon={faClipboard} /> to copy <strong>Benchmarks ID</strong>.</span><br />
                 <span>
                     * Click <FontAwesomeIcon icon={faEye} /> or <strong>double-click</strong> the row to view details
                 </span>

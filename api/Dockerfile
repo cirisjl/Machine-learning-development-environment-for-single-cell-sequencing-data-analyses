@@ -51,3 +51,7 @@ COPY . .
 # CMD ["bash"]
 EXPOSE 5005
 EXPOSE 5555
+
+# Use tini as the init entrypoint to manage Celery subprocesses
+# ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python3", "main.py"]

@@ -23,12 +23,12 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
     // --- Status WebSocket Setup ---
     const statusUrl = `${WEB_SOCKET_URL}/taskCurrentStatus/${jobId}`;
     console.log("Connecting to status WebSocket:", statusUrl);
-    
+
     const wsStatus = new WebSocket(statusUrl);
     webSocketStatus.current = wsStatus;
 
     wsStatus.onopen = () => console.log('WebSocket Status Connected:', jobId);
-    
+
     // Use the ref here so we always call the latest function
     wsStatus.onmessage = (event) => {
       const text = event?.data;
@@ -45,11 +45,11 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
         onLogMessageRef.current(event);
       }
     };
-    
+
     wsStatus.onclose = (event) => {
       console.log('WebSocket Status Closed:', event);
     };
-    
+
     wsStatus.onerror = (error) => {
       console.error('WebSocket Status Error:', error);
       setLoading(false);
@@ -63,7 +63,7 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
     webSocketLog.current = wsLog;
 
     wsLog.onopen = () => console.log('WebSocket Log Connected:', jobId);
-    
+
     wsLog.onmessage = (event) => {
       if (onLogMessageRef.current) {
         onLogMessageRef.current(event);
@@ -79,7 +79,7 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
     // --- Cleanup Function ---
     return () => {
       console.log('Cleaning up WebSockets for:', jobId);
-      
+
       // We check readyState to avoid closing an already closed socket
       if (wsStatus && wsStatus.readyState === 1) {
         wsStatus.close();
@@ -90,7 +90,8 @@ function useWebSocket(jobId, onStatusMessage, onLogMessage, setLoading) {
     };
     // The dependency array ONLY contains jobId. 
     // Changing callbacks or setLoading will NOT trigger a reconnection.
-  }, [jobId]); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
 
   const closeWebSockets = () => {
     if (webSocketStatus.current) webSocketStatus.current.close();

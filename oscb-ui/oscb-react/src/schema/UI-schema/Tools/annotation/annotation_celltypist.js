@@ -63,6 +63,17 @@ export const uiSchema = (dynamicOptions) => ({
         ]
       }
     },
+    "cluster_colname": {
+      "classNames": "sub-category",
+      "ui:widget": "SelectComponent",
+      'ui:options': {
+        clearable: true,
+        placeholder: "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used.",
+        creatable: false,
+        searchable: true,
+        opts: dynamicOptions.obs_names
+      }
+    },
     "do_umap": {
       "classNames": "sub-category",
       "ui:widget": "toggle"

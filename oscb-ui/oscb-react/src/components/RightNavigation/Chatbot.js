@@ -156,21 +156,6 @@ const StatusText = styled.span`
   letter-spacing: 0.5px;
 `;
 
-const ClearButton = styled.button`
-  color: #cbd5e1;
-  background: none;
-  border: none;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    color: #ef4444;
-    background-color: #fef2f2;
-  }
-`;
-
 const IconButton = styled.button`
   color: #94a3b8;
   background: none;
@@ -302,14 +287,7 @@ const BotAvatarSmall = styled.div`
   margin-bottom: 4px;
 `;
 
-const UserAvatarSmall = styled.div`
-  /* Hidden usually as per design, but defined just in case */
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #4f46e5;
-  display: none; 
-`;
+
 
 const Bubble = styled.div`
   padding: 12px 16px;
@@ -535,23 +513,6 @@ const Disclaimer = styled.span`
   font-weight: 500;
 `;
 
-const ClearChatLink = styled.button`
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 11px;
-  cursor: pointer;
-  margin-top: 8px;
-  align-self: flex-end;
-  text-decoration: underline;
-  padding: 4px 8px;
-  transition: color 0.2s;
-  
-  &:hover {
-    color: #ef4444;
-  }
-`;
-
 const ScrollTopButton = styled.button`
   position: fixed; /* Fixed usually works better for "Scroll to Top" */
   bottom: 230px;
@@ -642,7 +603,7 @@ const ImagePreview = styled.img`
 
 // --- Component ---
 
-const Chatbot = ( presetQuestions =null ) => {
+const Chatbot = (presetQuestions = null) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -652,7 +613,7 @@ const Chatbot = ( presetQuestions =null ) => {
     const savedState = localStorage.getItem('chatbot_minimized');
     return savedState === 'true';
   });
-  const [isDocked, setIsDocked] = useState(false);
+  const [isDocked] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -688,7 +649,7 @@ const Chatbot = ( presetQuestions =null ) => {
       textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     }
   }, [input]);
-  
+
   // console.log("presetQuestions: ", presetQuestions);
   // console.log("presetQuestions?.presetQuestions: ", presetQuestions?.presetQuestions);
   // console.log("", presetQuestions ?.presetQuestions?.presetQuestions);
@@ -780,25 +741,25 @@ const Chatbot = ( presetQuestions =null ) => {
   };
 
   const handleFileSelect = (e) => {
-      if (e.target.files && e.target.files[0]) {
-        setSelectedFile(e.target.files[0]);
-      }
-    };
-  
-    const removeFile = () => {
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    };
-  
-    const getFileIcon = (file) => {
-      if (!file) return faFile;
-      if (file.type === "application/pdf") return faFilePdf;
-      if (file.type.startsWith("image/")) return faFileImage;
-      if (file.type.startsWith("text/")) return faFileAlt;
-      return faFile;
-    };
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const getFileIcon = (file) => {
+    if (!file) return faFile;
+    if (file.type === "application/pdf") return faFilePdf;
+    if (file.type.startsWith("image/")) return faFileImage;
+    if (file.type.startsWith("text/")) return faFileAlt;
+    return faFile;
+  };
 
   const handleSend = async (directInput = null) => {
     // Ensure we are working with a string
@@ -1000,13 +961,13 @@ const Chatbot = ( presetQuestions =null ) => {
             </div>
           </EmptyState>
         )}
-          
+
         {messages.map((msg, index) => (
-          <MessageRow 
-            key={index} 
+          <MessageRow
+            key={index}
             $isUser={msg.role === 'user'}
             ref={index === messages.length - 1 && !isLoading ? messagesEndRef : null}
-            >
+          >
             <MessageGroup $isUser={msg.role === 'user'}>
               {/* Bot Avatar */}
               {msg.role !== 'user' && (
@@ -1048,7 +1009,6 @@ const Chatbot = ( presetQuestions =null ) => {
                     code(props) {
                       const { children, inline, className, node, ...rest } = props;
                       const match = /language-(\w+)/.exec(className || '');
-                      const codeText = String(children).replace(/\n$/, '');
                       if (!inline && match) {
                         codeBlockIndex++;
 
@@ -1148,7 +1108,7 @@ const Chatbot = ( presetQuestions =null ) => {
             ))}
           </SuggestedQuestionsContainer>
         )}
-        {isLoading && ( <div ref={messagesEndRef} /> )}
+        {isLoading && (<div ref={messagesEndRef} />)}
       </MessagesArea>
 
       <ScrollTopButton
@@ -1177,15 +1137,15 @@ const Chatbot = ( presetQuestions =null ) => {
         )}
         <InputWrapper>
           <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileSelect}
-              accept=".txt,.csv,.json,.js,.py,.pdf,image/*,.docx,.xlsx,.pptx,.md,.odt,.odp,.ods,.rtf"
-            />
-            <AttachButton onClick={() => fileInputRef.current?.click()} title="Attach file">
-              <FontAwesomeIcon icon={faPaperclip} size="sm" />
-            </AttachButton>
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
+            accept=".txt,.csv,.json,.js,.py,.pdf,image/*,.docx,.xlsx,.pptx,.md,.odt,.odp,.ods,.rtf"
+          />
+          <AttachButton onClick={() => fileInputRef.current?.click()} title="Attach file">
+            <FontAwesomeIcon icon={faPaperclip} size="sm" />
+          </AttachButton>
           {/* <TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}

@@ -5,8 +5,7 @@ import 'github-markdown-css';
 // import rehypeRaw from 'rehype-raw'
 // import rehypeSanitize from 'rehype-sanitize'
 // import LeftNav from "../components/LeftNavigation/leftNav";
-import gfm from "remark-gfm";
-import remarkImgToJsx from "remark-unwrap-images";
+
 import RightRail from "../components/RightNavigation/rightRail";
 import { DIRECTUS_URL } from '../constants/declarations'
 import { getCookie } from "../utils/utilFunctions";
@@ -19,7 +18,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
 export default function Competition() {
-    const [markdownText,setMarkdownText] = useState('');
+    const [markdownText, setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
 
     const handleCopy = (index) => {
@@ -32,30 +31,30 @@ export default function Competition() {
 
     useEffect(() => {
         async function fetchFileData() {
-        try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=competition");
-            const data = response.data.data;
-            
-            if(data.length === 1) {
-                const fileMappingObject = data[0];
-                const fileID = fileMappingObject.fileID;
-                if(fileID !== null) {
-                    fetch(DIRECTUS_URL + "/assets/" + fileID)
-                    .then(response => response.text())
-                    .then(data => setMarkdownText(data))
-                    .catch(error => console.error('Error retrieving markdown:', error));
+            try {
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=competition");
+                const data = response.data.data;
+
+                if (data.length === 1) {
+                    const fileMappingObject = data[0];
+                    const fileID = fileMappingObject.fileID;
+                    if (fileID !== null) {
+                        fetch(DIRECTUS_URL + "/assets/" + fileID)
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
+                    }
                 }
+
+            } catch (error) {
+                console.error('Error retrieving data:', error);
             }
-            
-          } catch (error) {
-            console.error('Error retrieving data:', error);
-          }
         }
-        
+
         fetchFileData();
-      }, []);
-    
-    return(
+    }, []);
+
+    return (
         <div className="competition-container">
             <div className="left-nav">
                 {/* <LeftNav /> */}
@@ -69,7 +68,6 @@ export default function Competition() {
                         code(props) {
                             const { children, inline, className, node, ...rest } = props;
                             const match = /language-(\w+)/.exec(className || '');
-                            const codeText = String(children).replace(/\n$/, '');
                             if (!inline && match) {
                                 codeBlockIndex++;
 

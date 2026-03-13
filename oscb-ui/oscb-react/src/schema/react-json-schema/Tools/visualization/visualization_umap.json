@@ -23,6 +23,25 @@
             "title": "Number of Highly Variable Genes for Heatmap",
             "default": 50
           },
+          "cluster_colname": {
+            "type": "string",
+            "title": "Cluster Column Name",
+            "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
+          },
+          "do_umap": {
+            "type": "boolean",
+            "title": "Do you want to perform UMAP after processing?",
+            "default": true,
+            "format": "switch",
+            "description": "Toggle this switch to decide whether to perform UMAP (Uniform Manifold Approximation and Projection) analysis after processing your data."
+          },
+          "do_cluster": {
+            "type": "boolean",
+            "title": "Do you want to perform Cluster after processing?",
+            "default": true,
+            "format": "switch",
+            "description": "Toggle this switch to decide whether to perform Cluster analysis after processing your data."
+          },
           "reduction_params": {
             "type": "object",
             "title": "Dimension Reduction Parameters",

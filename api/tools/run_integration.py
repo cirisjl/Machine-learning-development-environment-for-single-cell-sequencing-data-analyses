@@ -47,6 +47,10 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
     integration_output = []
     adata_outputs = {}
     zarr_output = None
+    obs_cols = None
+    cluster_colname = ds['cluster_colname']
+    if cluster_colname is not None and cluster_colname.strip() != "":
+        obs_cols = [cluster_colname]
 
     upsert_jobs(
         {
@@ -194,16 +198,24 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         if fig_path is not None:
                             plot_embedding(adata, color=batch_key, fig_path=fig_path, title="Harmony Integration")
 
+                        if obs_cols is None:
+                            obs_cols = [batch_key]
+                        else:
+                            if batch_key not in obs_cols:
+                                obs_cols.append(batch_key)
+
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                         # integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_pca_harmony", adata_path=adata_path, cluster_colname=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_pca_harmony", adata_path=adata_path, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_pca_harmony", adata_path=adata_path, cluster_colname=cluster_colname, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_pca_harmony", method="t-test", groupby="X_pca_harmony_leiden", top=n_hvg, task="Batch Integration")
+                            if cluster_colname is None or cluster_colname.strip() == "":
+                                cluster_colname = "X_pca_harmony_leiden"
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_pca_harmony", method="t-test", groupby=cluster_colname, top=n_hvg, task="Batch Integration")
                             integration_results['preset_questions'] = preset_questions
 
                         integration_output.append({f"{method}_AnnData": adata_path})
@@ -250,14 +262,22 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         if fig_path is not None:
                             plot_embedding(adata, color=batch_key, fig_path=fig_path, title="scVI Integration")
 
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[batch_key])
+                        if obs_cols is None:
+                            obs_cols = [batch_key]
+                        else:
+                            if batch_key not in obs_cols:
+                                obs_cols.append(batch_key)
+
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
                         # adata.write_h5ad(adata_path, compression='gzip')
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_scVI", adata_path=adata_path, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
+                        integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep="X_scVI", adata_path=adata_path, cluster_colname=cluster_colname, scanpy_cluster=batch_key, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + batch_key}])
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby="X_scVI_leiden", top=n_hvg, task="Batch Integration")
+                            if cluster_colname is None or cluster_colname.strip() == "":
+                                cluster_colname = "X_scVI_leiden"
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, use_rep="X_scVI", method="t-test", groupby=cluster_colname, top=n_hvg, task="Batch Integration")
                             integration_results['preset_questions'] = preset_questions
 
                         integration_output.append({f"{method}_AnnData": adata_path})
@@ -311,9 +331,15 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         # Converrt dense martrix to sparse matrix
                         if isinstance(adata.X, np.ndarray):
                             adata.X = csr_matrix(adata.X)
+                        
+                        if obs_cols is None:
+                            obs_cols = [parameters['batch_key']]
+                        else:
+                            if parameters['batch_key'] not in obs_cols:
+                                obs_cols.append(parameters['batch_key'])
 
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=[parameters['batch_key']])
+                        adata_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, obs_cols=obs_cols)
                         adata_3D = None
                     else:
                         upsert_jobs(
@@ -331,11 +357,13 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                 
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     # integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, cluster_colname=parameters['batch_key'], zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
-                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
+                    integration_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, adata_path=adata_path, seurat_path=output, cluster_colname=cluster_colname, zarr_path=zarr_output, obsSets=[{"name": "Batch", "path": "obs/" + parameters['batch_key']}])
                     
                     # Add preset questions for tissue and species
                     if organ_part is not None and organ_part != "" and species is not None and species != "":
-                        preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby="leiden", top=n_hvg, task="Batch Integration")
+                        if cluster_colname is None or cluster_colname.strip() == "":
+                            cluster_colname = "leiden"
+                        preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby=cluster_colname, top=n_hvg, task="Batch Integration")
                         integration_results['preset_questions'] = preset_questions
 
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})

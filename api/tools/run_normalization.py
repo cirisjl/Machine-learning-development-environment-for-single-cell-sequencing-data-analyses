@@ -43,6 +43,10 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
     status = 'Successful'
     failed_methods = []
     adata_paths = []
+    obs_cols = None
+    cluster_colname = ds['cluster_colname']
+    if cluster_colname is not None and cluster_colname.strip() != "":
+        obs_cols = [cluster_colname]
 
     upsert_jobs(
         {
@@ -142,17 +146,19 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
                         # if isinstance(adata.X, np.ndarray):
                         #     adata.X = csr_matrix(adata.X)
                         # adata.write_h5ad(adata_path, compression='gzip')
-                        output_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, layer=method)
+                        output_path, zarr_output = save_anndata(adata, adata_path, zarr=True, n_hvg=n_hvg, layer=method, obs_cols=obs_cols)
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")
-                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label, zarr_path=zarr_output)
+                        normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label, cluster_colname=cluster_colname, zarr_path=zarr_output)
                         if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=method, method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Normalization")
+                            if cluster_colname is None or cluster_colname.strip() == "":
+                                cluster_colname = f"{method}_leiden"
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer=method, method="t-test", groupby=cluster_colname, top=n_hvg, task="Normalization")
                             normalization_results['preset_questions'] = preset_questions
 
                         normalization_results['outputs'] = normalization_output

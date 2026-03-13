@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useWebSocket from './useWebSocket';
 import {
@@ -10,7 +10,7 @@ import { green, red, yellow } from '@mui/material/colors';
 import RightRail from '../../RightNavigation/rightRail';
 import LogComponent from '../../common_components/liveLogs';
 import axios from 'axios';
-import { Octokit } from "@octokit/rest";
+// import { Octokit } from "@octokit/rest";
 import AlertMessageComponent from '../../publishDatasets/components/alertMessageComponent';
 import { ScaleLoader } from 'react-spinners';
 import ReactPlotly from '../../publishDatasets/components/reactPlotly';
@@ -27,12 +27,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Chatbot from "../../RightNavigation/Chatbot";
 
 // GitImports & Constants
-import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL } from '../../../constants/declarations';
 import TaskImageGallery from './taskImageGallery';
 import AnnotationTable from './annotationPanel';
 import OutlierTable from './outlierPanel';
 
-const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
+// const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 const jwtToken = getCookie('jwtToken');
 
 // --- Styled Components ---
@@ -103,13 +103,12 @@ const downloadFile = (fileUrl) => {
 
 // Reusable Download Link Component to prevent repetitive a-tags
 const DownloadLink = ({ url, label }) => (
-  <a
-    download
-    onClick={() => downloadFile(url)}
-    style={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue', marginLeft: '10px' }}
+  <button type="button"
+    onClick={(e) => { e.preventDefault(); downloadFile(url); }}
+    style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textDecoration: 'underline', color: 'blue', marginLeft: '10px' }}
   >
     {label || getFileNameFromURL(url) || 'Not available'}
-  </a>
+  </button>
 );
 
 const InteractivePlot = ({ title, dimension, setDimension, plotType, setPlotType, options, onOptionChange, plotData2D, plotData3D }) => (
@@ -428,18 +427,32 @@ export default function WorkflowTaskDetailsComponent() {
     setIsSent(false);
     try {
       const res = await axios.post(`${NODE_API_URL}/errorlogdata`, {
-        name: uName, id: uIat, taskResult, taskStatus, job_id, userComments: userComment
+        name: uName, 
+        id: uIat, 
+        taskResult, 
+        taskStatus, 
+        job_id, 
+        userComments: userComment
       });
-      if (res.status === 200) {
+
+      // Issue creation
+      const data = await axios.post(`${NODE_API_URL}/issues`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Issue for Job ID: ${job_id}`,
+            body: `User: ${uName}\nJob ID: ${job_id}\nStatus: ${taskStatus}\nComment: ${userComment}`
+          }),
+        }
+      );
+
+      console.log(`Issue created: ${data.html_url}`);
+      if (res.status === 200 && data.status === 200) {
         setCommentSuccessMessage('Feedback sent successfully.');
         setIsSent(true);
         setShowErrorLog(false);
       }
-      // Issue creation
-      await octokit.issues.create({
-        owner, repo, title: `Issue for Job ID: ${job_id}`,
-        body: `User: ${uName}\nJob Status: ${taskStatus}\nJob ID: ${job_id}\nComments: ${userComment}`
-      });
     } catch (error) {
       setCommentSuccessMessage('Failed to send feedback.');
     } finally {

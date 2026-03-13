@@ -1,20 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 
 
-const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, onApplyFilters}) => {
+const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, onApplyFilters }) => {
 
     const [searchTerm, setSearchTerm] = useState('');
 
-    const isActive = (filterValue) => {
-        return activeFilters[name] && activeFilters[name].includes(filterValue);
-    };
 
     const handleApplyButtonClick = () => {
         onApplyFilters();
     };
 
     // Ensure options is always treated as an array
-    const filteredOptions = options.filter(option => 
+    const filteredOptions = options.filter(option =>
         option._id.toLowerCase().includes(searchTerm.toLowerCase())
         // option._id.includes(searchTerm.toLowerCase())
     );
@@ -38,12 +35,12 @@ const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, on
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
-                                        
+
                                         {/* <svg className="absolute left-2.5 text-gray-400 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
                                             <path d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z" fill="currentColor"></path>
                                         </svg>     */}
 
-                                        </form>
+                                    </form>
                                 </div>
 
                                 <div className='filters-header'>
@@ -52,7 +49,7 @@ const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, on
 
                                 <div className='filters-options'>
                                     <ul>
-                                    {filteredOptions.map((option) => (
+                                        {filteredOptions.map((option) => (
                                             <li key={option._id}>
                                                 <label>
                                                     <input
@@ -66,7 +63,7 @@ const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, on
                                         ))}
                                     </ul>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -79,7 +76,7 @@ const FilterComponent = ({ name, options = [], activeFilters, onFilterChange, on
         </div>
     );
 
-  };
+};
 
 
-  export default FilterComponent;
+export default FilterComponent;

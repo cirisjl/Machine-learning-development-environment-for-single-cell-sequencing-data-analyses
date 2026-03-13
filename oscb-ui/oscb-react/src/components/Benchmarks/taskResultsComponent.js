@@ -38,7 +38,7 @@ export default function TaskResultsComponent(task_type) {
 
     useEffect(() => {
         setPresetQuestions([
-            { title: `What is ${ title } of single-cell sequencing data analysis ?`, "prompt": `Explain ${title} in single-cell sequencing data analysis.` },
+            { title: `What is ${title} of single-cell sequencing data analysis ?`, "prompt": `Explain ${title} in single-cell sequencing data analysis.` },
             { title: `What is the purpose of the ${title} task?`, "prompt": `Explain the purpose of the ${title} task in single-cell sequencing data analysis.` },
             { title: `How do I interpret the results of the ${title} task?`, "prompt": `How do I interpret the results of the ${title} task in single-cell sequencing data analysis?` },
             { title: `Are there any best practices for using the ${title} task?`, "prompt": `Are there any best practices for using the ${title} task in single-cell sequencing data analysis?` }
@@ -46,28 +46,29 @@ export default function TaskResultsComponent(task_type) {
         console.log("presetQuestions:", presetQuestions);
 
         async function fetchFileData() {
-        try {
-            const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
-            const data = response.data.data;
-            
-            if(data.length === 1) {
-                const fileMappingObject = data[0];
-                const fileID = fileMappingObject.fileID;
-                if(fileID !== null) {
-                    fetch(DIRECTUS_URL + "/assets/" + fileID)
-                    .then(response => response.text())
-                    .then(data => setMarkdownText(data))
-                    .catch(error => console.error('Error retrieving markdown:', error));
+            try {
+                const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=" + title.replace(/ /g, "_"));
+                const data = response.data.data;
+
+                if (data.length === 1) {
+                    const fileMappingObject = data[0];
+                    const fileID = fileMappingObject.fileID;
+                    if (fileID !== null) {
+                        fetch(DIRECTUS_URL + "/assets/" + fileID)
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
+                    }
                 }
-            }
-            
+
             } catch (error) {
-            console.error('Error retrieving data:', error);
+                console.error('Error retrieving data:', error);
             }
         }
-        
+
         fetchFileData();
-        }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="task-results-container eighty-twenty-grid">
@@ -75,17 +76,17 @@ export default function TaskResultsComponent(task_type) {
                 <h1 style={{ textAlign: "left" }}>{title}</h1>
                 <hr />
                 <h2>Datasets</h2>
-                <p><SearchTasks taskType={task_type} /></p>  
-                <hr />   
-                <p><ReactMarkdown 
-                    remarkPlugins={[remarkGfm]} 
+                <p><SearchTasks taskType={task_type} /></p>
+                <hr />
+                <p><ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
                     children={markdownText}
                     components={{
                         code(props) {
                             const { children, inline, className, node, ...rest } = props;
                             const match = /language-(\w+)/.exec(className || '');
-                            const codeText = String(children).replace(/\n$/, '');
+
                             if (!inline && match) {
                                 codeBlockIndex++;
 

@@ -296,7 +296,7 @@ def get_cell_metadata(adata, adata_path=None):
     return cell_metadata, cell_metadata_head, obs_names, nCells, nGenes, layers, info, adata_size, embeddings, uns, obsp, varm
 
 
-def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, description=None, cluster_colname='leiden', n_top_genes=2000, zarr_path=None, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=None, ground_truth=None, label_columns=['celltypist_label', 'celltypist_ref_label', 'SingleR_main', 'SingleR_fine', 'SingleR_user_ref', 'scANVI_predicted'], score_columns=['celltypist_score', 'celltypist_ref_score', 'scANVI_transfer_score']): 
+def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=None, use_rep=None, adata_path=None, seurat_path=None, sce_path=None, cluster_label=None, description=None, cluster_colname=None, n_top_genes=2000, zarr_path=None, initialFeatureFilterPath="var/highly_variable", obsEmbedding="obsm/X_umap", obsSets=None, ground_truth=None, label_columns=['celltypist_label', 'celltypist_ref_label', 'SingleR_main', 'SingleR_fine', 'SingleR_user_ref', 'scANVI_predicted'], score_columns=['celltypist_score', 'celltypist_ref_score', 'scANVI_transfer_score']): 
     layers = None
     cell_metadata = None
     obs_names = None
@@ -353,17 +353,22 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
 
     if adata is not None and isinstance(adata, AnnData):
         if use_rep is not None and f'{use_rep}_leiden' in adata.obs.keys():
-            cluster_colname = f'{use_rep}_leiden'
+            if cluster_colname is None:
+                cluster_colname = f'{use_rep}_leiden'
+            elif f'{use_rep}_leiden' in adata.obs.keys():
+                obsSets.append({"name":"Cluster", "path":f"obs/{use_rep}_leiden"})
             if f'{use_rep}_leiden' in adata.obs.keys() and f'{use_rep}_umap' in adata.obsm.keys():
-                    labels_pred_leiden = adata.obs[f'{use_rep}_leiden']
+                labels_pred_leiden = adata.obs[f'{use_rep}_leiden']
             if f'{use_rep}_louvain' in adata.obs.keys() and f'{use_rep}_umap' in adata.obsm.keys():
                 labels_pred_louvain = adata.obs[f'{use_rep}_louvain']
                 cluster_embedding = adata.obsm[f'{use_rep}_umap']
                 obsEmbedding = f'obsm/{use_rep}_umap'
         elif layer is None:
             layer = "X"
-            if 'leiden' in adata.obs.keys(): 
-                obsSets.append({"name":"Cluster", "path":"obs/leiden"})
+            if cluster_colname is None:
+                cluster_colname = 'leiden'
+            elif 'leiden' in adata.obs.keys(): 
+                obsSets.append({"name":"Cluster", "path":"obs/leiden"})         
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
                 if 'leiden' in adata.obs.keys() and f'{layer}_umap' in adata.obsm.keys():
@@ -374,8 +379,9 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             if 'X_umap' in adata.obsm.keys():
                 obsEmbedding = 'obsm/X_umap'
         else:
-            cluster_colname = f'{layer}_leiden'
-            if f'{layer}_leiden' in adata.obs.keys():
+            if cluster_colname is None:
+                cluster_colname = f'{layer}_leiden'
+            elif f'{layer}_leiden' in adata.obs.keys():
                 obsSets.append({"name":"Cluster", "path":f"obs/{layer}_leiden"})
             if cluster_label is not None and cluster_label in adata.obs.keys():
                 cluster_label = adata.obs[cluster_label]
@@ -385,8 +391,11 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
                     labels_pred_louvain = adata.obs[f'{layer}_louvain']
                 cluster_embedding = adata.obsm[f'{layer}_umap']
             if f'{layer}_umap' in adata.obsm.keys():
-                obsEmbedding = f'obsm/{layer}_umap'
+                obsEmbedding = f'obsm/{layer}_umap' 
 
+        # Add cluster annotations to obsSets   
+        if cluster_colname in adata.obs.keys(): 
+            obsSets.append({"name":cluster_colname, "path":f"obs/{cluster_colname}"})
         # Retrieve unique cell type labels
         try:
             with open('/usr/src/app/storage/uniqueCellLabels.json', 'r', encoding='utf-8') as file:
@@ -568,6 +577,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "obs_names": obs_names,
             "cell_metadata": cell_metadata,
             "gene_metadata": gene_metadata,
+            "cluster_colname": cluster_colname,
             "nCells": nCells,
             "nGenes": nGenes,
             "genes": genes,
@@ -1322,7 +1332,7 @@ def save_anndata(adata, output, zarr=False, n_hvg=50, layer=None, obsm_keys=None
     return output, zarr_output
 
 
-def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_genes=200, obsm_keys=None, obs_cols=None):
+def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_genes=200, obsm_keys=None, obs_cols=None, label_columns=['celltypist_label', 'celltypist_ref_label', 'SingleR_main', 'SingleR_fine', 'SingleR_user_ref', 'scANVI_predicted']):
     if obsm_keys is None:
         obsm_keys = []
     if obs_cols is None:
@@ -1330,6 +1340,7 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
     if zarr_output is None:
         zarr_output = adata_path.replace('storage/', 'storage/zarr/').replace('.h5ad', '.zarr')
     unique_cell_labels = []
+    adata = clean_anndata(adata)
     # print("layer: " + str(layer))
     # print("obsm_keys: " + str(obsm_keys))
     # print("obs_cols: " + str(obs_cols))
@@ -1357,6 +1368,11 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
         for label in unique_cell_labels:
             if label in adata.obs.columns:
                 obs_cols.append(label)
+                
+    # Add common cell type annotation columns to obsSets
+    for label in label_columns:
+        if label in adata.obs.columns:
+            obs_cols.append(label)
 
     if not isinstance(adata.X, np.ndarray):
         adata.X = adata.X.toarray()
@@ -1365,8 +1381,7 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
         adata.X = adata.layers[layer]
         if not isinstance(adata.X, np.ndarray):
             adata.X = adata.X.toarray()
-        sc.pp.log1p(adata)
-    elif not is_normalized(adata.X, min_genes) or check_nonnegative_integers(adata.X):
+    if not is_normalized(adata.X, min_genes) or check_nonnegative_integers(adata.X):
         if "scale.data" in adata.layers.keys():
             adata.X = adata.layers["scale.data"]
         elif "normalized_X" in adata.layers.keys():
@@ -1377,15 +1392,17 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
             adata.X[np.isinf(adata.X)] = 0
             sc.pp.normalize_total(adata, inplace=True)
             sc.pp.log1p(adata)
+
+    if issparse(adata.X):
+        adata.X.data[~np.isfinite(adata.X.data)] = 0
+        adata.X.eliminate_zeros()
+    else:
+        adata.X[~np.isfinite(adata.X)] = 0
     try:
-        adata.X[np.isnan(adata.X)] = 0
-        adata.X[np.isinf(adata.X)] = 0
         sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     except Exception as e:
         print(f"Highly variable gene selection failed: {e}")
         print("Log1p normalize count matrix and try again...")
-        adata.X[np.isnan(adata.X)] = 0
-        adata.X[np.isinf(adata.X)] = 0
         sc.pp.log1p(adata)
         sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=n_hvg)
     # Get the highly variable gene matrix as a plain NumPy array
@@ -1517,7 +1534,7 @@ def unique_by_key(data, key):
     return result
 
 
-def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, method="t-test", groupby="leiden", top=25,  task=None):
+def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, method="t-test", groupby="leiden", top=25, task=None):
     preset_questions = []
     if layer is not None and layer in adata.layers.keys():
         sc.tl.rank_genes_groups(adata, groupby, layer=layer, method=method, use_raw=False)
@@ -1632,6 +1649,11 @@ def create_annotation_prompt(adata, tissue, species, layer=None, use_rep=None, m
     return preset_questions
 
 
+def first_mode(x):
+    m = x.mode()
+    return m.iat[0] if len(m) else None
+
+
 def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_columns=['celltypist_label', 'celltypist_ref_label', 'SingleR_main', 'SingleR_fine', 'SingleR_user_ref', 'scANVI_predicted'], score_columns=['celltypist_score', 'celltypist_ref_score', 'scANVI_transfer_score']):
     unique_cell_labels = []
     obs_cols = []
@@ -1683,8 +1705,8 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
         return None
 
     if len(label_columns) > 1:
-        labels_df = obs[label_columns].groupby(cluster_id).agg(lambda x: x.mode())
-        labels_df.insert(loc=1, column='majority_vote', value=labels_df.mode(axis=1)[0])
+        labels_df = obs[label_columns].groupby(cluster_id).agg(first_mode)
+        labels_df['majority_vote'] = labels_df.mode(axis=1).iloc[:, 0].fillna('Unknown')
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "cell_label" not in obs.columns:
             # labels_df["cell_label"] = labels_df['majority_vote']
@@ -1693,7 +1715,7 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
             else:
                 labels_df.insert(loc=0, column='cell_label', value=labels_df['majority_vote'])
         try:
-            unique_labels = labels_df.astype(object).stack().unique().tolist()
+            unique_labels = pd.unique(labels_df.values.ravel()).tolist()
         except Exception as e:
             print(f"Error getting unique labels: {e}")
             unique_labels = labels_df["cell_label"].unique().tolist()         
@@ -1736,10 +1758,10 @@ def create_outlier_panel(obs, cluster_id='leiden', outlier_columns=["discard", "
         return None
 
     if len(outlier_columns) > 1:
-        outliers_columns_df = obs[outlier_columns].groupby(cluster_id).agg(lambda x: x.mode())
+        outliers_columns_df = obs[outlier_columns].groupby(cluster_id).agg(first_mode)
         unique_labels = [False, True]      
         
-        outliers_columns_df.insert(loc=1, column='majority_vote', value=outliers_columns_df.mode(axis=1)[0])
+        outliers_columns_df['majority_vote'] = outliers_columns_df.mode(axis=1).iloc[:, 0].fillna(False)
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "discard" not in obs.columns:
             outliers_columns_df.insert(loc=0, column='discard', value=outliers_columns_df['majority_vote'])

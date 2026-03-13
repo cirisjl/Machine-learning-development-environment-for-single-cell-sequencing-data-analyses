@@ -23,9 +23,11 @@ function useWebSockets(jobId, handleStatusMessage, WEB_SOCKET_URL) {
             if (ws) {
                 console.log('Cleaning up WebSocket:', jobId);
                 ws.close();
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 delete webSocketsRef.current[jobId];
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [jobId]);
 
     const closeWebSocket = (id) => {

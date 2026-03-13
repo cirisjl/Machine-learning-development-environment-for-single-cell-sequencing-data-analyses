@@ -2,7 +2,6 @@
 import DatasetTable from "../components/MyData/datasetTable";
 import RightRail from "../components/RightNavigation/rightRail";
 // import { getCookie } from "../utils/utilFunctions";
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DIRECTUS_URL } from '../constants/declarations'
@@ -17,9 +16,7 @@ import Chatbot from "../components/RightNavigation/Chatbot";
 
 export default function MyData() {
 
-    const navigate = useNavigate();
     const filterCategory = null;
-    const [shouldHideForSeurat, setShouldHideForSeurat] = useState(false);
     const [selectedDatasets, setSelectedDatasets] = useState({});
 
     // useEffect(() => {
@@ -41,47 +38,40 @@ export default function MyData() {
             currentSelectedDatasets[datasetId] = dataset;
         }
         if (filterCategory === "quality_control") {
-            // Check if any of the selected datasets should trigger hiding for Seurat
-            const shouldHideForSeurat = Object.values(currentSelectedDatasets).some(dataset =>
-                dataset.inputFiles.length === 1 &&
-                (dataset.inputFiles[0].toLowerCase().endsWith('h5seurat') ||
-                    dataset.inputFiles[0].toLowerCase().endsWith('rds') ||
-                    dataset.inputFiles[0].toLowerCase().endsWith('robj'))
-            );
-            setShouldHideForSeurat(shouldHideForSeurat);
+            // Do nothing
         }
         setSelectedDatasets(currentSelectedDatasets)
     };
 
-  // Function to handle selection of sub-items
-  const onSelectSubItem = (mainItem, subItem) => {
-    const mainItemId = mainItem.Id;
-    let currentSelectedDatasets = { ...selectedDatasets };
-  
-    // Check if the main item is already selected
-    if (currentSelectedDatasets[mainItemId]) {
-        // If sub-item is already selected, deselect it
-        if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id  === subItem.process_id ) {
-            delete currentSelectedDatasets[mainItemId];
+    // Function to handle selection of sub-items
+    const onSelectSubItem = (mainItem, subItem) => {
+        const mainItemId = mainItem.Id;
+        let currentSelectedDatasets = { ...selectedDatasets };
+
+        // Check if the main item is already selected
+        if (currentSelectedDatasets[mainItemId]) {
+            // If sub-item is already selected, deselect it
+            if (currentSelectedDatasets[mainItemId].selectedSubItem?.process_id === subItem.process_id) {
+                delete currentSelectedDatasets[mainItemId];
+            } else {
+                // Update the selected main item with the selected sub-item
+                currentSelectedDatasets[mainItemId] = {
+                    ...mainItem,
+                    selectedSubItem: subItem
+                };
+            }
         } else {
-            // Update the selected main item with the selected sub-item
-            currentSelectedDatasets[mainItemId] = {
-                ...mainItem,
-                selectedSubItem: subItem
+            // Select the main item and the sub-item
+            currentSelectedDatasets = {
+                [mainItemId]: {
+                    ...mainItem,
+                    selectedSubItem: subItem
+                }
             };
         }
-    } else {
-        // Select the main item and the sub-item
-        currentSelectedDatasets = {
-            [mainItemId]: {
-                ...mainItem,
-                selectedSubItem: subItem
-            }
-        };
-    }
-  
-    setSelectedDatasets(currentSelectedDatasets);
-  };
+
+        setSelectedDatasets(currentSelectedDatasets);
+    };
 
     const [markdownText, setMarkdownText] = useState('');
     const [copiedIndex, setCopiedIndex] = useState(null);
@@ -98,23 +88,23 @@ export default function MyData() {
             try {
                 const response = await axios.get(DIRECTUS_URL + "/items/filemappings?filter[filename]=datasets");
                 const data = response.data.data;
-                
-                if(data.length === 1) {
+
+                if (data.length === 1) {
                     const fileMappingObject = data[0];
                     const fileID = fileMappingObject.fileID;
-                    if(fileID !== null) {
+                    if (fileID !== null) {
                         fetch(DIRECTUS_URL + "/assets/" + fileID)
-                        .then(response => response.text())
-                        .then(data => setMarkdownText(data))
-                        .catch(error => console.error('Error retrieving markdown:', error));
+                            .then(response => response.text())
+                            .then(data => setMarkdownText(data))
+                            .catch(error => console.error('Error retrieving markdown:', error));
                     }
                 }
-                
+
             } catch (error) {
                 console.error('Error retrieving data:', error);
             }
         }
-        
+
         fetchFileData();
     }, []);
 
@@ -132,26 +122,25 @@ export default function MyData() {
                         isVisible={true}
                         selectedDatasets={selectedDatasets}
                         fromToolsPage={false}
-                        onSelectSubItem = {onSelectSubItem}
+                        onSelectSubItem={onSelectSubItem}
                         showCheckbox={false}
                         showEdit={false}
                         showDelete={false}
                     />
-                    <p><ReactMarkdown 
-                        remarkPlugins={[remarkGfm]} 
+                    <p><ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw, rehypeGithubAlerts]}
                         children={markdownText}
                         components={{
                             code(props) {
                                 const { children, inline, className, node, ...rest } = props;
                                 const match = /language-(\w+)/.exec(className || '');
-                                const codeText = String(children).replace(/\n$/, '');
                                 if (!inline && match) {
                                     codeBlockIndex++;
-    
+
                                     const currentIndex = codeBlockIndex;
                                     const codeText = String(children).replace(/\n$/, '');
-    
+
                                     return (
                                         <div style={{ position: 'relative' }}>
                                             <SyntaxHighlighter
@@ -177,7 +166,7 @@ export default function MyData() {
                                         </div>
                                     );
                                 }
-    
+
                                 // Fallback for inline code or unknown language
                                 return (
                                     <code {...rest} className={className}>
@@ -193,6 +182,6 @@ export default function MyData() {
                 <RightRail />
                 <Chatbot presetQuestions={null} />
             </div>
-        </div>
+        </div >
     )
 }

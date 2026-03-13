@@ -565,12 +565,12 @@ function WorkflowTaskDetailsComponent() {
                     </Button> */ }
                     {Array.isArray(datasetURL) ?
                       (datasetURL.map((inpput, index) => (
-                        <a download onClick={() => { downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                        <a href="#" download onClick={(e) => { e.preventDefault(); downloadFile(inpput) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
                           {getFileNameFromURL(inpput) || 'Not available'}
                         </a>
                       ))
                       ) :
-                      (<a download onClick={() => { downloadFile(datasetURL) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                      (<a href="#" download onClick={(e) => { e.preventDefault(); downloadFile(datasetURL) }} style={{ marginLeft: '10px', textAlign: 'center' }}>
                         {getFileNameFromURL(datasetURL) || 'Not available'}
                       </a>)
                     }
@@ -629,7 +629,7 @@ function WorkflowTaskDetailsComponent() {
                         Object.keys(output).map((key) => (
                           <><Typography variant="subtitle1"><strong>{key}: </strong></Typography>
                             <Typography variant="body1" gutterBottom>
-                              {<a download onClick={() => { downloadFile(output[key]); }} style={{ marginLeft: '10px', textAlign: 'center' }}>
+                              {<a href="#" download onClick={(e) => { e.preventDefault(); downloadFile(output[key]); }} style={{ marginLeft: '10px', textAlign: 'center' }}>
                                 {getFileNameFromURL(output[key]) || 'Not available'}
                               </a>}
                             </Typography></>
@@ -757,9 +757,9 @@ function WorkflowTaskDetailsComponent() {
                                             {details[preProcessResult.process_id].adata_path && (
                                               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                                 <span style={{ marginRight: '8px' }}>AnnData File:</span>
-                                                <a
+                                                <a href="#"
                                                   download
-                                                  onClick={() => { downloadFile(details[preProcessResult.process_id]["adata_path"]) }}
+                                                  onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["adata_path"]) }}
                                                   style={{
                                                     cursor: 'pointer',
                                                     textDecoration: 'underline',
@@ -773,9 +773,9 @@ function WorkflowTaskDetailsComponent() {
                                             {details[preProcessResult.process_id].seurat_path && (
                                               <div style={{ display: 'flex', alignItems: 'center' }}>
                                                 <span style={{ marginRight: '8px' }}>Seurat File:</span>
-                                                <a
+                                                <a href="#"
                                                   download
-                                                  onClick={() => { downloadFile(details[preProcessResult.process_id]["seurat_path"]) }}
+                                                  onClick={(e) => { e.preventDefault(); downloadFile(details[preProcessResult.process_id]["seurat_path"]) }}
                                                   style={{
                                                     cursor: 'pointer',
                                                     textDecoration: 'underline',

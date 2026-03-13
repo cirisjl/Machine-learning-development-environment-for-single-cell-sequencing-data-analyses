@@ -64,38 +64,38 @@ async def getPreProcessResultsMain(req: ProcessResultsRequest) -> list:
             pp_result['atac_cell_metadata'] = df_to_dict(atac_obs)
             # pp_result['atac_obs'] = pp_result['atac_obs']
 
-        if record_type == None:
-            pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
-            if 'umap' in pp_result.keys():
-                pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
-                pp_result['umap'] = pp_result['umap'].tolist()
+        # if record_type is None:
+        #     pp_result['cell_metadata_head'] = obs.dropna().head().to_dict() # Replace NA
+        #     if 'umap' in pp_result.keys():
+        #         pp_result['umap_plot'] = plot_UMAP_obs(obs, pp_result['umap'], layer=pp_result['layer'])
+        #         pp_result['umap'] = pp_result['umap'].tolist()
 
-            if 'umap_3d' in pp_result.keys():
-                pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
-                pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
+        #     if 'umap_3d' in pp_result.keys():
+        #         pp_result['umap_plot_3d'] = plot_UMAP_obs(obs, pp_result['umap_3d'], layer=pp_result['layer'], n_dim=3)
+        #         pp_result['umap_3d'] = pp_result['umap_3d'].tolist()
 
-            if 'tsne' in pp_result.keys():
-                pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
-                pp_result['tsne'] = pp_result['tsne'].tolist()
+        #     if 'tsne' in pp_result.keys():
+        #         pp_result['tsne_plot'] = plot_UMAP_obs(obs, pp_result['tsne'], layer=pp_result['layer'], plot_name='t-SNE')
+        #         pp_result['tsne'] = pp_result['tsne'].tolist()
 
-            if 'tsne_3d' in pp_result.keys():
-                pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
-                pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
+        #     if 'tsne_3d' in pp_result.keys():
+        #         pp_result['tsne_plot_3d'] = plot_UMAP_obs(obs, pp_result['tsne_3d'], layer=pp_result['layer'], n_dim=3, plot_name='t-SNE')
+        #         pp_result['tsne_3d'] = pp_result['tsne_3d'].tolist()
 
-            if 'atac_umap' in pp_result.keys():
-                pp_result['atac_umap_plot'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap'], layer=pp_result['layer'])
-                pp_result['atac_umap'] = pp_result['atac_umap'].tolist()
+        #     if 'atac_umap' in pp_result.keys():
+        #         pp_result['atac_umap_plot'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap'], layer=pp_result['layer'])
+        #         pp_result['atac_umap'] = pp_result['atac_umap'].tolist()
 
-            if 'atac_umap_3d' in pp_result.keys():
-                pp_result['atac_umap_plot_3d'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap_3d'], layer=pp_result['layer'], n_dim=3)
-                pp_result['atac_umap_3d'] = pp_result['atac_umap_3d'].tolist()
+        #     if 'atac_umap_3d' in pp_result.keys():
+        #         pp_result['atac_umap_plot_3d'] = plot_UMAP_obs(atac_obs, pp_result['atac_umap_3d'], layer=pp_result['layer'], n_dim=3)
+        #         pp_result['atac_umap_3d'] = pp_result['atac_umap_3d'].tolist()
 
-            if pp_result['process'] == 'QC':
-                pp_result['violin_plot'] = plot_violin(obs)
-                pp_result['scatter_plot'] = plot_scatter(obs)
-                if 'highest_expr_genes' in pp_result.keys():
-                    pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
-                    pp_result.pop('highest_expr_genes')
+        #     if pp_result['process'] == 'QC':
+        #         pp_result['violin_plot'] = plot_violin(obs)
+        #         pp_result['scatter_plot'] = plot_scatter(obs)
+        #         if 'highest_expr_genes' in pp_result.keys():
+        #             pp_result['highest_expr_genes_plot'] = plot_highest_expr_genes(pp_result['highest_expr_genes']['counts_top_genes'], pp_result['highest_expr_genes']['columns'])
+        #             pp_result.pop('highest_expr_genes')
 
         results.append(pp_result)
 

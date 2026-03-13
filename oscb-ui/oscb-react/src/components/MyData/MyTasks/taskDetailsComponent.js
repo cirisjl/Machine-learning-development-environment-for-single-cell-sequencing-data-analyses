@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Octokit } from "@octokit/rest";
+// import { Octokit } from "@octokit/rest";
 import axios from 'axios';
 import { ScaleLoader } from 'react-spinners';
 
@@ -22,11 +22,11 @@ import Chatbot from "../../RightNavigation/Chatbot";
 import AnnotationTable from './annotationPanel';
 import OutlierTable from './outlierPanel';
 import { getCookie, plotUmapObs, gunzipDict, ShowVitessce } from '../../../utils/utilFunctions';
-import { CELERY_BACKEND_API, NODE_API_URL, WEB_SOCKET_URL, owner, repo } from '../../../constants/declarations';
+import { CELERY_BACKEND_API, NODE_API_URL } from '../../../constants/declarations';
 import useWebSocket from './useWebSocket'; // Custom hook for WebSocket
 
 // Initialize Octokit
-const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
+// const octokit = new Octokit({ auth: process.env.REACT_APP_TOKEN });
 const jwtToken = getCookie('jwtToken');
 
 // --- Helpers ---
@@ -247,7 +247,7 @@ function TaskDetailsComponent() {
   const [taskOutput, setTaskOutput] = useState(routerOutput || null);
   const [liveLogs, setLiveLogs] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingPlot, setLoadingPlot] = useState(false);
+  const [, setLoadingPlot] = useState(false);
 
   // Data State
   const [toolResultsFromMongo, setToolResultsFromMongo] = useState([]);
@@ -341,6 +341,7 @@ function TaskDetailsComponent() {
     console.log("Resetting state for new jobId:", jobId);
     console.log("Current routerJobId:", routerJobId);
     console.log("Current activeWsJobId:", activeWsJobId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   const fetchPlotData = useCallback(async (plotType, cell_metadata, twoDArray, threeDArray, plotName) => {
@@ -407,6 +408,7 @@ function TaskDetailsComponent() {
       setLoading(false);
       setLoadingPlot(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTerminalState, routerStatus, taskStatus]);
 
   const handleLogMessage = useCallback((event) => {
@@ -454,6 +456,7 @@ function TaskDetailsComponent() {
     };
 
     fetchJobData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   // Kick off preprocess results job once per processIds
@@ -533,7 +536,7 @@ function TaskDetailsComponent() {
     setIsSent(false);
 
     try {
-      await axios.post(`${NODE_API_URL}/errorlogdata`, {
+      const res = await axios.post(`${NODE_API_URL}/errorlogdata`, {
         name: uName,
         id: uIat,
         taskResult,
@@ -542,15 +545,23 @@ function TaskDetailsComponent() {
         userComments: userComment
       });
 
-      await octokit.issues.create({
-        owner,
-        repo,
-        title: `Issue for Job ID: ${routerJobId}`,
-        body: `User: ${uName}\nJob ID: ${routerJobId}\nStatus: ${taskStatus}\nComment: ${userComment}`
-      });
+      // Issue creation
+      const data = await axios.post(`${NODE_API_URL}/issues`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Issue for Job ID: ${routerJobId}`,
+            body: `User: ${uName}\nJob ID: ${routerJobId}\nStatus: ${taskStatus}\nComment: ${userComment}`
+          }),
+        }
+      );
 
-      setCommentSuccessMessage('Feedback sent successfully.');
-      setIsSent(true);
+      console.log(`Issue created: ${data.html_url}`);
+      if (res.status === 200 && data.status === 200) {
+        setCommentSuccessMessage('Feedback sent successfully.');
+        setIsSent(true);
+      }
     } catch (error) {
       console.error('Error saving comment:', error);
       setCommentSuccessMessage('Failed to send feedback.');
@@ -638,12 +649,12 @@ function TaskDetailsComponent() {
                   <Box>
                     {(datasetURL ? (Array.isArray(datasetURL) ? datasetURL : [datasetURL]) : []).map((url, i) => (
                       <div key={i}>
-                        <a
-                          style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
-                          onClick={() => downloadFile(url)}
+                        <button type="button"
+                          style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
+                          onClick={(e) => { e.preventDefault(); downloadFile(url); }}
                         >
                           {getFileNameFromURL(url) || 'Download File'}
-                        </a>
+                        </button>
                       </div>
                     ))}
                   </Box>
@@ -713,12 +724,12 @@ function TaskDetailsComponent() {
                         {Object.entries(out || {}).map(([key, val]) => (
                           <div key={key}>
                             <Typography variant="subtitle1" display="inline"><strong>{key}: </strong></Typography>
-                            <a
-                              style={{ cursor: 'pointer', color: '#1976d2' }}
-                              onClick={() => downloadFile(val)}
+                            <button type="button"
+                              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', color: '#1976d2', textDecoration: 'underline' }}
+                              onClick={(e) => { e.preventDefault(); downloadFile(val); }}
                             >
                               {getFileNameFromURL(val)}
-                            </a>
+                            </button>
                           </div>
                         ))}
                       </Box>

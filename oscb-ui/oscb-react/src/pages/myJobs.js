@@ -10,18 +10,19 @@ export default function MyJobs() {
     const navigate = useNavigate();
     useEffect(() => {
         let jwtToken = getCookie('jwtToken');
-        if(jwtToken===undefined || jwtToken === '') {
+        if (jwtToken === undefined || jwtToken === '') {
             navigate('/routing');
         }
-    },[]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    return(
+    return (
         <div className="page-container">
             <div className="left-nav">
                 {/* <LeftNav /> */}
             </div>
             <div className="main-content">
-                <TaskTable/>
+                <TaskTable />
             </div>
             <div className="right-rail">
                 <RightRail />

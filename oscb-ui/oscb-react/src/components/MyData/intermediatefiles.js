@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getCookie } from '../../utils/utilFunctions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faDownload , faSquarePollVertical } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faDownload, faSquarePollVertical } from '@fortawesome/free-solid-svg-icons';
 import FilePreviewModal from './filePreviewModal';
 import { useNavigate } from 'react-router-dom';
 import { NODE_API_URL } from '../../constants/declarations'
@@ -21,11 +21,13 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
       setFiles(data.Files);
     }
     fetchFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
   useEffect(() => {
     if (!jwtToken || jwtToken === '')
       navigate('/routing');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jwtToken]);
 
   const handlePreviewClick = async (fileName) => {
@@ -86,39 +88,37 @@ export default function IntermediateFiles({ jobId, results_path, task_title }) {
           >
             <span style={{ marginRight: '10px', flex: '1' }}>{file.name}</span>
             {file.name.endsWith('.h5ad') && (
-              <a
-                onClick={() => {
+              <button type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   handlePreviewClick(file.name);
                 }}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ marginLeft: '10px', textAlign: 'center' }}
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
               >
                 <FontAwesomeIcon icon={faSquarePollVertical} style={{ marginRight: '5px' }} />
                 Visualize
-              </a>
+              </button>
             )}
-            <a
-              onClick={() => {
+            <button type="button"
+              onClick={(e) => {
+                e.preventDefault();
                 handlePreviewClick(file.name);
               }}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ marginLeft: '10px', textAlign: 'center' }}
+              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
             >
               <FontAwesomeIcon icon={faEye} style={{ marginRight: '5px' }} />
               Preview
-            </a>
-            <a
-              download
-              onClick={() => {
+            </button>
+            <button type="button"
+              onClick={(e) => {
+                e.preventDefault();
                 downloadFile(file.name);
               }}
-              style={{ marginLeft: '10px', textAlign: 'center' }}
+              style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', marginLeft: '10px', textAlign: 'center' }}
             >
               <FontAwesomeIcon icon={faDownload} style={{ marginRight: '5px' }} />
               Download
-            </a>
+            </button>
           </div>
         ))}
       </div>

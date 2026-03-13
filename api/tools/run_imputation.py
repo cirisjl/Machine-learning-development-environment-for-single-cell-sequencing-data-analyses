@@ -41,6 +41,10 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
     n_neighbors = parameters['n_neighbors']
     n_pcs = parameters['n_pcs']
     resolution = parameters['resolution']
+    obs_cols = None
+    cluster_colname = ds['cluster_colname']
+    if cluster_colname is not None and cluster_colname.strip() != "":
+        obs_cols = [cluster_colname]
 
     upsert_jobs(
         {
@@ -94,17 +98,19 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     plot_embedding(adata, layer='MAGIC', fig_path=fig_path, title="MAGIC Imputation")
 
                 # adata.write_h5ad(output, compression='gzip')
-                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
+                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC', obs_cols=obs_cols)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', zarr_path=zarr_output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', cluster_colname=cluster_colname, zarr_path=zarr_output)
                 
                 imputation_output.append({"MAGIC": output})
                 imputation_results["outputs"] = imputation_output
 
                 # Add preset questions for tissue and species
                 if organ_part is not None and organ_part != "" and species is not None and species != "":
-                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
+                    if cluster_colname is None or cluster_colname.strip() == "":
+                        cluster_colname = f"{method}_leiden"
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=cluster_colname, top=n_hvg, task="Imputation")
                     imputation_results['preset_questions'] = preset_questions
                     
                 adata = None
@@ -146,14 +152,16 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             plot_embedding(adata, layer='MAGIC', fig_path=fig_path, title="MAGIC Imputation")
 
                         # adata.write_h5ad(output, compression='gzip')
-                        output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC')
+                        output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='MAGIC', obs_cols=obs_cols)
 
                         redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', zarr_path=zarr_output)
+                        imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', cluster_colname=cluster_colname, zarr_path=zarr_output)
 
                         # Add preset questions for tissue and species
                         if organ_part is not None and organ_part != "" and species is not None and species != "":
-                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
+                            if cluster_colname is None or cluster_colname.strip() == "":
+                                cluster_colname = f"{method}_leiden"
+                            preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="MAGIC", method="t-test", groupby=cluster_colname, top=n_hvg, task="Imputation")
                             imputation_results['preset_questions'] = preset_questions
 
                         imputation_output.append({"MAGIC": output})
@@ -178,7 +186,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(job_id, "'MAGIC' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC')
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='MAGIC', cluster_colname=cluster_colname)
 
             imputation_results['datasetId'] = datasetId
             imputation_results['created_by'] = userID
@@ -226,14 +234,16 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                     plot_embedding(adata, layer='SAVER', fig_path=fig_path, title="SAVER Imputation")
 
                 # adata.write_h5ad(output, compression='gzip')
-                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
+                output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER', obs_cols=obs_cols)
 
                 redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
+                imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', cluster_colname=cluster_colname, zarr_path=zarr_output)
                 
                 # Add preset questions for tissue and species
                 if organ_part is not None and organ_part != "" and species is not None and species != "":
-                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
+                    if cluster_colname is None or cluster_colname.strip() == "":
+                        cluster_colname = f"{method}_leiden"
+                    preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=cluster_colname, top=n_hvg, task="Imputation")
                     imputation_results['preset_questions'] = preset_questions
 
                 imputation_output.append({"SAVER": output})
@@ -285,14 +295,16 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                                 plot_embedding(adata, layer='SAVER', fig_path=fig_path, title="SAVER Imputation")
                             
                             # adata.write_h5ad(output, compression='gzip')
-                            output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER')
+                            output, zarr_output = save_anndata(adata, output, zarr=True, n_hvg=n_hvg, layer='SAVER', obs_cols=obs_cols)
 
                             redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
-                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', zarr_path=zarr_output)
+                            imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=output, layer='SAVER', cluster_colname=cluster_colname, zarr_path=zarr_output)
                             
                             # Add preset questions for tissue and species
                             if organ_part is not None and organ_part != "" and species is not None and species != "":
-                                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=f"{method}_leiden", top=n_hvg, task="Imputation")
+                                if cluster_colname is None or cluster_colname.strip() == "":
+                                    cluster_colname = f"{method}_leiden"
+                                preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=cluster_colname, top=n_hvg, task="Imputation")
                                 imputation_results['preset_questions'] = preset_questions
 
                             imputation_output.append({"SAVER": output})
@@ -327,7 +339,7 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                             raise CeleryTaskException(detail)
                 else: 
                     redislogger.warning(job_id, "'SAVER' layer already exists.")
-                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output, layer='SAVER')
+                    imputation_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters,  md5, adata_path=output, layer='SAVER', cluster_colname=cluster_colname)
                 imputation_results['datasetId'] = datasetId
                 imputation_results['created_by'] = userID
                 create_pp_results(process_id, imputation_results)  # Insert pre-process results to database

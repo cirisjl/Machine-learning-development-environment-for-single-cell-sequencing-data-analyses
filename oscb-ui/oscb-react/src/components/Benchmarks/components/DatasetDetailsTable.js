@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL }) => {
   const [copiedState, setCopiedState] = useState(false);
-  
+
   const handleCopy = () => {
     setCopiedState(true);
     setTimeout(() => setCopiedState(false), 2000); // Reset after 2 seconds
@@ -16,7 +16,7 @@ const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL 
   return (
     <Descriptions title="Dataset Details" bordered column={1}>
       <Descriptions.Item label="Dataset ID"><Link to={"/mydata/view-dataset-info?datasetId=" + datasetDetails.Id} target="_blank"><strong>{datasetDetails.Id}</strong></Link>&nbsp;&nbsp;
-      <CopyToClipboard text={datasetDetails.Id} onCopy={() => handleCopy()}>
+        <CopyToClipboard text={datasetDetails.Id} onCopy={() => handleCopy()}>
           <button style={{
             // position: 'absolute',
             background: 'lightgrey',
@@ -26,7 +26,7 @@ const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL 
             cursor: 'pointer',
             // padding: '5px 10px',
           }}>{copiedState ? 'Copied!' : 'Copy'}</button>
-      </CopyToClipboard>
+        </CopyToClipboard>
       </Descriptions.Item>
       <Descriptions.Item label="Title"><Link to={"/mydata/view-dataset-info?datasetId=" + datasetDetails.Id} target="_blank"><strong>{datasetDetails.Title}</strong></Link></Descriptions.Item>
       <Descriptions.Item label="Author">{datasetDetails.Author}</Descriptions.Item>
@@ -45,10 +45,10 @@ const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL 
       <Descriptions.Item label="Nucleic Acid Source">{datasetDetails["Nucleic Acid Source"]?.label}</Descriptions.Item>
       <Descriptions.Item label="Analysis Protocol">{datasetDetails["Analysis Protocol"]}</Descriptions.Item>
       <Descriptions.Item label="Disease Status (Specimen)">
-        {Array.isArray(datasetDetails["Disease Status (Specimen)"]) 
+        {Array.isArray(datasetDetails["Disease Status (Specimen)"])
           ? datasetDetails["Disease Status (Specimen)"].map((status, index) => (
-              <span key={index}>{status.label}{index < datasetDetails["Disease Status (Specimen)"].length - 1 ? ', ' : ''}</span>
-            ))
+            <span key={index}>{status.label}{index < datasetDetails["Disease Status (Specimen)"].length - 1 ? ', ' : ''}</span>
+          ))
           : datasetDetails["Disease Status (Specimen)"]?.label || datasetDetails["Disease Status (Specimen)"]
         }
       </Descriptions.Item>
@@ -63,17 +63,21 @@ const DatasetDetailsTable = ({ datasetDetails, downloadFile, getFileNameFromURL 
       <Descriptions.Item label="Source"><a href={datasetDetails["Source"]?.label}>{datasetDetails["Source"]?.label}</a></Descriptions.Item>
       <Descriptions.Item label="Submission Date">{datasetDetails["Submission Date"]}</Descriptions.Item>
       <Descriptions.Item label="AnnData File">
-        <a
-          download
-          onClick={() => { downloadFile(datasetDetails["adata_path"]) }}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); downloadFile(datasetDetails["adata_path"]) }}
           style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            font: 'inherit',
             textAlign: 'center',
             cursor: 'pointer',
             textDecoration: 'underline',
             color: 'blue'
           }}>
           {getFileNameFromURL(datasetDetails["adata_path"]) || 'Not available'}
-        </a>
+        </button>
       </Descriptions.Item>
     </Descriptions>
   );
