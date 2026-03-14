@@ -1368,7 +1368,7 @@ def save_zarr(adata, adata_path, zarr_output=None, n_hvg=50, layer=None, min_gen
         for label in unique_cell_labels:
             if label in adata.obs.columns:
                 obs_cols.append(label)
-                
+
     # Add common cell type annotation columns to obsSets
     for label in label_columns:
         if label in adata.obs.columns:
@@ -1654,6 +1654,89 @@ def first_mode(x):
     return m.iat[0] if len(m) else None
 
 
+def add_majority_vote(
+    df: pd.DataFrame,
+    unknown_label: str | bool,
+    tie_strategy: str = "first",   # "first" or "tie"
+    tie_label: str = "Tie",
+    return_counts: bool = False
+) -> pd.DataFrame:
+    """
+    Add a majority_vote column to a dataframe by voting across each row.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input dataframe containing label columns.
+    unknown_label : str
+        Label to use when a row has no non-null values.
+    tie_strategy : str
+        How to handle ties:
+        - "first": return the first label after sorting by count desc, label asc
+        - "tie": return tie_label if multiple labels share the top count
+    tie_label : str
+        Label used when tie_strategy == "tie" and a tie occurs.
+    return_counts : bool
+        If True, also add majority_count column.
+
+    Returns
+    -------
+    pd.DataFrame
+        Copy of input dataframe with majority_vote column added.
+    """
+    out = df.copy()
+    obj = out.astype(object)
+
+    stacked = obj.stack(dropna=True).reset_index()
+    if stacked.empty:
+        out["majority_vote"] = unknown_label
+        if return_counts:
+            out["majority_count"] = 0
+        return out
+
+    stacked.columns = ["row", "source", "label"]
+
+    counts = (
+        stacked.groupby(["row", "label"])
+        .size()
+        .reset_index(name="n")
+    )
+
+    max_counts = counts.groupby("row")["n"].max().rename("max_n").reset_index()
+    top = counts.merge(max_counts, on="row")
+    top = top[top["n"] == top["max_n"]].copy()
+
+    if tie_strategy == "tie":
+        tie_sizes = top.groupby("row").size().rename("n_winners").reset_index()
+        top = top.merge(tie_sizes, on="row")
+
+        winners = (
+            top.sort_values(["row", "label"])
+            .drop_duplicates("row")
+            .set_index("row")
+        )
+
+        vote = winners["label"].where(winners["n_winners"] == 1, tie_label)
+        out["majority_vote"] = out.index.to_series().map(vote).fillna(unknown_label)
+
+    elif tie_strategy == "first":
+        winners = (
+            top.sort_values(["row", "label"])
+            .drop_duplicates("row")
+            .set_index("row")
+        )
+        out["majority_vote"] = out.index.to_series().map(winners["label"]).fillna(unknown_label)
+
+    else:
+        raise ValueError("tie_strategy must be either 'first' or 'tie'")
+
+    if return_counts:
+        count_map = max_counts.set_index("row")["max_n"]
+        out["majority_count"] = out.index.to_series().map(count_map).fillna(0).astype(int)
+
+    return out
+
+
 def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_columns=['celltypist_label', 'celltypist_ref_label', 'SingleR_main', 'SingleR_fine', 'SingleR_user_ref', 'scANVI_predicted'], score_columns=['celltypist_score', 'celltypist_ref_score', 'scANVI_transfer_score']):
     unique_cell_labels = []
     obs_cols = []
@@ -1706,7 +1789,8 @@ def create_annotation_panel(obs, cluster_id='leiden', ground_truth=None, label_c
 
     if len(label_columns) > 1:
         labels_df = obs[label_columns].groupby(cluster_id).agg(first_mode)
-        labels_df['majority_vote'] = labels_df.mode(axis=1).iloc[:, 0].fillna('Unknown')
+        labels_df = add_majority_vote(labels_df, unknown_label="Unknown", tie_strategy="first")
+        # labels_df['majority_vote'] = labels_df.mode(axis=1).iloc[:, 0].fillna('Unknown')
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "cell_label" not in obs.columns:
             # labels_df["cell_label"] = labels_df['majority_vote']
@@ -1761,7 +1845,8 @@ def create_outlier_panel(obs, cluster_id='leiden', outlier_columns=["discard", "
         outliers_columns_df = obs[outlier_columns].groupby(cluster_id).agg(first_mode)
         unique_labels = [False, True]      
         
-        outliers_columns_df['majority_vote'] = outliers_columns_df.mode(axis=1).iloc[:, 0].fillna(False)
+        # outliers_columns_df['majority_vote'] = outliers_columns_df.mode(axis=1).iloc[:, 0].fillna(False)
+        outliers_columns_df = add_majority_vote(outliers_columns_df, unknown_label=False, tie_strategy="first")
         # labels_df['majority_vote'] = labels_df.mode(axis=1)[0]
         if "discard" not in obs.columns:
             outliers_columns_df.insert(loc=0, column='discard', value=outliers_columns_df['majority_vote'])
