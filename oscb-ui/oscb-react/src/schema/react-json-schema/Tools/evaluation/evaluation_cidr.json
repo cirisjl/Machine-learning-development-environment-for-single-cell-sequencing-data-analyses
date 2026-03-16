@@ -12,20 +12,20 @@
             "type": "array",
             "title": "Method",
             "items": {
-              "type": "string",
+              "type": ["string", "null"],
               "enum": ["CIDR"]
             },
             "default": ["CIDR"],
             "uniqueItems": true
           },
           "output_format": { 
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Output Format",
             "description": "Some more details about the parameter",
             "enum": [".h5ad", ".rds", ".h5Seurat"]
            },
           "default_assay": { 
-            "type": "string",
+            "type": ["string", "null"],
              "default": "RNA",
              "title": "Default Assay",
              "description": "Some more details about the parameter"
@@ -36,22 +36,22 @@
             "description": "Some more details about the parameter"
           },
           "path_of_scrublet_calls": { 
-            "type": "string", 
+            "type": ["string", "null"], 
             "default": "./scrublet_calls.tsv",
             "title": "Path of Scrublet Calls",
             "description": "Some more details about the parameter" 
           },
           "species": { 
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Species Type",
             "enum": ["human", "mouse"]
            },
           "organ_part": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Organ Part"
           },
           "idtype": {
-             "type": "string",
+             "type": ["string", "null"],
              "title": "ID Type",
              "description": "Some more details about the parameter"
            },

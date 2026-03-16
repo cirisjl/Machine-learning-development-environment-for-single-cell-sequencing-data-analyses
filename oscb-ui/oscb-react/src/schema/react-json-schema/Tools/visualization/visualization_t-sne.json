@@ -6,15 +6,15 @@
         "title": "Parameters for Dimension Reduction Process",  
         "properties": {
           "species": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Species Type"
           },
           "organ_part": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Organ Part"
           },
            "cluster_label": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Cluster Label",
             "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
           },
@@ -24,7 +24,7 @@
             "default": 50
           },
           "cluster_colname": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Cluster Column Name",
             "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
           },
@@ -66,12 +66,12 @@
                 "minItems": 1
               },
               "assay": {
-                "type": "string",
+                "type": ["string", "null"],
                 "title": "Default Assay (If applicable)",
                 "default": "RNA"
               },
               "use_rep": {
-                "type": "string",
+                "type": ["string", "null"],
                 "title": "Use Representation",
                 "description": "Use the indicated representation",
                 "default": ""

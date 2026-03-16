@@ -6,11 +6,11 @@
       "title": "Parameters for Integration Process",  
       "properties": {
         "species": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Species Type"
         },
         "organ_part": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Organ Part"
         },
         "n_hvg": {
@@ -19,7 +19,7 @@
           "default": 50
         },
         "cluster_colname": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Cluster Column Name",
           "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
         },
@@ -76,7 +76,7 @@
               "default": 0
             },
             "default_assay": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Default Assay (If applicable)",
               "default": "RNA"
             },

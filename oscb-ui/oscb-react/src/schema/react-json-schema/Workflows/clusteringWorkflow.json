@@ -6,11 +6,11 @@
       "title": "Parameters for Clustering Workflow",
       "properties": {
         "species": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Species Type"
         },
         "organ_part": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Organ Part"
         },
         "qc_params": {
@@ -24,7 +24,7 @@
               "type": "array",
               "title": "Method",
               "items": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "Bioconductor",
                   "Seurat",
@@ -38,12 +38,12 @@
               "uniqueItems": true
             },
             "assay": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Default Assay (If applicable)",
               "default": "RNA"
             },
             "layer": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Layer",
               "description": "Specify the layer",
               "default": ""
@@ -109,14 +109,14 @@
               "default": 50
             },
             "cluster_colname": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Cluster Column Name",
               "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
             }
           }
         },
         "process_type": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Process Type",
           "default": "Normalization"
         }

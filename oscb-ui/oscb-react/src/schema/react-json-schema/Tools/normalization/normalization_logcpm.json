@@ -6,20 +6,20 @@
       "title": "Parameters for Normalization Process",  
       "properties": {
         "species": { 
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Species Type"
          },
         "organ_part": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Organ Part"
         },
         "idtype": {
-           "type": "string",
+           "type": ["string", "null"],
            "title": "ID Type",
            "description": "Choose the ID Type to specify the gene identifier format for your analysis"
          },
          "cluster_label": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Cluster Label",
           "description": "Enter the Cluster Label to identify or categorize your data points within the AnnData object."
         },
@@ -29,7 +29,7 @@
           "default": 50
         },
         "cluster_colname": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "Cluster Column Name",
           "description": "Choose the cluster column for cell type annotation. If not specified, the default Leiden clustering will be used."
         },
@@ -64,7 +64,7 @@
               "minItems": 1
             },
             "assay": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Default Assay (If applicable)",
               "default": "RNA"
             },

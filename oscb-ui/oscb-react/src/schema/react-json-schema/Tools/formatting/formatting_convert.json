@@ -6,7 +6,7 @@
         "title": "Parameters for Conversion Process",  
         "properties": {
           "output_format": { 
-            "type": "string",
+            "type": ["string", "null"],
             "title": "Output Format",
             "description": "Select the output format for storing your results"
            }
