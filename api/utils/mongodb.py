@@ -32,6 +32,7 @@ workflows_collection.create_index({'workflows_id': 1}, unique=True, background=T
 datasets_collection.create_index({'Id': 1}, unique=True, background=True)
 benchmarks_collection.create_index({'benchmarksId': 1}, unique=True, background=True)
 jobs_collection.create_index({'job_id': 1}, unique=True, background=True)
+large_collection.create_index({'document_id': 1, 'chunk_index': 1}, unique=True, background=True)
 
 def generate_process_id(file_md5, process, method, parameters):
     if isinstance(method, list) and len(method) == 1: method = method[0] # If there is only 1 item in a list, then it should be taken as a string.
@@ -289,11 +290,14 @@ def chunk_string(document_id, large_data):
     num_chunks = math.ceil(len(large_data) / CHUNK_SIZE)
     for i in range(num_chunks):
         chunk_data = large_data[i * CHUNK_SIZE : (i + 1) * CHUNK_SIZE]
-        large_collection.insert_one({
+        large_collection.update_one({
             "document_id": document_id,
-            "chunk_index": i,
-            "data": chunk_data
-        })
+            "chunk_index": i
+        }, {
+            "$set": {
+                "data": chunk_data
+            }
+        }, upsert=True)
 
     print(f"Inserted {num_chunks} chunks.")
 
