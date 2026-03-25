@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-api
+  namespace: oscb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-api
+  template:
+    metadata:
+      labels:
+        app: celery-api
+    spec:
+      containers:
+        - name: api
+          image: oscb-api:latest
+          imagePullPolicy: Never
+          command: ["python3", "main.py"]
+          envFrom:
+            - configMapRef:
+                name: oscb-config
+            - secretRef:
+                name: oscb-secret
+          ports:
+            - containerPort: 5005
+          volumeMounts:
+            - name: results
+              mountPath: /data/results
+            - name: uploads
+              mountPath: /data/upload
+            - name: logs
+              mountPath: /data/logs
+            - name: user-storage
+              mountPath: /usr/src/app/storage/
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: oscb-results-pvc
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: oscb-uploads-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: oscb-logs-pvc
+        - name: user-storage
+          persistentVolumeClaim:
+            claimName: oscb-user-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: celery-api
+  namespace: oscb
+spec:
+  type: NodePort
+  selector:
+    app: celery-api
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
+      nodePort: 30005

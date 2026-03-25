@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter
+  namespace: oscb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter
+  template:
+    metadata:
+      labels:
+        app: jupyter
+    spec:
+      containers:
+        - name: jupyter
+          image: stormgod/oscb-cuda126-r45-seurat440:1.2.1
+          command: ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--allow-root", "--ServerApp.iopub_data_rate_limit=10000000000"]
+          workingDir: /ps
+          ports:
+            - containerPort: 8888
+          volumeMounts:
+            - name: ps-code
+              mountPath: /ps/
+            - name: results
+              mountPath: /data/results
+            - name: uploads
+              mountPath: /data/upload
+            - name: logs
+              mountPath: /data/logs
+            - name: user-storage
+              mountPath: /usr/src/app/storage/
+      volumes:
+        - name: ps-code
+          hostPath:
+            path: /ps/code/
+            type: DirectoryOrCreate
+        - name: results
+          persistentVolumeClaim:
+            claimName: oscb-results-pvc
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: oscb-uploads-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: oscb-logs-pvc
+        - name: user-storage
+          persistentVolumeClaim:
+            claimName: oscb-user-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter
+  namespace: oscb
+spec:
+  type: NodePort
+  selector:
+    app: jupyter
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+      nodePort: 30888

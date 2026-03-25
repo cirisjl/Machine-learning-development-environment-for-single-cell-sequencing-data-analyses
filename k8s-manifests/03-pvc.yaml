@@ -1,0 +1,107 @@
+# PV and PVC for Results
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: oscb-results-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /ps/code/oscb/results
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oscb-results-pvc
+  namespace: oscb
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: oscb-results-pv
+---
+# PV and PVC for Uploads
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: oscb-uploads-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /ps/code/oscb/uploads
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oscb-uploads-pvc
+  namespace: oscb
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: oscb-uploads-pv
+---
+# PV and PVC for Logs
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: oscb-logs-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /ps/code/oscb/logs
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oscb-logs-pvc
+  namespace: oscb
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: oscb-logs-pv
+---
+# PV and PVC for User Storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: oscb-user-storage-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /ps/code/oscb/user_storage
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oscb-user-storage-pvc
+  namespace: oscb
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  volumeName: oscb-user-storage-pv

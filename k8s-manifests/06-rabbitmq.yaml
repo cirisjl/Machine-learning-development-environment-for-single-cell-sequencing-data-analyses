@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oscb-rabbitmq
+  namespace: oscb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oscb-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: oscb-rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:management
+          envFrom:
+            - configMapRef:
+                name: oscb-config
+            - secretRef:
+                name: oscb-secret
+          ports:
+            - containerPort: 5673
+            - containerPort: 15672
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq/
+            - name: rabbitmq-log
+              mountPath: /var/log/rabbitmq
+      volumes:
+        - name: rabbitmq-data
+          hostPath:
+            path: /ps/code/oscb/db/rabbitmq/data/
+            type: DirectoryOrCreate
+        - name: rabbitmq-log
+          hostPath:
+            path: /ps/code/oscb/db/rabbitmq/log/
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oscb_rabbitmq
+  namespace: oscb
+spec:
+  type: NodePort
+  selector:
+    app: oscb-rabbitmq
+  ports:
+    - name: amqp
+      protocol: TCP
+      port: 5673
+      targetPort: 5673
+      nodePort: 30673
+    - name: management
+      protocol: TCP
+      port: 15673
+      targetPort: 15672
+      nodePort: 30672

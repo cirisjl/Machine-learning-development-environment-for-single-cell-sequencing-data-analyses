@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oscb-workers
+  namespace: oscb
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: oscb-worker
+  template:
+    metadata:
+      labels:
+        app: oscb-worker
+    spec:
+      containers:
+        - name: worker
+          image: oscb-api:latest
+          imagePullPolicy: Never
+          command: ["celery", "-A", "main.celery", "worker", "--loglevel=info", "-Q", "tools,benchmarks,workflows,web", "--max-tasks-per-child=50", "--max-memory-per-child=200000000"]
+          envFrom:
+            - configMapRef:
+                name: oscb-config
+            - secretRef:
+                name: oscb-secret
+          volumeMounts:
+            - name: results
+              mountPath: /data/results
+            - name: uploads
+              mountPath: /data/upload
+            - name: logs
+              mountPath: /data/logs
+            - name: user-storage
+              mountPath: /usr/src/app/storage/
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: oscb-results-pvc
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: oscb-uploads-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: oscb-logs-pvc
+        - name: user-storage
+          persistentVolumeClaim:
+            claimName: oscb-user-storage-pvc

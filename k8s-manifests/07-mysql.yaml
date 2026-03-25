@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oscb-mysql
+  namespace: oscb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oscb-mysql
+  template:
+    metadata:
+      labels:
+        app: oscb-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          command:
+            - "mysqld"
+            - "--character-set-server=utf8mb4"
+            - "--collation-server=utf8mb4_unicode_ci"
+            - "--default-authentication-plugin=mysql_native_password"
+          envFrom:
+            - configMapRef:
+                name: oscb-config
+            - secretRef:
+                name: oscb-secret
+          ports:
+            - containerPort: 3308
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: oscb-schema-sql
+              mountPath: /docker-entrypoint-initdb.d/oscb_schema_latest.sql
+              subPath: oscb_schema_latest.sql
+      volumes:
+        - name: mysql-data
+          hostPath:
+            path: /ps/code/oscb/mysql_db
+            type: DirectoryOrCreate
+        - name: oscb-schema-sql
+          configMap:
+            name: oscb-schema-sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oscb_mysql
+  namespace: oscb
+spec:
+  selector:
+    app: oscb-mysql
+  ports:
+    - protocol: TCP
+      port: 3308
+      targetPort: 3308
