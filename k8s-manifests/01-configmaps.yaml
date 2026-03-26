@@ -9,21 +9,21 @@ data:
   ERROR_FOLDER: "/data/errors"
   MAX_CONTENT_LENGTH: "16*1000*1000"
   MAXCAPACITY: "104857600"
-  CELERY_BROKER_URL: "amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_rabbitmq:5673//"
-  CELERY_RESULT_BACKEND: "redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_redis:6388/0"
+  CELERY_BROKER_URL: "amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb-rabbitmq:5673//"
+  CELERY_RESULT_BACKEND: "redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb-redis:6388/0"
   MONGODB_URL: "mongodb://oscbdeepdb:65530"
   
   # node env
   EXTERNAL_PORT: "3001"
   DBUSER: "root"
   DATABASE: "oscb"
-  HOST: "oscb_mysql"
+  HOST: "oscb-mysql"
   HOST_URL: "c240g5-110219.wisc.cloudlab.us"
 
   # Directus config
   PUBLIC_URL: "http://localhost:8055"
   DB_CLIENT: "mysql"
-  DB_HOST: "oscb_mysql"
+  DB_HOST: "oscb-mysql"
   DB_PORT: "3308"
   DB_DATABASE: "oscb"
   DB_USER: "root"

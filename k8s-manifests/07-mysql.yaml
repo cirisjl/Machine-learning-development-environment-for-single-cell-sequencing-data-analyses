@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oscb-mysql-pvc
+  namespace: oscb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,10 +25,20 @@ spec:
       labels:
         app: oscb-mysql
     spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/mysql"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+              subPath: mysql
       containers:
         - name: mysql
           image: mysql:8.0
-          command:
+          args:
             - "mysqld"
             - "--character-set-server=utf8mb4"
             - "--collation-server=utf8mb4_unicode_ci"
@@ -31,14 +53,14 @@ spec:
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
+              subPath: mysql
             - name: oscb-schema-sql
               mountPath: /docker-entrypoint-initdb.d/oscb_schema_latest.sql
               subPath: oscb_schema_latest.sql
       volumes:
         - name: mysql-data
-          hostPath:
-            path: /ps/code/oscb/mysql_db
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: oscb-mysql-pvc
         - name: oscb-schema-sql
           configMap:
             name: oscb-schema-sql
@@ -46,7 +68,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: oscb_mysql
+  name: oscb-mysql
   namespace: oscb
 spec:
   selector:

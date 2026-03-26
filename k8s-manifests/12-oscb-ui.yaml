@@ -73,6 +73,9 @@ spec:
         - name: react
           image: oscb-react:latest
           imagePullPolicy: Never
+          env:
+            - name: HOST
+              value: "0.0.0.0"
           envFrom:
             - configMapRef:
                 name: oscb-config

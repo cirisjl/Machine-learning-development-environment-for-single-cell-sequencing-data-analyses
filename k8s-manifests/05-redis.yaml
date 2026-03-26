@@ -23,7 +23,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: oscb_redis
+  name: oscb-redis
   namespace: oscb
 spec:
   selector:

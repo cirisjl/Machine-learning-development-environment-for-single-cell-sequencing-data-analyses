@@ -16,6 +16,9 @@ spec:
       containers:
         - name: jupyter
           image: stormgod/oscb-cuda126-r45-seurat440:1.2.1
+          env:
+            - name: JUPYTER_PORT
+              value: "8888"
           command: ["jupyter", "lab", "--ip=0.0.0.0", "--no-browser", "--allow-root", "--ServerApp.iopub_data_rate_limit=10000000000"]
           workingDir: /ps
           ports:

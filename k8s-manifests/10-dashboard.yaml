@@ -17,7 +17,7 @@ spec:
         - name: flower
           image: oscb-api:latest
           imagePullPolicy: Never
-          command: ["celery", "--app", "main.celery", "flower", "--port=5555", "--broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_rabbitmq:5673//", "--basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"]
+          command: ["celery", "--app", "main.celery", "flower", "--port=5555", "--broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb-rabbitmq:5673//", "--basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"]
           envFrom:
             - configMapRef:
                 name: oscb-config

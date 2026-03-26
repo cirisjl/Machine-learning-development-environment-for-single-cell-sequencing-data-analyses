@@ -1,5 +1,5 @@
 {
-    "host": "oscb_mysql",
+    "host": "oscb-mysql",
     "port": "3308",
     "user": "root",
     "password": "Shirley@2410",

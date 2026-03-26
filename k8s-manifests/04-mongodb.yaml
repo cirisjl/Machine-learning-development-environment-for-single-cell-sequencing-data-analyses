@@ -16,7 +16,7 @@ spec:
       containers:
         - name: mongodb
           image: mongo:7.0
-          command: ["mongod", "--port", "65530"]
+          command: ["mongod", "--port", "65530", "--bind_ip_all"]
           ports:
             - containerPort: 65530
           volumeMounts:
@@ -37,7 +37,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: oscbdb
+  name: mongodb
   namespace: oscb
 spec:
   selector:
@@ -67,7 +67,7 @@ spec:
           image: mongo-express:latest
           env:
             - name: ME_CONFIG_MONGODB_SERVER
-              value: "oscbdb"
+              value: "mongodb"
             - name: ME_CONFIG_MONGODB_PORT
               value: "65530"
             - name: ME_CONFIG_BASICAUTH
