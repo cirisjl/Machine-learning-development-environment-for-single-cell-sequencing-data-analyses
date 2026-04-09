@@ -84,3 +84,8 @@ if(!'SAVER' %in% names(adata$layers)){
 }
 
 ```
+
+## Session Info
+```{r Session Info, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sessionInfo()
+```

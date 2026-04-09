@@ -201,6 +201,27 @@ const QualityControlParameters = ({ values, setValues, defaultValues, shouldHide
               />
             </Box>
 
+            <Box sx={{ m: 2 }}>
+
+              <Typography gutterBottom>Percentage of Counts in Mitochondrial Genes: <b>{values.pct_counts_mt}</b></Typography>
+              <StyledSlider
+                value={values.pct_counts_mt}
+                onChange={(e, val) => handleSliderChange({ target: { name: 'pct_counts_mt', value: val } })}
+                valueLabelDisplay="auto"
+                min={1}
+                max={50}
+                step={1}
+                name="pct_counts_mt"
+                marks={[
+                  { value: 3, label: '3*' },
+                  { value: 5, label: '5' },
+                  { value: 7, label: '7' },
+                  { value: 10, label: '10' },
+                  { value: 20, label: '20' },
+                ]}
+              />
+            </Box>
+
             {!shouldHideForSeurat && (
               <Box sx={{ m: 2 }}>
                 <Typography gutterBottom>Target Sum: <b>{values.target_sum.toExponential()}</b></Typography>

@@ -20,6 +20,7 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
     default_assay = None
     assay_names = None
     ddl_assay_names = False
+    tools = None
 
     if assay is None:
         redislogger.info(unique_id, "Assay is not provides, setting it to 'RNA'.")
@@ -42,8 +43,11 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
             output = list(results[2])[0]
             adata_path = list(results[3])[0]
             ddl_assay_names = convert_from_r(list(results[4])[0])
+            tools = str(results[5])
             print("Type of ddl_assay_names:", type(ddl_assay_names))
             print("Value of ddl_assay_names:", ddl_assay_names)
+            print("Type of tools:", type(tools))
+            print("Value of tools:", tools)
         else:
             raise RuntimeError(f"Seurat QC failed.")
 
@@ -61,4 +65,4 @@ def run_seurat_qc(input, unique_id, output, assay='RNA', min_genes=200, max_gene
     except Exception as e:
         redislogger.error(unique_id, f"An error happened while running Seurat QC: {e}.")
 
-    return default_assay, assay_names, output, adata_path, adata, ddl_assay_names
+    return default_assay, assay_names, output, adata_path, adata, ddl_assay_names, tools

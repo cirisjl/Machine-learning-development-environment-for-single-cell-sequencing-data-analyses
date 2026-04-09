@@ -245,3 +245,10 @@ print("SingleCellExperiment object is saved successfully.")
 sce <- NULL
 sce.qc <- NULL
 ```
+
+## Session Info
+```{r Session Info, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sessionInfo()
+tools_path <- gsub(".rds", ".txt", params$output, ignore.case = TRUE)
+writeLines(capture.output(sessionInfo()), tools_path)
+```

@@ -307,6 +307,11 @@ def run_imputation(job_id, ds:dict, fig_path=None, show_error=True, random_state
                                 preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, layer="SAVER", method="t-test", groupby=cluster_colname, top=n_hvg, task="Imputation")
                                 imputation_results['preset_questions'] = preset_questions
 
+                            tools_path = output.replace('.h5ad', '.txt')
+                            if os.path.exists(tools_path):
+                                tools = get_r_tools(tools_path)
+                                imputation_results['tools'] = tools
+
                             imputation_output.append({"SAVER": output})
                             imputation_output.append({"Report": report_path})
                             imputation_results["outputs"] = imputation_output

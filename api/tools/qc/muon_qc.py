@@ -10,7 +10,7 @@ from tools.formating.formating import *
 from tools.annotation.annotation import *
 from utils.redislogger import redislogger
 
-def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mod1='rna', mod2='atac', min_genes=200, max_genes=8000, min_cells=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=20, resolution=.5, species='mouse'):
+def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mod1='rna', mod2='atac', min_genes=200, max_genes=8000, min_cells=3, pct_counts_mt=3, target_sum=1e4, n_top_genes=None, n_neighbors=10, n_pcs=20, resolution=.5, species='mouse'):
     layers = None
     mod_keys = None
     cell_metadata = None
@@ -105,7 +105,7 @@ def run_muon(input_path, output_path, md5, parameters, unique_id, process_id, mo
     redislogger.info(unique_id, f"(After n_genes: {rna.n_obs} cells)")
     mu.pp.filter_obs(rna, 'total_counts', lambda x: x < 40000)
     redislogger.info(unique_id, f"(After total_counts: {rna.n_obs} cells)")
-    mu.pp.filter_obs(rna, 'pct_counts_mt', lambda x: x < 3)
+    mu.pp.filter_obs(rna, 'pct_counts_mt', lambda x: x < pct_counts_mt)
     redislogger.info(unique_id, f"After: {rna.n_obs} cells")
 
     # sc.pl.violin(rna, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],

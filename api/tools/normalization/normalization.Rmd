@@ -573,3 +573,9 @@ srat <- NULL
 adata <- NULL
 expression_matrix <- NULL
 ```
+
+## Session Info
+```{r Session Info, include = TRUE, echo = params$show_code, warning=params$show_warning, message=params$show_message}
+sessionInfo()
+writeLines(capture.output(sessionInfo()), gsub(".h5ad", ".txt", adata_path, ignore.case = TRUE))
+```

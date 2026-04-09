@@ -32,6 +32,7 @@ class QCParameters(BaseModel):
     n_pcs: Optional[int] = 20 # Scanpy
     resolution: Optional[float] = 0.5
     doublet_rate: Optional[float] = 0
+    pct_counts_mt: Optional[float] = 3
     regress_cell_cycle: Optional[bool] = False
     use_default: Optional[bool] = True 
     skip_qc: Optional[bool] = False

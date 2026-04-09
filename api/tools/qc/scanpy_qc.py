@@ -14,7 +14,7 @@ sc.settings.verbosity=3             # verbosity: errors (0), warnings (1), info 
 from utils.redislogger import redislogger
 
 
-def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, target_sum=1e4, n_top_genes=None, expected_doublet_rate=0.076, regress_cell_cycle=False, species='mouse'):
+def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, pct_counts_mt=3, target_sum=1e4, n_top_genes=None, expected_doublet_rate=0.076, regress_cell_cycle=False, species='mouse'):
         if adata is None:
             raise ValueError("Failed to load AnnData object.")
         # AnnData information
@@ -76,7 +76,7 @@ def run_scanpy_qc(adata, unique_id, min_genes=200, max_genes=None, min_cells=3, 
         adata.obs["outlier"] = (is_outlier(adata, 'log1p_total_counts', 5) +\
             is_outlier(adata, 'log1p_n_genes_by_counts', 5) +\
             is_outlier(adata, 'pct_counts_in_top_20_genes', 5) +\
-            is_outlier(adata, 'pct_counts_mt', 3, upper_only = True)
+            is_outlier(adata, 'pct_counts_mt', pct_counts_mt, upper_only = True)
         )
         redislogger.info(unique_id, f"Number of outliers: {adata.obs.outlier.value_counts()}")
     

@@ -31,7 +31,9 @@ from typing import Any, List, Optional, Union
 from attrdict import AttrDict
 import json_numpy
 import json
+import re
 from tools.formating.zarr_utils import optimize_adata
+import importlib.metadata
 
 
 # Ensure that pandas2ri is activated for automatic conversion
@@ -548,6 +550,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             # Add annotation panels for cell type labels
             annotation_panel = create_annotation_panel(adata.obs, cluster_id=cluster_colname, ground_truth=ground_truth, label_columns=label_columns, score_columns=score_columns)
 
+        tools = get_tools()
+
         pp_results = {
             "process_id": process_id,
             "description": description,
@@ -591,7 +595,8 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             "obsSets": obsSets,
             # "obs":cell_metadata
             "annotation_panel": annotation_panel,
-            "outlier_panel": outlier_panel
+            "outlier_panel": outlier_panel,
+            "tools": tools
             }
         
     return pp_results
@@ -1463,7 +1468,7 @@ def clean_anndata(adata):
 
     # Bioconductor
     if 'discard' in adata.obs.columns:
-        adata=adata[adata.obs.discard=="False", :]
+        adata = adata[~adata.obs.discard, :]
     if 'discard' in adata.var.columns:
         adata = adata[:, ~adata.var.discard]
 
@@ -1922,3 +1927,108 @@ def get_updated_metadata(adata, process_id, cluster_id, adata_path, orign_adata_
 
     return pp_results
 
+
+def get_tools():
+    # Get the base names of currently loaded modules (ignoring private/hidden ones)
+    tools = []
+    loaded_modules = set([m.split('.')[0] for m in sys.modules.keys() if not m.startswith('_')])
+    for module_name in sorted(loaded_modules):
+        try:
+            # Try to get the version from the package metadata
+            version = importlib.metadata.version(module_name)
+            tools.append(f"{module_name} == {version}")
+        except importlib.metadata.PackageNotFoundError:
+            # Built-in modules (like 'sys' or 'math') won't be found here, which is normal
+            pass
+    return tools
+
+
+def parse_session_info_to_dict(text):
+    # Initialize the structure of our dictionary
+    session_dict = {
+        "r_version": None,
+        "platform": None,
+        "os": None,
+        "matrix_products": None,
+        "blas_lapack": None,
+        "locale": [],
+        "time_zone": None,
+        "attached_base_packages": [],
+        "other_attached_packages": {},
+        "loaded_via_namespace": {}
+    }
+
+    current_section = "header"
+    lines = text.strip().split('\n')
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue  # Skip blank lines
+
+        # 1. Detect which section we are in
+        if line.startswith("locale:"):
+            current_section = "locale"
+            continue
+        elif line.startswith("attached base packages:"):
+            current_section = "attached_base_packages"
+            continue
+        elif line.startswith("other attached packages:"):
+            current_section = "other_attached_packages"
+            continue
+        elif line.startswith("loaded via a namespace (and not attached):"):
+            current_section = "loaded_via_namespace"
+            continue
+        elif line.startswith("time zone:"):
+            current_section = "header" # Switch back to header for trailing single lines
+
+        # 2. Parse data based on the current section
+        if current_section == "header":
+            if line.startswith("R version"):
+                session_dict["r_version"] = line
+            elif line.startswith("Platform:"):
+                session_dict["platform"] = line.split(":", 1)[1].strip()
+            elif line.startswith("Running under:"):
+                session_dict["os"] = line.split(":", 1)[1].strip()
+            elif line.startswith("Matrix products:"):
+                session_dict["matrix_products"] = line.split(":", 1)[1].strip()
+            elif line.startswith("BLAS/LAPACK:"):
+                session_dict["blas_lapack"] = line.split(":", 1)[1].strip()
+            elif line.startswith("time zone:"):
+                session_dict["time_zone"] = line.split(":", 1)[1].strip()
+
+        elif current_section == "locale":
+            # Remove the bracketed numbers like [1], [4] and split by spaces
+            clean_line = re.sub(r'\[\d+\]\s*', '', line)
+            items = [item.strip() for item in clean_line.split('  ') if item.strip()]
+            session_dict["locale"].extend(items)
+
+        elif current_section == "attached_base_packages":
+            # Remove brackets and split by space
+            clean_line = re.sub(r'\[\d+\]\s*', '', line)
+            pkgs = [pkg.strip() for pkg in clean_line.split() if pkg.strip()]
+            session_dict["attached_base_packages"].extend(pkgs)
+
+        elif current_section in ["other_attached_packages", "loaded_via_namespace"]:
+            # Extract PackageName_Version using regex
+            # Group 1: Package name (letters, numbers, dots)
+            # Group 2: Version (numbers, dots, hyphens)
+            matches = re.findall(r'([A-Za-z0-9\.]+)_([0-9\.\-]+)', line)
+            for pkg, version in matches:
+                session_dict[current_section][pkg] = version
+
+    return session_dict
+
+
+def get_r_tools(tools_path):
+    r_tools = None
+    file_content = None
+    try:
+        # Open the file in read mode ('r')
+        with open(tools_path, 'r') as file:
+            file_content = file.read()
+        if file_content is not None:
+            r_tools = parse_session_info_to_dict(file_content)
+    except Exception as e:
+        print(f"Error retrieving R tools: {e}")
+    return r_tools

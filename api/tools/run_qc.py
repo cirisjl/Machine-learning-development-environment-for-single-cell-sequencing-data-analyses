@@ -212,7 +212,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         try:
                             adata = load_anndata(input_path, raw=True)
                             redislogger.info(job_id, "Start scanpy QC...")
-                            scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'], species=species)
+                            scanpy_results = run_scanpy_qc(adata, job_id, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], pct_counts_mt=parameters['pct_counts_mt'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], expected_doublet_rate=parameters['doublet_rate'], regress_cell_cycle=parameters['regress_cell_cycle'], species=species)
                             # scanpy_results.write_h5ad(output_path, compression='gzip')
                             save_anndata(scanpy_results, output_path)
 
@@ -372,7 +372,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                 else:
                     output_path = get_output_path(output, process_id, ds['dataset'], method='Seurat', format='Seurat')
                 try:     
-                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names = run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=5, percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], doublet_rate=parameters['doublet_rate'], n_hvg=parameters['n_top_genes'], regress_cell_cycle=parameters['regress_cell_cycle'])
+                    default_assay, assay_names, output_path, adata_path, adata, ddl_assay_names, tools = run_seurat_qc(input_path, job_id, output=output_path, assay=assay, min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_UMI_count=parameters['min_cells'], max_UMI_count=0, percent_mt_max=parameters['pct_counts_mt'], percent_rb_min=0, resolution=parameters['resolution'], dims=parameters['n_neighbors'], doublet_rate=parameters['doublet_rate'], n_hvg=parameters['n_top_genes'], regress_cell_cycle=parameters['regress_cell_cycle'])
                     
                     if ddl_assay_names:
                         results = {
@@ -407,6 +407,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                         if os.path.exists(output_path): qc_output.append({'Seurat': output_path})
                         qc_results['datasetId'] = datasetId
                         qc_results['created_by'] = userID
+                        qc_results['tools'] = parse_session_info_to_dict(tools)
                         create_pp_results(process_id, qc_results)  # Insert pre-process results to database
                         adata = None      
                 except Exception as e:
@@ -492,6 +493,11 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                     redislogger.info(job_id, "Retrieving metadata and embeddings from AnnData object.")
                     qc_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, adata_path=adata_path, sce_path=output_path, zarr_path=zarr_output)
                     nCells = qc_results["nCells"]
+
+                    tools_path = adata_path.replace('.h5ad', '.txt')
+                    if os.path.exists(tools_path):
+                        tools = get_r_tools(tools_path)
+                        qc_results['tools'] = tools
                     if os.path.exists(adata_path): qc_output.append({'Anndata': adata_path})
                     if os.path.exists(output_path): qc_output.append({'SingleCellExperiment': output_path})
                     if os.path.exists(report_path): qc_output.append({'Report': report_path})
@@ -541,7 +547,7 @@ def run_qc(job_id, ds:dict, fig_path=None, random_state=0, wf=False):
                 # Run muon QC 
                 try:
                     redislogger.info(job_id, "Start muon QC...")
-                    mdata, qc_results = run_muon(input_path, output_path, md5, parameters, job_id, process_id, mod1='rna', mod2='atac', min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'],  species=species)
+                    mdata, qc_results = run_muon(input_path, output_path, md5, parameters, job_id, process_id, mod1='rna', mod2='atac', min_genes=parameters['min_genes'], max_genes=parameters['max_genes'], min_cells=parameters['min_cells'], pct_counts_mt=parameters['pct_counts_mt'], target_sum=parameters['target_sum'], n_top_genes=parameters['n_top_genes'], n_neighbors=parameters['n_neighbors'], n_pcs=parameters['n_pcs'], resolution=parameters['resolution'],  species=species)
                     nCells = qc_results["nCells"]
                     
                     qc_output.append({'MuData': output_path})

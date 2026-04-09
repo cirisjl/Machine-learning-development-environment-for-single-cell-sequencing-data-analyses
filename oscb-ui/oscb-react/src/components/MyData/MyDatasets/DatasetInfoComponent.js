@@ -22,6 +22,15 @@ import ReactPlotly from '../../publishDatasets/components/reactPlotly';
 import { FormControl, RadioGroup, FormControlLabel, Radio, Select, MenuItem, InputLabel } from '@mui/material';
 
 
+const panelStyle = {
+  maxHeight: '150px',       // Restricts the height
+  overflowY: 'auto',        // Adds a scrollbar ONLY if content exceeds maxHeight
+  border: '1px solid #ccc',
+  padding: '16px',
+  borderRadius: '8px',
+  backgroundColor: '#f9f9f9'
+};
+
 const DatasetInfoComponent = () => {
   const location = useLocation();
   const [datasetId, setDatasetId] = useState(null);
@@ -439,6 +448,15 @@ const DatasetInfoComponent = () => {
                                               <span>No parameters available.</span>  // Optional: Display a message if no parameters
                                             )}
                                           </Descriptions.Item>
+                                          { details[preProcessResult.process_id]?.tools && (
+                                            <Descriptions.Item label="Tools">
+                                              <div style={panelStyle}>
+                                                <pre>
+                                                  {JSON.stringify(details[preProcessResult.process_id]?.tools, null, 2)}
+                                                </pre>
+                                              </div>
+                                            </Descriptions.Item>
+                                          )}
 
                                           {/* Additional file download links if available */}
                                           {/* <Descriptions.Item label="Files">

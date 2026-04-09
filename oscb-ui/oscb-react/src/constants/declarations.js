@@ -26,6 +26,7 @@ export const defaultValues = {
   min_genes: 200,
   max_genes: 50000, // No limit
   min_cells: 2,
+  pct_counts_mt: 3,
   target_sum: 1e4,
   n_top_genes: 3000,
   n_neighbors: 15,
@@ -43,6 +44,7 @@ export const defaultQcParams = {
   min_genes: 200,
   max_genes: 50000,
   min_cells: 2,
+  pct_counts_mt: 3,
   target_sum: 10000,
   n_top_genes: 3000,
   n_neighbors: 15,

@@ -59,6 +59,16 @@ const getFileNameFromURL = (fileUrl) => {
   }
 };
 
+const panelStyle = {
+  maxHeight: '150px',       // Restricts the height
+  overflowY: 'auto',        // Adds a scrollbar ONLY if content exceeds maxHeight
+  textAlign: 'left',
+  border: '1px solid #ccc',
+  padding: '16px',
+  borderRadius: '8px',
+  backgroundColor: '#f9f9f9'
+};
+
 const downloadFile = (fileUrl) => {
   const apiUrl = `${NODE_API_URL}/download`;
   const pwd = "jobResults";
@@ -880,6 +890,22 @@ function TaskDetailsComponent() {
                             cellTypeOptions={result.annotation_panel.unique_labels || []}
                             onSubmit={(data) => handleToolSubmit(data, 'manualannotattion')}
                           />
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )}
+
+                  {/* Tools */}
+                  {String(taskStatus || '').toLowerCase() === "success" && result?.tools && (
+                    <Grid item xs={12}>
+                      <Card raised sx={commonCardStyle}>
+                        <CardHeader title="Tools" />
+                        <CardContent sx={commonContentStyle}>
+                          <div style={panelStyle}>
+                            <pre>
+                              {JSON.stringify(result?.tools, null, 2)}
+                            </pre> 
+                          </div>
                         </CardContent>
                       </Card>
                     </Grid>

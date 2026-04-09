@@ -150,6 +150,11 @@ def run_normalization(job_id, ds:dict, fig_path=None, random_state=0, show_error
 
                         redislogger.info(job_id, f"Retrieving metadata and embeddings from AnnData layer {method}.")
                         normalization_results = get_metadata_from_anndata(adata, pp_stage, process_id, process, method, parameters, md5, layer=method, adata_path=adata_path, seurat_path=output, cluster_label=cluster_label, cluster_colname=cluster_colname, zarr_path=zarr_output)
+                        
+                        tools_path = adata_path.replace('.h5ad', '.txt')
+                        if os.path.exists(tools_path):
+                            tools = get_r_tools(tools_path)
+                            normalization_results['tools'] = tools
                         if os.path.exists(adata_path): normalization_output.append({'AnnData': adata_path})
                         if os.path.exists(seurat_path): normalization_output.append({'Seurat': seurat_path})
                         if os.path.exists(report_path): normalization_output.append({'Report': report_path})

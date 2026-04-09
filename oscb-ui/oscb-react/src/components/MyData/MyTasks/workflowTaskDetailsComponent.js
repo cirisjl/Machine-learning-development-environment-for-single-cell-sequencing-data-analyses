@@ -44,6 +44,15 @@ const Accordion = styled((props) => (
   '&::before': { display: 'none' },
 }));
 
+const panelStyle = {
+  maxHeight: '150px',       // Restricts the height
+  overflowY: 'auto',        // Adds a scrollbar ONLY if content exceeds maxHeight
+  border: '1px solid #ccc',
+  padding: '16px',
+  borderRadius: '8px',
+  backgroundColor: '#f9f9f9'
+};
+
 const AccordionSummary = styled((props) => (
   <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
 ))(({ theme }) => ({
@@ -187,6 +196,15 @@ const ProcessAccordionItem = ({ processData, process, handleToolSubmit }) => {
             </Descriptions>
           ) : <span>No parameters available.</span>}
         </Descriptions.Item>
+        {processData?.tools && (
+          <Descriptions.Item label="Tools">
+            <div style={panelStyle}>
+              <pre>
+                {JSON.stringify(processData?.tools, null, 2)}
+              </pre>
+            </div>
+          </Descriptions.Item>
+        )}
         <Descriptions.Item label="Files">
           <div>
             {processData.adata_path && <div><span style={{ marginRight: '8px' }}>AnnData File:</span><DownloadLink url={processData.adata_path} /></div>}

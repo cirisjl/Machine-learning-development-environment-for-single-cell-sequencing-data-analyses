@@ -366,6 +366,11 @@ def run_integration(job_id, ids:dict, fig_path=None, wf=False):
                         preset_questions = create_annotation_prompt(adata, tissue=organ_part, species=species, method="t-test", groupby=cluster_colname, top=n_hvg, task="Batch Integration")
                         integration_results['preset_questions'] = preset_questions
 
+                    tools_path = adata_path.replace('.h5ad', '.txt')
+                    if os.path.exists(tools_path):
+                        tools = get_r_tools(tools_path)
+                        integration_results['tools'] = tools
+
                     # integration_output.append({method: {'adata_path': adata_path, 'seurat_path': output}})
                     integration_output.append({f"{method}_AnnData": adata_path})
                     integration_output.append({f"{method}_Seurat": output})

@@ -63,6 +63,11 @@
               "title": "Min Cells",
               "default": 2
             },
+            "pct_counts_mt": {
+              "type": "integer",
+              "title": "Percentage of Counts in Mitochondrial Genes",
+              "default": 3
+            },
             "target_sum": {
               "type": "integer",
               "title": "Target Sum:",

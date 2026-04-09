@@ -148,8 +148,8 @@ RunSeuratQC <- function(input, output, unique_id, adata_path=NULL, assay='RNA', 
             gc()
         }
     }
-    
-    list(default_assay=default_assay, assay_names=assay_names, output=output, adata_path=adata_path, ddl_assay_names=ddl_assay_names)
+    tools <- sessionInfo()
+    list(default_assay=default_assay, assay_names=assay_names, output=output, adata_path=adata_path, ddl_assay_names=ddl_assay_names, tools=tools)
 }
 
 
