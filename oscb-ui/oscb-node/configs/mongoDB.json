@@ -9,5 +9,6 @@
     "preProcessResultsCollection": "pp_results",
     "benchmarksCollection": "benchmarks",
     "errorlogcollection": "error_log",
-    "projectsCollection": "projects"
+    "projectsCollection": "projects",
+    "chatHistoryCollection": "chat_history"
 }

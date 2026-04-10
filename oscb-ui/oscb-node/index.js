@@ -19,14 +19,13 @@ const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 require('dotenv').config();
 
 const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
-const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection, projectsCollection } = mongoDBConfig;
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection, projectsCollection, chatHistoryCollection } = mongoDBConfig;
 const { MongoClient, ObjectId } = require('mongodb');
 
 // const Option = require('../models/Option');
 // // Import the database configuration
 // require('./config/mongoDBClient');
 const chatRoutes = require('./routes/chatRoutes');
-
 
 // Increase the limit for the request body size to 25MB
 
@@ -77,7 +76,6 @@ function verifyToken(req, res, next) {
         res.sendStatus(403);
     }
 }
-
 
 // Middleware to verify the token
 const verifyJWTToken = (req, res, next) => {
@@ -4769,7 +4767,6 @@ app.post('/node/load-images', (req, res) => {
     res.status(500).json({ error: 'Server error reading images' });
   }
 });
-
 
 
 // Start the server

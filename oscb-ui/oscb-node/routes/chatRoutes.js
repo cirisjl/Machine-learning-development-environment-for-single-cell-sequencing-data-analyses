@@ -8,6 +8,9 @@ const officeParser = require('officeparser');
 // const cheerio = require("cheerio");
 const csv = require("csv-parser");
 const fs = require('fs');
+const { MongoClient } = require('mongodb');
+const mongoDBConfig = JSON.parse(fs.readFileSync('./configs/mongoDB.json'));// Import the MongoDB connection configuration
+const { mongoUrl, dbName, optionsCollectionName, datasetCollection, userDatasetsCollection, jobsCollection, preProcessResultsCollection, benchmarksCollection, errorlogcollection, projectsCollection, chatHistoryCollection } = mongoDBConfig;
 
 // Configure multer for file uploads (memory storage)
 const upload = multer({
@@ -24,15 +27,46 @@ const toMarkdown = (nodes) => {
     }).join('\n\n');
 };
 
+async function sync_chat(userId, role, msg) {
+    try {
+        if (!msg || msg.length === 0) {
+            console.error('No message provided');
+            return;
+        }
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+        const db = client.db(dbName);
+
+        // Reference the specific collection
+        const collection = db.collection('chat_history');
+
+        // Format the document (Handling our own defaults since Mongoose is gone)
+        const newChatSync = {
+            userId: userId || 'anonymous',
+            // Ensure messages have timestamps if the frontend didn't provide them
+            role: role,
+            messages: msg,
+            timestamp: new Date() // Manual timestamp for when the sync occurred
+        };
+
+        // Insert into the database
+        const result = await collection.insertOne(newChatSync);
+        console.log('Chat history successfully saved to DB!');
+    } catch (error) {
+        console.error('Error saving chat:', error);
+    }
+}
+
 // Initialize OpenAI client
 // Note: It's best practice to use environment variables for API keys
 // For now, we'll try to read from process.env, but placeholders are here if needed.
 // Users should add OPENAI_API_KEY and GEMINI_API_KEY to their .env file.
 
 router.post('/', upload.single('file'), async (req, res) => {
-    let { message, model } = req.body;
+    let { userId, message, model } = req.body;
     const file = req.file;
 
+    console.log(`[Chat API] User ID: ${userId}`);
     console.log(`[Chat API] Received request for model: ${model}`);
     
     // Log key presence (checking length to be safe against empty strings)
@@ -161,6 +195,8 @@ router.post('/', upload.single('file'), async (req, res) => {
             });
             // console.log("Reply:", completion.choices[0].message.content);
             reply = completion.choices[0].message.content;
+            await sync_chat(userId, 'user', messages);
+            await sync_chat(userId, 'ChatGPT', reply);
         } else if (model === 'gemini') {
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
             // Use gemini-1.5-flash-001 for specific version compatibility
@@ -188,6 +224,9 @@ router.post('/', upload.single('file'), async (req, res) => {
 
             const response = await result.response;
             reply = response.text();
+
+            await sync_chat(userId, 'user', prompt);
+            await sync_chat(userId, 'Gemini', reply);
 
         } else {
             return res.status(400).json({ error: 'Invalid model selection' });

@@ -20,6 +20,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { visit } from 'unist-util-visit';
+import { getCookie } from '../../utils/utilFunctions';
+const jwtToken = getCookie('jwtToken');
 
 // --- Styled Components ---
 
@@ -623,6 +625,7 @@ const Chatbot = (presetQuestions = null) => {
   const messagesAreaRef = useRef(null); // Attach this to your MessagesArea
   const abortControllerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [userId, setUserId] = useState('anonymous');
 
   // Function to stop the generation
   const handleStopGeneration = () => {
@@ -665,6 +668,17 @@ const Chatbot = (presetQuestions = null) => {
     if (storedHistory) {
       setMessages(JSON.parse(storedHistory));
     }
+
+    const fetchUserInfo = async () => {
+      if (!jwtToken) return;
+      try {
+        const res = await fetch(NODE_API_URL + "/protected", { headers: { Authorization: `Bearer ${jwtToken}` } });
+        const data = await res.json();
+        if (data?.authData) { setUserId(data.authData.username);}
+      } 
+      catch (e) { console.error(e); }
+    };
+    fetchUserInfo();
   }, []);
 
   // Save chat history to localStorage whenever messages update
@@ -798,10 +812,12 @@ const Chatbot = (presetQuestions = null) => {
       if (fileToSend) {
         formData.append('file', fileToSend);
       }
+      formData.append('userId', userId); // Include userId in the form data
 
       const response = await axios.post(`${NODE_API_URL}/api/chat`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          // 'Authorization': `Bearer ${jwtToken}`,
         },
         signal: abortControllerRef.current.signal
       });
