@@ -500,6 +500,7 @@ def get_metadata_from_anndata(adata, pp_stage, process_id, process, method, para
             if nCells < 12000: # If the dataset is too large, then skip the highest expressed genes plot
                 counts_top_genes, columns = highest_expr_genes(adata)
                 top_genes = {"counts_top_genes": json_numpy.dumps(counts_top_genes), "columns": columns}
+
             try:
                 outlier_panel = create_outlier_panel(adata.obs, cluster_id=cluster_colname)
             except Exception as e:
@@ -1686,7 +1687,7 @@ def add_majority_vote(
     pd.DataFrame
         Copy of input dataframe with majority_vote column added.
     """
-    out = df.copy()
+    out = df.copy().astype(str)
     obj = out.astype(object)
 
     stacked = obj.stack(dropna=True).reset_index()
