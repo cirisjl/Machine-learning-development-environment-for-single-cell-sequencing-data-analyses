@@ -5,6 +5,7 @@ import Authentication from "../components/Authentication/AuthForm";
 import React, { useState, useEffect } from "react";
 import { deleteCookie, getCookie, isUserAuth } from "../utils/utilFunctions";
 import { useNavigate } from 'react-router-dom';
+import Footer from "../components/Footer/Footer";
 
 
 export default function RootLayout() {
@@ -72,6 +73,7 @@ export default function RootLayout() {
     //   }, []);
 
     return (
+        <>
         <div className="container">
             <div className="auth-form-container">
                 <Authentication isLoginReq={isLoginReq} handleAuth={handleAuth} />
@@ -234,6 +236,7 @@ export default function RootLayout() {
                 </main>
             </div>
         </div>
-
+        <Footer />
+        </>
     )
 }

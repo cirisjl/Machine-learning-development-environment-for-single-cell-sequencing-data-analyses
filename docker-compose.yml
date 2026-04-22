@@ -27,7 +27,7 @@ services:
     depends_on:
       mongodb:
         condition: service_started
-        restart: true
+        # restart: true
     networks:
       - oscb-network
 
@@ -58,17 +58,17 @@ services:
     networks:
       - oscb-network
 
-  # nginx-gateway:
-  #   image: nginx:stable-alpine
-  #   volumes:
-  #     - ./nginx:/etc/nginx/conf.d
-  #     # - /etc/ssl:/etc/ssl
-  #   ports:
-  #     - 80:80
-  #     # - 443:443
-  #   restart: always
-  #   networks:
-  #     - oscb-network
+  nginx-gateway:
+    image: nginx:stable-alpine
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      # - /etc/ssl:/etc/ssl
+    ports:
+      - 80:80
+      # - 443:443
+    restart: always
+    networks:
+      - oscb-network
 
   celery-api:
     build:
@@ -107,13 +107,13 @@ services:
     # command: celery multi start 3 -A project.server.tasks.celery worker -l info
     env_file:
       - .env
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # alternatively, use `count: all` for all GPUs
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all # alternatively, use `count: all` for all GPUs
+    #           capabilities: [gpu]
         # limits:
         #   cpus: "50"
     volumes:
@@ -144,13 +144,13 @@ services:
     # command: celery multi start 3 -A project.server.tasks.celery worker -l info
     env_file:
       - .env
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # alternatively, use `count: all` for all GPUs
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all # alternatively, use `count: all` for all GPUs
+    #           capabilities: [gpu]
         # limits:
         #   cpus: "50"
     volumes:
@@ -180,13 +180,13 @@ services:
     # command: celery multi start 3 -A project.server.tasks.celery worker -l info
     env_file:
       - .env
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # alternatively, use `count: all` for all GPUs
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all # alternatively, use `count: all` for all GPUs
+    #           capabilities: [gpu]
         # limits:
         #   cpus: "50"
     volumes:
@@ -257,7 +257,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -277,7 +277,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
     networks:
       - oscb-network
 
@@ -320,13 +320,13 @@ services:
     restart: always
     ports:
       - "8888:8888"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # alternatively, use `count: all` for all GPUs
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all # alternatively, use `count: all` for all GPUs
+    #           capabilities: [gpu]
         # limits:
         #   cpus: "50"
     networks:

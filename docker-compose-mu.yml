@@ -284,7 +284,7 @@ services:
       - DBUSER=root
       - DATABASE=oscb
       - HOST=oscb_mysql 
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
       - DBPASSWORD_FILE=/run/secrets/mysql_password
     env_file:
@@ -309,7 +309,7 @@ services:
       oscb_node:
         condition: service_started
     environment:
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
     networks:
       - oscb-network
 
@@ -341,13 +341,13 @@ services:
     restart: always
     ports:
       - "8888:8888"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all 
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all # alternatively, use `count: all` for all GPUs
+    #           capabilities: [gpu]
     networks:
       - oscb-network
     volumes:

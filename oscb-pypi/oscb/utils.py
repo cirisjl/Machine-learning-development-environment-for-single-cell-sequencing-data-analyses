@@ -6,7 +6,7 @@ import pandas as pd
 from scib.preprocessing import get_cell_cycle_genes
 
 
-server_endpoint = "http://c240g5-110215.wisc.cloudlab.us:5005/api/"
+server_endpoint = "http://c220g2-011001.wisc.cloudlab.us:5005/api/"
 
 
 def get_dataset_id(benchmarks_id):

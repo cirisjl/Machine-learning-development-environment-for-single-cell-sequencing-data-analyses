@@ -27,7 +27,7 @@ services:
     depends_on:
       mongodb:
         condition: service_started
-        restart: true
+        # restart: true
     networks:
       - oscb-network
 

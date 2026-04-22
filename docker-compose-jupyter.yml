@@ -27,7 +27,7 @@ services:
     depends_on:
       mongodb:
         condition: service_started
-        restart: true
+        # restart: true
     networks:
       - oscb-network
 
@@ -259,7 +259,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=clnode100.clemson.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -279,7 +279,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=clnode100.clemson.cloudlab.us
+      - HOST_URL=c220g2-011001.wisc.cloudlab.us
     networks:
       - oscb-network
 
