@@ -3,8 +3,8 @@ import Plot from 'react-plotly.js';
 
 const JobPlot = () => {
     return (
-        <div className="w-full flex justify-center items-center my-4">
-            <div className="w-full shadow-sm border border-gray-200 bg-white rounded-md">
+        <div className="flex justify-center items-center my-4">
+            <div className="flex-1 shadow-sm border border-gray-200 bg-white rounded-md">
                 <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 rounded-t-md">
                     <h3 className="text-lg font-semibold text-gray-700 m-0">Currently Running and Queued Jobs</h3>
                 </div>

@@ -236,7 +236,9 @@ export default function RootLayout() {
                 </main>
             </div>
         </div>
-        <Footer />
+        <div>
+            <Footer />
+        </div>
         </>
     )
 }

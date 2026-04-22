@@ -3,14 +3,14 @@ import JobPlot from './JobPlot';
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-white border-t border-gray-200 mt-10">
+        <footer className="bg-white border-t border-gray-200 mt-10">
             {/* Plot Section */}
-            <div className="px-8 py-8 w-full border-b border-gray-100">
+            <div className="mx-auto px-4 py-8 border-b border-gray-100" style={{ maxWidth: '1536px' }}>
                 <JobPlot />
             </div>
 
             {/* Citation Section */}
-            <div className="px-8 py-10 w-full flex flex-col items-center text-center">
+            <div className="mx-auto px-4 py-10 flex flex-col items-center text-center" style={{ maxWidth: '1536px' }}>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Cite Single-Cell.AI</h2>
                 <div className="max-w-4xl text-gray-600 mb-2">
                     The Single-Cell.AI Community. "The platform for accessible, reproducible, and collaborative data analyses: 2024 update."
@@ -20,7 +20,7 @@ const Footer = () => {
                 </div>
                 
                 {/* Institutional Logos / Placeholders */}
-                <div className="flex flex-wrap justify-center items-center gap-6 mt-6 pb-6 w-full opacity-90 transition-all">
+                <div className="flex flex-wrap justify-center items-center gap-6 mt-6 pb-6 opacity-90 transition-all">
                     <div className="flex items-center gap-2">
                         <div className="w-10 h-10 bg-blue-800 text-white rounded-md flex items-center justify-center font-bold text-xl border border-blue-900">PS</div>
                         <div className="text-xl font-bold text-blue-800">PennState</div>
@@ -34,7 +34,7 @@ const Footer = () => {
                     <div className="text-3xl font-bold text-red-700 italic px-4">Jetstream2</div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left text-sm text-gray-600 max-w-7xl mt-6 border-t border-gray-100 pt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left text-sm text-gray-600 mt-6 border-t border-gray-100 pt-8">
                     <div>
                         The Single-Cell.AI Team is a part of the Center for Comparative Genomics and Bioinformatics at Penn State and the Department of Biology at Johns Hopkins University.
                     </div>
@@ -45,8 +45,8 @@ const Footer = () => {
             </div>
 
             {/* Acknowledgement and Links */}
-            <div className="bg-gray-100 w-full py-4 px-8 text-sm text-gray-600 border-t border-gray-300">
-                <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="bg-gray-100 py-4 px-4 text-sm text-gray-600 border-t border-gray-300">
+                <div className="mx-auto flex flex-col md:flex-row justify-between items-center gap-4" style={{ maxWidth: '1536px' }}>
                     <div className="text-center md:text-left text-xs leading-relaxed max-w-2xl">
                         Single-Cell.AI is maintained largely by the Freiburg Galaxy Team but also collectively by groups and individuals from across Europe. All of the member sites in this repository contribute to the European Single-Cell.AI Project. For acknowledgement, please refer to the About section. All content on this site is available under CC0-1.0 unless otherwise specified.
                         <div className="mt-2 text-gray-400">
