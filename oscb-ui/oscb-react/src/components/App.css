@@ -2,6 +2,21 @@
   text-align: center;
 }
 
+/* Responsive Navbar */
+@media (min-width: 1024px) {
+  .desktop-nav { display: block !important; }
+  .mobile-menu-btn { display: none !important; }
+}
+@media (max-width: 1023px) {
+  .desktop-nav { display: none !important; }
+  .mobile-menu-btn { display: block !important; }
+}
+nav.desktop-nav ul li a:hover,
+nav.desktop-nav ul li a:focus {
+  background-color: #f3f4f6;
+  color: #4338ca;
+}
+
 body {
   /* overflow: hidden; */
 }
@@ -87,6 +102,7 @@ html{
     position: relative;
     height: 100vh;
     width: 100%;
+    max-width: none !important;
 }
 
 /*
@@ -515,6 +531,7 @@ Styles for Benchmarks page
   /* padding-left: 1rem;
   padding-right: 1rem; */
   width: 100%;
+  max-width: none !important;
 }
 
 .flex-1 {
