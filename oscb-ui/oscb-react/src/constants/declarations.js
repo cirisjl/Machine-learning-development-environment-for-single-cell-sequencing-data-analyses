@@ -1,9 +1,9 @@
 // Development
 export const NODE_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3001/node`;
 export const NODE_DATA_URL = `http://${process.env.REACT_APP_HOST_URL}:3001/zarr`;
-export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5005/api`;
+export const CELERY_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}/api`;
 export const FLASK_BACKEND_API = `http://${process.env.REACT_APP_HOST_URL}:5003`;
-export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}:5005/wsapi`;
+export const WEB_SOCKET_URL = `ws://${process.env.REACT_APP_HOST_URL}/socket`;
 export const UPPY_API_URL = `http://${process.env.REACT_APP_HOST_URL}:3020`;
 export const DIRECTUS_URL = `http://${process.env.REACT_APP_HOST_URL}:8055`;
 

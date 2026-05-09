@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 
 from config.celery_utils import create_celery
 from routers import tools, benchmarks, workflows, pypi, web
-from config.celery_utils import get_task_info
+from config.celery_utils import get_celery_job_snapshot, get_task_info
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 # from dash_app.dashboard import app as dashboard
@@ -152,6 +152,14 @@ async def get_task_status(job_id: str) -> dict:
     Return the status of the submitted Task
     """
     return get_task_info(job_id)
+
+
+@app.get("/api/celery/jobs")
+async def get_celery_jobs() -> dict:
+    """
+    Return live Celery worker and broker job information for dashboard charts.
+    """
+    return await run_in_threadpool(get_celery_job_snapshot)
 
 
 @app.get("/api/job/downloadDataset/{job_id}")

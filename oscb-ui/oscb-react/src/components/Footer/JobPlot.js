@@ -1,74 +1,111 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 
+const MAX_POINTS = 60;
+const POLL_INTERVAL_MS = 10000;
+
+const formatLocalDateTime = (date) => date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+});
+
+const createSnapshot = (summary = {}) => {
+    const receivedAt = new Date();
+
+    return {
+        time: receivedAt,
+        hoverTime: formatLocalDateTime(receivedAt),
+        running: Number(summary.running || 0),
+        queued: Number(summary.queued || 0),
+    };
+};
+
+const getCeleryJobsUrl = () => {
+    if (window.location.port === '3000') {
+        return `${window.location.protocol}//${window.location.hostname}:5005/api/celery/jobs`;
+    }
+
+    return '/api/celery/jobs';
+};
+
 const JobPlot = () => {
-    // Generate realistic time-series mock data
-    const plotData = useMemo(() => {
-        const now = new Date();
-        const points = 60;
-        const times = [];
+    const [snapshots, setSnapshots] = useState(() => [createSnapshot()]);
+    const [error, setError] = useState(null);
+    const [hasLoaded, setHasLoaded] = useState(false);
 
-        for (let i = points; i >= 0; i--) {
-            const t = new Date(now.getTime() - i * 3 * 60000); // 3-min intervals
-            times.push(t.toISOString());
-        }
+    useEffect(() => {
+        let isMounted = true;
 
-        // Generate realistic job count curves
-        const generateTrace = (base, variance, spike = false) => {
-            return times.map((_, i) => {
-                let val = base + Math.sin(i * 0.15) * variance + (Math.random() - 0.5) * variance * 0.5;
-                if (spike && i > 30 && i < 40) val += variance * 2;
-                return Math.max(0, Math.round(val));
-            });
+        const fetchJobSnapshot = async () => {
+            try {
+                const response = await fetch(getCeleryJobsUrl());
+
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const summary = data.summary || {};
+                const snapshot = createSnapshot(summary);
+
+                if (!isMounted) return;
+
+                setSnapshots((prevSnapshots) => [...prevSnapshots, snapshot].slice(-MAX_POINTS));
+                setError(null);
+                setHasLoaded(true);
+            } catch (err) {
+                if (!isMounted) return;
+                setError(err.message);
+            }
         };
 
-        return {
-            times,
-            completed: generateTrace(480, 30),
-            held: generateTrace(8, 4),
-            idle: generateTrace(520, 25),
-            suspended: generateTrace(350, 20),
+        fetchJobSnapshot();
+        const intervalId = window.setInterval(fetchJobSnapshot, POLL_INTERVAL_MS);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
         };
     }, []);
+
+    const plotData = useMemo(() => {
+        return {
+            times: snapshots.map((snapshot) => snapshot.time),
+            hoverTimes: snapshots.map((snapshot) => snapshot.hoverTime),
+            running: snapshots.map((snapshot) => snapshot.running),
+            queued: snapshots.map((snapshot) => snapshot.queued),
+        };
+    }, [snapshots]);
+    const latestRunning = plotData.running[plotData.running.length - 1] || 0;
+    const latestQueued = plotData.queued[plotData.queued.length - 1] || 0;
 
     const traces = [
         {
             x: plotData.times,
-            y: plotData.completed,
-            name: 'completed',
+            y: plotData.running,
+            text: plotData.hoverTimes,
+            name: 'running',
             type: 'scatter',
             mode: 'lines',
-            line: { color: '#34a853', width: 1.5 },
+            line: { color: '#34a853', width: 2 },
             fill: 'tozeroy',
             fillcolor: 'rgba(52, 168, 83, 0.08)',
+            hovertemplate: '%{text}<br>running: %{y}<extra></extra>',
         },
         {
             x: plotData.times,
-            y: plotData.held,
-            name: 'held',
+            y: plotData.queued,
+            text: plotData.hoverTimes,
+            name: 'queued',
             type: 'scatter',
             mode: 'lines',
-            line: { color: '#f9ab00', width: 1.5 },
-        },
-        {
-            x: plotData.times,
-            y: plotData.idle,
-            name: 'idle',
-            type: 'scatter',
-            mode: 'lines',
-            line: { color: '#4285f4', width: 1.5 },
+            line: { color: '#f9ab00', width: 2 },
             fill: 'tozeroy',
-            fillcolor: 'rgba(66, 133, 244, 0.05)',
-        },
-        {
-            x: plotData.times,
-            y: plotData.suspended,
-            name: 'suspended',
-            type: 'scatter',
-            mode: 'lines',
-            line: { color: '#1a237e', width: 1.5 },
-            fill: 'tozeroy',
-            fillcolor: 'rgba(26, 35, 126, 0.05)',
+            fillcolor: 'rgba(249, 171, 0, 0.08)',
+            hovertemplate: '%{text}<br>queued: %{y}<extra></extra>',
         },
     ];
 
@@ -126,17 +163,18 @@ const JobPlot = () => {
                     fontSize: '13px',
                     fontWeight: 600,
                     color: '#333',
-                    letterSpacing: '-0.01em',
+                    letterSpacing: 0,
                 }}>
                     Currently Running and Queued Jobs
                 </span>
                 <span style={{
-                    fontSize: '16px',
-                    color: '#999',
-                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: error ? '#b91c1c' : '#666',
                     lineHeight: 1,
                     padding: '0 4px',
-                }}>⋮</span>
+                }}>
+                    {error && !hasLoaded ? 'offline' : `${latestRunning} running / ${latestQueued} queued`}
+                </span>
             </div>
             {/* Chart */}
             <div style={{ padding: '4px 8px 0 8px' }}>

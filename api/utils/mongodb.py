@@ -180,6 +180,36 @@ def get_job_from_db(job_id):
     return data
 
 
+def count_jobs_by_status(statuses):
+    return jobs_collection.count_documents({"Status": {"$in": list(statuses)}})
+
+
+def get_jobs_by_status(statuses, limit=25):
+    projection = {
+        "_id": 0,
+        "job_id": 1,
+        "Description": 1,
+        "Method": 1,
+        "Process": 1,
+        "Category": 1,
+        "Status": 1,
+        "Created on": 1,
+        "Completed on": 1,
+    }
+    jobs = list(
+        jobs_collection.find({"Status": {"$in": list(statuses)}}, projection)
+        .sort("Created on", -1)
+        .limit(limit)
+    )
+
+    for job in jobs:
+        for key, value in list(job.items()):
+            if hasattr(value, "isoformat"):
+                job[key] = value.isoformat()
+
+    return jobs
+
+
 def upsert_benchmarks(benchmarksId, results):
     results = clear_dict(results)
     try:
