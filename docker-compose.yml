@@ -55,11 +55,16 @@ services:
     volumes:
       - /ps/code/oscb/db/rabbitmq/data/:/var/lib/rabbitmq/
       - /ps/code/oscb/db/rabbitmq/log/:/var/log/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/conf.d/20-deprecated-features.conf:ro
     networks:
       - oscb-network
 
   nginx-gateway:
     image: nginx:stable-alpine
+    depends_on:
+      - oscb_react
+      - oscb_node
+      - celery-api
     volumes:
       - ./nginx:/etc/nginx/conf.d
       # - /etc/ssl:/etc/ssl
@@ -257,7 +262,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=c220g2-011011.wisc.cloudlab.us
+      - HOST_URL=clnode116.clemson.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -277,7 +282,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=c220g2-011011.wisc.cloudlab.us
+      - HOST_URL=clnode116.clemson.cloudlab.us
     networks:
       - oscb-network
 

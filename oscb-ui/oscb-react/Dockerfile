@@ -15,6 +15,11 @@ WORKDIR /opt/src/app
 # RUN npm install @mui/material @emotion/react @emotion/styled
 RUN npm install react-app-rewired framer-motion react-markdown remark-math rehype-katex katex
 
+# The dependency lockfile belongs to the prebuilt base image, so this derived
+# image cannot persist a Browserslist database refresh. Hide only its age notice
+# until the base image is rebuilt with current browser data.
+ENV BROWSERSLIST_IGNORE_OLD_DATA=true
+
 # Copy app source code
 COPY . .
 

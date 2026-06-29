@@ -18,7 +18,15 @@ const Footer = () => {
                     The Single-Cell.AI Community. "The platform for accessible, reproducible, and collaborative data analyses: 2024 update."
                 </p>
                 <p style={{ fontSize: '13px', color: '#666', fontStyle: 'italic', margin: 0, lineHeight: 1.6 }}>
-                    Nucleic Acids Res. 2024, 52(W1):W83-W94. doi:10.1093/nar/gkae410 · <a href="#" style={{ color: '#2563eb', textDecoration: 'none' }}>full citation guide</a>
+                    Nucleic Acids Res. 2024, 52(W1):W83-W94. doi:10.1093/nar/gkae410 ·{' '}
+                    <a
+                        href="https://doi.org/10.1093/nar/gkae410"
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: '#2563eb', textDecoration: 'none' }}
+                    >
+                        full citation guide
+                    </a>
                 </p>
             </div>
 
