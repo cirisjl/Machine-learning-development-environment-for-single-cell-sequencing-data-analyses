@@ -194,8 +194,6 @@ async def get_cli_task_status(job_id: str) -> dict:
     return {"job_id": job_id, "job_status": task_status}
 
 
-
-
 @app.post("/api/job/revoke/{job_id}")
 async def revoke_task(job_id: str) -> dict:
     """
@@ -305,6 +303,7 @@ async def revoke_task(job_id: str) -> dict:
 #         umap_plots.append(umap_plot)
     
 #     return umap_plots
+    
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host='0.0.0.0', port=5005, reload=True)

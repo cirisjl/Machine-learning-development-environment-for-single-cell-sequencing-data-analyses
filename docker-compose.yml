@@ -44,7 +44,7 @@ services:
       - oscb-network
 
   oscb_rabbitmq:
-    image: "rabbitmq:management"
+    image: "rabbitmq:4.2.8-management"
     container_name: oscb_rabbitmq 
     restart: always
     ports:
@@ -257,7 +257,7 @@ services:
       - DBPASSWORD=Shirley@2410
       - DATABASE=oscb
       - HOST=oscb_mysql # NAME OF THE SERVICE
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c240g5-110105.wisc.cloudlab.us
       - SSH_CONNECTION=${SSH_CONNECTION}
     env_file:
       - ./oscb-ui/oscb-node/.env  
@@ -277,7 +277,7 @@ services:
     depends_on:
       - oscb_node
     environment:
-      - HOST_URL=c240g5-110219.wisc.cloudlab.us
+      - HOST_URL=c240g5-110105.wisc.cloudlab.us
     networks:
       - oscb-network
 
@@ -312,31 +312,31 @@ services:
   #   volumes:
   #     - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
-  jupyter:
-    image: stormgod/oscb-cuda126-r45-seurat440:1.2.1
-    container_name: jupyter
-    working_dir: /ps
-    command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root --ServerApp.iopub_data_rate_limit=10000000000
-    restart: always
-    ports:
-      - "8888:8888"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # alternatively, use `count: all` for all GPUs
-              capabilities: [gpu]
-        # limits:
-        #   cpus: "50"
-    networks:
-      - oscb-network
-    volumes:
-      - /ps/code/:/ps/
-      - /ps/code/oscb/results:/data/results
-      - /ps/code/oscb/uploads:/data/upload
-      - /ps/code/oscb/logs:/data/logs
-      - /ps/code/oscb/user_storage:/usr/src/app/storage/
+  # jupyter:
+  #   image: stormgod/oscb-cuda126-r45-seurat440:1.2.1
+  #   container_name: jupyter
+  #   working_dir: /ps
+  #   command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root --ServerApp.iopub_data_rate_limit=10000000000
+  #   restart: always
+  #   ports:
+  #     - "8888:8888"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all # alternatively, use `count: all` for all GPUs
+  #             capabilities: [gpu]
+  #       # limits:
+  #       #   cpus: "50"
+  #   networks:
+  #     - oscb-network
+  #   volumes:
+  #     - /ps/code/:/ps/
+  #     - /ps/code/oscb/results:/data/results
+  #     - /ps/code/oscb/uploads:/data/upload
+  #     - /ps/code/oscb/logs:/data/logs
+  #     - /ps/code/oscb/user_storage:/usr/src/app/storage/
 
 networks:
   oscb-network:
