@@ -1,0 +1,314 @@
+services:
+  mongodb:
+    container_name: oscbdb
+    image: mongo:4.2.1
+    restart: always
+    command: mongod --port 65530
+    ports:
+      - 65530:65530
+    volumes:
+      - /home/kbcfh/ai-ready/db/mongodb:/data/db
+    networks:
+      - oscb-network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: oscbdb
+      ME_CONFIG_MONGODB_PORT: "65530"
+      ME_CONFIG_BASICAUTH: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+    ports:
+      - "0.0.0.0:8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - oscb-network
+
+  oscb_redis:
+    image: "redis:6-alpine"
+    container_name: oscb_redis 
+    hostname: oscb_redis
+    command: redis-server --port 6388 --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    ports:
+      # - 6379:6379
+      - 6388:6388
+    networks:
+      - oscb-network
+
+  oscb_rabbitmq:
+    image: "rabbitmq:management"
+    container_name: oscb_rabbitmq 
+    ports:
+      - 5673:5673
+      - 15673:15672
+    env_file:
+      - ./rabbitmq.env
+    volumes:
+      - /home/kbcfh/ai-ready/db/rabbitmq/data/:/var/lib/rabbitmq/
+      - /home/kbcfh/ai-ready/db/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - oscb-network
+
+  # nginx-gateway:
+  #   image: nginx:stable-alpine
+  #   volumes:
+  #     - ./nginx:/etc/nginx/conf.d
+  #     # - /etc/ssl:/etc/ssl
+  #   ports:
+  #     - 80:80
+  #     # - 443:443
+  #   restart: always
+  #   networks:
+  #     - oscb-network
+
+  # web:
+  #   build: 
+  #     context: ./web/
+  #     dockerfile: Dockerfile
+  #   container_name: oscbweb
+  #   restart: always
+  #   ports:
+  #     - 8083:8083
+  #   volumes:
+  #     - Predictions:/app/data/results
+  #     - Uploads:/app/data/upload
+  #     - Errors:/app/data/errors
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - oscb-network
+
+  celery-api:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_celery_api
+    command: python3 main.py
+    restart: always
+    ports:
+      - 5005:5005
+    volumes:
+      - /home/kbcfh/ai-ready/results:/data/results
+      - /home/kbcfh/ai-ready/uploads:/data/upload
+      - /home/kbcfh/ai-ready/upload/errors:/data/errors
+      - /home/kbcfh/ai-ready/upload/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+
+  worker1:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker1
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /home/kbcfh/ai-ready/results:/data/results
+      - /home/kbcfh/ai-ready/uploads:/data/upload
+      - /home/kbcfh/ai-ready/upload/errors:/data/errors
+      - /home/kbcfh/ai-ready/upload/user_storage:/usr/src/app/storage/
+
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  worker2:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker2
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo 
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /home/kbcfh/ai-ready/results:/data/results
+      - /home/kbcfh/ai-ready/uploads:/data/upload
+      - /home/kbcfh/ai-ready/upload/errors:/data/errors
+      - /home/kbcfh/ai-ready/upload/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  worker3:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_worker3
+    command: celery -A main.celery worker --loglevel=info -Q tools,workflows
+    # command: celery -A main.celery worker --loglevel=info -Q tools, workflows -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker -P solo 
+    # command: celery --app project.server.tasks.celery worker -P gevent -c 1
+    # command: celery --app project.server.tasks.celery worker --loglevel=info --logfile=project/logs/celery.log -P gevent
+    # command: celery multi start 3 -A project.server.tasks.celery worker -l info
+    env_file:
+      - .env
+    deploy:
+      resources:
+         limits:
+            cpus: "10"
+    volumes:
+      - /home/kbcfh/ai-ready/results:/data/results
+      - /home/kbcfh/ai-ready/uploads:/data/upload
+      - /home/kbcfh/ai-ready/upload/errors:/data/errors
+      - /home/kbcfh/ai-ready/upload/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+    depends_on:
+      - mongodb
+      - oscb_redis
+      - oscb_rabbitmq
+      - celery-api
+
+  dashboard:
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: oscb_dashboard
+    command: celery --app main.celery flower --port=5555 --broker=amqp://admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@oscb_rabbitmq:5673// --basic-auth=admin:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    ports:
+      - 5558:5555
+    env_file:
+      - .env
+    depends_on:
+      - celery-api
+      - oscb_rabbitmq
+      - oscb_redis
+    networks:
+      - oscb-network
+  
+  oscb_mysql:
+    container_name: oscb_mysql
+    image: mysql:8.0
+    build:
+      context: ./oscb-ui/oscb-mysql
+    volumes:
+        - /home/kbcfh/ai-ready/mysql_db:/var/lib/mysql
+        - ./oscb-ui/oscb-mysql/oscb_schema_latest.sql:/docker-entrypoint-initdb.d/oscb_schema_latest.sql
+    restart: unless-stopped
+    command:
+        [
+            "--character-set-server=utf8mb4",
+            "--collation-server=utf8mb4_unicode_ci",
+            "--default-authentication-plugin=mysql_native_password",
+        ]
+    env_file:
+      - ./oscb-ui/.env
+    ports:
+      - 3308:3308
+    networks:
+      - oscb-network
+
+  oscb_node:
+    container_name: oscb_node
+    image: oscb_node
+    build:
+      context: ./oscb-ui/oscb-node
+    ports:
+      - "3001:3001"
+      - "3020:3020"
+    environment:
+      - EXTERNAL_PORT=3001
+      - DBUSER=root
+      - DBPASSWORD=Shirley@2410
+      - DATABASE=oscb
+      - HOST=oscb_mysql # NAME OF THE SERVICE
+      - HOST_URL=digbio-devel.missouri.edu
+      - SSH_CONNECTION=${SSH_CONNECTION}
+    depends_on:
+      - oscb_mysql
+    volumes:
+      - /home/kbcfh/ai-ready/user_storage:/usr/src/app/storage/
+    networks:
+      - oscb-network
+
+  oscb_react:
+    container_name: oscb_react
+    image: oscb_react
+    build: ./oscb-ui/oscb-react
+    ports:
+      - "3000:3000"
+    depends_on:
+      - oscb_node
+    environment:
+      - HOST_URL=digbio-devel.missouri.edu
+    networks:
+      - oscb-network
+
+  directus:
+    container_name: oscb_directus
+    image: directus/directus:9.24.0
+    restart: unless-stopped
+    ports:
+        - 8055:8055
+    volumes:
+        - /home/kbcfh/ai-ready/Directus_uploads:/directus/uploads
+    depends_on:
+        - oscb_mysql
+    env_file:
+        - ./oscb-ui/.env
+    networks:
+      - oscb-network
+
+  oscb_flask:
+    build:
+      context: ./oscb-ui/oscb-flask
+      dockerfile: Dockerfile
+    container_name: oscb_flask
+    image: oscb_flask
+    restart: always
+    ports:
+      - "5003:5003"
+    networks:
+      - oscb-network
+    env_file:
+      - .env
+    volumes:
+      - /home/kbcfh/ai-ready/user_storage:/usr/src/app/storage/
+
+networks:
+  oscb-network:
+    driver: bridge
+
+# volumes:
+#   Predictions: 
+#   Uploads:
+#   Errors:
+#   user_storage: {}
+#   Directus_uploads:
+#   mysql_db:

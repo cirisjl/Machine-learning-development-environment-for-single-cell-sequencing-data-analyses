@@ -1,0 +1,113 @@
+{
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type": "object",
+      "title": "Parameters for PHoeNIx Workflow",
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "title": "Job Description"
+        },
+        "mode": {
+          "type": "string",
+          "title": "Mode *"
+        },
+        "kraken2db": {
+          "type": "string",
+          "title": "Kraken2 DB *"
+        },
+        "scaffolds_params": {
+          "type": "object",
+          "title": "Options for --mode SCAFFOLDS and CDC_SCAFFOLDS",
+          "properties": {
+            "scaffold_ext": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "title": "",
+              "description": "String that is the FULL extension of the scaffolds files you wish to input. For example, use if your file names are `<sample_id>.fa.gz` use `--scaffolds_ext '.fa.gz'` and if you want to look through subdirectories for files with the name `<sample_id>.fa.gz` then use `--scaffolds_ext '/*.fa.gz'` A regrex of this extension (ex. *.scaffolds.fa.gz) will then be used as default. Assemblies must end in '.fa.gz' or '.fasta.gz'. [default: .scaffolds.fa.gz]",
+              "default": ".scaffolds.fa.gz"
+            }
+          }
+        },
+        "sra_params": {
+          "type": "object",
+          "title": "Options for --mode SRA and CDC_SRA",
+          "properties": {
+            "use_sra": {
+              "type": "boolean",
+              "title": "use_sra",
+              "description": "Pass this argument if you want to keep samples named by SRA number rather than sample name found in NCBI metadata.",
+              "default": false,
+              "format": "switch"
+            }
+          }
+        },
+        "species_params": {
+          "type": "object",
+          "title": "Species Specific Optional options",
+          "properties": {
+            "centar": {
+              "type": "boolean",
+              "title": "centar",
+              "description": "***Still undergoing validation, will be released in v2.3.0***. Pass --centar if you want additional information (Toxin A/B Variants, Other Toxins and C. difficile Specific AR Mutations) on C. diff isolates.",
+              "default": false,
+              "format": "switch"
+            },
+            "griphin_out": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "title": "griphin_out",
+              "description": "***Still undergoing validation, will be released in v2.3.0***. Path to the output directory where the griphin summary files will be saved. Using this parameter, CENTAR files for isolates will be saved to their project directory.",
+              "default": "${launchDir}"
+            }
+          }
+        },
+        "optional_params": {
+          "type": "object",
+          "title": "Optional options",
+          "properties": {
+            "coverage": {
+              "type": "integer",
+              "title": "coverage",
+              "description": "If you want to increase the coverage cut off >30x use --coverage",
+              "default": 30
+            },
+            "create_ncbi_sheet": {
+              "type": "boolean",
+              "title": "create_ncbi_sheet",
+              "description": "Pass this argument to generate partially filled out excel sheets required for NCBI upload. This should still be reviewed PRIOR to upload. Only use with --mode CDC_PHOENIX and --mode PHOENIX. As a reminder, please do not submit raw sequencing data to the CDC HAI-Seq BioProject (531911) unless you are a state public health laboratory, a CDC partner or have been directed to do so by DHQP. The BioProject accession IDs in this file are specifically designated for domestic HAI bacterial pathogen sequencing data, including from the Antimicrobial Resistance Laboratory Network (AR Lab Network), state public health labs, surveillance programs, and outbreaks. For inquiries about the appropriate BioProject location for your data, please contact HAISeq@cdc.gov.",
+              "default": false,
+              "format": "switch"
+            },
+            "email": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "title": "email",
+              "description": "Email address to receive notifications.",
+              "default": ""
+            },
+            "multiqc_description": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "title": "multiqc_description",
+              "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+              "default": ""
+            }
+          }
+        }
+      }
+    }
+  }
+}

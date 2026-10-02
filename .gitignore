@@ -1,0 +1,5 @@
+./oscb-cli/oscb/Downloads/cli/*
+./oscb-cli/oscb/Downloads/venv/*
+
+.env
+oscb-ui/oscb-node/.env

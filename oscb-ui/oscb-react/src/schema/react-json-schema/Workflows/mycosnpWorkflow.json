@@ -1,0 +1,250 @@
+{
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type": "object",
+      "title": "Parameters for MycoSNP Workflow",
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "type": "string",
+          "title": "Job Description"
+        },
+        "workflow": {
+          "type": "string",
+          "title": "workflow *",
+          "description": "Name of the workflow to run (`PRE_MYCOSNP` for Pre-MycoSNP workflow | `NFCORE_MYCOSNP` for main MycoSNP workflow). [default: NFCORE_MYCOSNP]"
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "workflow": {
+                  "const": "PRE_MYCOSNP"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "pre_mycosnp_params": {
+                  "type": "object",
+                  "title": "PRE_MYCOSNP Parameters",
+                  "properties": {
+                    "assembler": {
+                      "type": "string",
+                      "title": "assembler",
+                      "description": "Assembler to use with Shovill. Options are 'skesa', 'velvet', 'megahit', 'spades' [default: skesa]."
+                    },
+                    "shovill_depth": {
+                      "type": "integer",
+                      "title": "shovill_depth",
+                      "description": "Downsample FASTQ files to this depth before assembly [default: 70]",
+                      "default": 70
+                    },
+                    "genome_size": {
+                      "type": "string",
+                      "title": "genome_size",
+                      "description": "The approx. genome size of the sample, used by Shovill. Will be automatically determined if left blank.",
+                      "default": ""
+                    },
+                    "min_contig_cov": {
+                      "type": "integer",
+                      "title": "min_contig_cov",
+                      "description": "Minimum contig depth of coverage for it to be retained in the assembly, used by Shovill [default: 10]",
+                      "default": 10
+                    },
+                    "min_contig_len": {
+                      "type": "integer",
+                      "title": "min_contig_len",
+                      "description": "Minimum contig length for it to be retained in the assembly, used by Shovill [default: 300]",
+                      "default": 300
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "workflow": {
+                  "const": "NFCORE_MYCOSNP"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "nfcore_mycosnp_params": {
+                  "type": "object",
+                  "title": "NFCORE_MYCOSNP Parameters",
+                  "properties": {
+                    "species": {
+                      "type": "array",
+                      "title": "species",
+                      "description": "Species name [default: candida_auris_gca_016772135.1]",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "candida_auris_gca_016772135.1"
+                        ]
+                      },
+                      "default": [
+                        "candida_auris_gca_016772135.1"
+                      ],
+                      "uniqueItems": true
+                    },
+                    "positions": {
+                      "type": "string",
+                      "title": "positions",
+                      "description": "FKS1 hotspot coordinates. Non-synonymous variants in these regions will be included in the snpeffr report (snpeff/combined_cauris_refB11205_fks1.csv). [default: fks1_hs1=221637: 221663,fks1_hs2=223782: 223805,fks1_hs3=221805: 221807]",
+                      "default": "fks1_hs1=221637: 221663,fks1_hs2=223782: 223805,fks1_hs3=221805: 221807"
+                    },
+                    "genes": {
+                      "type": "string",
+                      "title": "genes",
+                      "description": "Genes [default: CAB11_002014]",
+                      "default": "CAB11_002014"
+                    },
+                    "exclude": {
+                      "type": "string",
+                      "title": "exclude",
+                      "description": "Exclude variants [default: synonymous_variant]",
+                      "default": "synonymous_variant"
+                    },
+                    "save_reference": {
+                      "type": "boolean",
+                      "title": "save_reference",
+                      "description": "Saves the reference genome/index files to the results folder [default: true]",
+                      "default": true,
+                      "format": "switch"
+                    },
+                    "save_alignment": {
+                      "type": "boolean",
+                      "title": "save_alignment",
+                      "description": "Saves the reference alignment BAM files to the samples results folder [default: true]",
+                      "default": true,
+                      "format": "switch"
+                    },
+                    "rapidnj": {
+                      "type": "boolean",
+                      "title": "rapidnj",
+                      "description": "Build a tree using the RapidNJ neighbour-joining algorithm [default: true]",
+                      "default": true,
+                      "format": "switch"
+                    },
+                    "fasttree": {
+                      "type": "boolean",
+                      "title": "fasttree",
+                      "description": "Build a tree using the FastTree approximate ML algorithm [default: true]",
+                      "default": true,
+                      "format": "switch"
+                    },
+                    "snpeff": {
+                      "type": "boolean",
+                      "title": "snpeff",
+                      "description": "Run snpEff on the final VCF file [default: false]",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "iqtree": {
+                      "type": "boolean",
+                      "title": "iqtree",
+                      "description": "Build a tree using the IQ-TREE maximum likelihood algorithm",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "raxmlng": {
+                      "type": "boolean",
+                      "title": "raxmlng",
+                      "description": "Build a tree using the RAxML-NG ML algorithm",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "save_debug": {
+                      "type": "boolean",
+                      "title": "save_debug",
+                      "description": "Save debug information for the workflow run",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "skip_samples": {
+                      "type": "string",
+                      "title": "skip_samples",
+                      "description": "A comma separated list of IDs to skip for variant calling and analysis",
+                      "default": ""
+                    },
+                    "skip_combined_analysis": {
+                      "type": "boolean",
+                      "title": "skip_combined_analysis",
+                      "description": "Skip combined variant analysis (run reference prep and mapping)",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "skip_phylogeny": {
+                      "type": "boolean",
+                      "title": "skip_phylogeny",
+                      "description": "Skip phylogenetic tree creation",
+                      "default": false,
+                      "format": "switch"
+                    },
+                    "sample_ploidy": {
+                      "type": "integer",
+                      "title": "sample_ploidy",
+                      "description": "Ploidy of sample (GATK) [default: 1",
+                      "default": 1
+                    },
+                    "coverage": {
+                      "type": "integer",
+                      "title": "coverage",
+                      "description": "Coverage is used to calculate a down-sampling rate that results in the specified coverage. For example, if coverage is 70, then FASTQ files are down-sampled such that, when aligned to the reference, the result is approximately 70x coverage [default: 0] ",
+                      "default": 0
+                    },
+                    "gvcfs_filter": {
+                      "type": "string",
+                      "title": "gvcfs_filter",
+                      "description": "Filter criteria for variants (GATK) [default: QD < 2.0 || FS > 60.0 || MQ < 40.0 || DP < 10]",
+                      "default": "QD < 2.0 || FS > 60.0 || MQ < 40.0 || DP < 10"
+                    },
+                    "gatkgenotypes_filter": {
+                      "type": "string",
+                      "title": "gatkgenotypes_filter",
+                      "description": "Filter criteria for script filterGatkGenotypes [default: --min_GQ \"50\" --keep_GQ_0_refs --min_percent_alt_in_AD \"0.8\" --min_total_DP \"10\" --keep_all_ref]",
+                      "default": "--min_GQ \"50\" --keep_GQ_0_refs --min_percent_alt_in_AD \"0.8\" --min_total_DP \"10\" --keep_all_ref"
+                    },
+                    "max_amb_samples": {
+                      "type": "integer",
+                      "title": "max_amb_samples",
+                      "description": "Max number of samples with ambiguous calls for inclusion (GATK) [default: 10000000]",
+                      "default": 10000000
+                    },
+                    "max_perc_amb_samples ": {
+                      "type": "integer",
+                      "title": "max_perc_amb_samples ",
+                      "description": "Max percent of samples with ambiguous calls for inclusion (GATK) [default: 10]",
+                      "default": 10
+                    },
+                    "min_depth": {
+                      "type": "integer",
+                      "title": "min_depth",
+                      "description": "Min depth for a base to be called as the consensus sequence, otherwise it will be called as an N. Set to 0 to disable. [default: 10]",
+                      "default": 10
+                    },
+                    "mask": {
+                      "type": "boolean",
+                      "title": "mask",
+                      "description": "Perform masking of reference genome before analysis [default: true]",
+                      "default": true,
+                      "format": "switch"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
