@@ -30,63 +30,63 @@ from fastapi import HTTPException, WebSocketException
 # from oscb_cli.runDownloadDataset import run_download_dataset
 
 
-@shared_task(bind=True, name='tools:create_qc_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_qc_task') 
 def create_qc_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_qc(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_normalization_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_normalization_task') 
 def create_normalization_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_normalization(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_imputation_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_imputation_task') 
 def create_imputation_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_imputation(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_reduction_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_reduction_task') 
 def create_reduction_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_reduction(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_conversion_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_conversion_task') 
 def create_conversion_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_conversion(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_integration_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_integration_task') 
 def create_integration_task(self, ids_dict:dict):
     job_id = self.request.id
     results = run_integration(job_id, ids_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:load_metadata_task') 
+@shared_task(bind=True, acks_late=True, name='tools:load_metadata_task') 
 def load_metadata_task(self, file_dict:dict):
     job_id = self.request.id
     results = load_metadata(job_id, file_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_evaluation_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_evaluation_task') 
 def create_evaluation_task(self, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True):
     job_id = self.request.id
     results = run_evaluation(job_id, dataset, input, userID, output, methods, layer=None, genes=None, ncores=12, show_error=True)
     return results
 
 
-@shared_task(bind=True, name='tools:create_annotation_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_annotation_task') 
 def create_annotation_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_annotation(job_id, ds_dict)
@@ -94,21 +94,21 @@ def create_annotation_task(self, ds_dict:dict):
 
 
 # Benchmarks
-@shared_task(bind=True, name='tools:create_benchmarks_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_benchmarks_task') 
 def create_benchmarks_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_benchmarks(job_id, task_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_data_split_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_data_split_task') 
 def create_data_split_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_data_split(job_id, task_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_subset_data_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_subset_data_task') 
 def create_subset_data_task(self, task_dict:dict):
     job_id = self.request.id
     results = run_subset_data(job_id, task_dict)
@@ -116,28 +116,28 @@ def create_subset_data_task(self, task_dict:dict):
 
 
 # Single-Cell Sequencing Workflows
-@shared_task(bind=True, name='tools:create_clustering_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_clustering_task') 
 def create_clustering_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_clustering(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_integration_wf_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_integration_wf_task') 
 def create_integration_wf_task(self, dss_dict:dict):
     job_id = self.request.id
     results = run_integration_wf(job_id, dss_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_annotation_wf_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_annotation_wf_task') 
 def create_annotation_wf_task(self, dss_dict:dict):
     job_id = self.request.id
     results = run_annotation_wf(job_id, dss_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:manual_annotation_task') 
+@shared_task(bind=True, acks_late=True, name='tools:manual_annotation_task') 
 def manual_annotation_task(self, ma_dict:dict):
     job_id = self.request.id
     # self.update_state(state='PROCESSING')
@@ -145,7 +145,7 @@ def manual_annotation_task(self, ma_dict:dict):
     return results
 
 
-@shared_task(bind=True, name='tools:outlier_correction_task') 
+@shared_task(bind=True, acks_late=True, name='tools:outlier_correction_task') 
 def outlier_correction_task(self, oc_dict:dict):
     job_id = self.request.id
     # self.update_state(state='PROCESSING')
@@ -154,14 +154,14 @@ def outlier_correction_task(self, oc_dict:dict):
 
 
 # Whole Genome Sequencing Workflows
-@shared_task(bind=True, name='tools:create_phoenix_wf_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_phoenix_wf_task') 
 def create_phoenix_wf_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_phoenix_wf(job_id, ds_dict)
     return results
 
 
-@shared_task(bind=True, name='tools:create_mycosnp_wf_task') 
+@shared_task(bind=True, acks_late=True, name='tools:create_mycosnp_wf_task') 
 def create_mycosnp_wf_task(self, ds_dict:dict):
     job_id = self.request.id
     results = run_mycosnp_wf(job_id, ds_dict)
@@ -169,7 +169,7 @@ def create_mycosnp_wf_task(self, ds_dict:dict):
     
 
 # #cli
-# @shared_task(bind=True, name='tools:create_download_dataset_task') 
+# @shared_task(bind=True, acks_late=True, name='tools:create_download_dataset_task') 
 # def create_download_dataset_task(self, ds_dict:dict):
 #     job_id = self.request.id
 #     results = run_download_dataset(job_id, ds_dict)
@@ -177,7 +177,7 @@ def create_mycosnp_wf_task(self, ds_dict:dict):
 
 
 # Web API tasks
-@shared_task(bind=True, name='web:getPreProcessResults') 
+@shared_task(bind=True, acks_late=True, name='web:getPreProcessResults') 
 def getPreProcessResults(self, req_dict: dict):
     """
     Get details of pp_results
@@ -248,7 +248,7 @@ def getPreProcessResults(self, req_dict: dict):
     return results
 
 
-@shared_task(name='web:umapplot') 
+@shared_task(bind=True, acks_late=True, name='web:umapplot') 
 def umapplot(self, req_dict: dict):
     """
     Get details of pp_results

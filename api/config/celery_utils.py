@@ -17,6 +17,16 @@ def create_celery():
     celery_app.conf.update(result_persistent=True)
     celery_app.conf.update(worker_send_task_events=False)
     celery_app.conf.update(worker_prefetch_multiplier=1)
+    celery_app.conf.update(
+        broker_connection_retry=True,
+        broker_connection_retry_on_startup=True,
+        broker_connection_max_retries=None,
+        broker_heartbeat=300,
+        broker_heartbeat_checkrate=2,
+        broker_connection_timeout=300,
+        worker_prefetch_multiplier=1,
+        worker_cancel_long_running_tasks_on_connection_loss=True,
+    )
 
     return celery_app
 
