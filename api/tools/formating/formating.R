@@ -17,8 +17,13 @@ omp_set_num_threads(1)
 
 
 # Redis connection for logging
-r <- redux::hiredis(redis_config(host='oscb_redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0))
-
+# r <- redux::hiredis(redis_config(host='oscb_redis', port=6388, password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81', db=0))
+r <- redux::hiredis(
+    host = "oscb_redis",
+    port = 6388,
+    password = Sys.getenv("REDIS_PASSWORD"),
+    db = 0
+)
 
 # Get suffix of the file
 GetSuffix <- function(path) {
