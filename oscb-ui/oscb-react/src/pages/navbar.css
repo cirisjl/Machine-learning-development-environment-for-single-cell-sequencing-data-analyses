@@ -73,3 +73,15 @@
   font-size: 0.9em;
   padding-left: 9em;
 }
+
+.markdown-sidebar {
+  position: sticky;
+  top: 80px;
+
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  z-index: 10;
+}
